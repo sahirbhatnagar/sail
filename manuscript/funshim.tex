@@ -280,7 +280,11 @@ where
 \end{equation}
 and $P(\mb{f})$ is a penalty function on $\mb{f}$
 
-
+The smoothing method for variable $X_j$ is a projection on to a set of basis functions. Consider
+\begin{equation}
+f_j(\cdot) = \sum_{\ell = 1}^{p_j} \psi_{j\ell} \beta_{j\ell} \label{eq:smooth}
+\end{equation}
+where the $\left\lbrace \psi_{j\ell} \right\rbrace_1^{p_j}$ are a family of basis functions in $X_j$~\citep{hastie2015statistical}. 
 
 
 
@@ -295,7 +299,7 @@ and $P(\mb{f})$ is a penalty function on $\mb{f}$
 %\bibliographystyle{plainnat}
 %\addcontentsline{toc}{chapter}{References}
 \bibliographystyle{unsrtnat}
-\bibliography{/home/sahir/Dropbox/PhD/Protocol/GEbib}
+\bibliography{GEbib}
 
 
 \end{document}
