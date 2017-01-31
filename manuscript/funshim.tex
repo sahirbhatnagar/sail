@@ -254,25 +254,31 @@
 
 
 
-We consider a regression model for an outcome variable $\mathbf{Y}=(Y_1, \ldots, Y_n)$ where $n$ is the number of subjects. Let $E=(E_1, \ldots, E_n)$ be a binary or continuous environment vector and \mbox{$\bx = (X_{1}, \ldots, X_{n})^T$} be the $n \times p$ matrix of high-dimensional data where $X_i = (X_{i1}, \ldots,X_{ij}, \ldots,  X_{ip}) \in [0,1]^p$. Consider the regression model with main effects and their interactions with $E$:
-
+We consider a regression model for an outcome variable $\mathbf{Y}=(Y_1, \ldots, Y_n)$ where $n$ is the number of subjects. 
+Let $E=(E_1, \ldots, E_n)$ be a binary or continuous environment vector and \mbox{$\bx = (X_{1}, \ldots, X_{n})^T$} be the $n \times p$ matrix of high-dimensional data where $X_i = (X_{i1}, \ldots,X_{ij}, \ldots,  X_{ip}) \in [0,1]^p$, and $\bs{\varepsilon} = (\varepsilon_1, \ldots, \varepsilon_n)$ a vector of errors. 
+Consider the regression model with main effects and their interactions with $E$:
 \begin{equation}  
 Y_i = \beta^*_0 + \sum_{j=1}^p \beta^*_j X_{ij} + \beta^*_E E_i + \sum_{j=1}^p \alpha^*_j E_i X_j + \varepsilon_i, \qquad i=1, \ldots, n \label{eq:linpred1.1},
 \end{equation}
-
-were $\beta^*_0,\beta^*_j,\beta^*_E,\alpha^*_j$ are the true unknown model parameters for $j=1, \ldots, p$. This can be extended to the more general additive model:
-
+where $\beta^*_0,\beta^*_j,\beta^*_E,\alpha^*_j$ are the true unknown model parameters for $j=1, \ldots, p$. 
+This can be extended to the more general additive model:
 \begin{equation}  
 Y_i = \beta^*_0 + \sum_{j=1}^p f^*_j (X_{ij}) + f_E^*(E_i) + \sum_{j=1}^p f^*_{jE} (X_{ij},E_i) + \varepsilon_i \qquad i=1, \ldots, n \label{eq:linpred1.2}
 \end{equation}
-
 As in~\citep{radchenko2010variable}, we can express~\eqref{eq:linpred1.2} as 
 \begin{equation}
-\mb{Y} =  \sum_{j=1}^p \mb{f}^*_j + \mb{f}_E^*(E_i) + \sum_{j=1}^p \mb{f}^*_{jE} + \varepsilon_i 
+\mb{Y} =  \sum_{j=1}^p \mb{f}^*_j + \mb{f}_E^* + \sum_{j=1}^p \mb{f}^*_{jE} + \bs{\varepsilon} \label{eq:linpred1.3}
 \end{equation}
-where $\mb{f}^*_j = \left(f_j^*(X_{1j}), \ldots, f_j^*(X_{nj})\right)^T$, $\mb{f}^*_{jE} = \left(f_{jE}^*(X_{1j},X_{1E}), \ldots, f_j^*(X_{nj}, X_{nE})\right)^T$
-
-
+where $\mb{f}^*_j = \left(f_j^*(X_{1j}), \ldots, f_j^*(X_{nj})\right)^T$, $\mb{f}^*_{jE} = \left(f_{jE}^*(X_{1j},X_{1E}), \ldots, f_j^*(X_{nj}, X_{nE})\right)^T$ and \mbox{$\mb{f}_E^* = f_E^*(E_i)$}. 
+We consider the candidate vectors $\left\lbrace \mb{f}_j,\mb{f}_E, \mb{f}_{jE}\right\rbrace$. The general approach for fitting~\eqref{eq:linpred1.3} is to minimize the following penalized regression criterion:
+\begin{equation}
+\frac{1}{2} \lvert\lvert \mb{Y} - \mb{f} \rvert\rvert^2 + P(\mb{f})
+\end{equation}
+where 
+\begin{equation}
+\mb{f} = \sum_{j=1}^p \mb{f}_j + \mb{f}_E + \sum_{j=1}^p \mb{f}_{jE}
+\end{equation}
+and $P(\mb{f})$ is a penalty function on $\mb{f}$
 
 
 
