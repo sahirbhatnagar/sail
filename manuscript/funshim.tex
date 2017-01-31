@@ -282,13 +282,19 @@ and $P(\mb{f})$ is a penalty function on $\mb{f}$
 
 The smoothing method for variable $X_j$ is a projection on to a set of basis functions. Consider
 \begin{equation}
-f_j(\cdot) = \sum_{\ell = 1}^{p_j} \psi_{j\ell} \beta_{j\ell} \label{eq:smooth}
+f_j(\cdot) = \sum_{\ell = 1}^{p_j} \psi_{j\ell}(\cdot) \beta_{j\ell} \label{eq:smooth}
 \end{equation}
 where the $\left\lbrace \psi_{j\ell} \right\rbrace_1^{p_j}$ are a family of basis functions in $X_j$~\citep{hastie2015statistical}. 
+Let 
+\begin{equation}
+f_{jE}(X_{j}, E) = \sum_{\ell = 1}^{q_j} \phi_{j\ell}(X_j, E) \alpha_{j\ell} \label{eq:smoothinter}
+\end{equation}
+where the $\left\lbrace \phi_{j\ell} \right\rbrace_1^{q_j}$ are a family of basis functions in $X_j\cdot E$.
 
-
-
-
+Following ~\citep{choi2010variable}, we reparametrize the coefficients for the interaction terms as $\alpha_{j\ell} = \gamma_{j\ell} \beta_{j\ell} \beta_E$. Plugging this into~\eqref{eq:smoothinter}:
+\begin{equation}
+f_{jE}(X_{j}, E) = \sum_{\ell = 1}^{q_j} \phi_{j\ell}(X_j, E) \gamma_{j\ell} \beta_{j\ell} \beta_E \label{eq:smoothinter2}
+\end{equation}
 
 
 
