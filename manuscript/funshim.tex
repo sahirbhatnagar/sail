@@ -90,6 +90,7 @@
 \newcommand{\bLambda}{\boldsymbol{\Lambda}}
 \newcommand{\bTheta}{\boldsymbol{\Theta}}
 \newcommand{\balpha}{\boldsymbol{\alpha}}
+%\newcommand{\ltwonorm}[1]{\lVert #1 \rVert}
 \newcommand{\mb}[1]{\mathbf{#1}}
 \newcommand {\bs}{\boldsymbol}
 %\newcommand{\norm}[1]{\left\Vert #1 \right\Vert} 
@@ -176,9 +177,9 @@ We consider a regression model for an outcome variable $Y=(Y_1, \ldots, Y_n)$ wh
 Let $E=(E_1, \ldots, E_n)$ be a binary or continuous environment vector and \mbox{$\bX = (X_{1}, \ldots, X_{n})^T$} be the $n \times p$ matrix of high-dimensional data where $X_i = (X_{i1}, \ldots,X_{ij}, \ldots,  X_{ip}) $, and $\bs{\varepsilon} = (\varepsilon_1, \ldots, \varepsilon_n)$ a vector of errors. 
 Consider the regression model with main effects and their interactions with $E$:
 \begin{equation}  
-g(\bmu) =  \beta^*_0 + \sum_{j=1}^p \beta^*_j X_{j} + \beta^*_E E + \sum_{j=1}^p \alpha^*_j E X_j + \be \label{eq:linpred1.1} , %\qquad i=1, \ldots, n ,
+g(\bmu) =  \beta_0 + \sum_{j=1}^p \beta_j X_{j} + \beta_E E + \sum_{j=1}^p \alpha_j E X_j \label{eq:linpred1.1} , %\qquad i=1, \ldots, n ,
 \end{equation}
-where $g(\cdot)$ is a known link function, $\bmu = \e\left[Y|\bX, E, \bbeta,\balpha\right]$, and $\beta^*_0,\beta^*_j,\beta^*_E,\alpha^*_j$ are the true unknown model parameters for $j=1, \ldots, p$. 
+where $g(\cdot)$ is a known link function, $\bmu = \e\left[Y|\bX, E, \bbeta,\balpha\right]$, and $\beta_0,\beta_j,\beta_E,\alpha_j$ are the true unknown model parameters for $j=1, \ldots, p$. 
 
 Due to the large number of parameters to estimate with respect to the number of observations, one commonly-used approach is to shrink the regression coefficients by placing a constraint on the values of $\bbeta$ and $\boldsymbol{\alpha}$. For example, the LASSO~\citep{tibshirani1996regression} penalizes the squared loss of the data with the \mbox{$L_1$-norm} of the regression coefficients resulting in a method that performs both model selection and estimation. A natural extension of the LASSO to the interaction model~\eqref{eq:linpred1.1} is given by:
 \begin{equation}
@@ -192,7 +193,7 @@ However, since no constraint is placed on the structure of the model in~\ref{eq:
 \end{equation}
 In words, the interaction term will only have a non-zero estimate if its corresponding main effects are estimated to be non-zero. One benefit brought by hierarchy is that the number of measured variables can be reduced, referred to as practical sparsity~\citep{she2014group,bien2013lasso}. For example, a model involving $X_1, E, X_1 \cdot E$ is more parsimonious than a model involving $X_1, E, X_2 \cdot E$, because in the first model a researcher would only have to measure two variables compared to three in the second model. In order to address these issues, we propose to extend the model of~\citep{choi2010variable} to simultaneously perform variable selection, estimation and impose the strong heredity principle in the context of high dimensional interactions with the environment (HD$\times E$). To do so, we follow Choi and reparametrize the coefficients for the interaction terms as $\alpha_{j} = \gamma_{j} \beta_j \beta_E$. Plugging this into~\eqref{eq:linpred1.1}:
 \begin{align}
-g(\bmu)  = & \beta^*_0 + \sum_{j=1}^p \beta^*_j X_{j} + \beta^*_E E + \sum_{j=1}^p \gamma_{j} \beta_j \beta_E E X_j     \label{eq:linpred2}
+g(\bmu)  = & \beta_0 + \sum_{j=1}^p \beta_j X_{j} + \beta_E E + \sum_{j=1}^p \gamma_{j} \beta_j \beta_E E X_j     \label{eq:linpred2}
 \end{align}
 This reparametrization directly enforces the strong heredity principle~\eqref{eq:heredity}, i.e., if either main effect estimates are 0, then $\hat{\alpha}_{j}$ will be zero and a non-zero interaction coefficient implies non-zero $\hat{\beta}_j$ and $\hat{\beta}_E$. To perform variable selection in this new parametrization, we follow~\cite{choi2010variable} and penalize $\bs{\gamma} = \left(\gamma_{1}, \ldots, \gamma_{p}\right)$ instead of penalizing $\balpha$ as in~\eqref{eq:lassolikelihood}, leading to the following penalized least squares criterion:
 \begin{equation}
@@ -205,11 +206,19 @@ w_j = \left | \frac{1}{\hat{\beta}_j} \right|, \quad w_{jE} = \left | \frac{\hat
 where $\hat{\beta}_j$ and $\hat{\alpha}_{j}$ are the MLEs, from~\eqref{eq:linpred1.1} or the ridge regression estimates when $p > n$. The rationale behind the data-dependent $\hat{\bs{w}}$ is that as the sample size grows, the weights for the truly zero predictors go to $\infty$ (which translates to a large penalty), whereas the weights for the truly non-zero predictors converge to a finite constant~\citep{zou2006adaptive}. 
 
 
-
-
-
+\section{Extension to Additive Models}
 
 This can be extended to the more general additive model:
+\begin{align}
+g(\bmu)  = & \beta^*_0 + \sum_{j=1}^p f^*_j (X_{j}) + \beta^*_E E + \sum_{j=1}^p \gamma_{j}  \beta_E E f^*_j (X_{j})     \label{eq:linpred}
+\end{align}
+The smoothing method for variable $X_j$ is a projection on to a set of basis functions. Consider
+\begin{equation}
+f_j(\cdot) = \sum_{\ell = 1}^{p_j} \psi_{j\ell}(\cdot) \beta_{j\ell} \label{eq:smooth}
+\end{equation}
+where the $\left\lbrace \psi_{j\ell} \right\rbrace_1^{p_j}$ are a family of basis functions in $X_j$~\citep{hastie2015statistical} and \mbox{$\bbeta_j = (\beta_{j1}, \ldots, \beta_{jp_j})$} for $j = 1, \ldots, p$. 
+
+\begin{comment}
 \begin{equation}  
 Y_i = \beta^*_0 + \sum_{j=1}^p f^*_j (X_{ij}) + f_E^*(E_i) + \sum_{j=1}^p f^*_{jE} (X_{ij},E_i) + \varepsilon_i \qquad i=1, \ldots, n \label{eq:linpred1.2}
 \end{equation}
@@ -228,11 +237,7 @@ where
 \end{equation}
 and $P(\mb{f})$ is a penalty function on $\mb{f}$
 
-The smoothing method for variable $X_j$ is a projection on to a set of basis functions. Consider
-\begin{equation}
-f_j(\cdot) = \sum_{\ell = 1}^{p_j} \psi_{j\ell}(\cdot) \beta_{j\ell} \label{eq:smooth}
-\end{equation}
-where the $\left\lbrace \psi_{j\ell} \right\rbrace_1^{p_j}$ are a family of basis functions in $X_j$~\citep{hastie2015statistical}. 
+
 Let 
 \begin{equation}
 f_{jE}(X_{j}, E) = \sum_{\ell = 1}^{q_j} \phi_{j\ell}(X_j, E) \alpha_{j\ell} \label{eq:smoothinter}
@@ -243,11 +248,20 @@ Following ~\citep{choi2010variable}, we reparametrize the coefficients for the i
 \begin{equation}
 f_{jE}(X_{j}, E) = \sum_{\ell = 1}^{q_j} \phi_{j\ell}(X_j, E) \gamma_{j\ell} \beta_{j\ell} \beta_E \label{eq:smoothinter2}
 \end{equation}
+\end{comment}
+
+This leads to the following penalized least squares criterion:
+\begin{equation}
+\argmin_{\beta_0, \bbeta, \bs{\gamma} }  \frac{1}{2} \norm{Y - g(\bmu)}^2 + \lambda_\beta w_E \norm{\beta_E}_2 + \lambda_{\beta}\sum_{j=1}^{p} w_j \norm{\bbeta_j}_2 +  \lambda_\gamma \sum_{j=1}^{p} w_{jE} \abs{\gamma_{jE}} \label{eq:lassolikelihood3}
+\end{equation} 
 
 
 
+\section{Application}
 
+\includegraphics[scale=0.5]{l1}
 
+\includegraphics[scale=0.5]{l2}
 
 \newpage
 %\bibliographystyle{plainnat}
