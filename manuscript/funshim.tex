@@ -2,178 +2,126 @@
 
 %########################################################################################  
 %            						PACKAGES
-%######################################################################################## 
+%########################################################################################
 
-\usepackage{amsmath,amsthm,amssymb,bbm,mathrsfs} %math stuff
-\usepackage{comment}
-\usepackage{caption}
-\usepackage{subfig}
-\usepackage{float}
-\usepackage{authblk}
-\usepackage{lscape}
-\usepackage{xparse} % FOR CREATING CUSTOM ITEMIZE FUNCTION
-\usepackage{lastpage}
-\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
-\usepackage[round]{natbib}   % omit 'round' option if you prefer square brackets
-%\usepackage[numbers,sort]{natbib}   % omit 'round' option if you prefer square brackets
-\usepackage{placeins}
-\usepackage{epstopdf}
-\usepackage{setspace} %Spacing
-\usepackage{graphicx,graphics}
-\usepackage{booktabs,tabularx}
-\usepackage{enumerate}
-\usepackage{makecell}
-\usepackage{xfrac}
-\usepackage{array}
-\newcolumntype{L}{>{\centering\arraybackslash}m{3cm}} % used for text wrapping in ctable
-\usepackage[nottoc,notlot,notlof]{tocbibind}
-\usepackage{tikz}
-\usetikzlibrary{trees, shapes.geometric,arrows,shapes.symbols,decorations.pathreplacing,positioning,decorations.markings, fit, matrix}
-\usepackage{ctable} % NEED TO LOAD CTABLE AFTER TIKZ FOR SOME REASON
-\usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
-\usepackage[margin=1in]{geometry}
+\usepackage{authblk} % for author affiliations
+\usepackage{float} % for H in figures and tables
+\usepackage{amsmath,amsthm,amssymb,bbm,mathrsfs,mathtools,xfrac} %math stuff
 
+\usepackage[round,sort]{natbib}   % bibliography omit 'round' option if you prefer square brackets
+\usepackage{placeins} % for \FloatBarrier
 \usepackage[pagebackref=true,bookmarks]{hyperref}
 \hypersetup{
-    unicode=false,          
-    pdftoolbar=true,        
-    pdfmenubar=true,        
-    pdffitwindow=false,     % window fit to page when opened
-    pdfstartview={FitH},    % fits the width of the page to the window
-    pdftitle={Protocol},    % title
-    pdfauthor={Sahir Rai Bhatnagar},     % author
-    pdfsubject={Subject},   % subject of the document
-    pdfcreator={Sahir Rai Bhatnagar},   % creator of the document
-    pdfproducer={Sahir Rai Bhatnagar}, % producer of the document
-    pdfkeywords={}, % list of keywords
-    pdfnewwindow=true,      % links in new window
-    colorlinks=true,       % false: boxed links; true: colored links
-    linkcolor=red,          % color of internal links (change box color with linkbordercolor)
-    citecolor=blue,        % color of links to bibliography
-    filecolor=black,      % color of file links
-    urlcolor=blue           % color of external links
+	unicode=false,          
+	pdftoolbar=true,        
+	pdfmenubar=true,        
+	pdffitwindow=false,     % window fit to page when opened
+	pdfstartview={FitH},    % fits the width of the page to the window
+	pdftitle={Penalized LMM in Families},    % title
+	pdfauthor={Sahir Rai Bhatnagar},     % author
+	pdfsubject={Subject},   % subject of the document
+	pdfcreator={Sahir Rai Bhatnagar},   % creator of the document
+	pdfproducer={Sahir Rai Bhatnagar}, % producer of the document
+	pdfkeywords={}, % list of keywords
+	pdfnewwindow=true,      % links in new window
+	colorlinks=true,       % false: boxed links; true: colored links
+	linkcolor=red,          % color of internal links (change box color with linkbordercolor)
+	citecolor=blue,        % color of links to bibliography
+	filecolor=black,      % color of file links
+	urlcolor=cyan           % color of external links
 }
+\usepackage[utf8]{inputenc} % for french accents
+\usepackage[T1]{fontenc} % for french accents
+\usepackage{ctable} % load after tikz. used for tables
+\usepackage{array}
+\newcolumntype{L}{>{\centering\arraybackslash}m{3cm}} % used for text wrapping in ctable
+\usepackage{color, colortbl, xcolor, comment}
+\usepackage{subfig}
+\usepackage{tcolorbox} % for box around text
+%\usepackage[ruled,vlined,linesnumbered,noresetcount]{algorithm2e}
+\usepackage[ruled,vlined,noresetcount]{algorithm2e}
+%\usepackage[american]{babel}
+%\let\tnote\relax
 
- %########################################################################################  
- %            						DEFINE COLORS
- %######################################################################################## 
+%\usepackage{csquotes}
 
- \usepackage{color, colortbl, xcolor}
- \definecolor{Gray}{gray}{0.9}
- \definecolor{gray}{RGB}{110,110,110}
- \definecolor{darkgray}{RGB}{100,100,100}
- \definecolor{lightgray}{RGB}{200,200,200}
- \definecolor{turquoise}{RGB}{81,193,188}
- \definecolor{tomato}{RGB}{255,136,136}
- \definecolor{mandarina}{RGB}{229,169,25}
- \definecolor{foreground}{RGB}{81,141,193}
- \definecolor{background}{RGB}{246,244,240}
- \definecolor{highlight}{RGB}{229,169,25}
- \definecolor{lowlight}{RGB}{200,200,200}
- \definecolor{beige}{RGB}{255,255,240}
- \definecolor{pinkish}{RGB}{255,223,247}
- \definecolor{blueish}{RGB}{204,255,255}
- \definecolor{deepink}{RGB}{255,20,147}
 
- 
- %########################################################################################  
- %            						TIKZ SHAPES
- %######################################################################################## 
- 
 
- \tikzstyle{startstop} = [rectangle, rounded corners, minimum width=2cm, minimum height=1cm, draw=black, fill=pinkish,text width=3.5cm]
- \tikzstyle{startstop2} = [rectangle, rounded corners, minimum width=2cm, minimum height=1cm, draw=black, fill=background,text width=3.5cm]
- \tikzstyle{startstop3} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm, draw=black, fill=beige,text width=3.5cm]
- \tikzstyle{startstop4} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm, draw=black, fill=blueish,text width=3.5cm]
- \tikzstyle{io} = [trapezium, trapezium left angle=70, trapezium right angle=110, minimum width=2cm, minimum height=1cm, text centered, draw=black, fill=blue!30,text width=1.5cm]
- \tikzstyle{process} = [rectangle, minimum width=1cm, minimum height=1cm, text centered, draw=black, fill=orange!30,text width=2cm]
- \tikzstyle{decision} = [diamond, minimum width=2cm, minimum height=1cm, text centered, draw=black, fill=green!30]
- \tikzstyle{arrow} = [thick,->,>=stealth]
- \tikzstyle{both} = [thick,<->,>=stealth, red]
- \tikzstyle{box} = [rectangle, draw]
- \tikzstyle{line} = [draw, -latex']
- 
- \tikzset{myshade/.style={minimum size=.4cm,shading=radial,inner color=white,outer color={#1!90!gray}}}
- \newcommand\mycirc[1][]{\tikz\node[circle,myshade=#1]{};}
- \newcommand\myrect[1][]{\tikz\node[rectangle,myshade=#1]{};}
- \newcommand\mystar[1][]{\tikz\node[star,star points=15,star point height=2pt,myshade=#1]{};}
- \newcommand\mydiamond[1][]{\tikz\node[diamond,myshade=#1]{};}
- \newcommand\myellipse[1][]{\tikz\node[ellipse,myshade=#1]{};}
- \newcommand\mykite[1][]{\tikz\node[kite,myshade=#1]{};}
- \newcommand\mydart[1][]{\tikz\node[dart,myshade=#1]{};}
- \newcommand\mycloud[1][]{\tikz\node[cloud,myshade=#1]{};}
- 
- 
- \tikzset{
-     ncbar angle/.initial=90,
-     ncbar/.style={
-         to path=(\tikztostart)
-         -- ($(\tikztostart)!#1!\pgfkeysvalueof{/tikz/ncbar angle}:(\tikztotarget)$)
-         -- ($(\tikztotarget)!($(\tikztostart)!#1!\pgfkeysvalueof{/tikz/ncbar angle}:(\tikztotarget)$)!\pgfkeysvalueof{/tikz/ncbar angle}:(\tikztostart)$)
-         -- (\tikztotarget)
-     },
-     ncbar/.default=0.5cm,
- }
- 
- \tikzset{square left brace/.style={ncbar=0.5cm}}
- \tikzset{square right brace/.style={ncbar=-0.5cm}}
- 
- \tikzset{round left paren/.style={ncbar=0.4cm,out=110,in=-110}}
- \tikzset{round right paren/.style={ncbar=0.5cm,out=60,in=-60}}
+%\usepackage[style=apa,sortcites=true,sorting=nyt,backend=biber]{biblatex}
+%\usepackage{epstopdf}
+
+%\usepackage{tabulary}
+%\usepackage{siunitx}
+%\sisetup{output-exponent-marker=\ensuremath{\mathrm{e}}}
+%\usepackage{setspace}
+%\AtBeginEnvironment{tabulary}{\onehalfspacing}
+%\usepackage{multirow}
+%\usepackage{ctable} % NEED TO LOAD CTABLE AFTER TIKZ FOR SOME REASON
+%\usepackage{array}
+%\newcolumntype{L}{>{\centering\arraybackslash}m{3cm}} % used for text wrapping in ctable
+%\usepackage{enumitem}
+% These packages are all incorporated in the memoir class to one degree or another...
 
 %########################################################################################  
 %            						CUSTOM COMMANDS
-%######################################################################################## 
+%########################################################################################
 
-\NewDocumentCommand\mylist{>{\SplitList{;}}m}
-  {
-    \begin{itemize}
-      \ProcessList{#1}{ \insertitem }
-    \end{itemize}
-  }
-\newcommand\insertitem[1]{\item #1}
-
-\newcommand{\norm}[1]{\left\Vert #1 \right\Vert}
-\newcommand{\code}[1]{\texttt{#1}}
-\newcommand{\highcode}[1]{\textcolor{highlight}{\texttt{#1}}}
-\newcommand {\bs}{\boldsymbol} 
-\newcommand{\bb}{\boldsymbol{\beta}}
-
-\newcommand\independent{\protect\mathpalette{\protect\independenT}{\perp}}
-\def\independenT#1#2{\mathrel{\rlap{$#1#2$}\mkern2mu{#1#2}}}
-\providecommand{\eeee}[1]{\ensuremath{\times 10^{#1}}}
-\setstretch{1} %line spacing
-
-\DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{it}
 \newcommand{\tm}[1]{\textrm{{#1}}}
+\newcommand{\bx}{\textbf{\emph{x}}}
+\newcommand{\by}{\textbf{\emph{y}}}
+\newcommand{\bX}{\textbf{\emph{X}}}
+\newcommand{\bW}{\textbf{\emph{W}}}
+\newcommand{\bY}{\textbf{\emph{Y}}}
+\newcommand{\bD}{\textbf{\emph{D}}}
+\newcommand{\bXtilde}{\widetilde{\bX}}
+\newcommand{\bYtilde}{\widetilde{\bY}}
+\newcommand{\bDtilde}{\widetilde{\bD}}
+\newcommand{\Xtilde}{\widetilde{X}}
+\newcommand{\Ytilde}{\widetilde{Y}}
+\newcommand{\Dtilde}{\widetilde{D}}
+\newcommand{\bu}{\textbf{u}}
+\newcommand{\bU}{\textbf{\emph{U}}}
+\newcommand{\bV}{\textbf{\emph{V}}}
+\newcommand{\bE}{\textbf{\emph{E}}}
+\newcommand{\bb}{\textbf{\emph{b}}}
+\newcommand{\bI}{\textbf{\emph{I}}}
+\newcommand{\be}{\boldsymbol{\varepsilon}}
+\newcommand{\bSigma}{\boldsymbol{\Sigma}}
+\newcommand{\bLambda}{\boldsymbol{\Lambda}}
+\newcommand{\bTheta}{\boldsymbol{\Theta}}
+\newcommand{\balpha}{\boldsymbol{\alpha}}
+\newcommand{\mb}[1]{\mathbf{#1}}
+\newcommand {\bs}{\boldsymbol}
+%\newcommand{\norm}[1]{\left\Vert #1 \right\Vert} 
 \newcommand{\xf}{\mathcal{X}}
 \newcommand{\pfrac}[2]{\left( \frac{#1}{#2}\right)}
 \newcommand{\e}{{\mathsf E}}
 \newcommand{\bt}{\boldsymbol{\theta}}
 \newcommand{\bmu}{\boldsymbol{\mu}}
 \newcommand{\bbeta}{\boldsymbol{\beta}}
-\newcommand{\bgamma}{\boldsymbol{\gamma}}
-\newcommand{\balpha}{\boldsymbol{\alpha}}
-\newcommand {\E}{\mathbb{E}} 
-\newcommand{\mc}[2]{\multicolumn{#1}{c}{#2}}
-\newcommand{\bh}{\hat{\beta}}
-\newcommand{\xtx}{\mathbf{X}^T\mathbf{X}}
-\newcommand{\xtxinv}{\left(\mathbf{X}^T\mathbf{X}\right)^{-1}}
-\newcommand{\mb}[1]{\mathbf{#1}}
-\newcommand{\dnorm}[3]{\frac{1}{\sqrt{2\pi #3}} \expp{- \frac{\left( #1-#2\right) ^2}{2 #3}}  }
-\newcommand{\dpois}[3]{\frac{\exp\left(-#2\right) #3 }{#1 !}}
-\newcommand{\bx}{\mathbf{X}}
-\newcommand{\by}{\mathbf{Y}}
-\newcommand{\cg}[1]{\textcolor{red}{#1}}
-\newcommand{\blanchem}[1]{\textcolor{blue}{#1}}
-\newcommand{\mt}[1]{\textcolor{turquoise}{#1}}
+\newcommand{\bPhi}{\boldsymbol{\Phi}}
 \DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator{\diag}{diag} % operator and subscript
 
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}%
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}%
+
+% Swap the definition of \abs* and \norm*, so that \abs
+% and \norm resizes the size of the brackets, and the 
+% starred version does not.
+\makeatletter
+\let\oldabs\abs
+\def\abs{\@ifstar{\oldabs}{\oldabs*}}
+%
+\let\oldnorm\norm
+\def\norm{\@ifstar{\oldnorm}{\oldnorm*}}
+\makeatother
 
 %########################################################################################  
 %            						FANCY HEADER STUFF
 %######################################################################################## 
-
+\usepackage{lastpage}
 \usepackage{fancyhdr}
 \cfoot{\thepage}
 \lhead[\leftmark]{}
@@ -187,80 +135,80 @@
 %            						SPACING
 %######################################################################################## 
 
-%\usepackage{fullpage}
-\usepackage[]{titlesec}
+\usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
+%\usepackage[left=.1in,right=.1in,top=.1in,bottom=.1in]{geometry}
+\usepackage[margin=1in]{geometry}
 
-\titleclass{\subsubsubsection}{straight}[\subsection]
 
-\newcounter{subsubsubsection}[subsubsection]
-\renewcommand\thesubsubsubsection{\thesubsubsection.\arabic{subsubsubsection}}
-\renewcommand\theparagraph{\thesubsubsubsection.\arabic{paragraph}} % optional; useful if paragraphs are to be numbered
+%########################################################################################  
+%            						TITLE and AUTHORS
+%########################################################################################
 
-\titleformat{\subsubsubsection}
-  {\normalfont\normalsize\bfseries}{\thesubsubsubsection}{1em}{}
-\titlespacing*{\subsubsubsection}
-{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
-
-\makeatletter
-\renewcommand\paragraph{\@startsection{paragraph}{5}{\z@}%
-  {3.25ex \@plus1ex \@minus.2ex}%
-  {-1em}%
-  {\normalfont\normalsize\bfseries}}
-\renewcommand\subparagraph{\@startsection{subparagraph}{6}{\parindent}%
-  {3.25ex \@plus1ex \@minus .2ex}%
-  {-1em}%
-  {\normalfont\normalsize\bfseries}}
-\def\toclevel@subsubsubsection{4}
-\def\toclevel@paragraph{5}
-\def\toclevel@paragraph{6}
-\def\l@subsubsubsection{\@dottedtocline{4}{7em}{4em}}
-\def\l@paragraph{\@dottedtocline{5}{10em}{5em}}
-\def\l@subparagraph{\@dottedtocline{6}{14em}{6em}}
-\makeatother
-
-\setcounter{secnumdepth}{4}
-\setcounter{tocdepth}{4}
-
-%\titlespacing*{\section}{0pt}{-1ex}{-1ex}
-%\titlespacing*{\subsection}{0pt}{-1ex}{-1ex}
-%\titlespacing*{\subsubsection}{0pt}{-1ex}{-1ex} 
-
-%\renewcommand{\headrulewidth}{0.0pt}
-%\renewcommand{\footrulewidth}{0.0pt}
-
-%\setlength{\textheight}{9.00in}
-%\setlength{\textwidth}{7.00in}
-%\setlength{\topmargin}{-0.5in}
-%\setlength{\evensidemargin}{-0.25in}
-%\setlength{\oddsidemargin}{-0.25in}
-%\renewcommand{\baselinestretch}{1.0}
 \title{Variable Selection In Additive Gene Environment Interactions with the Group Lasso}
-\author{Sahir Bhatnagar and Yi Yang}
+\author{SRB}
 
+%\author[1,2]{Sahir R Bhatnagar}
+%\author[3]{Karim Oualkacha}
+%\author[4]{Yi Yang}
+%\author[1,2,5]{\mbox{Celia MT Greenwood}}
+%\affil[1]{Department of Epidemiology, Biostatistics and Occupational Health, McGill University}
+%\affil[2]{Lady Davis Institute, Jewish General Hospital, Montr\'{e}al, QC}
+%\affil[3]{Département de Mathématiques, Université de Québec À Montréal}
+%\affil[4]{Department of Mathematics and Statistics, McGill University}
+%\affil[5]{Departments of Oncology and Human Genetics, McGill University}
 
 %########################################################################################  
 %            						START OF DOCUMENT
-%########################################################################################  
-
+%######################################################################################## 
 
 \begin{document}
+	
+	\maketitle
+	\pagestyle{fancy}
 
-
-\newpage
-\pagestyle{fancy}
 
 \maketitle
-\section{Introduction}
+\section{Background}
 
 
 
-We consider a regression model for an outcome variable $\mathbf{Y}=(Y_1, \ldots, Y_n)$ where $n$ is the number of subjects. 
-Let $E=(E_1, \ldots, E_n)$ be a binary or continuous environment vector and \mbox{$\bx = (X_{1}, \ldots, X_{n})^T$} be the $n \times p$ matrix of high-dimensional data where $X_i = (X_{i1}, \ldots,X_{ij}, \ldots,  X_{ip}) \in [0,1]^p$, and $\bs{\varepsilon} = (\varepsilon_1, \ldots, \varepsilon_n)$ a vector of errors. 
+We consider a regression model for an outcome variable $Y=(Y_1, \ldots, Y_n)$ where $n$ is the number of subjects. 
+Let $E=(E_1, \ldots, E_n)$ be a binary or continuous environment vector and \mbox{$\bX = (X_{1}, \ldots, X_{n})^T$} be the $n \times p$ matrix of high-dimensional data where $X_i = (X_{i1}, \ldots,X_{ij}, \ldots,  X_{ip}) $, and $\bs{\varepsilon} = (\varepsilon_1, \ldots, \varepsilon_n)$ a vector of errors. 
 Consider the regression model with main effects and their interactions with $E$:
 \begin{equation}  
-Y_i = \beta^*_0 + \sum_{j=1}^p \beta^*_j X_{ij} + \beta^*_E E_i + \sum_{j=1}^p \alpha^*_j E_i X_j + \varepsilon_i, \qquad i=1, \ldots, n \label{eq:linpred1.1},
+g(\bmu) =  \beta^*_0 + \sum_{j=1}^p \beta^*_j X_{j} + \beta^*_E E + \sum_{j=1}^p \alpha^*_j E X_j + \be \label{eq:linpred1.1} , %\qquad i=1, \ldots, n ,
 \end{equation}
-where $\beta^*_0,\beta^*_j,\beta^*_E,\alpha^*_j$ are the true unknown model parameters for $j=1, \ldots, p$. 
+where $g(\cdot)$ is a known link function, $\bmu = \e\left[Y|\bX, E, \bbeta,\balpha\right]$, and $\beta^*_0,\beta^*_j,\beta^*_E,\alpha^*_j$ are the true unknown model parameters for $j=1, \ldots, p$. 
+
+Due to the large number of parameters to estimate with respect to the number of observations, one commonly-used approach is to shrink the regression coefficients by placing a constraint on the values of $\bbeta$ and $\boldsymbol{\alpha}$. For example, the LASSO~\citep{tibshirani1996regression} penalizes the squared loss of the data with the \mbox{$L_1$-norm} of the regression coefficients resulting in a method that performs both model selection and estimation. A natural extension of the LASSO to the interaction model~\eqref{eq:linpred1.1} is given by:
+\begin{equation}
+\argmin_{\beta_0, \bbeta, \boldsymbol{\alpha} }  \frac{1}{2} \norm{Y - g(\bmu)}^2 + \lambda \left( \norm{\bbeta}_1 + \norm{\balpha}_1    \right) \label{eq:lassolikelihood}
+\end{equation}
+where $\norm{Y - g(\bmu)}^2 = \sum_i (y_i - g(\mu_i))^2$, $\norm{\bbeta}_1 = \sum_j | \beta_j  |$, $\norm{\balpha}_1 = \sum_j | \alpha_j  |$ and $\lambda \geq 0$ is a data driven tuning parameter that can set some of the coefficients to zero when sufficiently large. 
+
+However, since no constraint is placed on the structure of the model in~\ref{eq:lassolikelihood}, it is possible that the estimated main effects are zero while the interaction term is not. This has motivated methods that produce structured sparsity~\citep{bach2012structured}. For example, Bien \textit{et al.}~\citep{bien2013lasso} propose a strong hierarchical lasso which forces the main effects to be included if the interaction term is non-zero. However this method and related ones are restricted to all pairwise interactions between $p$ measured variables. Here were concern ouself with methods that impose a strong hierarchy in the context of gene environment interactions. We are interested in imposing the strong heredity principle~\citep{chipman1996bayesian}: 
+\begin{equation}
+\hat{\alpha}_{j} \neq 0 \qquad \Rightarrow \qquad \hat{\beta}_j \neq 0 \qquad \tm{and} \qquad \hat{\beta}_E \neq 0   \label{eq:heredity}
+\end{equation}
+In words, the interaction term will only have a non-zero estimate if its corresponding main effects are estimated to be non-zero. One benefit brought by hierarchy is that the number of measured variables can be reduced, referred to as practical sparsity~\citep{she2014group,bien2013lasso}. For example, a model involving $X_1, E, X_1 \cdot E$ is more parsimonious than a model involving $X_1, E, X_2 \cdot E$, because in the first model a researcher would only have to measure two variables compared to three in the second model. In order to address these issues, we propose to extend the model of~\citep{choi2010variable} to simultaneously perform variable selection, estimation and impose the strong heredity principle in the context of high dimensional interactions with the environment (HD$\times E$). To do so, we follow Choi and reparametrize the coefficients for the interaction terms as $\alpha_{j} = \gamma_{j} \beta_j \beta_E$. Plugging this into~\eqref{eq:linpred1.1}:
+\begin{align}
+g(\bmu)  = & \beta^*_0 + \sum_{j=1}^p \beta^*_j X_{j} + \beta^*_E E + \sum_{j=1}^p \gamma_{j} \beta_j \beta_E E X_j     \label{eq:linpred2}
+\end{align}
+This reparametrization directly enforces the strong heredity principle~\eqref{eq:heredity}, i.e., if either main effect estimates are 0, then $\hat{\alpha}_{j}$ will be zero and a non-zero interaction coefficient implies non-zero $\hat{\beta}_j$ and $\hat{\beta}_E$. To perform variable selection in this new parametrization, we follow~\cite{choi2010variable} and penalize $\bs{\gamma} = \left(\gamma_{1}, \ldots, \gamma_{p}\right)$ instead of penalizing $\balpha$ as in~\eqref{eq:lassolikelihood}, leading to the following penalized least squares criterion:
+\begin{equation}
+\argmin_{\beta_0, \bbeta, \bs{\gamma} }  \frac{1}{2} \norm{Y - g(\bmu)}^2 + \lambda_\beta \sum_{j=1}^{p}w_j \abs{\beta_j} + \lambda_\gamma \sum_{j=1}^{p} w_{jE} \abs{\gamma_{jE}} \label{eq:lassolikelihood2}
+\end{equation} 
+where $g(\bmu)$ is from~\eqref{eq:linpred2}, $\lambda_\beta$ and $\lambda_\gamma$ are tuning parameters and $\mb{w} = \left(w_{1}, \ldots, w_q, w_{1E}, \ldots, w_{qE}\right)$ are prespecified adaptive weights. The $\lambda_\beta$ tuning parameter controls the amount of shrinkage applied to the main effects, while $\lambda_\gamma$ controls the interaction estimates and allows for the possibility of excluding the interaction term from the model even if the corresponding main effects are non-zero. The adaptive weights serve as a way of allowing parameters to be penalized differently. Furthermore, adaptive weighting~\citep{zou2006adaptive} has been shown to construct oracle procedures~\citep{fan2001variable}, i.e., asymptotically, it performs as well as if the true model were given in advance. The oracle property is achieved when the weights are a function of any root-$n$ consistent estimator of the true parameters e.g. maximum likelihood (MLE) or ridge regression estimates. It can be shown that the procedure in~\eqref{eq:lassolikelihood2} asymptotically possesses the oracle property~\citep{choi2010variable}, even when the number of parameters tends to $\infty$ as the sample size increases, if the weights are chosen such that
+\begin{equation}
+w_j = \left | \frac{1}{\hat{\beta}_j} \right|, \quad w_{jE} = \left | \frac{\hat{\beta}_j \hat{\beta}_E}{\hat{\alpha}_{jE}} \right| \quad \tm{ for }j=1, \ldots, q   \label{eq:weights}
+\end{equation}
+where $\hat{\beta}_j$ and $\hat{\alpha}_{j}$ are the MLEs, from~\eqref{eq:linpred1.1} or the ridge regression estimates when $p > n$. The rationale behind the data-dependent $\hat{\bs{w}}$ is that as the sample size grows, the weights for the truly zero predictors go to $\infty$ (which translates to a large penalty), whereas the weights for the truly non-zero predictors converge to a finite constant~\citep{zou2006adaptive}. 
+
+
+
+
+
+
 This can be extended to the more general additive model:
 \begin{equation}  
 Y_i = \beta^*_0 + \sum_{j=1}^p f^*_j (X_{ij}) + f_E^*(E_i) + \sum_{j=1}^p f^*_{jE} (X_{ij},E_i) + \varepsilon_i \qquad i=1, \ldots, n \label{eq:linpred1.2}
