@@ -7,3 +7,6 @@
 *.gz
 *.toc
 data/*
+.Rproj.user
+.Rhistory
+.RData
