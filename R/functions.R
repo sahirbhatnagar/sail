@@ -274,6 +274,11 @@ lambda_sequence <- function(x, y, weights = NULL,
 ridge_weights <- function(x, y, main.effect.names, interaction.names,
                           include.intercept = F) {
 
+  # include.intercept=F
+  # main.effect.names = c(main_effect_names, "X_E")
+  # interaction.names = interaction_names
+  # ===========================
+
   # fit the ridge to get betas and alphas
   fit <- glmnet::cv.glmnet(x = x, y = y, alpha = 0,
                            standardize = F,

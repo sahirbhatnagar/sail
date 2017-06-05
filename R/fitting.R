@@ -1,6 +1,6 @@
 #' Gaussian Response fitting function with warm starts
 #'
-lspath <- function(x, y, e,
+lspath <- function(x, y, e, df = 5,
                    # main.effect.names, interaction.names,
                    lambda.beta, lambda.gamma,
                    weights,
@@ -23,31 +23,30 @@ lspath <- function(x, y, e,
   nlambda.gamma = 10; nlambda.beta = 10;
   nlambda = 100 ; lambda.factor = 0.001
   cores = 1;
+  df = 5;
   center=TRUE; normalize=TRUE; verbose = TRUE
-
-  # nlambda.gamma = 20; nlambda.beta = 20;
-  # nlambda = 400
-  # (lamb <- rev(lambda_sequence(x,y, nlambda = nlambda.beta)))
-  # length(lamb)
-  # (lambda.beta <- rep(lamb, each = nlambda.beta))
-  # (lambda.gamma <- rep(lamb, nlambda.beta))
-
-  # (lamb <- rev(lambda_sequence(x,y, nlambda = nlambda.beta)))
-  # length(lamb)
-  # (lambda.beta <- rep(lamb,  nlambda.beta))
-  # (lambda.gamma <- rep(lamb, each = nlambda.beta))
-
-  # in this situation, the lambda sequence should go from small to big,
-  # otherwise all the coefficients are 0 because the coefficients of the next
-  # tuning parameter are highly dependent of the previous one
-  # nlambda.gamma = 1; nlambda.beta = 100;
-  # nlambda = 100
-  # (lambda.beta <- rev(lambda_sequence(x,y, nlambda = nlambda.beta)))
-  # (lambda.gamma <- rep(0.00000000, nlambda.beta))
-
 # ==============================================================
 
-  obj <- standardize(x = x, y = y, center = center, normalize = normalize)
+  y <- drop(y)
+  e <- drop(e)
+  np <- dim(x)
+  nobs <- as.integer(np[1])
+  nvars <- as.integer(np[2])
+
+  # Expand X's
+  Phi_j <- do.call(cbind, lapply(seq_len(nvars), function(j) splines::bs(x[,j], df = df)))
+  main_effect_names <- paste(paste0("X", rep(seq_len(nvars), each = df)), rep(seq_len(df), times = nvars), sep = "_")
+  dimnames(Phi_j)[[2]] <- main_effect_names
+
+  # X_E x Phi_j
+  XE_Phi_j <- e * Phi_j
+  interaction_names <- paste(main_effect_names, "X_E", sep = ":")
+  dimnames(XE_Phi_j)[[2]] <- interaction_names
+
+  design <- cbind(Phi_j, "X_E" = e, XE_Phi_j)
+  design[1:5,1:10]
+  colnames(design)
+  obj <- standardize(x = design, y = y, center = center, normalize = normalize)
   x <- obj$x
   y <- obj$y
   bx <- obj$bx
@@ -56,37 +55,12 @@ lspath <- function(x, y, e,
 
   nulldev <- as.numeric(crossprod(y))
 
-
   if (is.null(lambda.gamma) & is.null(lambda.beta)) {
-
-    # this is not working well, use lambda_sequence  on a grid as a default
-    # instead
-    # tuning_params <- shim_once(x = x, y = y,
-    #                            main.effect.names = main.effect.names,
-    #                            interaction.names = interaction.names,
-    #                            initialization.type = initialization.type,
-    #                            nlambda.gamma = nlambda.gamma,
-    #                            nlambda.beta = nlambda.beta,
-    #                            lambda.factor = lambda.factor)
-
-    # convert to a list. each element corresponds to a value of lambda_gamma
-    # (lambda_gamma_list <- rep(lapply(seq_len(length(tuning_params$lambda_gamma)),
-    #                                 function(i) tuning_params$lambda_gamma[i]),
-    #                          each = nlambda.beta))
-    #
-    # (lambda_beta_list <- lapply(seq_len(length(unlist(tuning_params$lambda_beta))),
-    #                            function(i) unlist(tuning_params$lambda_beta)[i]))
-    # lambda_gamma_list <- rep(lapply(seq_len(length(tuning_params$lambda_gamma)),
-    #                                 function(i) tuning_params$lambda_gamma[i]),
-    #                          nlambda.beta)
-    #
-    # lambda_beta_list <- lapply(seq_len(length(unlist(tuning_params$lambda_beta))),
-    #                            function(i) unlist(tuning_params$lambda_beta)[i])
 
     # the sequence needs to have beta fixed first and then iterate over
     # lambda_gamma. Ive tried it the other oway arpund and the solutions are
     # too sparse
-    lamb <- rev(lambda_sequence(x,y, nlambda = nlambda.beta,
+    lamb <- rev(lambda_sequence(x, y, nlambda = nlambda.beta,
                                 lambda.factor = lambda.factor))
     lambda.beta <- rep(lamb, each = nlambda.beta)
     lambda.gamma <- rep(lamb, nlambda.beta)
@@ -117,10 +91,6 @@ lspath <- function(x, y, e,
   dimnames(tuning_params_mat)[[1]] <- c("lambda.gamma","lambda.beta")
   dimnames(tuning_params_mat)[[2]] <- paste0("s",seq_len(nlambda))
 
-  #t(tuning_params_mat)
-  # out <- matrix(seq_len(nlambda), ncol = nlambda.gamma)
-  # out[,!(seq_len(nlambda.gamma) %% 2)] <- apply(out[,!(seq_len(nlambda.gamma) %% 2)], 2, rev)
-
   # determine which of the lambda's should use the previous warm start
   # for example, if there are 100 total lambdas = 10 x 10 grid, then
   # the 11th combination should not use previous values. it should re-start
@@ -132,12 +102,10 @@ lspath <- function(x, y, e,
   # called 2-D warm starts
   # lambdaNames <- paste0("s",as.vector(out))
   lambdaNames <- dimnames(tuning_params_mat)[[2]]
-  # (tuning_params_mat <- tuning_params_mat[,lambdaNames])
-  # t(tuning_params_mat)
 
   adaptive.weights <- ridge_weights(x = x, y = y,
-                                    main.effect.names = main.effect.names,
-                                    interaction.names = interaction.names)
+                                    main.effect.names = c(main_effect_names,"X_E"),
+                                    interaction.names = interaction_names)
 
   # used in the warm start strategy because we ONLY want to use warm starts
   # for each lambda_gamma for a fixed lambda_beta. For the next lambda_beta
@@ -149,8 +117,8 @@ lspath <- function(x, y, e,
                               type = initialization.type)
 
   # this converts the alphas to gammas
-  uni_start <- convert(betas_and_alphas, main.effect.names = main.effect.names,
-                       interaction.names = interaction.names)
+  uni_start <- convert(betas_and_alphas, main.effect.names = c(main_effect_names,"X_E"),
+                       interaction.names = interaction_names)
 
   # used in the warm start strategy because we ONLY want to use warm starts
   # for each lambda_gamma for a fixed lambda_beta. For the next lambda_beta
@@ -160,27 +128,27 @@ lspath <- function(x, y, e,
   # for all the x_tilde in zero_x_tilde, return the following matrix with 0 for each coefficient
   # this is like a place holder.
   coef_zero_gamma_matrix <- matrix(data = 0,
-                                   nrow = length(interaction.names),
+                                   nrow = length(interaction_names),
                                    ncol = 1,
-                                   dimnames = list(interaction.names))
+                                   dimnames = list(interaction_names))
 
   # index data.frame to figure out which j < j'
-  index <- data.frame(main.effect.names, seq_along(main.effect.names),
+  index <- data.frame(c(main_effect_names,"X_E"), seq_along(c(main_effect_names,"X_E")),
                       stringsAsFactors = F)
   colnames(index) <- c("main.effect.names","index")
 
   # matrix to store results of betas and alphas on standardized scale
-  coefficientMat <- matrix(nrow = length(c(main.effect.names, interaction.names)),
+  coefficientMat <- matrix(nrow = length(c(main_effect_names,"X_E",interaction_names)),
                            ncol = nlambda,
-                           dimnames = list(c(main.effect.names, interaction.names),
+                           dimnames = list(c(main_effect_names,"X_E", interaction_names),
                                            lambdaNames))
 
-  betaMat <- matrix(nrow = length(main.effect.names), ncol = nlambda,
-                    dimnames = list(c(main.effect.names),
+  betaMat <- matrix(nrow = length(c(main_effect_names,"X_E")), ncol = nlambda,
+                    dimnames = list(c(main_effect_names,"X_E"),
                                     lambdaNames))
 
-  gammaMat <- matrix(nrow = length(interaction.names), ncol = nlambda,
-                     dimnames = list(c(interaction.names),
+  gammaMat <- matrix(nrow = length(interaction_names), ncol = nlambda,
+                     dimnames = list(c(interaction_names),
                                      lambdaNames))
 
   outPrint <- matrix(NA, nrow = nlambda, ncol = 6,
@@ -196,7 +164,7 @@ lspath <- function(x, y, e,
   pb$tick(0)
 
   for (LAMBDA in lambdaNames) {
-    # (LAMBDA <- lambdaNames[11])
+    # (LAMBDA <- lambdaNames[1])
     lambdaIndex <- which(LAMBDA==lambdaNames)
     lambda_beta <- tuning_params_mat["lambda.beta",LAMBDA][[1]]
     lambda_gamma <- tuning_params_mat["lambda.gamma",LAMBDA][[1]]
@@ -205,9 +173,9 @@ lspath <- function(x, y, e,
       message(paste("Index:",LAMBDA, ", lambda_beta:", lambda_beta, ", lambda_gamma:", lambda_gamma))
     }
 
-    beta_hat_previous <- uni_start[main.effect.names, , drop = F]
+    beta_hat_previous <- uni_start[c(main_effect_names,"X_E"), , drop = F]
 
-    gamma_hat_previous <- uni_start[interaction.names, , drop = F]
+    gamma_hat_previous <- uni_start[interaction_names, , drop = F]
 
     # store likelihood values at each iteration in a matrix Q
     # rows: iteration number
@@ -220,8 +188,8 @@ lspath <- function(x, y, e,
                       lambda.beta = lambda_beta,
                       lambda.gamma = lambda_gamma,
                       weights = adaptive.weights,
-                      main.effect.names = main.effect.names,
-                      interaction.names = interaction.names)
+                      main.effect.names = c(main_effect_names,"X_E"),
+                      interaction.names = interaction_names)
 
     m <- 1 # iteration counter
     delta <- 1 # threshold initialization
@@ -238,10 +206,10 @@ lspath <- function(x, y, e,
       # each element of the list corresponds to a tuning parameter
       # need to keep y_tilde_list and x_tilde_list of length nlambda
 
-      y_tilde <- y - x[,main.effect.names,drop = F] %*% beta_hat_previous
+      y_tilde <- y - x[,c(main_effect_names,"X_E"), drop = F] %*% beta_hat_previous
 
-      x_tilde <- xtilde(interaction.names = interaction.names,
-                        data.main.effects = x[,main.effect.names, drop = F],
+      x_tilde <- xtilde(interaction.names = interaction_names,
+                        data.main.effects = x[,c(main_effect_names,"X_E"), drop = F],
                         beta.main.effects = beta_hat_previous)
 
       # indices of the x_tilde matrices that have all 0 columns
