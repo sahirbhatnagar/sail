@@ -1,26 +1,29 @@
 #' Gaussian Response fitting function with warm starts
 #'
-lspathWarmStarts <- function(x, y, main.effect.names, interaction.names,
-                             lambda.beta, lambda.gamma,
-                             weights,
-                             lambda.factor,
-                             nlambda.gamma,
-                             nlambda.beta,
-                             nlambda,
-                             threshold, max.iter,
-                             initialization.type,
-                             center, normalize, verbose,
-                             cores) {
+lspath <- function(x, y, e,
+                   # main.effect.names, interaction.names,
+                   lambda.beta, lambda.gamma,
+                   weights,
+                   lambda.factor,
+                   nlambda.gamma,
+                   nlambda.beta,
+                   nlambda,
+                   threshold, max.iter,
+                   initialization.type,
+                   center, normalize, verbose,
+                   cores) {
 
-  # options(scipen = 999, digits = 4)
-  # x = X; y = Y; main.effect.names = main_effect_names;
-  # interaction.names = interaction_names;
-  # lambda.beta = NULL ; lambda.gamma = NULL
-  # threshold = 1e-4 ; max.iter = 500 ; initialization.type = "ridge";
-  # nlambda.gamma = 10; nlambda.beta = 10;
-  # nlambda = 100 ; lambda.factor = 1e-6
-  # cores = 1;
-  # center=TRUE; normalize=TRUE; verbose = TRUE
+  rm(list = ls())
+  devtools::load_all()
+  options(scipen = 999, digits = 4)
+  source("R/sim-data.R")
+  x = X; y = Y; e = E
+  lambda.beta = NULL ; lambda.gamma = NULL
+  threshold = 1e-7 ; max.iter = 500 ; initialization.type = "ridge";
+  nlambda.gamma = 10; nlambda.beta = 10;
+  nlambda = 100 ; lambda.factor = 0.001
+  cores = 1;
+  center=TRUE; normalize=TRUE; verbose = TRUE
 
   # nlambda.gamma = 20; nlambda.beta = 20;
   # nlambda = 400
@@ -42,9 +45,7 @@ lspathWarmStarts <- function(x, y, main.effect.names, interaction.names,
   # (lambda.beta <- rev(lambda_sequence(x,y, nlambda = nlambda.beta)))
   # (lambda.gamma <- rep(0.00000000, nlambda.beta))
 
-  #Rprof(tmp <- tempfile())
-
-  #a <- Sys.time()
+# ==============================================================
 
   obj <- standardize(x = x, y = y, center = center, normalize = normalize)
   x <- obj$x

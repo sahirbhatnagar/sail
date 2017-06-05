@@ -2,3 +2,4 @@
 ^\.Rproj\.user$
 ^references/$
 ^data/$
+^R/sim-data\.R$

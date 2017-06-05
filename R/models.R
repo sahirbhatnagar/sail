@@ -152,18 +152,25 @@
 #'
 #' @export
 
-shim <- function(x, y, main.effect.names, interaction.names,
-                 family = c("gaussian", "binomial", "poisson"),
-                 weights,
-                 lambda.factor = ifelse(nobs < nvars, 0.01, 1e-06),
-                 lambda.beta = NULL, lambda.gamma = NULL,
-                 nlambda.gamma = 10,
-                 nlambda.beta = 10,
-                 nlambda = 100,
-                 threshold = 1e-4, max.iter = 100,
-                 initialization.type = c("ridge","univariate"),
-                 center = TRUE, normalize = TRUE, verbose = TRUE,
-                 cores = 2) {
+funshim <- function(x, y, main.effect.names, interaction.names,
+                    family = c("gaussian", "binomial"),
+                    weights,
+                    lambda.factor = ifelse(nobs < nvars, 0.01, 0.001),
+                    lambda.beta = NULL,
+                    lambda.gamma = NULL,
+                    nlambda.gamma = 10,
+                    nlambda.beta = 10,
+                    nlambda = 100,
+                    threshold = 1e-4,
+                    max.iter = 100,
+                    initialization.type = c("ridge","univariate"),
+                    center = TRUE,
+                    normalize = TRUE,
+                    verbose = TRUE,
+                    cores = 2) {
+
+  if(missing(main.effect.names)) stop("main.effect.names cannot be missing")
+  if(missing(interaction.names)) stop("interaction.names cannot be missing")
 
   initialization.type <- match.arg(initialization.type)
   family <- match.arg(family)
@@ -172,44 +179,45 @@ shim <- function(x, y, main.effect.names, interaction.names,
   if (!is.matrix(x))
     stop("x has to be a matrix")
   if (any(is.na(x)))
-    stop("Missing values in x not allowed!")
+    stop("Missing values in x not allowed")
 
-  y = drop(y)
-  np = dim(x)
+  y <- drop(y)
+  np <- dim(x)
   if (is.null(np) | (np[2] <= 1))
     stop("x should be a matrix with 2 or more columns")
 
-  nobs = as.integer(np[1])
+  nobs <- as.integer(np[1])
   if (missing(weights))
     weights = rep(1, nobs)
   else if (length(weights) != nobs)
-    stop(paste("number of elements in weights (", length(weights),
-               ") not equal to the number of rows of x (", nobs,
-               ")", sep = ""))
-  nvars = as.integer(np[2])
-  dimy = dim(y)
-  nrowy = ifelse(is.null(dimy), length(y), dimy[1])
+    stop(sprintf("number of elements in weights (%f) not equal to the number
+                 of rows of x (%f)", length(weights), nobs))
+
+  nvars <- as.integer(np[2])
+  dimy <- dim(y)
+  nrowy <- ifelse(is.null(dimy), length(y), dimy[1])
   if (nrowy != nobs)
     stop(paste("number of observations in y (", nrowy, ") not equal to the
                number of rows of x (", nobs, ")", sep = ""))
+
+  if (length(y) != nobs)
+    stop("x and y have different number of rows")
+  if (!is.numeric(y))
+    stop("The response y must be numeric. Factors must be converted to numeric")
 
   vnames <- colnames(x)
   if (!all(c(main.effect.names, interaction.names) %in% vnames))
     stop("Some variables specified in main.effect.names were not found in
          the columnames of x")
 
-
   if (any(c(is.null(lambda.beta) & !is.null(lambda.gamma),
-            !is.null(lambda.beta) & is.null(lambda.gamma)))) {
+            !is.null(lambda.beta) & is.null(lambda.gamma))))
     stop("lambda.beta or lambda.gamma is NULL while the other is not NULL. Both
          should be NULL, or both should be specified")
-  }
 
   if (any(c(is.null(lambda.beta),is.null(lambda.gamma)))) {
     if (lambda.factor >= 1)
       stop("lambda.factor should be less than 1")
-    # flmin = as.double(lambda.factor)
-    # ulam = double(1)
   } else {
     flmin = as.double(1)
 
@@ -229,40 +237,27 @@ shim <- function(x, y, main.effect.names, interaction.names,
 
     if (length(lambda.beta) != length(lambda.gamma))
       stop("length of lambda.beta needs to be the same as length or lambda.gamma")
-    # ulam = as.double(rev(sort(lambda)))
-    # nlam = as.integer(length(lambda))
   }
 
-  # if (!is.null(lambda.beta) & nlambda.beta!=length(lambda.beta)) {
-  #   warning("length of lambda.beta is not equal to nlambda.beta; setting
-  #           nlambda.beta to length of lambda.beta")
-  #   nlambda.beta <- length(lambda.beta)
-  # }
-  #
-  # if (!is.null(lambda.gamma) & nlambda.gamma!=length(lambda.gamma)) {
-  #   warning("length of lambda.gamma is not equal to nlambda.beta; setting
-  #           nlambda.gamma to length of lambda.gamma")
-  #   nlambda.gamma <- length(lambda.gamma)
-  # }
 
   fit <- switch(family,
-                gaussian = lspathWarmStarts(x = x, y = y, main.effect.names = main.effect.names,
-                                            interaction.names = interaction.names,
-                                            lambda.beta = lambda.beta, lambda.gamma = lambda.gamma,
-                                            lambda.factor = lambda.factor,
-                                            nlambda.gamma = nlambda.gamma,
-                                            nlambda.beta = nlambda.beta,
-                                            nlambda = nlambda,
-                                            threshold = threshold, max.iter = max.iter,
-                                            initialization.type = initialization.type,
-                                            center = center, normalize = normalize,
-                                            verbose = verbose,
-                                            cores = cores)
+                gaussian = lspath(x = x, y = y, main.effect.names = main.effect.names,
+                                  interaction.names = interaction.names,
+                                  lambda.beta = lambda.beta, lambda.gamma = lambda.gamma,
+                                  lambda.factor = lambda.factor,
+                                  nlambda.gamma = nlambda.gamma,
+                                  nlambda.beta = nlambda.beta,
+                                  nlambda = nlambda,
+                                  threshold = threshold, max.iter = max.iter,
+                                  initialization.type = initialization.type,
+                                  center = center, normalize = normalize,
+                                  verbose = verbose,
+                                  cores = cores)
   )
 
   fit$call <- this.call
   fit$nobs <- nobs
-  class(fit) = c(class(fit), "shim")
+  class(fit) = c(class(fit), "funshim")
   fit
 
   }

@@ -10,59 +10,6 @@ cv.shim(x, y, main.effect.names, interaction.names, weights,
   type.measure = c("mse"), nfolds = 10, ...)
 }
 \arguments{
-\item{x}{Design matrix of dimension \code{n x q}, where \code{n} is the
-number of subjects and q is the total number of variables; each row is an
-observation vector. This must include all main effects and interactions as
-well, with column names corresponding to the names of the main effects
-(e.g. \code{x1, x2, E}) and their interactions (e.g. \code{x1:E, x2:E}).
-All columns should be scaled to have mean 0 and variance 1; this is done
-internally by the \code{\link{shim}} function.}
-
-\item{y}{response variable. For \code{family="gaussian"} should be a 1 column
-matrix or numeric vector. For \code{family="binomial"}, if the response is
-a vector it can be numeric with 0 for failure and 1 for success, or a
-factor with the first level representing "failure" and the second level
-representing "success". Alternatively, For binomial logistic regression,
-the response can be a matrix where the first column is the number of
-"successes" and the second column is the number of "failures".}
-
-\item{main.effect.names}{character vector of main effects names. MUST be
-ordered in the same way as the column names of \code{x}. e.g. if the column
-names of \code{x} are \code{"x1","x2"} then \code{main.effect.names =
-c("x1","x2")}}
-
-\item{interaction.names}{character vector of interaction names. MUST be
-separated by a colon (e.g. x1:x2), AND MUST be ordered in the same way as
-the column names of \code{x}}
-
-\item{weights}{observation weights. Can be total counts if responses are
-proportion matrices. Default is 1 for each observation. Currently NOT
-IMPLEMENTED}
-
-\item{lambda.beta}{sequence of tuning parameters for the main effects. If
-\code{NULL} (default), this function will automatically calculate a
-sequence using the \code{\link{shim_once}} function which will be over a
-grid of tuning parameters for gamma as well. If the user specifies a
-sequence then this function will not automatically perform the serach over
-a grid. You will need to create the grid yourself e.g. repeat the
-lambda.gamma for each value of lambda.beta}
-
-\item{lambda.gamma}{sequence of tuning parameters for the interaction
-effects. Default is \code{NULL} which means this function will
-automatically calculate a sequence of tuning paramters. See
-\code{\link{shim_once}} for details on how this sequence is calculated.}
-
-\item{nlambda.gamma}{number of tuning parameters for gamma. This needs to be
-specified even for user defined inputs}
-
-\item{nlambda.beta}{number of tuning parameters for beta. This needs to be
-specified even for user defined inputs}
-
-\item{nlambda}{total number of tuning parameters. If \code{lambda.beta =
-NULL} and \code{lambda.gamma = NULL} then \code{nlambda} should be equal to
-\code{nlambda.beta x nlambda.gamma}. This is important to specify
-especially when a user defined sequence of tuning parameters is set.}
-
 \item{parallel}{If \code{TRUE}, use parallel \code{foreach} to fit each fold.
 Must register parallel before hand using the
 \code{\link[doMC]{registerDoMC}} function from the \code{doMC} package. See
