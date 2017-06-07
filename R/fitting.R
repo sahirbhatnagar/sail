@@ -16,14 +16,14 @@ lspath <- function(x, y, e, df = 5,
   rm(list = ls())
   devtools::load_all()
   options(scipen = 999, digits = 4)
-  source("R/sim-data.R")
-  x = X; y = Y; e = E
+  DT <- gendata(n = 300, p = 50, df = 5)
+  x = DT$x; y = DT$y; e = DT$e
   lambda.beta = NULL ; lambda.gamma = NULL
   threshold = 1e-7 ; max.iter = 500 ; initialization.type = "ridge";
   nlambda.gamma = 10; nlambda.beta = 10;
   nlambda = 100 ; lambda.factor = 0.001
   cores = 1;
-  df = 5;
+  df = DT$df;
   center=TRUE; normalize=TRUE; verbose = TRUE
 # ==============================================================
 
@@ -33,15 +33,24 @@ lspath <- function(x, y, e, df = 5,
   nobs <- as.integer(np[1])
   nvars <- as.integer(np[2])
 
+  # group membership
+  group <- rep(seq_len(nvars), each = df)
+
   # Expand X's
   Phi_j <- do.call(cbind, lapply(seq_len(nvars), function(j) splines::bs(x[,j], df = df)))
-  main_effect_names <- paste(paste0("X", rep(seq_len(nvars), each = df)), rep(seq_len(df), times = nvars), sep = "_")
+  main_effect_names <- paste(paste0("X", group), rep(seq_len(df), times = nvars), sep = "_")
   dimnames(Phi_j)[[2]] <- main_effect_names
+
+  # the names of the main effects in list form.. Each element contains the main effect names
+  # for an X
+  list_group_main <- split(main_effect_names, group)
 
   # X_E x Phi_j
   XE_Phi_j <- e * Phi_j
   interaction_names <- paste(main_effect_names, "X_E", sep = ":")
   dimnames(XE_Phi_j)[[2]] <- interaction_names
+
+  list_group_inter <- split(interaction_names, group)
 
   design <- cbind(Phi_j, "X_E" = e, XE_Phi_j)
   design[1:5,1:10]
@@ -103,9 +112,12 @@ lspath <- function(x, y, e, df = 5,
   # lambdaNames <- paste0("s",as.vector(out))
   lambdaNames <- dimnames(tuning_params_mat)[[2]]
 
-  adaptive.weights <- ridge_weights(x = x, y = y,
-                                    main.effect.names = c(main_effect_names,"X_E"),
-                                    interaction.names = interaction_names)
+  adaptive.weights <- ridge_weights(x = x,
+                                    y = y,
+                                    group = group,
+                                    main.effect.names.list = list_group_main,
+                                    interaction.names.list = list_group_inter,
+                                    include.intercept = F)
 
   # used in the warm start strategy because we ONLY want to use warm starts
   # for each lambda_gamma for a fixed lambda_beta. For the next lambda_beta
@@ -206,10 +218,13 @@ lspath <- function(x, y, e, df = 5,
       # each element of the list corresponds to a tuning parameter
       # need to keep y_tilde_list and x_tilde_list of length nlambda
 
+      # all(c(main_effect_names,"X_E") == rownames(beta_hat_previous))
       y_tilde <- y - x[,c(main_effect_names,"X_E"), drop = F] %*% beta_hat_previous
 
-      x_tilde <- xtilde(interaction.names = interaction_names,
-                        data.main.effects = x[,c(main_effect_names,"X_E"), drop = F],
+      x_tilde <- xtilde(x = x,
+                        group = group,
+                        main.effect.names.list = list_group_main,
+                        interaction.names.list = list_group_inter,
                         beta.main.effects = beta_hat_previous)
 
       # indices of the x_tilde matrices that have all 0 columns
@@ -220,9 +235,9 @@ lspath <- function(x, y, e, df = 5,
         as.matrix(coef(glmnet::glmnet(
           x = x_tilde,
           y = y_tilde,
-          penalty.factor = adaptive.weights[interaction.names,,drop=F],
-          lambda = lambda_gamma,
-          standardize = F, intercept = F))[-1,,drop = F])
+          penalty.factor = adaptive.weights[paste0("X", unique(group), ":X_E"),,drop=F],
+          lambda = c(.Machine$double.xmax,lambda_gamma),
+          standardize = F, intercept = F))[-1,2,drop = F])
 
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       # update beta (main effect parameter) step 4 of algortihm in Choi et al

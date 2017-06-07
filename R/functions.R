@@ -271,7 +271,11 @@ lambda_sequence <- function(x, y, weights = NULL,
 #'
 #' @export
 
-ridge_weights <- function(x, y, main.effect.names, interaction.names,
+ridge_weights <- function(x,
+                          y,
+                          group,
+                          main.effect.names.list,
+                          interaction.names.list,
                           include.intercept = F) {
 
   # include.intercept=F
@@ -286,25 +290,30 @@ ridge_weights <- function(x, y, main.effect.names, interaction.names,
 
   # remove intercept (even if include.intercept is FALSE, coef.glmnet returns
   # an intercept set to 0)
-  betas.and.alphas <- as.matrix(coef(fit, s = "lambda.1se")) %>%
-    magrittr::extract(-1, , drop = F)
+  betas.and.alphas <- as.matrix(coef(fit, s = "lambda.1se")[-1,])
 
   # create output matrix
-  weights <- matrix(nrow = nrow(betas.and.alphas)) %>%
-    magrittr::set_rownames(rownames(betas.and.alphas))
+  weights <- matrix(nrow = 2 * length(unique(group)) + 1)
+  dimnames(weights)[[1]] <- c(paste0("X",unique(group)), "X_E", paste0("X",unique(group), ":X_E"))
+
+
+  # l2 norm of theta hat
+  norm_theta_hat <- sapply(seq_along(main.effect.names.list),
+                           function(k) sqrt(sum(betas.and.alphas[main.effect.names.list[[k]],]^2)))
+
+  # l2 norm of alpha hat
+  norm_alpha_hat <- sapply(seq_along(interaction.names.list),
+                           function(k) sqrt(sum(betas.and.alphas[interaction.names.list[[k]],]^2)))
+
+  # beta_E hat
+  beta_E_hat <- betas.and.alphas["X_E",]
 
   # main effects weights
-  for (j in main.effect.names) {
-    weights[j,] <- abs(1/betas.and.alphas[j,])
-  }
+  weights[paste0("X",unique(group)),] <- 1 / norm_theta_hat
 
-  for (k in interaction.names) {
+  weights["X_E",] <- abs(1 / beta_E_hat)
 
-    # get names of main effects corresponding to interaction
-    main <- strsplit(rownames(betas.and.alphas[k, , drop = F]),":")[[1]]
-
-    weights[k,] <- abs(prod(betas.and.alphas[main,])/betas.and.alphas[k,])
-  }
+  weights[paste0("X",unique(group), ":X_E"), ] <- abs(beta_E_hat * norm_theta_hat / norm_alpha_hat)
 
   return(weights)
 }
@@ -694,34 +703,32 @@ convert2 <- function(beta, gamma, main.effect.names, interaction.names,
 #'
 #' @description function used to calculate working X's (xtilde) in step 3 of
 #'   algorithm
-#' @param interaction.names character vector of interaction names. must be
-#'   separated by a ':' (e.g. x1:x2)
-#' @param data.main.effects data frame or matrix containing the main effects
-#'   data
-#' @param beta.main.effects data frame or matrix containing the coefficients of
-#'   main effects
+#' @param interaction.names.list list of interaction names where each element of
+#'   the list corresponds to the original X. Each list element should be of
+#'   length df
+#' @param x data frame or matrix containing all the mains effects, the
+#'   environment, and the interaction of the basis expansions
+#' @param beta.main.effects  matrix containing the coefficients of main effects
 #' @param nlambda number of tuning parameters
 #' @return matrix of working X's (xtilde)
 
-xtilde <- function(interaction.names, data.main.effects, beta.main.effects){
+xtilde <- function(x,
+                   group,
+                   main.effect.names.list,
+                   interaction.names.list,
+                   beta.main.effects) {
 
-  # create output matrix
-  xtildas <- matrix(ncol = length(interaction.names),
-                    nrow = nrow(data.main.effects))
-  colnames(xtildas) <- interaction.names
+    xtildas <- lapply(seq_along(unique(group)),
+                      function(j)
+                        as.vector(beta.main.effects["X_E",]) *
+                        (x[,interaction.names.list[[j]]] %*% beta.main.effects[main.effect.names.list[[j]],,drop=F]))
 
-  for (k in interaction.names) {
 
-    # get names of main effects corresponding to interaction
-    main <- strsplit(k,":")[[1]]
+    xtildas <- do.call(cbind, xtildas)
 
-    # step 3 to calculate x tilda
-    xtildas[,k] <- prod(beta.main.effects[main,]) *
-      data.main.effects[,main[1],drop = F] *
-      data.main.effects[,main[2],drop = F]
-  }
+    dimnames(xtildas)[[2]] <- paste0("X", unique(group))
 
-  return(xtildas)
+    return(xtildas)
 }
 
 
@@ -1360,5 +1367,46 @@ createfolds <- function(y, k = 10, list = FALSE, returnTrain = FALSE) {
 }
 
 
+
+
+
+#' Simulate Data
+#'
+#' @description function to simulate data
+#'
+gendata <- function(n, p, df, E = rnorm(n = n, sd = 0.5), beta0 = 1, betaE = 2, SNR = 1) {
+
+  # covariates
+  X <- replicate(n = p, runif(n))
+
+  # coefficients: each is a vector of length df and corresponds to the expansion of X_j
+  b1 <- stats::rnorm(n = df)
+  b2 <- stats::rnorm(n = df)
+  b3 <- stats::rnorm(n = df)
+  b4 <- stats::rnorm(n = df)
+  b5 <- stats::rnorm(n = df)
+  bE1 <- stats::rnorm(n = df)
+  bE2 <- stats::rnorm(n = df)
+
+  # error
+  error <- stats::rnorm(n)
+
+  Y.star <- beta0 +
+    bs(X[,1], df = df) %*% b1  +
+    bs(X[,2], df = df) %*% b2 +
+    bs(X[,3], df = df) %*% b3 +
+    bs(X[,4], df = df) %*% b4 +
+    bs(X[,5], df = df) %*% b5 +
+    betaE * E +
+    E * bs(X[,1], df = df) %*% bE1 +
+    E * bs(X[,2], df = df) %*% bE2
+
+  k <- sqrt(stats::var(Y.star) / (SNR * stats::var(error)))
+
+  Y <- Y.star + as.vector(k) * error
+
+  return(list(x = X, y = Y, e = E, df = df))
+
+}
 
 
