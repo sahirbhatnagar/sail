@@ -79,15 +79,14 @@ uni_fun <- function(x, y, type = c("ridge", "univariate"),
                 },
                 ridge = {
                   # fit the ridge to get betas and alphas
-                  glmnet::cv.glmnet(x = x, y = y, alpha = 0,
+                  fit <- glmnet::cv.glmnet(x = x, y = y, alpha = 0,
                                     standardize = F,
-                                    intercept = include.intercept) %>%
+                                    intercept = include.intercept)
                     # remove intercept (even if include.intercept is FALSE,
                     # coef.glmnet returns
                     # an intercept set to 0)
-                    coef(., s = "lambda.min") %>%
-                    as.matrix() %>%
-                    magrittr::extract(-1, ,drop = F)
+                    as.matrix(coef(fit, s = "lambda.min")[-1,])
+
                 })
 
   return(res)
@@ -299,11 +298,11 @@ ridge_weights <- function(x,
 
   # l2 norm of theta hat
   norm_theta_hat <- sapply(seq_along(main.effect.names.list),
-                           function(k) sqrt(sum(betas.and.alphas[main.effect.names.list[[k]],]^2)))
+                           function(k) l2norm(betas.and.alphas[main.effect.names.list[[k]],]))
 
   # l2 norm of alpha hat
   norm_alpha_hat <- sapply(seq_along(interaction.names.list),
-                           function(k) sqrt(sum(betas.and.alphas[interaction.names.list[[k]],]^2)))
+                           function(k) l2norm(betas.and.alphas[interaction.names.list[[k]],]))
 
   # beta_E hat
   beta_E_hat <- betas.and.alphas["X_E",]
@@ -630,21 +629,26 @@ shim_once <- function(x, y, main.effect.names, interaction.names,
 #' @seealso \code{\link{shim}}, \code{\link{Q_theta}}
 #' @return a labelled q x 1 data.frame of betas and gammas
 
-convert <- function(betas.and.alphas, main.effect.names, interaction.names,
-                    epsilon = 1e-5) {
+# I thought I needed this.. but maybe not.. Its to convert
+# alphas to gammas for initialization, but I never end up using the initialization
+# gammas except for in the Q function of Choi et al. So perhpas I don't need it
+# its causing issues because its no longer a simple transformation. I need to use l2norms
+convert <- function(betas.and.alphas,
+                    # main.effect.names, interaction.names,
+                    epsilon = 1e-5,
+                    group = group,
+                    main.effect.names.list,
+                    interaction.names.list) {
 
+  browser()
   betas_and_gammas <- matrix(nrow = nrow(betas.and.alphas)) %>%
     magrittr::set_rownames(rownames(betas.and.alphas))
 
-  for (k in interaction.names) {
+  sapply(unique(group), function(gr)
+    l2norm(betas.and.alphas[interaction.names.list[[gr]],]) / (l2norm(betas.and.alphas[main.effect.names.list[[gr]],]) * as.vector(betas.and.alphas["X_E",]))
+  )
 
-    # get names of main effects corresponding to interaction
-    main <- strsplit(rownames(betas.and.alphas[k, , drop = F]),":")[[1]]
 
-    # convert alpha to gamma BUT NEED TO CHECK IF BETAS ARE 0
-    betas_and_gammas[k,] <- if (any(abs(betas.and.alphas[main,]) < epsilon )) 0 else
-      betas.and.alphas[k,]/prod(betas.and.alphas[main,])
-  }
 
   # add back the main effects which dont need to be transformed
   for (j in main.effect.names) {
@@ -667,28 +671,28 @@ convert <- function(betas.and.alphas, main.effect.names, interaction.names,
 #' @inheritParams convert
 #' @return a labelled q x 1 data.frame of betas and alphas
 
-convert2 <- function(beta, gamma, main.effect.names, interaction.names,
+convert2 <- function(beta,
+                     gamma,
+                     main.effect.names,
+                     interaction.names,
+                     group = group,
                      intercept = NULL) {
 
   betas.and.gammas <- rbind2(beta,gamma)
 
   # create output matrix
-  betas.and.alphas <- matrix(nrow = nrow(betas.and.gammas)) %>%
-    magrittr::set_rownames(rownames(betas.and.gammas))
+  betas.and.alphas <- matrix(nrow = length(beta)*2 - 1)
+  dimnames(betas.and.alphas)[[1]] <- c(as.vector(do.call(c, main.effect.names)),"X_E",
+                                       as.vector(do.call(c, interaction.names)))
 
-  for (k in interaction.names) {
+  alphas <- do.call(rbind,lapply(unique(group), function(ind) {
+    as.matrix(gamma[ind,] * beta["X_E",] * beta[main.effect.names[[ind]],])
+  }))
 
-    # get names of main effects corresponding to interaction
-    main <- strsplit(rownames(betas.and.gammas[k, , drop = F]), ":")[[1]]
+  rownames(alphas) <- paste(rownames(alphas), "X_E", sep = ":")
 
-    # convert gamma to alpha
-    betas.and.alphas[k,] <- betas.and.gammas[k,]*prod(betas.and.gammas[main,])
-  }
-
-  # add back the main effects which dont need to be transformed
-  for (j in main.effect.names) {
-    betas.and.alphas[j,] <- betas.and.gammas[j,]
-  }
+  betas.and.alphas[rownames(beta),1] <- beta
+  betas.and.alphas[rownames(alphas),1] <- alphas
 
   # add back intercept if it is non-NULL
   if (!is.null(intercept)) betas.and.alphas["(Intercept)",] <- intercept
@@ -718,17 +722,19 @@ xtilde <- function(x,
                    interaction.names.list,
                    beta.main.effects) {
 
-    xtildas <- lapply(seq_along(unique(group)),
-                      function(j)
-                        as.vector(beta.main.effects["X_E",]) *
-                        (x[,interaction.names.list[[j]]] %*% beta.main.effects[main.effect.names.list[[j]],,drop=F]))
+  # note that x[,interaction.names.list[[jj]]] contains the product term X_E:Phi_j, so
+  # you dont need to multiply by X_E
+  xtildas <- lapply(seq_along(unique(group)),
+                    function(jj)
+                      as.vector(beta.main.effects["X_E",]) *
+                      (x[,interaction.names.list[[jj]]] %*% beta.main.effects[main.effect.names.list[[jj]],,drop=F]))
 
 
-    xtildas <- do.call(cbind, xtildas)
+  xtildas <- do.call(cbind, xtildas)
 
-    dimnames(xtildas)[[2]] <- paste0("X", unique(group))
+  dimnames(xtildas)[[2]] <- paste0("X", unique(group))
 
-    return(xtildas)
+  return(xtildas)
 }
 
 
@@ -750,7 +756,13 @@ xtilde <- function(x,
 #'   there was a typo. Math and results suggests that there is a typo in the
 #'   original paper.
 
-xtilde_mod <- function(interaction.names, data.main.effects, beta.main.effects,
+xtilde_mod <- function(#interaction.names, data.main.effects, beta.main.effects,
+                       #gamma.interaction.effects,
+                       x,
+                       group,
+                       main.effect.names.list,
+                       interaction.names.list,
+                       beta.main.effects,
                        gamma.interaction.effects){
 
   # create output matrix. no pipe is faster
@@ -768,6 +780,19 @@ xtilde_mod <- function(interaction.names, data.main.effects, beta.main.effects,
       data.main.effects[,main[1],drop = F] *
       data.main.effects[,main[2],drop = F]
   }
+
+
+
+  xtildas <- lapply(seq_along(unique(group)),
+                    function(j)
+                      as.vector(beta.main.effects["X_E",]) *
+                      x[,"X_E"] *
+                      (x[,interaction.names.list[[j]]] %*% beta.main.effects[main.effect.names.list[[j]],,drop=F]))
+
+
+  xtildas <- do.call(cbind, xtildas)
+
+
 
   return(xtildas)
 }
@@ -893,21 +918,30 @@ xtilde_mod <- function(interaction.names, data.main.effects, beta.main.effects,
 #' because its not being penalized
 
 Q_theta <- function(x, y, beta, gamma, weights,
-                    lambda.beta, lambda.gamma, main.effect.names,
-                    interaction.names){
+                    lambda.beta, lambda.gamma,
+                    main.effect.names,
+                    interaction.names,
+                    group){
+
+  # browser()
+
 
   # first convert gammas to alphas which will be used to calculate
   # the linear predictor
   betas.and.alphas <- convert2(beta = beta,
                                gamma = gamma,
                                main.effect.names = main.effect.names,
-                               interaction.names = interaction.names)
+                               interaction.names = interaction.names,
+                               group = group)
 
   crossprod(y - x %*% betas.and.alphas) +
-    lambda.beta * (crossprod(weights[main.effect.names,], abs(beta))) +
-    lambda.gamma * (crossprod(weights[interaction.names,], abs(gamma)))
-}
+    lambda.beta * (weights["X_E",] * abs(beta["X_E",]) +
+                     sum(sapply(unique(group), function(main)
+                       l2norm(beta[main.effect.names[[main]],]) * weights[paste0("X",main),]))) +
+    lambda.gamma * (sum(sapply(unique(group), function(inter)
+      abs(gamma[paste0("X",inter),]) * weights[paste0("X",inter,":X_E"),])))
 
+}
 
 
 
@@ -1202,29 +1236,39 @@ lambda.interp <- function(lambda, s) {
 #' @return q x 1 matrix of weights
 
 update_weights <- function(betas,
-                           gammas,
+                           # gammas,
+                           alphas,
                            main.effect.names,
                            interaction.names,
-                           epsilon = 1e-5) {
+                           group,
+                           epsilon = 1e-7) {
 
-  betas.and.gammas <- rbind(betas, gammas)
+  # browser()
+
+  betas.and.alphas <- rbind(betas, alphas)
 
   # create output matrix
-  weights <- matrix(nrow = nrow(betas.and.gammas)) %>%
-    magrittr::set_rownames(rownames(betas.and.gammas))
+  weights <- matrix(nrow = 2 * length(unique(group)) + 1)
+  dimnames(weights)[[1]] <- c(paste0("X",unique(group)), "X_E", paste0("X",unique(group), ":X_E"))
+
+
+  # l2 norm of theta hat
+  norm_theta_hat <- sapply(seq_along(main.effect.names),
+                           function(k) l2norm(betas.and.alphas[main.effect.names[[k]],]))
+
+  # l2 norm of alpha hat
+  norm_alpha_hat <- sapply(seq_along(interaction.names),
+                           function(k) l2norm(betas.and.alphas[interaction.names[[k]],]))
+
+  # beta_E hat
+  beta_E_hat <- betas.and.alphas["X_E",]
 
   # main effects weights
-  for (j in main.effect.names) {
+  weights[paste0("X",unique(group)),] <- ifelse(norm_theta_hat < epsilon, 1e6, 1 / norm_theta_hat)
 
-    weights[j,] <- if (betas.and.gammas[j,] < epsilon) 1e7  else
-      abs(1/betas.and.gammas[j,])
-  }
+  weights["X_E",] <- if (abs(as.vector(beta_E_hat)) < epsilon) 1e6 else abs(1 / as.vector(beta_E_hat))
 
-  for (k in interaction.names) {
-
-    weights[k,] <- if (betas.and.gammas[k,]<epsilon) 1e7 else
-      abs(1/betas.and.gammas[k,])
-  }
+  weights[paste0("X",unique(group), ":X_E"), ] <- ifelse(norm_alpha_hat < epsilon, 1e6, abs(beta_E_hat * norm_theta_hat / norm_alpha_hat))
 
   return(weights)
 }
@@ -1367,6 +1411,7 @@ createfolds <- function(y, k = 10, list = FALSE, returnTrain = FALSE) {
 }
 
 
+l2norm <- function(x) sqrt(sum(x^2))
 
 
 
