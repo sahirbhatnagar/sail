@@ -358,8 +358,7 @@ cv.funshim <- function(x, y, e, df,
   pb$tick(0)
 
   if (parallel) {
-    pacman::p_load(doParallel)
-    doParallel::registerDoParallel(cores = cores)
+
     outlist = foreach(i = seq(nfolds), .packages = c("glmnet")) %dopar%
     {
       which = foldid == i
@@ -446,7 +445,7 @@ cv.funshim <- function(x, y, e, df,
               nz.interaction = nz.interaction,
               funshim.fit = funshim.object, converged = cvstuff$converged,
               cvm.mat.all = cvstuff$cvm.mat.all,
-              df = df)
+              df = df, nfolds = nfolds)
 
   lamin.beta = if (cvname == "AUC")
     getmin_type(lambda.beta, -cvm, cvsd, type = "beta") else getmin_type(lambda.beta, cvm, cvsd, type = "beta")

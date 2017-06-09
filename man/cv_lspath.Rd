@@ -7,7 +7,7 @@
 \alias{lambda.interp}
 \title{Compute cross validation error}
 \usage{
-cv_lspath(outlist, x, y, foldid, nlambda, nlambda.beta, nlambda.gamma)
+cv_lspath(outlist, y, df, foldid, design, nlambda, nlambda.beta, nlambda.gamma)
 
 cvcompute(mat, foldid, nlams)
 
@@ -18,14 +18,6 @@ lambda.interp(lambda, s)
 \arguments{
 \item{outlist}{list of cross validated fitted models. List is of length equal
 to \code{nfolds} argument in \code{\link{cv.shim}} function}
-
-\item{x}{Design matrix of dimension \code{n x q}, where \code{n} is the
-number of subjects and q is the total number of variables; each row is an
-observation vector. This must include all main effects and interactions as
-well, with column names corresponding to the names of the main effects
-(e.g. \code{x1, x2, E}) and their interactions (e.g. \code{x1:E, x2:E}).
-All columns should be scaled to have mean 0 and variance 1; this is done
-internally by the \code{\link{shim}} function.}
 
 \item{y}{response variable (matrix form) of dimension \code{n x 1}}
 
