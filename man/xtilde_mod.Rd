@@ -4,21 +4,21 @@
 \alias{xtilde_mod}
 \title{Calculate working X's to update Betas}
 \usage{
-xtilde_mod(interaction.names, data.main.effects, beta.main.effects,
-  gamma.interaction.effects)
+xtilde_mod(x, group, main.effect.names.list, interaction.names.list,
+  beta.main.effects, gamma.interaction.effects)
 }
 \arguments{
-\item{interaction.names}{character vector of interaction names. must be
-separated by a ':' (e.g. x1:x2)}
-
-\item{data.main.effects}{data frame or matrix containing the main effects
-data}
-
 \item{beta.main.effects}{data frame or matrix containing the coefficients of
 main effects}
 
 \item{gamma.interaction.effects}{data frame or matrix containing the gamma
 parameters}
+
+\item{interaction.names}{character vector of interaction names. must be
+separated by a ':' (e.g. x1:x2)}
+
+\item{data.main.effects}{data frame or matrix containing the main effects
+data}
 }
 \value{
 matrix of working X's (xtilde) of dimension n x (p*(p-1)/2)

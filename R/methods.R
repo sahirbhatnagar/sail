@@ -14,9 +14,13 @@
 #'   coefficients for each value of s.
 #' @export
 
-predict.shim <- function(object, newx, s = NULL,
-                         type = c("link", "response", "coefficients",
-                                  "nonzero", "class")) {
+predict.funshim <- function(object, newx, s = NULL,
+                            type = c("link", "response", "coefficients",
+                                     "nonzero", "class")) {
+
+  # object = fit
+  # type = "coefficients"
+  #==================
 
   type = match.arg(type)
 
@@ -69,7 +73,7 @@ predict.shim <- function(object, newx, s = NULL,
 #' @rdname predict.shim
 #' @export
 
-coef.shim <- function(object, s = NULL) {
+coef.funshim <- function(object, s = NULL) {
   predict(object, s = s, type = "coefficients")
 }
 
@@ -82,7 +86,7 @@ coef.shim <- function(object, s = NULL) {
 #'   object. Alternatively \code{s="lambda.min"} can be used.
 #' @export
 
-coef.cv.shim <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
+coef.cv.funshim <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
 
   if (is.numeric(s) || s %ni% c("lambda.1se", "lambda.min")) stop("s must be in lambda.1se or lambda.min")
 
@@ -93,7 +97,7 @@ coef.cv.shim <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
                    lambda.1se = object$lambda.1se.name
   )
 
-  coef(object$shim.fit, s = lambda, ...)
+  coef(object$funshim.fit, s = lambda, ...)
 }
 
 
@@ -103,6 +107,15 @@ coef.cv.shim <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
 #' @export
 
 print.shim <- function (x, digits = max(3, getOption("digits") - 3), ...) {
+  cat("\nCall: ", deparse(x$call), "\n\n")
+  print(cbind(DfBeta = x$dfbeta, DfAlpha = x$dfalpha,
+              `%Dev` = signif(x$dev.ratio, digits),
+              LambdaBeta = signif(x$lambda.beta, digits),
+              LambdaGamma = signif(x$lambda.gamma, digits)))
+}
+
+
+print.funshim <- function (x, digits = max(3, getOption("digits") - 3), ...) {
   cat("\nCall: ", deparse(x$call), "\n\n")
   print(cbind(DfBeta = x$dfbeta, DfAlpha = x$dfalpha,
               `%Dev` = signif(x$dev.ratio, digits),
@@ -127,3 +140,15 @@ plot.shim <- function(x, xvar = c("norm", "lambda", "dev"), label = T,
                xvar = xvar, ...)
 }
 
+
+
+plot.funshim <- function(x, xvar = c("norm", "lambda", "dev"), label = T,
+                      ...) {
+  xvar = match.arg(xvar)
+  plotCoefShim(x$beta,
+               lambda = x$lambda.beta,
+               df = x$dfbeta,
+               dev = x$dev.ratio,
+               label = label,
+               xvar = xvar, ...)
+}

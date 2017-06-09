@@ -1115,7 +1115,7 @@ standardize <- function(x, y, center = TRUE, normalize = TRUE) {
 #' @details The output of the \code{cv_lspath} function only returns values for those tuning
 #'   paramters that DID converge
 
-cv_lspath <- function(outlist, x, y, foldid,
+cv_lspath <- function(outlist, y, df, foldid, design,
                       nlambda, nlambda.beta, nlambda.gamma) {
 
   y <- as.double(y)
@@ -1133,7 +1133,7 @@ cv_lspath <- function(outlist, x, y, foldid,
     # this gives the predicted responses for the subjects in the held-out fold
     # for each lambda so if each fold has 20 subjects, and there are 100
     # lambdas, then this will return a 20 x 100 matrix
-    preds <- predict(fitobj, newx = x[which, ,drop = F], type = "link")
+    preds <- predict(fitobj, newx = design[which, ,drop = F], type = "link")
 
     nlami <- fitobj$nlambda
     predmat[which, seq(nlami)] <- preds
@@ -1450,7 +1450,66 @@ gendata <- function(n, p, df, E = rnorm(n = n, sd = 0.5), beta0 = 1, betaE = 2, 
 
   Y <- Y.star + as.vector(k) * error
 
-  return(list(x = X, y = Y, e = E, df = df))
+  return(list(x = X, y = Y, e = E, df = df, b1 = b1, b2 = b2, b3 = b3, b4 = b4, b5 = b5, bE1 = bE1, bE2 = bE2))
+
+}
+
+gendata2 <- function(n, p, corr = 1, E = rnorm(n = n, sd = 0.5), beta0 = 1, betaE = 2, SNR = 1) {
+
+  # n = 200
+  # p = 10
+  # corr = 1
+  #===================
+
+  # covariates
+  W <- replicate(n = p, truncnorm::rtruncnorm(n, a = 0, b = 1))
+  U <- truncnorm::rtruncnorm(n, a = 0, b = 1)
+  V <- truncnorm::rtruncnorm(n, a = 0, b = 1)
+
+  X1 <- (W[,1] + corr * U) / (1 + corr)
+  X2 <- (W[,2] + corr * U) / (1 + corr)
+  X3 <- (W[,3] + corr * U) / (1 + corr)
+  X4 <- (W[,4] + corr * U) / (1 + corr)
+
+  X <- (W[,5:p] + corr * V) / (1 + corr)
+
+  Xall <- cbind(X1, X2, X3, X4, X)
+
+  colnames(Xall) <- paste0("X", seq_len(p))
+
+  # see "Variable Selection in NonParametric Addditive Model" Huang Horowitz and Wei
+  f1 <- function(t) 5 * t
+  f2 <- function(t) 3 * (2 * t - 1) ^ 2
+  f3 <- function(t) 4 * sin(2 * pi * t) / (2 - sin(2 * pi * t))
+  f4 <- function(t) 6 * (0.1 * sin(2 * pi * t) + 0.2 * cos(2 * pi * t) +
+                           0.3 * sin(2 * pi * t) ^ 2 + 0.4 * cos(2 * pi * t) ^ 3 +
+                           0.5 * sin(2 * pi * t) ^ 3)
+
+  # error
+  error <- stats::rnorm(n)
+
+  Y.star <- beta0 +
+    f1(X1)  +
+    f2(X2) +
+    f3(X3) +
+    f4(X4) +
+    betaE * E +
+    E * f3(X3) +
+    E * f4(X4)
+
+  k <- sqrt(stats::var(Y.star) / (SNR * stats::var(error)))
+
+  Y <- Y.star + as.vector(k) * error
+
+  return(list(x = Xall, y = Y, e = E, f1 = f1, f2 = f2, f3 = f3, f4 = f4))
+
+}
+
+
+
+bic <- function(eta, sigma2, beta, eigenvalues, x, y, nt, c, df_lambda) {
+
+  -2 * crossprod(y - x %*% betas.and.alphas) + c * df_lambda
 
 }
 

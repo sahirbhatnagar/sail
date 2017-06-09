@@ -46,11 +46,11 @@
 #'   NULL} and \code{lambda.gamma = NULL} then \code{nlambda} should be equal to
 #'   \code{nlambda.beta x nlambda.gamma}. This is important to specify
 #'   especially when a user defined sequence of tuning parameters is set.
-#' @param threshold Convergence threshold for coordinate descent. Each
+#' @param thresh Convergence thresh for coordinate descent. Each
 #'   coordinate-descent loop continues until the change in the objective
-#'   function after all coefficient updates is less than threshold. Default
+#'   function after all coefficient updates is less than thresh. Default
 #'   value is \code{1e-4}.
-#' @param max.iter Maximum number of passes over the data for all tuning
+#' @param maxit Maximum number of passes over the data for all tuning
 #'   parameter values; default is 100.
 #' @param cores The number of cores to use for certain calculations in the
 #'   \code{\link{shim}} function, i.e. at most how many child processes will be
@@ -152,7 +152,7 @@
 #'
 #' @export
 
-funshim <- function(x, y, main.effect.names, interaction.names,
+funshim <- function(x, y, e, df,
                     family = c("gaussian", "binomial"),
                     weights,
                     lambda.factor = ifelse(nobs < nvars, 0.01, 0.001),
@@ -161,16 +161,16 @@ funshim <- function(x, y, main.effect.names, interaction.names,
                     nlambda.gamma = 10,
                     nlambda.beta = 10,
                     nlambda = 100,
-                    threshold = 1e-4,
-                    max.iter = 100,
+                    thresh = 1e-3,
+                    maxit = 2000,
                     initialization.type = c("ridge","univariate"),
                     center = TRUE,
-                    normalize = TRUE,
+                    normalize = FALSE,
                     verbose = TRUE,
-                    cores = 2) {
+                    cores = 1) {
 
-  if(missing(main.effect.names)) stop("main.effect.names cannot be missing")
-  if(missing(interaction.names)) stop("interaction.names cannot be missing")
+  # if(missing(main.effect.names)) stop("main.effect.names cannot be missing")
+  # if(missing(interaction.names)) stop("interaction.names cannot be missing")
 
   initialization.type <- match.arg(initialization.type)
   family <- match.arg(family)
@@ -206,9 +206,9 @@ funshim <- function(x, y, main.effect.names, interaction.names,
     stop("The response y must be numeric. Factors must be converted to numeric")
 
   vnames <- colnames(x)
-  if (!all(c(main.effect.names, interaction.names) %in% vnames))
-    stop("Some variables specified in main.effect.names were not found in
-         the columnames of x")
+  # if (!all(c(main.effect.names, interaction.names) %in% vnames))
+  #   stop("Some variables specified in main.effect.names were not found in
+  #        the columnames of x")
 
   if (any(c(is.null(lambda.beta) & !is.null(lambda.gamma),
             !is.null(lambda.beta) & is.null(lambda.gamma))))
@@ -241,16 +241,18 @@ funshim <- function(x, y, main.effect.names, interaction.names,
 
 
   fit <- switch(family,
-                gaussian = lspath(x = x, y = y, main.effect.names = main.effect.names,
-                                  interaction.names = interaction.names,
-                                  lambda.beta = lambda.beta, lambda.gamma = lambda.gamma,
+                gaussian = lspath(x = x, y = y, e = e, df = df,
+                                  lambda.beta = lambda.beta,
+                                  lambda.gamma = lambda.gamma,
                                   lambda.factor = lambda.factor,
                                   nlambda.gamma = nlambda.gamma,
                                   nlambda.beta = nlambda.beta,
                                   nlambda = nlambda,
-                                  threshold = threshold, max.iter = max.iter,
+                                  thresh = thresh,
+                                  maxit = maxit,
                                   initialization.type = initialization.type,
-                                  center = center, normalize = normalize,
+                                  center = center,
+                                  normalize = normalize,
                                   verbose = verbose,
                                   cores = cores)
   )
@@ -291,21 +293,22 @@ funshim <- function(x, y, main.effect.names, interaction.names,
 #'   Maintainer: Sahir Bhatnagar \email{sahir.bhatnagar@@mail.mcgill.ca}
 #' @export
 
-cv.shim <- function(x, y, main.effect.names, interaction.names,
-                    weights,
-                    lambda.beta = NULL, lambda.gamma = NULL,
-                    nlambda.gamma = 10,
-                    nlambda.beta = 10,
-                    nlambda = 100,
-                    parallel = TRUE,
-                    type.measure = c("mse"),
-                    nfolds = 10, ...) {
+cv.funshim <- function(x, y, e, df,
+                       weights,
+                       lambda.beta = NULL, lambda.gamma = NULL,
+                       nlambda.gamma = 10,
+                       nlambda.beta = 10,
+                       nlambda = 100,
+                       parallel = TRUE,
+                       type.measure = c("mse"),
+                       cores = 6,
+                       nfolds = 10, ...) {
 
 
   # x = X; y = Y; main.effect.names = main_effect_names;
   # interaction.names = interaction_names;
   # lambda.beta = NULL ; lambda.gamma = NULL
-  # threshold = 1e-4 ; max.iter = 500 ; initialization.type = "ridge";
+  # thresh = 1e-4 ; maxit = 500 ; initialization.type = "ridge";
   # nlambda.gamma = 5; nlambda.beta = 20; cores = 1;
   # center=TRUE; normalize=TRUE
   #
@@ -316,35 +319,33 @@ cv.shim <- function(x, y, main.effect.names, interaction.names,
   type.measure <- match.arg(type.measure)
 
   if (!is.null(lambda.beta) && length(lambda.beta) < 2)
-    stop("Need more than one value of lambda.beta for cv.shim")
+    stop("Need more than one value of lambda.beta for cv.funshim")
   if (!is.null(lambda.gamma) && length(lambda.gamma) < 2)
-    stop("Need more than one value of lambda.gamma for cv.shim")
+    stop("Need more than one value of lambda.gamma for cv.funshim")
 
   N <- nrow(x)
   if (missing(weights))
     weights = rep(1, N)
   else weights = as.double(weights)
   y <- drop(y)
-  shim.call <- match.call(expand.dots = TRUE)
-  which <- match(c("type.measure", "nfolds"), names(shim.call), F)
+  funshim.call <- match.call(expand.dots = TRUE)
+  which <- match(c("type.measure", "nfolds"), names(funshim.call), F)
   if (any(which))
-    shim.call = shim.call[-which]
-  shim.call[[1]] = as.name("shim")
+    funshim.call = funshim.call[-which]
+  funshim.call[[1]] = as.name("funshim")
 
-  shim.object <- shim(x = x, y = y,
-                      main.effect.names = main.effect.names,
-                      interaction.names = interaction.names,
-                      weights = weights,
-                      lambda.beta = lambda.beta,
-                      lambda.gamma = lambda.gamma,
-                      nlambda = nlambda,
-                      nlambda.gamma = nlambda.gamma,
-                      nlambda.beta = nlambda.beta, ...)
+  funshim.object <- funshim(x = x, y = y, e = e, df = df,
+                            weights = weights,
+                            lambda.beta = lambda.beta,
+                            lambda.gamma = lambda.gamma,
+                            nlambda = nlambda,
+                            nlambda.gamma = nlambda.gamma,
+                            nlambda.beta = nlambda.beta, ...)
 
-  shim.object$call = shim.call
+  funshim.object$call = funshim.call
 
-  nz.main = sapply(predict(shim.object, type = "nonzero")[["main"]], length)
-  nz.interaction = sapply(predict(shim.object, type = "nonzero")[["interaction"]], length)
+  nz.main = sapply(predict(funshim.object, type = "nonzero")[["main"]], length)
+  nz.interaction = sapply(predict(funshim.object, type = "nonzero")[["interaction"]], length)
 
   foldid <- createfolds(y, k = nfolds)
   if (nfolds < 3)
@@ -357,22 +358,24 @@ cv.shim <- function(x, y, main.effect.names, interaction.names,
   pb$tick(0)
 
   if (parallel) {
+    pacman::p_load(doParallel)
+    doParallel::registerDoParallel(cores = cores)
     outlist = foreach(i = seq(nfolds), .packages = c("glmnet")) %dopar%
     {
       which = foldid == i
       if (is.matrix(y)) y_sub = y[!which, ] else y_sub = y[!which]
       #print(paste("Foldid = ",i))
       pb$tick()
-      shim(x = x[!which, , drop = FALSE],
-           y = y_sub,
-           main.effect.names = main.effect.names,
-           interaction.names = interaction.names,
-           weights = weights[!which],
-           lambda.beta = shim.object$lambda.beta,
-           lambda.gamma = shim.object$lambda.gamma,
-           nlambda = shim.object$nlambda,
-           nlambda.gamma = nlambda.gamma,
-           nlambda.beta = nlambda.beta, ...)
+      funshim(x = x[!which, , drop = FALSE],
+              y = y_sub,
+              e = e[!which],
+              df = df,
+              weights = weights[!which],
+              lambda.beta = funshim.object$lambda.beta,
+              lambda.gamma = funshim.object$lambda.gamma,
+              nlambda = funshim.object$nlambda,
+              nlambda.gamma = nlambda.gamma,
+              nlambda.beta = nlambda.beta, ...)
 
     }
   } else {
@@ -384,27 +387,29 @@ cv.shim <- function(x, y, main.effect.names, interaction.names,
 
         pb$tick()
 
-        outlist[[i]] = shim(x[!which, , drop = FALSE],
-                            y = y_sub,
-                            main.effect.names = main.effect.names,
-                            interaction.names = interaction.names,
-                            weights = weights[!which],
-                            lambda.beta = shim.object$lambda.beta,
-                            lambda.gamma = shim.object$lambda.gamma,
-                            nlambda = shim.object$nlambda,
-                            nlambda.gamma = nlambda.gamma,
-                            nlambda.beta = nlambda.beta, ...)
+        outlist[[i]] = funshim(x[!which, , drop = FALSE],
+                               y = y_sub,
+                               e = e[!which],
+                               df = df,
+                               weights = weights[!which],
+                               lambda.beta = funshim.object$lambda.beta,
+                               lambda.gamma = funshim.object$lambda.gamma,
+                               nlambda = funshim.object$nlambda,
+                               nlambda.gamma = nlambda.gamma,
+                               nlambda.beta = nlambda.beta, ...)
     }
   }
 
-  lambda.beta <- shim.object$lambda.beta
-  lambda.gamma <- shim.object$lambda.gamma
-  fun <- paste("cv", class(shim.object)[[1]], sep = "_")
+  lambda.beta <- funshim.object$lambda.beta
+  lambda.gamma <- funshim.object$lambda.gamma
+  fun <- paste("cv", class(funshim.object)[[1]], sep = "_")
   cvstuff <- do.call(fun, list(outlist = outlist,
-                               x = x, y = y, foldid = foldid,
-                               nlambda = shim.object$nlambda,
-                               nlambda.beta = shim.object$nlambda.beta,
-                               nlambda.gamma = shim.object$nlambda.gamma))
+                               y = y, df = df,
+                               design = funshim.object$design,
+                               foldid = foldid,
+                               nlambda = funshim.object$nlambda,
+                               nlambda.beta = funshim.object$nlambda.beta,
+                               nlambda.gamma = funshim.object$nlambda.gamma))
 
   cvm <- cvstuff$cvm
   cvsd <- cvstuff$cvsd
@@ -439,7 +444,7 @@ cv.shim <- function(x, y, main.effect.names, interaction.names,
               cvm = cvm, cvsd = cvsd, cvup = cvm + cvsd,
               cvlo = cvm - cvsd, nz.main = nz.main, name = cvname,
               nz.interaction = nz.interaction,
-              shim.fit = shim.object, converged = cvstuff$converged,
+              funshim.fit = funshim.object, converged = cvstuff$converged,
               cvm.mat.all = cvstuff$cvm.mat.all,
               df = df)
 
@@ -447,7 +452,7 @@ cv.shim <- function(x, y, main.effect.names, interaction.names,
     getmin_type(lambda.beta, -cvm, cvsd, type = "beta") else getmin_type(lambda.beta, cvm, cvsd, type = "beta")
 
   obj <- c(out, as.list(lamin.beta))
-  class(obj) <- "cv.shim"
+  class(obj) <- "cv.funshim"
   obj
 }
 

@@ -4,7 +4,8 @@
 \alias{convert2}
 \title{Convert gammas to alphas}
 \usage{
-convert2(beta, gamma, main.effect.names, interaction.names, intercept = NULL)
+convert2(beta, gamma, main.effect.names, interaction.names, group = group,
+  intercept = NULL)
 }
 \arguments{
 \item{main.effect.names}{character vector of main effects names. MUST be

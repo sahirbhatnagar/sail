@@ -1,16 +1,19 @@
 #' Gaussian Response fitting function with warm starts
 #'
-lspath <- function(x, y, e, df = 5,
-                   # main.effect.names, interaction.names,
-                   lambda.beta, lambda.gamma,
+lspath <- function(x, y, e, df,
+                   lambda.beta,
+                   lambda.gamma,
                    weights,
                    lambda.factor,
                    nlambda.gamma,
                    nlambda.beta,
                    nlambda,
-                   thresh, max.iter,
+                   thresh,
+                   maxit,
                    initialization.type,
-                   center, normalize, verbose,
+                   center,
+                   normalize,
+                   verbose,
                    cores) {
 
   # rm(list = ls())
@@ -19,7 +22,7 @@ lspath <- function(x, y, e, df = 5,
   # DT <- gendata(n = 300, p = 50, df = 5)
   # x = DT$x; y = DT$y; e = DT$e
   # lambda.beta = NULL ; lambda.gamma = NULL
-  # thresh = 1e-7 ; max.iter = 500 ; initialization.type = "ridge";
+  # thresh = 1e-7 ; maxit = 500 ; initialization.type = "ridge";
   # nlambda.gamma = 10; nlambda.beta = 10;
   # nlambda = 100 ; lambda.factor = 0.001
   # cores = 1;
@@ -202,7 +205,7 @@ lspath <- function(x, y, e, df = 5,
 
     # store likelihood values at each iteration in a matrix Q
     # rows: iteration number
-    Q <- matrix(nrow = max.iter + 1, ncol = 1)
+    Q <- matrix(nrow = maxit + 1, ncol = 1)
 
     # store the value of the likelihood at the 0th iteration
     Q[1,1] <- Q_theta(x = x, y = y,
@@ -222,7 +225,7 @@ lspath <- function(x, y, e, df = 5,
     # to enter while loop
     converged <- FALSE
 
-    while (!converged && m < max.iter){
+    while (!converged && m < maxit){
 
       Theta_init <- c(drop(beta_hat_previous), drop(gamma_hat_previous))
 
@@ -406,6 +409,8 @@ lspath <- function(x, y, e, df = 5,
   # coefficientMat
   # b-a
 
+  # browser()
+
   beta_hat_next_list <- lapply(seq_len(ncol(betaMat)),
                                function(i) betaMat[,i,drop=F])
   # convert to original scale
@@ -435,7 +440,7 @@ lspath <- function(x, y, e, df = 5,
     b0[lam] <- by - sum(betas_original_scale[,lam,drop = F] * bx[c(main_effect_names,"X_E")]) -
       sum(alphas_original_scale[,lam,drop=F] * bx[interaction_names])
   }
-  names(b0) <- paste0("s",1:nlambda)
+  names(b0) <- paste0("s", 1:nlambda)
 
   gamma_final <- as(matrix(unlist(gammas_original_scale_list, use.names = F),
                            ncol = nlambda,
@@ -466,6 +471,7 @@ lspath <- function(x, y, e, df = 5,
               nlambda.gamma = nlambda.gamma,
               nlambda.beta = nlambda.beta,
               nlambda = nlambda,
+              design = design,
               interaction.names = interaction_names,
               main.effect.names = c(main_effect_names,"X_E"))
   class(out) <- "lspath"

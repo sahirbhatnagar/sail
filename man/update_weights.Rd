@@ -4,8 +4,8 @@
 \alias{update_weights}
 \title{Update Weights based on betas and gammas.}
 \usage{
-update_weights(betas, gammas, main.effect.names, interaction.names,
-  epsilon = 1e-05)
+update_weights(betas, alphas, main.effect.names, interaction.names, group,
+  epsilon = 1e-07)
 }
 \arguments{
 \item{main.effect.names}{character vector of main effects names}

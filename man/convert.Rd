@@ -4,14 +4,20 @@
 \alias{convert}
 \title{Convert alphas to gammas}
 \usage{
-convert(betas.and.alphas, main.effect.names, interaction.names,
-  epsilon = 1e-05)
+convert(betas.and.alphas, epsilon = 1e-05, group = group,
+  main.effect.names.list, interaction.names.list)
 }
 \arguments{
 \item{betas.and.alphas}{q x 1 data.frame or matrix of main effects and
 interaction estimates. For example the output from the \code{uni_fun}
 function. The rownames must be appropriately labelled because these labels
 will be used in other functions}
+
+\item{epsilon}{threshold to avoid division by a very small beta e.g. if any
+of the main effects are less than epsilon, set gamma to zero. This should
+not really be an important parameter because this function is only used in
+the initialization step, where the intial estimates are from OLS or ridge
+regression and therefor should not be very close to 0}
 
 \item{main.effect.names}{character vector of main effects names. MUST be
 ordered in the same way as the column names of \code{x}. e.g. if the column
@@ -21,12 +27,6 @@ c("x1","x2")}}
 \item{interaction.names}{character vector of interaction names. MUST be
 separated by a colon (e.g. x1:x2), AND MUST be
 ordered in the same way as the column names of \code{x}}
-
-\item{epsilon}{threshold to avoid division by a very small beta e.g. if any
-of the main effects are less than epsilon, set gamma to zero. This should
-not really be an important parameter because this function is only used in
-the initialization step, where the intial estimates are from OLS or ridge
-regression and therefor should not be very close to 0}
 }
 \value{
 a labelled q x 1 data.frame of betas and gammas

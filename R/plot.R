@@ -18,11 +18,17 @@
 #' @import data.table
 #' @export
 
-plot.cv.shim <- function(x) {
+plot.cv.funshim <- function(x) {
 
+  pacman::p_load(ggplot2)
+  pacman::p_load(data.table)
+  pacman::p_load(latex2exp)
+
+  # x = cvfit
+  #====
   cvobj <- x
 
-  d <- as.data.table(transform(cvobj$df,
+  d <- data.table::as.data.table(transform(cvobj$df,
                                lambda.min.beta = cvobj$lambda.min.beta,
                                lambda.1se.beta = cvobj$lambda.1se.beta),
                      keep.rownames = TRUE)
@@ -34,18 +40,18 @@ plot.cv.shim <- function(x) {
 
   d2[,variable := gsub(".beta", "",variable)]
 
-  appender <- function(string) TeX(paste("$\\log(\\lambda_{\\gamma}) = $",string))
+  appender <- function(string) latex2exp::TeX(paste("$\\log(\\lambda_{\\gamma}) = $",string))
 
-  p <- ggplot(d,
-              aes(log(lambda.beta),
+  p <- ggplot2::ggplot(d,
+              ggplot2::aes(log(lambda.beta),
                   ymin = lower,
                   ymax = upper))
 
-  l <- ggplot_build(p)
-  p + geom_errorbar(color = "grey", width = 0.5) +
+  l <- ggplot2::ggplot_build(p)
+  p + ggplot2::geom_errorbar(color = "grey", width = 0.5) +
     geom_point(aes(x = log(lambda.beta), y = mse), colour = "red") +
     theme_bw() +
-    ylim(c(min(d$lower) - 10 , max(d$upper) + 500)) +
+    # ylim(c(min(d$lower) - 10 , max(d$upper) + 500)) +
     facet_wrap(~log.gamma, scales = "fixed",
                #switch = "x",
                labeller = as_labeller(appender, default = label_parsed)) +
@@ -61,8 +67,8 @@ plot.cv.shim <- function(x) {
     geom_text(aes(label = nz.main, x = log(lambda.beta), y = Inf, vjust = 1)) +
     geom_text(aes(label = nz.interaction, x = log(lambda.beta), y = Inf,
                   vjust = 2)) +
-    ylab(c("10 fold CV MSE")) +
-    coord_cartesian(ylim = c(l$panel$ranges[[1]]$y.range[1], l$panel$ranges[[1]]$y.range[2]*1.1))
+    ylab(c("10 fold CV MSE")) #+
+    # coord_cartesian(ylim = c(l$panel$ranges[[1]]$y.range[1], l$panel$ranges[[1]]$y.range[2]*1.1))
 }
 
 

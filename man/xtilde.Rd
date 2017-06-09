@@ -4,17 +4,18 @@
 \alias{xtilde}
 \title{Calculate working X's to update Gammas.}
 \usage{
-xtilde(interaction.names, data.main.effects, beta.main.effects)
+xtilde(x, group, main.effect.names.list, interaction.names.list,
+  beta.main.effects)
 }
 \arguments{
-\item{interaction.names}{character vector of interaction names. must be
-separated by a ':' (e.g. x1:x2)}
+\item{x}{data frame or matrix containing all the mains effects, the
+environment, and the interaction of the basis expansions}
 
-\item{data.main.effects}{data frame or matrix containing the main effects
-data}
+\item{interaction.names.list}{list of interaction names where each element of
+the list corresponds to the original X. Each list element should be of
+length df}
 
-\item{beta.main.effects}{data frame or matrix containing the coefficients of
-main effects}
+\item{beta.main.effects}{matrix containing the coefficients of main effects}
 
 \item{nlambda}{number of tuning parameters}
 }

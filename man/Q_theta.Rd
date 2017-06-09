@@ -5,7 +5,7 @@
 \title{Likelihood function}
 \usage{
 Q_theta(x, y, beta, gamma, weights, lambda.beta, lambda.gamma,
-  main.effect.names, interaction.names)
+  main.effect.names, interaction.names, group)
 }
 \arguments{
 \item{x}{Design matrix of dimension \code{n x q}, where \code{n} is the

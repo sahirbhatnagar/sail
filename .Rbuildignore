@@ -3,3 +3,4 @@
 ^references/$
 ^data/$
 ^R/sim-data\.R$
+^R/scrap\.R$

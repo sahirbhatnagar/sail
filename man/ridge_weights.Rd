@@ -4,7 +4,7 @@
 \alias{ridge_weights}
 \title{Calculate Adaptive Weights based on Ridge Regression}
 \usage{
-ridge_weights(x, y, main.effect.names, interaction.names,
+ridge_weights(x, y, group, main.effect.names.list, interaction.names.list,
   include.intercept = F)
 }
 \arguments{
@@ -18,13 +18,13 @@ internally by the \code{\link{shim}} function.}
 
 \item{y}{response variable (matrix form) of dimension \code{n x 1}}
 
+\item{include.intercept}{logical if intercept should be fitted. Default is
+\code{FALSE}. Should be set to \code{TRUE} if \code{y} is not centered}
+
 \item{main.effect.names}{character vector of main effects names}
 
 \item{interaction.names}{character vector of interaction names. MUST be
 separated by a colon (e.g. \code{x1:e, x2:e})}
-
-\item{include.intercept}{logical if intercept should be fitted. Default is
-\code{FALSE}. Should be set to \code{TRUE} if \code{y} is not centered}
 }
 \value{
 \code{q x 1} matrix of weights for the main effects and interaction

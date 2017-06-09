@@ -4,12 +4,12 @@
 \alias{funshim}
 \title{Fit Strong Heredity Interaction Model}
 \usage{
-funshim(x, y, main.effect.names, interaction.names, family = c("gaussian",
-  "binomial"), weights, lambda.factor = ifelse(nobs < nvars, 0.01, 0.001),
-  lambda.beta = NULL, lambda.gamma = NULL, nlambda.gamma = 10,
-  nlambda.beta = 10, nlambda = 100, threshold = 1e-04, max.iter = 100,
+funshim(x, y, e, df, family = c("gaussian", "binomial"), weights,
+  lambda.factor = ifelse(nobs < nvars, 0.01, 0.001), lambda.beta = NULL,
+  lambda.gamma = NULL, nlambda.gamma = 10, nlambda.beta = 10,
+  nlambda = 100, thresh = 0.001, maxit = 2000,
   initialization.type = c("ridge", "univariate"), center = TRUE,
-  normalize = TRUE, verbose = TRUE, cores = 2)
+  normalize = FALSE, verbose = TRUE, cores = 1)
 }
 \arguments{
 \item{x}{Design matrix of dimension \code{n x q}, where \code{n} is the
@@ -27,15 +27,6 @@ factor with the first level representing "failure" and the second level
 representing "success". Alternatively, For binomial logistic regression,
 the response can be a matrix where the first column is the number of
 "successes" and the second column is the number of "failures".}
-
-\item{main.effect.names}{character vector of main effects names. MUST be
-ordered in the same way as the column names of \code{x}. e.g. if the column
-names of \code{x} are \code{"x1","x2"} then \code{main.effect.names =
-c("x1","x2")}}
-
-\item{interaction.names}{character vector of interaction names. MUST be
-separated by a colon (e.g. x1:x2), AND MUST be ordered in the same way as
-the column names of \code{x}}
 
 \item{family}{response type. see \code{y} for details. Currently only
 \code{family = "gaussian"} is implemented.}
@@ -77,12 +68,12 @@ NULL} and \code{lambda.gamma = NULL} then \code{nlambda} should be equal to
 \code{nlambda.beta x nlambda.gamma}. This is important to specify
 especially when a user defined sequence of tuning parameters is set.}
 
-\item{threshold}{Convergence threshold for coordinate descent. Each
+\item{thresh}{Convergence thresh for coordinate descent. Each
 coordinate-descent loop continues until the change in the objective
-function after all coefficient updates is less than threshold. Default
+function after all coefficient updates is less than thresh. Default
 value is \code{1e-4}.}
 
-\item{max.iter}{Maximum number of passes over the data for all tuning
+\item{maxit}{Maximum number of passes over the data for all tuning
 parameter values; default is 100.}
 
 \item{initialization.type}{The procedure used to estimate the regression
@@ -108,6 +99,15 @@ lambda.gamma and 1 means it has converged}
 \code{\link{shim}} function, i.e. at most how many child processes will be
 run simultaneously using the \code{parallel} package. Must be at least one,
 and parallelization requires at least two cores. Default is 2.}
+
+\item{main.effect.names}{character vector of main effects names. MUST be
+ordered in the same way as the column names of \code{x}. e.g. if the column
+names of \code{x} are \code{"x1","x2"} then \code{main.effect.names =
+c("x1","x2")}}
+
+\item{interaction.names}{character vector of interaction names. MUST be
+separated by a colon (e.g. x1:x2), AND MUST be ordered in the same way as
+the column names of \code{x}}
 }
 \value{
 An object with S3 class "shim" \describe{ \item{b0}{Intercept
