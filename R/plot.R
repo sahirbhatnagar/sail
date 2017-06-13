@@ -50,7 +50,7 @@ plot.cv.funshim <- function(x) {
   l <- ggplot2::ggplot_build(p)
   p + ggplot2::geom_errorbar(color = "grey", width = 0.5) +
     geom_point(aes(x = log(lambda.beta), y = mse), colour = "red") +
-    theme_bw() +
+    # theme_bw() +
     # ylim(c(min(d$lower) - 10 , max(d$upper) + 500)) +
     facet_wrap(~log.gamma, scales = "fixed",
                #switch = "x",
@@ -67,7 +67,7 @@ plot.cv.funshim <- function(x) {
     geom_text(aes(label = nz.main, x = log(lambda.beta), y = Inf, vjust = 1)) +
     geom_text(aes(label = nz.interaction, x = log(lambda.beta), y = Inf,
                   vjust = 2)) +
-    ylab(c("10 fold CV MSE")) #+
+    ylab(c("5 fold CV MSE")) #+
     # coord_cartesian(ylim = c(l$panel$ranges[[1]]$y.range[1], l$panel$ranges[[1]]$y.range[2]*1.1))
 }
 

@@ -29,7 +29,8 @@ lspath <- function(x, y, e, df,
   # df = DT$df;
   # center=TRUE; normalize=TRUE; verbose = TRUE
 # ==============================================================
-
+# print(lambda.factor)
+  # browser()
   y <- drop(y)
   e <- drop(e)
   np <- dim(x)
@@ -41,6 +42,8 @@ lspath <- function(x, y, e, df,
 
   # Expand X's
   Phi_j <- do.call(cbind, lapply(seq_len(nvars), function(j) splines::bs(x[,j], df = df)))
+  # Phi_j <- do.call(cbind, lapply(seq_len(nvars), function(j) splines::ns(x[,j], df = df)))
+
   main_effect_names <- paste(paste0("X", group), rep(seq_len(df), times = nvars), sep = "_")
   dimnames(Phi_j)[[2]] <- main_effect_names
 
@@ -82,7 +85,7 @@ lspath <- function(x, y, e, df,
   betas_and_alphas <- uni_fun(x = x, y = y,
                               include.intercept = F,
                               type = initialization.type)
-
+# browser()
   if (is.null(lambda.gamma) & is.null(lambda.beta)) {
 
     # the sequence needs to have beta fixed first and then iterate over
@@ -121,6 +124,9 @@ lspath <- function(x, y, e, df,
                               nrow = 2, ncol = nlambda, byrow = T)
   dimnames(tuning_params_mat)[[1]] <- c("lambda.gamma","lambda.beta")
   dimnames(tuning_params_mat)[[2]] <- paste0("s",seq_len(nlambda))
+
+
+  print(tuning_params_mat)
 
   # determine which of the lambda's should use the previous warm start
   # for example, if there are 100 total lambdas = 10 x 10 grid, then
@@ -472,6 +478,7 @@ lspath <- function(x, y, e, df,
               nlambda.beta = nlambda.beta,
               nlambda = nlambda,
               design = design,
+              df = df,
               interaction.names = interaction_names,
               main.effect.names = c(main_effect_names,"X_E"))
   class(out) <- "lspath"

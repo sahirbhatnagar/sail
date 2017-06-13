@@ -169,8 +169,12 @@ funshim <- function(x, y, e, df,
                     verbose = TRUE,
                     cores = 1) {
 
+  # browser()
+
   # if(missing(main.effect.names)) stop("main.effect.names cannot be missing")
   # if(missing(interaction.names)) stop("interaction.names cannot be missing")
+
+  message(sprintf("nlambda.gamma = %f, nlambda.beta = %f", nlambda.gamma, nlambda.beta))
 
   initialization.type <- match.arg(initialization.type)
   family <- match.arg(family)
@@ -242,6 +246,7 @@ funshim <- function(x, y, e, df,
 
   fit <- switch(family,
                 gaussian = lspath(x = x, y = y, e = e, df = df,
+                                  weights = weights,
                                   lambda.beta = lambda.beta,
                                   lambda.gamma = lambda.gamma,
                                   lambda.factor = lambda.factor,
@@ -314,8 +319,9 @@ cv.funshim <- function(x, y, e, df,
   #
   # nfolds = 5
   # grouped = TRUE; keep = FALSE; parallel = TRUE
-
+# browser()
   #initialization.type <- match.arg(initialization.type)
+  # ==========================================
   type.measure <- match.arg(type.measure)
 
   if (!is.null(lambda.beta) && length(lambda.beta) < 2)
@@ -330,8 +336,7 @@ cv.funshim <- function(x, y, e, df,
   y <- drop(y)
   funshim.call <- match.call(expand.dots = TRUE)
   which <- match(c("type.measure", "nfolds"), names(funshim.call), F)
-  if (any(which))
-    funshim.call = funshim.call[-which]
+  if (any(which)) funshim.call = funshim.call[-which]
   funshim.call[[1]] = as.name("funshim")
 
   funshim.object <- funshim(x = x, y = y, e = e, df = df,
@@ -340,8 +345,9 @@ cv.funshim <- function(x, y, e, df,
                             lambda.gamma = lambda.gamma,
                             nlambda = nlambda,
                             nlambda.gamma = nlambda.gamma,
-                            nlambda.beta = nlambda.beta, ...)
-
+                            nlambda.beta = nlambda.beta,
+                            ...)
+# browser()
   funshim.object$call = funshim.call
 
   nz.main = sapply(predict(funshim.object, type = "nonzero")[["main"]], length)
@@ -373,8 +379,8 @@ cv.funshim <- function(x, y, e, df,
               lambda.beta = funshim.object$lambda.beta,
               lambda.gamma = funshim.object$lambda.gamma,
               nlambda = funshim.object$nlambda,
-              nlambda.gamma = nlambda.gamma,
-              nlambda.beta = nlambda.beta, ...)
+              nlambda.gamma = funshim.object$nlambda.gamma,
+              nlambda.beta = funshim.object$nlambda.beta, ...)
 
     }
   } else {
@@ -394,8 +400,8 @@ cv.funshim <- function(x, y, e, df,
                                lambda.beta = funshim.object$lambda.beta,
                                lambda.gamma = funshim.object$lambda.gamma,
                                nlambda = funshim.object$nlambda,
-                               nlambda.gamma = nlambda.gamma,
-                               nlambda.beta = nlambda.beta, ...)
+                               nlambda.gamma = funshim.object$nlambda.gamma,
+                               nlambda.beta = funshim.object$nlambda.beta, ...)
     }
   }
 
@@ -418,8 +424,8 @@ cv.funshim <- function(x, y, e, df,
   # that converged over all folds.
   nas <- (is.na(cvsd) + (cvstuff$converged != nfolds)) != 0
   if (any(nas)) {
-    lambda.beta = lambda.beta[!nas]
-    lambda.gamma = lambda.gamma[!nas]
+    lambda.beta = funshim.object$lambda.beta[!nas]
+    lambda.gamma = funshim.object$lambda.gamma[!nas]
     cvm = cvm[!nas]
     cvsd = cvsd[!nas]
     # this is the total number of non-zero parameters (both betas and alphas)

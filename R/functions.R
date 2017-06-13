@@ -180,8 +180,9 @@ uni_fun <- function(x, y, type = c("ridge", "univariate"),
 #' @export
 
 lambda_sequence <- function(x, y, weights = NULL,
-                            lambda.factor = ifelse(nobs < nvars, 0.01, 1e-06),
-                            nlambda = 100, scale_x = F, center_y = F) {
+                            # lambda.factor = ifelse(nobs < nvars, 0.01, 1e-06),
+                            lambda.factor,
+                            nlambda, scale_x = F, center_y = F) {
 
   # when scaling, first you center then you standardize
   if (any(as.vector(weights) < 0)) stop("Weights must be positive")
@@ -1450,7 +1451,9 @@ gendata <- function(n, p, df, E = rnorm(n = n, sd = 0.5), beta0 = 1, betaE = 2, 
 
   Y <- Y.star + as.vector(k) * error
 
-  return(list(x = X, y = Y, e = E, df = df, b1 = b1, b2 = b2, b3 = b3, b4 = b4, b5 = b5, bE1 = bE1, bE2 = bE2))
+  return(list(x = X, y = Y, e = E, df = df, b1 = b1, b2 = b2, b3 = b3, b4 = b4,
+              b5 = b5,
+              bE1 = bE1, bE2 = bE2))
 
 }
 
