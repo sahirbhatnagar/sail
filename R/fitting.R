@@ -1,6 +1,7 @@
 #' Gaussian Response fitting function with warm starts
 #'
 lspath <- function(x, y, e, df,
+                   group.penalty,
                    lambda.beta,
                    lambda.gamma,
                    weights,
@@ -91,8 +92,9 @@ lspath <- function(x, y, e, df,
     # the sequence needs to have beta fixed first and then iterate over
     # lambda_gamma. Ive tried it the other oway arpund and the solutions are
     # too sparse
-    lamb <- rev(lambda_sequence(x, y, nlambda = nlambda.beta,
-                                lambda.factor = lambda.factor))
+    lamb <- if (nlambda.beta == 1) rev(lambda_sequence(x, y, nlambda = nlambda.gamma,
+                                lambda.factor = lambda.factor)) else rev(lambda_sequence(x, y, nlambda = nlambda.beta,
+                                                                                         lambda.factor = lambda.factor))
     lambda.beta <- rep(lamb, each = nlambda.beta)
     lambda.gamma <- rep(lamb, nlambda.beta)
 
@@ -291,12 +293,31 @@ lspath <- function(x, y, e, df,
 
         x_tilde_2 <- x[,list_group_main[[j]], drop = F] + gamma_hat_next[j,] * beta_hat_next["X_E",] * x[,list_group_inter[[j]]]
 
-        beta_hat_next_j <- coef(gglasso::gglasso(x = x_tilde_2,
-                                                 y = y_tilde_2,
-                                                 group = rep(1, df),
-                                                 pf = as.vector(adaptive.weights[paste0("X",j),]),
-                                                 lambda = lambda_beta,
-                                                 intercept = F))[-1,]
+        # browser()
+
+        beta_hat_next_j <- switch(group.penalty,
+                                  gglasso = coef(gglasso::gglasso(x = x_tilde_2,
+                                                                  y = y_tilde_2,
+                                                                  group = rep(1, df),
+                                                                  pf = as.vector(adaptive.weights[paste0("X",j),]),
+                                                                  lambda = lambda_beta,
+                                                                  intercept = F))[-1,],
+                                  MCP = grpreg::grpreg(X = x_tilde_2,
+                                                       y = y_tilde_2,
+                                                       group = rep(1, df),
+                                                       penalty = "grMCP",
+                                                       family = "gaussian",
+                                                       group.multiplier = as.vector(adaptive.weights[paste0("X",j),]),
+                                                       lambda = lambda_beta,
+                                                       intercept = T)$beta[-1,],
+                                  SCAD = grpreg::grpreg(X = x_tilde_2,
+                                                        y = y_tilde_2,
+                                                        group = rep(1, df),
+                                                        penalty = "grSCAD",
+                                                        family = "gaussian",
+                                                        group.multiplier = as.vector(adaptive.weights[paste0("X",j),]),
+                                                        lambda = lambda_beta,
+                                                        intercept = T)$beta[-1,])
 
         beta_hat_next[list_group_main[[j]],] <- beta_hat_next_j
 
@@ -465,6 +486,7 @@ lspath <- function(x, y, e, df,
               beta = beta_final,
               alpha = alpha_final,
               gamma = gamma_final,
+              group = group,
               lambda.beta = lambda.beta,
               lambda.gamma = lambda.gamma,
               tuning.parameters = tuning_params_mat,

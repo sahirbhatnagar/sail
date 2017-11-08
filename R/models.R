@@ -153,6 +153,7 @@
 #' @export
 
 funshim <- function(x, y, e, df,
+                    group.penalty = c("gglasso", "MCP", "SCAD"),
                     family = c("gaussian", "binomial"),
                     weights,
                     lambda.factor = ifelse(nobs < nvars, 0.01, 0.001),
@@ -178,6 +179,7 @@ funshim <- function(x, y, e, df,
 
   initialization.type <- match.arg(initialization.type)
   family <- match.arg(family)
+  group.penalty <- match.arg(group.penalty)
   this.call <- match.call()
 
   if (!is.matrix(x))
@@ -246,6 +248,7 @@ funshim <- function(x, y, e, df,
 
   fit <- switch(family,
                 gaussian = lspath(x = x, y = y, e = e, df = df,
+                                  group.penalty = group.penalty,
                                   weights = weights,
                                   lambda.beta = lambda.beta,
                                   lambda.gamma = lambda.gamma,

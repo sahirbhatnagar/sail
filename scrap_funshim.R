@@ -4,14 +4,15 @@ devtools::load_all()
 data.table:::cedta()
 # devtools::document()
 set.seed(12345)
-DT <- gendata(n = 400, p = 20, df = 5, SNR = 4)
+DT <- gendata(n = 400, p = 10, df = 5, SNR = 4)
 # DT <- gendata2(n = 400, p = 10, corr = 0, SNR = 3.11)
 
 DT$df
 # pheatmap::pheatmap(cor(DT$x))
 # fit <- lspath(x = DT$x, y = DT$y, e = DT$e, df = DT$df,
+#               group.penalty = "",
 #               lambda.beta = NULL , lambda.gamma = NULL,
-#               thresh = 1e-3 , max.iter = 1000 , initialization.type = "ridge",
+#               thresh = 1e-3 , maxit = 1000 , initialization.type = "ridge",
 #               nlambda.gamma = 10, nlambda.beta = 10,
 #               nlambda = 100 , lambda.factor = 0.001,
 #               cores = 1,
@@ -39,11 +40,25 @@ b <- gam(Y ~ E + s(X1) + s(X2) + s(X3)+ s(X4)+ s(X5)+ s(X6)+ s(X7) +
 summary(b)
 gam()
 plot(b)
-fit <- funshim(x = DT$x, y = DT$y, e = DT$e, df = 5, maxit = 200, nlambda.gamma = 1, nlambda.beta = 100,
-               nlambda = 100,
-               thresh = 1e-4, center=TRUE, normalize=FALSE, verbose = T)
+fit <- funshim(x = DT$x, y = DT$y, e = DT$e, df = DT$df,
+               maxit = 200, nlambda.gamma = 10, nlambda.beta = 1,
+               # group.penalty = "SCAD",
+               nlambda = 20,
+               thresh = 1e-3, center=TRUE, normalize=FALSE, verbose = T)
 
+fit$lambda.beta
 coef(fit)
+plot.grpreg(fit)
+rm(fit)
+
+
+
+fit$
+
+matplot(t(as.matrix(fit$beta[1:5,])))
+library(magrittr)
+as.matrix(fit$beta[1:5,])
+
 args(cv.funshim)
 pacman::p_load(doParallel)
 doParallel::registerDoParallel(cores = 5)

@@ -144,11 +144,14 @@ plot.shim <- function(x, xvar = c("norm", "lambda", "dev"), label = T,
 
 plot.funshim <- function(x, xvar = c("norm", "lambda", "dev"), label = T,
                       ...) {
-  xvar = match.arg(xvar)
-  plotCoefShim(x$beta,
-               lambda = x$lambda.beta,
-               df = x$dfbeta,
-               dev = x$dev.ratio,
-               label = label,
-               xvar = xvar, ...)
+  # xvar = match.arg(xvar)
+  # plotCoefShim(x$beta,
+  #              lambda = x$lambda.beta,
+  #              df = x$dfbeta,
+  #              dev = x$dev.ratio,
+  #              label = label,
+  #              xvar = xvar, ...)
+
+  plot.grpreg(x = x, ...)
+
 }
