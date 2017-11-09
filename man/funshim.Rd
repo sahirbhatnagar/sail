@@ -4,12 +4,12 @@
 \alias{funshim}
 \title{Fit Strong Heredity Interaction Model}
 \usage{
-funshim(x, y, e, df, family = c("gaussian", "binomial"), weights,
-  lambda.factor = ifelse(nobs < nvars, 0.01, 0.001), lambda.beta = NULL,
-  lambda.gamma = NULL, nlambda.gamma = 10, nlambda.beta = 10,
-  nlambda = 100, thresh = 0.001, maxit = 2000,
-  initialization.type = c("ridge", "univariate"), center = TRUE,
-  normalize = FALSE, verbose = TRUE, cores = 1)
+funshim(x, y, e, df, group.penalty = c("gglasso", "MCP", "SCAD"),
+  family = c("gaussian", "binomial"), weights, lambda.factor = ifelse(nobs <
+  nvars, 0.01, 0.001), lambda.beta = NULL, lambda.gamma = NULL,
+  nlambda.gamma = 10, nlambda.beta = 10, nlambda = 100, thresh = 0.001,
+  maxit = 2000, initialization.type = c("ridge", "univariate"),
+  center = TRUE, normalize = FALSE, verbose = TRUE, cores = 1)
 }
 \arguments{
 \item{x}{Design matrix of dimension \code{n x q}, where \code{n} is the

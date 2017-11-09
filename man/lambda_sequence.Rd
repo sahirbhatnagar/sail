@@ -4,8 +4,8 @@
 \alias{lambda_sequence}
 \title{Calculate Sequence of Tuning Parameters}
 \usage{
-lambda_sequence(x, y, weights = NULL, lambda.factor = ifelse(nobs < nvars,
-  0.01, 1e-06), nlambda = 100, scale_x = F, center_y = F)
+lambda_sequence(x, y, weights = NULL, lambda.factor, nlambda, scale_x = F,
+  center_y = F)
 }
 \arguments{
 \item{x}{Design matrix of dimension \code{n x q}, where \code{n} is the

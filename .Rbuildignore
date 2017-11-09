@@ -2,6 +2,7 @@
 ^\.Rproj\.user$
 ^references/$
 ^data/$
+^data/*$
 ^R/sim-data\.R$
 ^R/scrap\.R$
 ^R/rda_ADNI\.R$

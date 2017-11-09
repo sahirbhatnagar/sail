@@ -4,9 +4,9 @@
 \alias{lspath}
 \title{Gaussian Response fitting function with warm starts}
 \usage{
-lspath(x, y, e, df, lambda.beta, lambda.gamma, weights, lambda.factor,
-  nlambda.gamma, nlambda.beta, nlambda, thresh, maxit, initialization.type,
-  center, normalize, verbose, cores)
+lspath(x, y, e, df, group.penalty, lambda.beta, lambda.gamma, weights,
+  lambda.factor, nlambda.gamma, nlambda.beta, nlambda, thresh, maxit,
+  initialization.type, center, normalize, verbose, cores)
 }
 \description{
 Gaussian Response fitting function with warm starts

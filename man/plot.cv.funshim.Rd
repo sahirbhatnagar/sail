@@ -4,7 +4,7 @@
 \alias{plot.cv.funshim}
 \title{Plot the cross-validation curve produced by cv.shim}
 \usage{
-\method{plot}{cv.funshim}(x)
+plot.cv.funshim(x)
 }
 \arguments{
 \item{x}{fitted \code{cv.shim} object}

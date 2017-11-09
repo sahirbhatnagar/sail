@@ -1,9 +1,22 @@
 Package: funshim
 Title: What the Package Does (one line, title case)
 Version: 0.0.0.9000
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
+Authors@R: c(
+  person("Sahir", "Bhatnagar", email = "sahir.bhatnagar@gmail.com",
+  role = c("aut", "cre"), comment = "http://sahirbhatnagar.com/"),
+  person("Yi", "Yang", email = "yi.yang6@mcgill.ca",
+  role = c("aut"))
+  )
 Description: What the package does (one paragraph).
 Depends: R (>= 3.4.0)
+Imports:
+    data.table,
+    ggplot2,
+    methods,
+    mgcv,
+    stats,
+    survival,
+    VGAM
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true

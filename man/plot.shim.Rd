@@ -4,7 +4,7 @@
 \alias{plot.shim}
 \title{Plot Method for shim function}
 \usage{
-\method{plot}{shim}(x, xvar = c("norm", "lambda", "dev"), label = T, ...)
+plot.shim(x, xvar = c("norm", "lambda", "dev"), label = T, ...)
 }
 \description{
 plot method for shim function
