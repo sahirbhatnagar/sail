@@ -190,10 +190,10 @@ lspath <- function(x, y, e, df,
                                        "lambdaBeta", "lambdaGamma")))
 
   # trying to implement this one at a time, so that
-  pb <- progress::progress_bar$new(
-    format = "  fitting over all pairs of tuning parameters [:bar] :percent eta: :eta",
-    total = 100, clear = FALSE, width= 90)
-  pb$tick(0)
+  # pb <- progress::progress_bar$new(
+  #   format = "  fitting over all pairs of tuning parameters [:bar] :percent eta: :eta",
+  #   total = 100, clear = FALSE, width= 90)
+  # pb$tick(0)
 
   for (LAMBDA in lambdaNames) {
     # (LAMBDA <- lambdaNames[1])
@@ -424,7 +424,7 @@ lspath <- function(x, y, e, df,
       # if (devianceDiff < 1e-50 | outPrint[LAMBDA,"percentDev"] > 0.999) break }
       if (outPrint[LAMBDA,"percentDev"] > 0.999) break }
 
-    pb$tick()
+    # pb$tick()
   }
 
   # Rprof()

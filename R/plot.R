@@ -26,19 +26,22 @@ plot.cv.funshim <- function(x) {
 
   # x = cvfit
   #====
+
+  # browser()
   cvobj <- x
 
-  d <- data.table::as.data.table(transform(cvobj$df,
-                               lambda.min.beta = cvobj$lambda.min.beta,
-                               lambda.1se.beta = cvobj$lambda.1se.beta),
-                     keep.rownames = TRUE)
+  d <- data.frame(cvobj$df,
+                     lambda.min.beta = cvobj$lambda.min.beta,
+                     lambda.1se.beta = cvobj$lambda.1se.beta,
+                     row.names = rownames(cvobj$df))
 
 
   # needed to get colored lines
-  d2 <- data.table::melt(d[rn %in% c(cvobj$lambda.min.name, cvobj$lambda.1se.name)],
+  d2 <- data.table::melt(d[which(rownames(d) %in% c(cvobj$lambda.min.name, cvobj$lambda.1se.name)),,drop=F],
                          measure.vars = c("lambda.min.beta","lambda.1se.beta"))
 
-  d2[,variable := gsub(".beta", "",variable)]
+  # d2 <- as.data.table(d2)
+  d2 <- transform(d2,variable = gsub(".beta", "",variable))
 
   appender <- function(string) latex2exp::TeX(paste("$\\log(\\lambda_{\\gamma}) = $",string))
 
@@ -59,9 +62,9 @@ plot.cv.funshim <- function(x) {
           strip.text.x = element_text(size = rel(1.3)),
           legend.position = "bottom") +
     xlab(TeX("$\\log(\\lambda_{\\beta})$")) +
-    geom_vline(data = d2[lambda.beta == value & variable == "lambda.1se"],
+    geom_vline(data = d2[(d2$lambda.beta == d2$value & d2$variable == "lambda.1se"),],
                aes(xintercept = log(value), colour = variable), size = 0.7, linetype = 1) +
-    geom_vline(data = d2[lambda.beta == value & variable == "lambda.min"],
+    geom_vline(data = d2[(d2$lambda.beta == d2$value & d2$variable == "lambda.min"),],
                aes(xintercept = log(value), colour = variable),size = 0.7, linetype = 1) +
     scale_color_discrete(name="") +
     geom_text(aes(label = nz.main, x = log(lambda.beta), y = Inf, vjust = 1)) +

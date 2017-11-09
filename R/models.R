@@ -445,7 +445,7 @@ cv.funshim <- function(x, y, e, df,
                             nz.main = nz.main,
                             nz.interaction = nz.interaction,
                             log.gamma = round(log(lambda.gamma),2)))
-
+# browser()
   rownames(df) <- gsub("\\.(.*)", "",rownames(df))
 
   out <- list(lambda.beta = lambda.beta, lambda.gamma = lambda.gamma,

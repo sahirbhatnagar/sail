@@ -1,65 +1,64 @@
 rm(list = ls())
+.datatable.aware=TRUE
 devtools::load_all()
 source("R/ksfilter.R")
 pacman::p_load(data.table)
 pacman::p_load(magrittr)
+pacman::p_load(glmnet)
 pacman::p_load(genefilter)
 pacman::p_load(tidyverse)
-load("data/adni/ADNI_pheno.RData") # old one 340 subjects
+data <- readr::read_rds("data/equity.rds") # old one 340 subjects
+frequency = 'month' # 'month' or 'qtr' or 'yr'
+forecast_variable = 'ep' # 'ep' (equity premium) or 'g' (dividend growth)
+est_starting_date = 192701 # 192701 or 195101
+# quarterly
+# frequency = 'qtr' # 'month' or 'qtr' or 'yr'
+# est_starting_date = 19271
+model_predictor_set = 'econ' # econ, tech or both; technical indicators are only set up for monthly data
+window_type <- "rolling" # "rolling" or "expanding"
+horizon = 1 # by default horizon=1. Horizon = 3 means 3-month ahead for monthly, or 9-month ahead for quarterly
+window_width_yr = 20 # window width in terms of years
+window_width = 12*window_width_yr
+placebo_test = FALSE # TRUE or FALSE
+pred_horizon = 1 # forecasting horizon is [pred_horizon] * [data frequency]
 
+preds <- c("dy", "epr", "bm", "ntis", "svar", "tbl", "ltr", "tms", "dfy", "dfr","infl")
+evar <- "infl"
 
+# for(i in (1:(T-window_width-pred_horizon+1))[1])
 
+i = 135
+(start_idx = (window_type == "rolling")*i + (window_type == "expanding")*1)
+# data0 = data[start_idx:(i+window_width-1),] # data in estimation window; length = window_width
+# data1 = data[i+window_width+(pred_horizon-1),] # true response, and observed X used to predict true response
+(start_idx:(i+window_width-1))
+X <- data[start_idx:(i+window_width-1),setdiff(preds,evar)]
+dput(colnames(X))
+E <- data[start_idx:(i+window_width-1),evar,drop=F]
+Y <- data[start_idx:(i+window_width-1),1,drop = F]
 
-X <- as.matrix(amy_mat)
-E <- covr_endo$Age_bl
-Y <- stage
+fit <- cv.glmnet(X,Y, alpha = 1)
+plot(fit)
+coef(fit, s="lambda.min")
 
 fmla <- as.formula(paste0("~0+",paste(colnames(X), collapse = "+"), "+ E +",paste(colnames(X),":E", collapse = "+") ))
-
-str(X)
-
 Xmat <- model.matrix(fmla, data = data.frame(X,E))
 
-Ftest <- colFtests(X, factor(Y))
-Ftest$name <- rownames(Ftest)
-
-Ftest %>%
-  dplyr::arrange(p.value) %>%
-  filter(p.value < 1e-4) %>%
-  select(name) %>% unlist
-
-coef(cvfit, s="lambda.min")
-
-nonz_coef <- coef(cvfit, s="lambda.min")[nonzero(coef(cvfit, s="lambda.min")),,drop=F]
-
-plot()
-
-
-rbind(Ftest$name, paste0("X",seq_len(ncol(X))))
-
-
-top <- Ftest %>%
-  dplyr::arrange(p.value) %>%
-  filter(p.value < 1e-4) %>%
-  select(name) %>% unlist(use.names = FALSE)
-
-dev.off()
-plot(density(amy_mat[,1]), type = "n", ylim = c(0, 10), xlim = c(0.3, 2.5))
-n = dim(amy_mat)[2]-1
-for(i in 1:n){
-  lines(density(c(amy_mat[,i])))
-}
-
-
-
-fit <- funshim(x = X, y = Y, e = E, df = 3, maxit = 200, nlambda.gamma = 5, nlambda.beta = 5,
-               nlambda = 100,lambda.factor = 0.0001,
-               thresh = 1e-3, center=TRUE, normalize=F, verbose = T)
-
-coef(fit)[nonzero(coef(fit)),]
 pacman::p_load(doParallel)
 doParallel::registerDoParallel(cores = 5)
 getDoParWorkers()
+
+fit <- cv.funshim(x = X, y = Y, e = E, df = 3, maxit = 200, nlambda.gamma = 5, nlambda.beta = 5,
+                  nlambda = 25, lambda.factor = 0.0001,nfolds = 5,
+                  thresh = 1e-10, center=T, normalize=T, verbose = T)
+
+coef(fit)
+plot(fit)
+coef(fit)[nonzero(coef(fit)),,drop=F]
+
+
+
+
 devtools::load_all()
 source("R/plot.R")
 source("R/fitting.R")
@@ -271,7 +270,7 @@ Ftest <- colFtests(X, factor(Y))
 Ftest$name <- rownames(Ftest)
 
 top <- Ftest %>%
-dplyr::arrange(p.value) %>%
+  dplyr::arrange(p.value) %>%
   filter(p.value < 1e-4) %>%
   select(name) %>% unlist(use.names = FALSE)
 

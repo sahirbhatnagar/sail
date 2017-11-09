@@ -41,10 +41,10 @@ summary(b)
 gam()
 plot(b)
 fit <- funshim(x = DT$x, y = DT$y, e = DT$e, df = DT$df,
-               maxit = 200, nlambda.gamma = 10, nlambda.beta = 1,
+               maxit = 300, nlambda.gamma = 5, nlambda.beta = 5,
                # group.penalty = "SCAD",
-               nlambda = 20,
-               thresh = 1e-3, center=TRUE, normalize=FALSE, verbose = T)
+               nlambda = 25,
+               thresh = 1e-2, center=TRUE, normalize=FALSE, verbose = T)
 
 fit$lambda.beta
 coef(fit)
@@ -64,7 +64,7 @@ pacman::p_load(doParallel)
 doParallel::registerDoParallel(cores = 5)
 cvfit <- cv.funshim(x = DT$x, y = DT$y, e = DT$e, df = DT$df, maxit = 200, cores = 5,
                     nfolds = 5,
-                    nlambda.gamma = 12, nlambda.beta = 12, nlambda = 144,
+                    nlambda.gamma = 5, nlambda.beta = 5, nlambda = 25,
                     thresh = 1e-3, center=TRUE, normalize=FALSE, verbose = T)
 
 library(magrittr)
