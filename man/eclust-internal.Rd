@@ -63,7 +63,7 @@ Internal eclust helper functions
 
 \code{\%ni\%} is the opposite of \code{\%in\%}
 
-\code{checkargs.xy} function to check inputs of shim function
+\code{checkargs.xy} function to check inputs of sail function
 }
 \details{
 These functions are not intended for use by users.

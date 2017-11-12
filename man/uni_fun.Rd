@@ -14,7 +14,7 @@ observation vector. This must include all main effects and interactions as
 well, with column names corresponding to the names of the main effects
 (e.g. \code{x1, x2, E}) and their interactions (e.g. \code{x1:E, x2:E}).
 All columns should be scaled to have mean 0 and variance 1; this is done
-internally by the \code{\link{shim}} function.}
+internally by the \code{\link{sail}} function.}
 
 \item{y}{response variable (matrix form) of dimension \code{n x 1}}
 
@@ -38,7 +38,7 @@ Regression coefficients as a \code{q x 1 data.frame}
 \description{
 Function used to create initial estimates in fitting algorithm
   of the strong heredity interaction model implemented in the
-  \code{\link{shim}} function
+  \code{\link{sail}} function
 }
 \note{
 \code{p} is defined as the number of main effects. I have introduced
@@ -70,7 +70,7 @@ Y <- X \%*\% rbinom(ncol(X), 1, 0.2) + 3*rnorm(n)
 uni_fun(X, Y)
 }
 \seealso{
-\code{\link{shim}}, \code{\link[glmnet]{cv.glmnet}}
+\code{\link{sail}}, \code{\link[glmnet]{cv.glmnet}}
 }
 \author{
 Sahir Bhatnagar

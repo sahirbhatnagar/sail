@@ -2,14 +2,14 @@
 #'
 #' @description Function used to create initial estimates in fitting algorithm
 #'   of the strong heredity interaction model implemented in the
-#'   \code{\link{shim}} function
+#'   \code{\link{sail}} function
 #' @param x Design matrix of dimension \code{n x q}, where \code{n} is the
 #'   number of subjects and q is the total number of variables; each row is an
 #'   observation vector. This must include all main effects and interactions as
 #'   well, with column names corresponding to the names of the main effects
 #'   (e.g. \code{x1, x2, E}) and their interactions (e.g. \code{x1:E, x2:E}).
 #'   All columns should be scaled to have mean 0 and variance 1; this is done
-#'   internally by the \code{\link{shim}} function.
+#'   internally by the \code{\link{sail}} function.
 #' @param y response variable (matrix form) of dimension \code{n x 1}
 #' @param type The procedure used to estimate the regression coefficients. If
 #'   \code{"univariate"} then a series of univariate regressions is performed
@@ -32,7 +32,7 @@
 #'
 #' Maintainer: Sahir Bhatnagar \email{sahir.bhatnagar@@mail.mcgill.ca}
 #'
-#' @seealso \code{\link{shim}}, \code{\link[glmnet]{cv.glmnet}}
+#' @seealso \code{\link{sail}}, \code{\link[glmnet]{cv.glmnet}}
 #'
 #' @examples
 #' # number of observations
@@ -99,7 +99,7 @@ uni_fun <- function(x, y, type = c("ridge", "univariate"),
 #'
 #' @description Function to calculate the sequence of tuning parameters based on
 #'   the design matrix \code{x} and the response variable {y}. This is used in
-#'   the \code{\link{shim_once}} function to calculate the tuning parameters
+#'   the \code{\link{sail_once}} function to calculate the tuning parameters
 #'   applied to the main effects
 #'
 #' @inheritParams uni_fun
@@ -207,14 +207,14 @@ lambda_sequence <- function(x, y, weights = NULL,
 #'
 #' @description uses ridge regression from \code{glmnet} package to calculate
 #'   the adaptive weights used in the fitting algorithm implemented in the
-#'   \code{shim} function.
+#'   \code{sail} function.
 #' @param x Design matrix of dimension \code{n x q}, where \code{n} is the
 #'   number of subjects and q is the total number of variables; each row is an
 #'   observation vector. This must include all main effects and interactions as
 #'   well, with column names corresponding to the names of the main effects
 #'   (e.g. \code{x1, x2, E}) and their interactions (e.g. \code{x1:E, x2:E}).
 #'   All columns should be scaled to have mean 0 and variance 1; this is done
-#'   internally by the \code{\link{shim}} function.
+#'   internally by the \code{\link{sail}} function.
 #' @param y response variable (matrix form) of dimension \code{n x 1}
 #' @param main.effect.names character vector of main effects names
 #' @param interaction.names character vector of interaction names. MUST be
@@ -349,7 +349,7 @@ soft <- function(x, y, beta, lambda, weight) {
     b_lasso <- sign(beta)* pmax(0, abs(beta) - lambda*weight)
 
     # need to return a matrix, because this is used in the step to
-    # calculate y_tilde in the shim function
+    # calculate y_tilde in the sail function
     return(matrix(b_lasso, ncol = 1))
   }
 
@@ -371,7 +371,7 @@ soft <- function(x, y, beta, lambda, weight) {
 #'   default is \code{"ridge"}.
 #' @description This function runs the first iteration of the fitting algorithm
 #'   just to get the sequence of \code{lambda_gamma} and \code{lambda_beta}
-#' @seealso \code{\link{shim}}
+#' @seealso \code{\link{sail}}
 #' @return list of length 2, first element is \code{lambda_gamma} and second
 #'   element is \code{lambda_beta}
 #' @details A unique sequence of tuning parameters for the main effects
@@ -406,7 +406,7 @@ soft <- function(x, y, beta, lambda, weight) {
 #' # standardize data
 #' data_std <- standardize(X,Y)
 #'
-#' shim_once(x = data_std$x, y = data_std$y,
+#' sail_once(x = data_std$x, y = data_std$y,
 #'           main.effect.names = main_effect_names,
 #'           interaction.names = interaction_names,
 #'           nlambda.gamma = 5, nlambda.beta = 5)
@@ -416,7 +416,7 @@ soft <- function(x, y, beta, lambda, weight) {
 #' Maintainer: Sahir Bhatnagar \email{sahir.bhatnagar@@mail.mcgill.ca}
 #' @export
 
-shim_once <- function(x, y, main.effect.names, interaction.names,
+sail_once <- function(x, y, main.effect.names, interaction.names,
                       initialization.type = c("ridge", "univariate"),
                       nlambda.gamma = 20,
                       nlambda.beta = 20,
@@ -625,9 +625,9 @@ shim_once <- function(x, y, main.effect.names, interaction.names,
 #'
 #'   This function is used because the fitting algorithm estimates the gammas,
 #'   and furthermore, the L1 penalty is placed on the gammas. It is used only in
-#'   the initialization step in the \code{\link{shim}} function
+#'   the initialization step in the \code{\link{sail}} function
 #'
-#' @seealso \code{\link{shim}}, \code{\link{Q_theta}}
+#' @seealso \code{\link{sail}}, \code{\link{Q_theta}}
 #' @return a labelled q x 1 data.frame of betas and gammas
 
 # I thought I needed this.. but maybe not.. Its to convert
@@ -1046,7 +1046,7 @@ nonzero <- function(beta, bystep = FALSE) {
 #' @description Function that standardizes the data before running the fitting
 #'   algorithm. This is necessary in all penalization methods so that the effect
 #'   of a given penalty is the same for each predictor. This is used in the
-#'   \code{\link{shim}} function
+#'   \code{\link{sail}} function
 #' @inheritParams uni_fun
 #' @param intercept Should \code{x} and \code{y} be centered. Default is
 #'   \code{TRUE}
@@ -1099,20 +1099,20 @@ standardize <- function(x, y, center = TRUE, normalize = TRUE) {
 #' Compute cross validation error
 #'
 #' @description functions used to calculate cross validation error and used by
-#'   the \code{\link{cv.shim}} function
+#'   the \code{\link{cv.sail}} function
 #'
 #' @param outlist list of cross validated fitted models. List is of length equal
-#'   to \code{nfolds} argument in \code{\link{cv.shim}} function
+#'   to \code{nfolds} argument in \code{\link{cv.sail}} function
 #' @param foldid numeric vector indicating which fold each observation belongs
 #'   to
 #' @param nlambda.beta number of tuning paramters for the main effect
 #' @param nlambda.gamma number of tuning parameters for the interaction effects
 #' @param nlambda total number of tuning parameter pairs. This includes those
 #'   pairs of tuning parameters that didn't converge in the CV folds.
-#' @param outlist list containing results from cv.shim function. each element of
-#'   the list is a run of shim_multiple_faster for each CV fold
+#' @param outlist list containing results from cv.sail function. each element of
+#'   the list is a run of sail_multiple_faster for each CV fold
 #' @inheritParams uni_fun
-#' @seealso \code{\link{cv.shim}}
+#' @seealso \code{\link{cv.sail}}
 #' @details The output of the \code{cv_lspath} function only returns values for those tuning
 #'   paramters that DID converge
 
@@ -1225,7 +1225,7 @@ lambda.interp <- function(lambda, s) {
 #' Update Weights based on betas and gammas.
 #'
 #' @description uses betas and gammas to update weights. this is used to update
-#'   the weights at each iteration of the fitting algorithm in the \code{shim}
+#'   the weights at each iteration of the fitting algorithm in the \code{sail}
 #'   function
 #' @param betas.and.gammas q x 1 data.frame or matrix of betas and gamma
 #'   estimates. The rownames must be appropriately labelled because these labels
@@ -1280,7 +1280,7 @@ isEmpty <- function(x) {
 }
 
 
-#' @description \code{checkargs.xy} function to check inputs of shim function
+#' @description \code{checkargs.xy} function to check inputs of sail function
 #'
 #' @rdname eclust-internal
 checkargs.xy <- function(x, y) {

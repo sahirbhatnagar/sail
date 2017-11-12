@@ -17,7 +17,7 @@ lambda.interp(lambda, s)
 }
 \arguments{
 \item{outlist}{list of cross validated fitted models. List is of length equal
-to \code{nfolds} argument in \code{\link{cv.shim}} function}
+to \code{nfolds} argument in \code{\link{cv.sail}} function}
 
 \item{y}{response variable (matrix form) of dimension \code{n x 1}}
 
@@ -33,12 +33,12 @@ pairs of tuning parameters that didn't converge in the CV folds.}
 
 \item{type}{should be one of "beta" or "gamma"}
 
-\item{outlist}{list containing results from cv.shim function. each element of
-the list is a run of shim_multiple_faster for each CV fold}
+\item{outlist}{list containing results from cv.sail function. each element of
+the list is a run of sail_multiple_faster for each CV fold}
 }
 \description{
 functions used to calculate cross validation error and used by
-  the \code{\link{cv.shim}} function
+  the \code{\link{cv.sail}} function
 }
 \details{
 The output of the \code{cv_lspath} function only returns values for those tuning
@@ -56,5 +56,5 @@ standard error of the minimum
 }}
 
 \seealso{
-\code{\link{cv.shim}}
+\code{\link{cv.sail}}
 }

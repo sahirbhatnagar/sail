@@ -13,7 +13,7 @@ observation vector. This must include all main effects and interactions as
 well, with column names corresponding to the names of the main effects
 (e.g. \code{x1, x2, E}) and their interactions (e.g. \code{x1:E, x2:E}).
 All columns should be scaled to have mean 0 and variance 1; this is done
-internally by the \code{\link{shim}} function.}
+internally by the \code{\link{sail}} function.}
 
 \item{y}{response variable (matrix form) of dimension \code{n x 1}}
 
@@ -38,7 +38,7 @@ list of length 5:
 Function that standardizes the data before running the fitting
   algorithm. This is necessary in all penalization methods so that the effect
   of a given penalty is the same for each predictor. This is used in the
-  \code{\link{shim}} function
+  \code{\link{sail}} function
 }
 \author{
 Sahir Bhatnagar

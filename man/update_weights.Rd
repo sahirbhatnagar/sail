@@ -23,6 +23,6 @@ q x 1 matrix of weights
 }
 \description{
 uses betas and gammas to update weights. this is used to update
-  the weights at each iteration of the fitting algorithm in the \code{shim}
+  the weights at each iteration of the fitting algorithm in the \code{sail}
   function
 }

@@ -14,7 +14,7 @@ observation vector. This must include all main effects and interactions as
 well, with column names corresponding to the names of the main effects
 (e.g. \code{x1, x2, E}) and their interactions (e.g. \code{x1:E, x2:E}).
 All columns should be scaled to have mean 0 and variance 1; this is done
-internally by the \code{\link{shim}} function.}
+internally by the \code{\link{sail}} function.}
 
 \item{y}{response variable (matrix form) of dimension \code{n x 1}}
 
@@ -33,7 +33,7 @@ separated by a colon (e.g. \code{x1:e, x2:e})}
 \description{
 uses ridge regression from \code{glmnet} package to calculate
   the adaptive weights used in the fitting algorithm implemented in the
-  \code{shim} function.
+  \code{sail} function.
 }
 \details{
 Ridge regression is performed using the

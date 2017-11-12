@@ -114,7 +114,7 @@ lspath <- function(x, y, e, df,
     # lambda.beta and lambda.gamma then they this will not take all possible
     # combinations of lambda.beta and lambda.gamma. It will be the first element
     # of each as a pair, and so on. This is done on purpose for use with
-    # the cv.shim function which uses the same lambda sequences for each fold...
+    # the cv.sail function which uses the same lambda sequences for each fold...
     lambda_gamma_list <- lapply(seq_len(length(lambda.gamma)),
                                 function(i) lambda.gamma[i])
 

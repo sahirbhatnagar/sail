@@ -43,8 +43,8 @@ note that \deqn{y = \beta_0 + \beta_1 x_1 + ... + \beta_p x_p +
 
   This function is used because the fitting algorithm estimates the gammas,
   and furthermore, the L1 penalty is placed on the gammas. It is used only in
-  the initialization step in the \code{\link{shim}} function
+  the initialization step in the \code{\link{sail}} function
 }
 \seealso{
-\code{\link{shim}}, \code{\link{Q_theta}}
+\code{\link{sail}}, \code{\link{Q_theta}}
 }

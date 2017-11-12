@@ -1,11 +1,11 @@
-Package: funshim
-Title: What the Package Does (one line, title case)
+Package: sail
+Title: Strong Additive Interaction Learning
 Version: 0.0.0.9000
 Authors@R: c(
   person("Sahir", "Bhatnagar", email = "sahir.bhatnagar@gmail.com",
   role = c("aut", "cre"), comment = "http://sahirbhatnagar.com/"),
   person("Yi", "Yang", email = "yi.yang6@mcgill.ca",
-  role = c("aut"))
+  role = c("aut"), comment = "http://www.math.mcgill.ca/yyang/")
   )
 Description: What the package does (one paragraph).
 Depends: R (>= 3.4.0)
