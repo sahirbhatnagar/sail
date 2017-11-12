@@ -10,7 +10,7 @@
 #'   well, with column names corresponding to the names of the main effects
 #'   (e.g. \code{x1, x2, E}) and their interactions (e.g. \code{x1:E, x2:E}).
 #'   All columns should be scaled to have mean 0 and variance 1; this is done
-#'   internally by the \code{\link{shim}} function.
+#'   internally by the \code{\link{sail}} function.
 #' @param y response variable. For \code{family="gaussian"} should be a 1 column
 #'   matrix or numeric vector. For \code{family="binomial"}, if the response is
 #'   a vector it can be numeric with 0 for failure and 1 for success, or a
@@ -29,7 +29,7 @@
 #'   the column names of \code{x}
 #' @param lambda.beta sequence of tuning parameters for the main effects. If
 #'   \code{NULL} (default), this function will automatically calculate a
-#'   sequence using the \code{\link{shim_once}} function which will be over a
+#'   sequence using the \code{\link{sail_once}} function which will be over a
 #'   grid of tuning parameters for gamma as well. If the user specifies a
 #'   sequence then this function will not automatically perform the serach over
 #'   a grid. You will need to create the grid yourself e.g. repeat the
@@ -37,7 +37,7 @@
 #' @param lambda.gamma sequence of tuning parameters for the interaction
 #'   effects. Default is \code{NULL} which means this function will
 #'   automatically calculate a sequence of tuning paramters. See
-#'   \code{\link{shim_once}} for details on how this sequence is calculated.
+#'   \code{\link{sail_once}} for details on how this sequence is calculated.
 #' @param nlambda.gamma number of tuning parameters for gamma. This needs to be
 #'   specified even for user defined inputs
 #' @param nlambda.beta number of tuning parameters for beta. This needs to be
@@ -53,7 +53,7 @@
 #' @param maxit Maximum number of passes over the data for all tuning
 #'   parameter values; default is 100.
 #' @param cores The number of cores to use for certain calculations in the
-#'   \code{\link{shim}} function, i.e. at most how many child processes will be
+#'   \code{\link{sail}} function, i.e. at most how many child processes will be
 #'   run simultaneously using the \code{parallel} package. Must be at least one,
 #'   and parallelization requires at least two cores. Default is 2.
 #' @param initialization.type The procedure used to estimate the regression
@@ -86,7 +86,7 @@
 #'   there are 10 lambda_gammas, and 20 lambda_betas, then the first
 #'   lambda_gamma gets repeated 20 times. So the first twenty entries of tuning
 #'   parameters correspond to 1 lambda_gamma and the 20 lambda_betas
-#' @return An object with S3 class "shim" \describe{ \item{b0}{Intercept
+#' @return An object with S3 class "sail" \describe{ \item{b0}{Intercept
 #'   sequence of length \code{nlambda}} \item{beta}{A nvars x \code{nlambda}
 #'   matrix of main effects (\eqn{\beta}) coefficients, stored in sparse column
 #'   format \code{("CsparseMatrix")}} \item{alpha}{A nvars x \code{nlambda}
@@ -111,9 +111,9 @@
 #' @note if the user specifies lambda.beta and lambda.gamma then they this will
 #'   not take all possible combinations of lambda.beta and lambda.gamma. It will
 #'   be the first element of each as a pair, and so on. This is done on purpose
-#'   for use with the cv.shim function which uses the same lambda sequences for
+#'   for use with the cv.sail function which uses the same lambda sequences for
 #'   each fold.
-#' @seealso \code{\link{shim_once}}
+#' @seealso \code{\link{sail_once}}
 #' @examples
 #' # number of observations
 #' n <- 100
@@ -143,7 +143,7 @@
 #' # standardize data
 #' data_std <- standardize(X,Y)
 #'
-#' result <- shim(x = data_std$x, y = data_std$y,
+#' result <- sail(x = data_std$x, y = data_std$y,
 #'             main.effect.names = main_effect_names,
 #'             interaction.names = interaction_names)
 #' @author Sahir Bhatnagar
@@ -152,7 +152,7 @@
 #'
 #' @export
 
-funshim <- function(x, y, e, df,
+sail <- function(x, y, e, df,
                     group.penalty = c("gglasso", "MCP", "SCAD"),
                     family = c("gaussian", "binomial"),
                     weights,
@@ -267,18 +267,18 @@ funshim <- function(x, y, e, df,
 
   fit$call <- this.call
   fit$nobs <- nobs
-  class(fit) = c(class(fit), "funshim")
+  class(fit) = c(class(fit), "sail")
   fit
 
   }
 
 
-#' Cross-validation for shim
+#' Cross-validation for sail
 #'
-#' @description Does k-fold cross-validation for shim and determines the optimal
+#' @description Does k-fold cross-validation for sail and determines the optimal
 #'   pair of tuning parameters (\eqn{\lambda_\beta} and \eqn{\lambda_\gamma})
 #'
-#' @inheritParams shim
+#' @inheritParams sail
 #' @param parallel If \code{TRUE}, use parallel \code{foreach} to fit each fold.
 #'   Must register parallel before hand using the
 #'   \code{\link[doMC]{registerDoMC}} function from the \code{doMC} package. See
@@ -289,19 +289,19 @@ funshim <- function(x, y, e, df,
 #' @param nfolds number of folds - default is 10. Although nfolds can be as
 #'   large as the sample size (leave-one-out CV), it is not recommended for
 #'   large datasets. Smallest value allowable is \code{nfolds=3}
-#' @details The function runs shim nfolds+1 times; the first to get the tuning
+#' @details The function runs sail nfolds+1 times; the first to get the tuning
 #'   parameter sequences, and then the remainder to compute the fit with each of
 #'   the folds omitted. The error is accumulated, and the average error and
 #'   standard deviation over the folds is computed. Note also that the results
-#'   of cv.shim are random, since the folds are selected at random using the
+#'   of cv.sail are random, since the folds are selected at random using the
 #'   \code{\link{createfolds}} function. Users can reduce this randomness by
-#'   running cv.shim many times, and averaging the error curves.
+#'   running cv.sail many times, and averaging the error curves.
 #' @author Sahir Bhatnagar
 #'
 #'   Maintainer: Sahir Bhatnagar \email{sahir.bhatnagar@@mail.mcgill.ca}
 #' @export
 
-cv.funshim <- function(x, y, e, df,
+cv.sail <- function(x, y, e, df,
                        weights,
                        lambda.beta = NULL, lambda.gamma = NULL,
                        nlambda.gamma = 10,
@@ -328,21 +328,21 @@ cv.funshim <- function(x, y, e, df,
   type.measure <- match.arg(type.measure)
 
   if (!is.null(lambda.beta) && length(lambda.beta) < 2)
-    stop("Need more than one value of lambda.beta for cv.funshim")
+    stop("Need more than one value of lambda.beta for cv.sail")
   if (!is.null(lambda.gamma) && length(lambda.gamma) < 2)
-    stop("Need more than one value of lambda.gamma for cv.funshim")
+    stop("Need more than one value of lambda.gamma for cv.sail")
 
   N <- nrow(x)
   if (missing(weights))
     weights = rep(1, N)
   else weights = as.double(weights)
   y <- drop(y)
-  funshim.call <- match.call(expand.dots = TRUE)
-  which <- match(c("type.measure", "nfolds"), names(funshim.call), F)
-  if (any(which)) funshim.call = funshim.call[-which]
-  funshim.call[[1]] = as.name("funshim")
+  sail.call <- match.call(expand.dots = TRUE)
+  which <- match(c("type.measure", "nfolds"), names(sail.call), F)
+  if (any(which)) sail.call = sail.call[-which]
+  sail.call[[1]] = as.name("sail")
 
-  funshim.object <- funshim(x = x, y = y, e = e, df = df,
+  sail.object <- sail(x = x, y = y, e = e, df = df,
                             weights = weights,
                             lambda.beta = lambda.beta,
                             lambda.gamma = lambda.gamma,
@@ -351,10 +351,10 @@ cv.funshim <- function(x, y, e, df,
                             nlambda.beta = nlambda.beta,
                             ...)
 # browser()
-  funshim.object$call = funshim.call
+  sail.object$call = sail.call
 
-  nz.main = sapply(predict(funshim.object, type = "nonzero")[["main"]], length)
-  nz.interaction = sapply(predict(funshim.object, type = "nonzero")[["interaction"]], length)
+  nz.main = sapply(predict(sail.object, type = "nonzero")[["main"]], length)
+  nz.interaction = sapply(predict(sail.object, type = "nonzero")[["interaction"]], length)
 
   foldid <- createfolds(y, k = nfolds)
   if (nfolds < 3)
@@ -374,16 +374,16 @@ cv.funshim <- function(x, y, e, df,
       if (is.matrix(y)) y_sub = y[!which, ] else y_sub = y[!which]
       #print(paste("Foldid = ",i))
       pb$tick()
-      funshim(x = x[!which, , drop = FALSE],
+      sail(x = x[!which, , drop = FALSE],
               y = y_sub,
               e = e[!which],
               df = df,
               weights = weights[!which],
-              lambda.beta = funshim.object$lambda.beta,
-              lambda.gamma = funshim.object$lambda.gamma,
-              nlambda = funshim.object$nlambda,
-              nlambda.gamma = funshim.object$nlambda.gamma,
-              nlambda.beta = funshim.object$nlambda.beta, ...)
+              lambda.beta = sail.object$lambda.beta,
+              lambda.gamma = sail.object$lambda.gamma,
+              nlambda = sail.object$nlambda,
+              nlambda.gamma = sail.object$nlambda.gamma,
+              nlambda.beta = sail.object$nlambda.beta, ...)
 
     }
   } else {
@@ -395,29 +395,29 @@ cv.funshim <- function(x, y, e, df,
 
         pb$tick()
 
-        outlist[[i]] = funshim(x[!which, , drop = FALSE],
+        outlist[[i]] = sail(x[!which, , drop = FALSE],
                                y = y_sub,
                                e = e[!which],
                                df = df,
                                weights = weights[!which],
-                               lambda.beta = funshim.object$lambda.beta,
-                               lambda.gamma = funshim.object$lambda.gamma,
-                               nlambda = funshim.object$nlambda,
-                               nlambda.gamma = funshim.object$nlambda.gamma,
-                               nlambda.beta = funshim.object$nlambda.beta, ...)
+                               lambda.beta = sail.object$lambda.beta,
+                               lambda.gamma = sail.object$lambda.gamma,
+                               nlambda = sail.object$nlambda,
+                               nlambda.gamma = sail.object$nlambda.gamma,
+                               nlambda.beta = sail.object$nlambda.beta, ...)
     }
   }
 
-  lambda.beta <- funshim.object$lambda.beta
-  lambda.gamma <- funshim.object$lambda.gamma
-  fun <- paste("cv", class(funshim.object)[[1]], sep = "_")
+  lambda.beta <- sail.object$lambda.beta
+  lambda.gamma <- sail.object$lambda.gamma
+  fun <- paste("cv", class(sail.object)[[1]], sep = "_")
   cvstuff <- do.call(fun, list(outlist = outlist,
                                y = y, df = df,
-                               design = funshim.object$design,
+                               design = sail.object$design,
                                foldid = foldid,
-                               nlambda = funshim.object$nlambda,
-                               nlambda.beta = funshim.object$nlambda.beta,
-                               nlambda.gamma = funshim.object$nlambda.gamma))
+                               nlambda = sail.object$nlambda,
+                               nlambda.beta = sail.object$nlambda.beta,
+                               nlambda.gamma = sail.object$nlambda.gamma))
 
   cvm <- cvstuff$cvm
   cvsd <- cvstuff$cvsd
@@ -427,8 +427,8 @@ cv.funshim <- function(x, y, e, df,
   # that converged over all folds.
   nas <- (is.na(cvsd) + (cvstuff$converged != nfolds)) != 0
   if (any(nas)) {
-    lambda.beta = funshim.object$lambda.beta[!nas]
-    lambda.gamma = funshim.object$lambda.gamma[!nas]
+    lambda.beta = sail.object$lambda.beta[!nas]
+    lambda.gamma = sail.object$lambda.gamma[!nas]
     cvm = cvm[!nas]
     cvsd = cvsd[!nas]
     # this is the total number of non-zero parameters (both betas and alphas)
@@ -452,7 +452,7 @@ cv.funshim <- function(x, y, e, df,
               cvm = cvm, cvsd = cvsd, cvup = cvm + cvsd,
               cvlo = cvm - cvsd, nz.main = nz.main, name = cvname,
               nz.interaction = nz.interaction,
-              funshim.fit = funshim.object, converged = cvstuff$converged,
+              sail.fit = sail.object, converged = cvstuff$converged,
               cvm.mat.all = cvstuff$cvm.mat.all,
               df = df, nfolds = nfolds)
 
@@ -460,7 +460,7 @@ cv.funshim <- function(x, y, e, df,
     getmin_type(lambda.beta, -cvm, cvsd, type = "beta") else getmin_type(lambda.beta, cvm, cvsd, type = "beta")
 
   obj <- c(out, as.list(lamin.beta))
-  class(obj) <- "cv.funshim"
+  class(obj) <- "cv.sail"
   obj
 }
 

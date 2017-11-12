@@ -1,16 +1,16 @@
-#' Plot the cross-validation curve produced by cv.shim
+#' Plot the cross-validation curve produced by cv.sail
 #'
 #' @description Plots the cross-validation curve, and upper and lower standard
 #'   deviation curves, as a function of the \eqn{\lambda_\beta} and
 #'   \eqn{\lambda_\gamma} values used. Using \code{ggplot2} facet plots, each
 #'   facet represents a unique value for \eqn{\lambda_\gamma}, and the x-axis is
 #'   the sequence of corresponding \eqn{\lambda_\beta}
-#' @param x fitted \code{cv.shim} object
+#' @param x fitted \code{cv.sail} object
 #' @details A plot is produced, and nothing is returned. A colored vertical line
 #'   is drawn at the pair of tuning parameters that leads to the minimum CV
 #'   error and another is drawn at the 1 standard error rule pair of tuning
 #'   parameters
-#' @seealso \code{\link{shim}} and \code{\link{cv.shim}}
+#' @seealso \code{\link{sail}} and \code{\link{cv.sail}}
 #' @author
 #' Sahir Bhatnagar
 #'
@@ -18,7 +18,7 @@
 #' @import data.table
 #' @export
 
-plot.cv.funshim <- function(x) {
+plot.cv.sail <- function(x) {
 
   pacman::p_load(ggplot2)
   pacman::p_load(data.table)
@@ -75,13 +75,13 @@ plot.cv.funshim <- function(x) {
 }
 
 
-#' Plot the coefficient plot produced by shim
+#' Plot the coefficient plot produced by sail
 #'
-#' @description Plot the coefficient plot produced by shim
+#' @description Plot the coefficient plot produced by sail
 #'
 #' @export
 
-plotCoefShim <- function(beta, norm, lambda, df, dev, label = FALSE,
+plotCoefSail <- function(beta, norm, lambda, df, dev, label = FALSE,
                          xvar = c("norm", "lambda", "dev"),
                          xlab = iname, ylab = "Coefficients", ...) {
   which = nonzero(beta)
