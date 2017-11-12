@@ -4,6 +4,9 @@
 
 \[\arg\min_{\boldsymbol{\Theta} }  \mathcal{L}(Y;\boldsymbol{\beta}) + \lambda_\beta  \left( w_E |\beta_E| + \sum_{j=1}^{p} w_j ||\theta_j||_2 \right) +  \lambda_\gamma \sum_{j=1}^{p} w_{jE} |\gamma_{j}|\]
 
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=\arg\min_{\boldsymbol{\Theta}&space;}&space;\mathcal{L}(Y;\boldsymbol{\beta})&space;&plus;&space;\lambda_\beta&space;\left(&space;w_E&space;|\beta_E|&space;&plus;&space;\sum_{j=1}^{p}&space;w_j&space;||\theta_j||_2&space;\right)&space;&plus;&space;\lambda_\gamma&space;\sum_{j=1}^{p}&space;w_{jE}&space;|\gamma_{j}|" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\arg\min_{\boldsymbol{\Theta}&space;}&space;\mathcal{L}(Y;\boldsymbol{\beta})&space;&plus;&space;\lambda_\beta&space;\left(&space;w_E&space;|\beta_E|&space;&plus;&space;\sum_{j=1}^{p}&space;w_j&space;||\theta_j||_2&space;\right)&space;&plus;&space;\lambda_\gamma&space;\sum_{j=1}^{p}&space;w_{jE}&space;|\gamma_{j}|" title="\arg\min_{\boldsymbol{\Theta} } \mathcal{L}(Y;\boldsymbol{\beta}) + \lambda_\beta \left( w_E |\beta_E| + \sum_{j=1}^{p} w_j ||\theta_j||_2 \right) + \lambda_\gamma \sum_{j=1}^{p} w_{jE} |\gamma_{j}|" /></a>
+
 where
 
 \[\mathcal{L}(Y;\boldsymbol{\beta}) = \frac{1}{2} ||Y - \beta_0 \cdot \boldsymbol{1} + \sum_{j=1}^p \boldsymbol{\Psi}_j \theta_j + \beta_E X_E + \sum_{j=1}^p \gamma_{j}  \beta_E X_E \boldsymbol{\Psi}_j \theta_j||_2^2\]
