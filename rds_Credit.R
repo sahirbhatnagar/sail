@@ -6,6 +6,7 @@ pacman::p_load(data.table)
 pacman::p_load(magrittr)
 pacman::p_load(genefilter)
 pacman::p_load(tidyverse)
+pacman::p_load(latex2exp)
 
 library(ISLR)
 data("Credit")
@@ -75,8 +76,18 @@ trop <- RSkittleBrewer::RSkittleBrewer("trop")
 fit$funshim.fit$x
 
 
-# Credit Data Main Effects ------------------------------------------------
 
+# MGCV --------------------------------------------------------------------
+
+pacman::p_load(mgcv)
+
+fit_gam <- gam.fit()
+
+
+# Credit Data Main Effects ------------------------------------------------
+fit <- readRDS(file = "data/cvfit_credit_data_df3_interaction_with_student.rds")
+lambda_type <- "lambda.1se"
+trop <- RSkittleBrewer::RSkittleBrewer("trop")
 
 dev.off()
 png("/home/sahir/Dropbox/jobs/hec/talk/credit_sail_main.png", width=14,height=8,units="in",res=150)
@@ -266,6 +277,81 @@ dev.off()
 
 
 
+
+
+# Credit Interaction Effect Without Legend --------------------------------
+
+png("/home/sahir/Dropbox/jobs/hec/talk/credit_sail_interactions_no_legend.png", width=11,height=8,units="in",res=150)
+par(mfrow=c(2,3), tcl=-0.5, family="serif", omi=c(0.2,0.2,0,0))
+i = "X1";j = "Income"
+colnames(X)
+par(mai=c(0.55,0.6,0.1,0.2))
+
+lin_pred <- fit$funshim.fit$design[,paste(i,seq_len(fit$funshim.fit$df), sep = "_")] %*%
+  coef(fit, s = lambda_type)[paste(i,seq_len(fit$funshim.fit$df), sep = "_"),,drop=F] +
+  fit$funshim.fit$design[,"X_E",drop=F] %*%
+  coef(fit, s = lambda_type)["X_E",,drop=F] +
+  fit$funshim.fit$design[,paste0(paste(i,seq_len(fit$funshim.fit$df), sep = "_"),":X_E")] %*%
+  coef(fit, s = lambda_type)[paste0(paste(i,seq_len(fit$funshim.fit$df), sep = "_"),":X_E"),,drop=F]
+
+unexposed_index <- which(fit$funshim.fit$design[,"X_E"]==0)
+exposed_index <- which(fit$funshim.fit$design[,"X_E"]==1)
+
+e0 <- lin_pred[unexposed_index,]
+e1 <- lin_pred[exposed_index,]
+plot(X[,j], lin_pred,
+     pch = 19,
+     ylab = "Balance",
+     xlab = TeX(sprintf("$%s$",j)),
+     col = trop[1],
+     bty="n",
+     xaxt="n",
+     type = "n",
+     cex.lab = 2,
+     cex.axis = 2,
+     cex = 2)#,
+# ylim = c(min.length.top, max.length.top))
+axis(1, labels = T, cex.axis = 2)
+points(X[exposed_index,j], e1, pch = 19, col = trop[2], cex = 1.5)
+points(X[unexposed_index,j], e0, pch = 19, col = trop[1], cex = 1.5)
+# legend("bottomleft", c("Student","Not a Student"), col = trop[2:1], pch = 19, cex = 1.5, bty = "n")
+
+
+for(i in paste0("X",2:5)) {
+  j <- switch(i,
+              "X2" = "Limit", "X3" = "Rating", "X4" = "Cards", "X5" = "Age")
+
+  lin_pred <- fit$funshim.fit$design[,paste(i,seq_len(fit$funshim.fit$df), sep = "_")] %*%
+    coef(fit, s = lambda_type)[paste(i,seq_len(fit$funshim.fit$df), sep = "_"),,drop=F] +
+    fit$funshim.fit$design[,"X_E",drop=F] %*%
+    coef(fit, s = lambda_type)["X_E",,drop=F] +
+    fit$funshim.fit$design[,paste0(paste(i,seq_len(fit$funshim.fit$df), sep = "_"),":X_E")] %*%
+    coef(fit, s = lambda_type)[paste0(paste(i,seq_len(fit$funshim.fit$df), sep = "_"),":X_E"),,drop=F]
+
+  unexposed_index <- which(fit$funshim.fit$design[,"X_E"]==0)
+  exposed_index <- which(fit$funshim.fit$design[,"X_E"]==1)
+
+  e0 <- lin_pred[unexposed_index,]
+  e1 <- lin_pred[exposed_index,]
+  plot(X[,j], lin_pred,
+       pch = 19,
+       ylab = if(i=="X4") "Balance" else "",
+       xlab = TeX(sprintf("$%s$",j)),
+       col = trop[1],
+       bty="n",
+       xaxt="n",
+       type = "n",
+       cex.lab = 2,
+       cex.axis = 2,
+       cex = 2)
+  #, ylim = c(min.length.top, max.length.top))
+  axis(1, labels = T, cex.axis = 2)
+  points(X[exposed_index,j], e1, pch = 19, col = trop[2], cex = 1.5)
+  points(X[unexposed_index,j], e0, pch = 19, col = trop[1], cex = 1.5)
+}
+plot.new()
+text(0.4,0.4, labels = c("Which color\n represents\n a Student?"), cex = 2.5)
+dev.off()
 
 
 
