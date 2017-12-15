@@ -29,8 +29,8 @@ lspath <- function(x, y, e, df,
   # cores = 1;
   # df = DT$df;
   # center=TRUE; normalize=TRUE; verbose = TRUE
-# ==============================================================
-# print(lambda.factor)
+  # ==============================================================
+  # print(lambda.factor)
   # browser()
   y <- drop(y)
   e <- drop(e)
@@ -77,7 +77,8 @@ lspath <- function(x, y, e, df,
                                     main.effect.names.list = list_group_main,
                                     interaction.names.list = list_group_inter,
                                     include.intercept = F)
-
+  # browser()
+  adaptive.weights[,1] <- 1
   # used in the warm start strategy because we ONLY want to use warm starts
   # for each lambda_gamma for a fixed lambda_beta. For the next lambda_beta
   # we restart using the initial values
@@ -86,15 +87,17 @@ lspath <- function(x, y, e, df,
   betas_and_alphas <- uni_fun(x = x, y = y,
                               include.intercept = F,
                               type = initialization.type)
-# browser()
+
+  betas_and_alphas[,1] <- 0
+  # browser()
   if (is.null(lambda.gamma) & is.null(lambda.beta)) {
 
     # the sequence needs to have beta fixed first and then iterate over
     # lambda_gamma. Ive tried it the other oway arpund and the solutions are
     # too sparse
     lamb <- if (nlambda.beta == 1) rev(lambda_sequence(x, y, nlambda = nlambda.gamma,
-                                lambda.factor = lambda.factor)) else rev(lambda_sequence(x, y, nlambda = nlambda.beta,
-                                                                                         lambda.factor = lambda.factor))
+      lambda.factor = lambda.factor)) else rev(lambda_sequence(x, y, nlambda = nlambda.beta,
+                                                               lambda.factor = lambda.factor))
     lambda.beta <- rep(lamb, each = nlambda.beta)
     lambda.gamma <- rep(lamb, nlambda.beta)
 
@@ -134,7 +137,11 @@ lspath <- function(x, y, e, df,
   # for example, if there are 100 total lambdas = 10 x 10 grid, then
   # the 11th combination should not use previous values. it should re-start
   # using the initializations
-  switchWarmStart <- data.frame(X1 = cbind(seq(from = 1 + nlambda.gamma, to = nlambda, by = nlambda.gamma)))
+
+  # ignoring this for now (Nov 11, 2017)
+  # switchWarmStart <- data.frame(X1 = cbind(seq(from = 1 + nlambda.gamma, to = nlambda, by = nlambda.gamma)))
+
+
   # this matrix is in the correct order such that the result of one tuning
   # parameter should be the warm start for the next parameter, accounting
   # for the fact that the search is being done over a grid. This should be
@@ -396,26 +403,29 @@ lspath <- function(x, y, e, df,
     # for a fixed lambda.beta, keep using the previous solution for each lambda.gamma
     # for the next fixed lambda.beta restart the calculation using the initial value
     # from the uni_fun function
-    betaWarmStart <- if (lambdaIndex %ni% switchWarmStart$X1) beta_hat_next
-
-    gammaWarmStart <- if (lambdaIndex %ni% switchWarmStart$X1) gamma_hat_next
+    # betaWarmStart <- if (lambdaIndex %ni% switchWarmStart$X1) beta_hat_next
+    # trying without warm start
 
     # uni_start <- rbind(beta_hat_next, gamma_hat_next)
-    uni_start <- if (lambdaIndex %ni% switchWarmStart$X1) {
-      rbind(betaWarmStart, gammaWarmStart) } else {
-        uni_start_iteration1
-      }
+    # uni_start <- if (lambdaIndex %ni% switchWarmStart$X1) {
+    #   rbind(betaWarmStart, gammaWarmStart) } else {
+    #     uni_start_iteration1
+    #   }
+
+    uni_start <- uni_start_iteration1
 
     # need to update weights also!
-    adaptive.weights <- if (lambdaIndex %ni% switchWarmStart$X1) {
-      update_weights(betas = betaWarmStart,
-                     # gammas = gammaWarmStart,
-                     alphas = Betas_and_Alphas[interaction_names,,drop=F],
-                     main.effect.names = list_group_main,
-                     interaction.names = list_group_inter,
-                     group = group) } else {
-                       adaptive.weights.start
-                     }
+    # adaptive.weights <- if (lambdaIndex %ni% switchWarmStart$X1) {
+    #   update_weights(betas = betaWarmStart,
+    #                  # gammas = gammaWarmStart,
+    #                  alphas = Betas_and_Alphas[interaction_names,,drop=F],
+    #                  main.effect.names = list_group_main,
+    #                  interaction.names = list_group_inter,
+    #                  group = group) } else {
+    #                    adaptive.weights.start
+    #                  }
+
+    adaptive.weights <- adaptive.weights.start
 
     devianceDiff <- outPrint[lambdaIndex,"deviance"] - outPrint[lambdaIndex-1,"deviance"]
     #coefficientMat[,LAMBDA] <- Betas_and_Alphas

@@ -7,6 +7,7 @@ pacman::p_load(magrittr)
 pacman::p_load(genefilter)
 pacman::p_load(tidyverse)
 pacman::p_load(latex2exp)
+pacman::p_load(glmnet)
 
 library(ISLR)
 data("Credit")
@@ -85,12 +86,16 @@ fit_gam <- gam.fit()
 
 
 # Credit Data Main Effects ------------------------------------------------
-fit <- readRDS(file = "data/cvfit_credit_data_df3_interaction_with_student.rds")
+fit <- readRDS(file = "~/git_repositories/sail/data/cvfit_credit_data_df3_interaction_with_student.rds")
 lambda_type <- "lambda.1se"
 trop <- RSkittleBrewer::RSkittleBrewer("trop")
 
+class(fit)
+class(fit) <- "cv.sail"
+
 dev.off()
 png("/home/sahir/Dropbox/jobs/hec/talk/credit_sail_main.png", width=14,height=8,units="in",res=150)
+pdf("/home/sahir/Dropbox/jobs/hec/talk/credit_sail_main.pdf", width=14,height=8)
 par(mfrow=c(2,5), tcl=-0.5, family="serif", omi=c(0.2,0.2,0,0))
 i = "X1";j = "Income"
 colnames(X)
@@ -108,10 +113,10 @@ plot(X[,j], fit$funshim.fit$design[,paste(i,seq_len(fit$funshim.fit$df), sep = "
      cex.axis = 2,
      cex = 1.5)#,
      # ylim = c(min.length.top, max.length.top))
-axis(1, labels = T, cex.axis = 2)
+axis(1, cex.axis = 2, at = c(10,50,100,150,190), labels = c(10,50,100,150,190))
+
 # points(DT$x[,i], fit$design[,paste(i,seq_len(DT$df), sep = "_")] %*% true.coefs[,i,drop=F], pch = 19, col = trop[2])
 # legend("bottomright", c("Truth","Estimated"), col = trop[2:1], pch = 19, cex = 1.5, bty = "n")
-
 
 for(i in paste0("X",2:5)) {
   j <- switch(i,
@@ -129,7 +134,8 @@ for(i in paste0("X",2:5)) {
        cex.lab = 2,
        cex.axis = 2,
        cex = 1.5)#,
-       # ylim = c(min.length.top, max.length.top))
+       # ylim = range(fit$funshim.fit$design[,paste(i,seq_len(fit$funshim.fit$df), sep = "_")] %*%
+                      # coef(fit, s = lambda_type)[paste(i,seq_len(fit$funshim.fit$df), sep = "_"),,drop=F]))
   # points(DT$x[,i], fit$design[,paste(i,seq_len(DT$df), sep = "_")] %*% true.coefs[,i,drop=F], pch = 19, col = trop[2])
   axis(1, labels = T, cex.axis = 2)
   axis(2, labels = T, cex.axis = 2)
@@ -143,7 +149,7 @@ plot(X[,j], fit$funshim.fit$design[,paste(i,seq_len(fit$funshim.fit$df), sep = "
        coef(fit, s = lambda_type)[paste(i,seq_len(fit$funshim.fit$df), sep = "_"),,drop=F],
      pch = 19,
      ylab = "Balance",
-     xlab = TeX(sprintf("$%s$",j)),
+     xlab = "Years of Education",
      col = trop[1],
      bty="n",
      xaxt="n",
@@ -156,9 +162,10 @@ axis(1, labels = T, cex.axis = 2)
 # legend("bottomright", c("Truth","Estimated"), col = trop[2:1], pch = 19, cex = 1.5, bty = "n")
 
 
-for(i in paste0("X",7:8)) {
-  j <- switch(i,
-              "X7" = "Married", "X8" = "Ethnicity")
+# for(i in paste0("X",7:8)) {
+  # j <- switch(i,
+              # "X7" = "Married", "X8" = "Ethnicity")
+  j = "Married";i="X7"
   plot(X[,j], fit$funshim.fit$design[,paste(i,seq_len(fit$funshim.fit$df), sep = "_")] %*%
          coef(fit, s = lambda_type)[paste(i,seq_len(fit$funshim.fit$df), sep = "_"),,drop=F],
        pch = 19,
@@ -173,9 +180,29 @@ for(i in paste0("X",7:8)) {
        cex = 1.5)#,
   # ylim = c(min.length.top, max.length.top))
   # points(DT$x[,i], fit$design[,paste(i,seq_len(DT$df), sep = "_")] %*% true.coefs[,i,drop=F], pch = 19, col = trop[2])
-  axis(1, labels = T, cex.axis = 2)
+  axis(1, labels = c("No","Yes"), cex.axis = 2, at = c(0,1))
   axis(2, labels = T, cex.axis = 2)
-}
+# }
+
+  j = "Ethnicity";i="X8"
+  plot(X[,j], fit$funshim.fit$design[,paste(i,seq_len(fit$funshim.fit$df), sep = "_")] %*%
+         coef(fit, s = lambda_type)[paste(i,seq_len(fit$funshim.fit$df), sep = "_"),,drop=F],
+       pch = 19,
+       ylab = "",
+       xlab = TeX(sprintf("$%s$",j)),
+       col = trop[1],
+       bty="n",
+       yaxt="n",
+       xaxt="n",
+       cex.lab = 2,
+       cex.axis = 2,
+       cex = 1.5)#,
+  # ylim = c(min.length.top, max.length.top))
+  # points(DT$x[,i], fit$design[,paste(i,seq_len(DT$df), sep = "_")] %*% true.coefs[,i,drop=F], pch = 19, col = trop[2])
+  axis(1, labels = c("Caucasian", "Asian","African\nAmerican"), cex.axis = 2, at = c(0,1,2))
+  axis(2, labels = T, cex.axis = 2)
+
+
 
 i = "X_E";j = "Student"
 colnames(X)
@@ -190,9 +217,8 @@ plot(E, fit$funshim.fit$design[,"X_E"] %*%
      xaxt="n",
      cex.lab = 2,
      cex.axis = 2,
-     cex = 1.5)#,
-# ylim = c(min.length.top, max.length.top))
-axis(1, labels = T, cex.axis = 2)
+     cex = 1.5, ylim = c(0, 50))
+axis(1, labels = c("No", "Yes"), cex.axis = 2, at = c(0,1))
 dev.off()
 # plot.new()
 # legend("center", c("Student","Not a Student"), col = trop[2:1], pch = 19, cex = 2.5, bty = "n")
@@ -202,7 +228,9 @@ dev.off()
 # Credit Data Interaction Effects -----------------------------------------
 
 
-png("/home/sahir/Dropbox/jobs/hec/talk/credit_sail_interactions.png", width=11,height=8,units="in",res=150)
+# png("/home/sahir/Dropbox/jobs/hec/talk/credit_sail_interactions.png", width=11,height=8,units="in",res=150)
+pdf("/home/sahir/Dropbox/jobs/hec/talk/credit_sail_interactions.pdf", width=11,height=8)
+
 par(mfrow=c(2,3), tcl=-0.5, family="serif", omi=c(0.2,0.2,0,0))
 i = "X1";j = "Income"
 colnames(X)
@@ -264,8 +292,8 @@ for(i in paste0("X",2:5)) {
        type = "n",
        cex.lab = 2,
        cex.axis = 2,
-       cex = 2)
-       #, ylim = c(min.length.top, max.length.top))
+       cex = 2,
+       ylim = c(min(lin_pred), max(lin_pred)*1.08))
   axis(1, labels = T, cex.axis = 2)
   points(X[exposed_index,j], e1, pch = 19, col = trop[2], cex = 1.5)
   points(X[unexposed_index,j], e0, pch = 19, col = trop[1], cex = 1.5)
@@ -282,6 +310,8 @@ dev.off()
 # Credit Interaction Effect Without Legend --------------------------------
 
 png("/home/sahir/Dropbox/jobs/hec/talk/credit_sail_interactions_no_legend.png", width=11,height=8,units="in",res=150)
+
+pdf("/home/sahir/Dropbox/jobs/hec/talk/credit_sail_interactions_no_legend.pdf", width=11,height=8)
 par(mfrow=c(2,3), tcl=-0.5, family="serif", omi=c(0.2,0.2,0,0))
 i = "X1";j = "Income"
 colnames(X)
@@ -343,8 +373,8 @@ for(i in paste0("X",2:5)) {
        type = "n",
        cex.lab = 2,
        cex.axis = 2,
-       cex = 2)
-  #, ylim = c(min.length.top, max.length.top))
+       cex = 2,
+       ylim = c(min(lin_pred), max(lin_pred)*1.08))
   axis(1, labels = T, cex.axis = 2)
   points(X[exposed_index,j], e1, pch = 19, col = trop[2], cex = 1.5)
   points(X[unexposed_index,j], e0, pch = 19, col = trop[1], cex = 1.5)

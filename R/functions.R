@@ -687,7 +687,7 @@ convert2 <- function(beta,
                                        as.vector(do.call(c, interaction.names)))
 
   alphas <- do.call(rbind,lapply(unique(group), function(ind) {
-    as.matrix(gamma[ind,] * beta["X_E",] * beta[main.effect.names[[ind]],])
+    as.matrix(gamma[ind,] * beta["X_E",] * beta[main.effect.names[[ind]],,drop = FALSE])
   }))
 
   rownames(alphas) <- paste(rownames(alphas), "X_E", sep = ":")

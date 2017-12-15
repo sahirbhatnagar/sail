@@ -10,3 +10,4 @@ data/*
 .Rproj.user
 .Rhistory
 .RData
+*.pdf
