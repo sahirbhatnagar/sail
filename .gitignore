@@ -11,7 +11,8 @@ data/*
 .Rhistory
 .RData
 *.pdf
- files/**
- my_sims/**
- R/kkt.R
- goals2.png
+files/
+my_sims/
+goals2.png
+goals.png
+goals3.png
