@@ -4,7 +4,25 @@ devtools::load_all()
 data.table:::cedta()
 # devtools::document()
 set.seed(12345)
-# DT <- gendata(n = 400, p = 10, df = 5, SNR = 2)
+DT <- gendata(n = 400, p = 10, df = 5, SNR = 2)
+
+pacman::p_load(mgcv)
+dat <- data.frame(Y = DT$y, DT$x, E = DT$e)
+colnames(dat)
+b <- gam(Y ~ E + s(X1) + s(X2) + s(X3)+ s(X4)+ s(X5)+ s(X6)+ s(X7) +
+           s(X8) + s(X9) + s(X10) +
+           # s(X11) + s(X12) + s(X13)+ s(X14)+ s(X15)+ s(X16)+ s(X17)+
+           # s(X18) + s(X19) + s(X20) +
+           ti(X1, E) + ti(X2, E) + ti(X3, E) + ti(X4, E) + ti(X5, E) + ti(X6, E) +
+           ti(X7, E) + ti(X8, E) + ti(X9, E) + ti(X10, E),  #+
+           # ti(X11, E) + ti(X12, E) + ti(X13, E) + ti(X14, E) + ti(X15, E) + ti(X16, E) +
+           # ti(X17, E) + ti(X18, E) + ti(X19, E) + ti(X20, E)
+           data = dat, select=TRUE, method="REML")
+
+summary(b)
+coef(b)
+
+b$model
 # # DT <- gendata2(n = 400, p = 10, corr = 0, SNR = 3.11)
 # cvfit <- cv.sail(x = DT$x, y = DT$y, e = DT$e, df = DT$df, maxit = 500, cores = 5,
 #                  nfolds = 5,
@@ -248,7 +266,8 @@ dev.off()
 
 
 # gendata plot interactions effects ---------------------------------------------
-i = "X2"
+i = "X1"
+
 x <- seq(range(DT$x[,i])[1], range(DT$x[,i])[2], length.out = 30)
 e <- seq(range(DT$e)[1], range(DT$e)[2], length.out = 30)
 f.est <- function(x, e) { e * splines::bs(x, DT$df) %*%
@@ -291,6 +310,29 @@ persp(x, e, z.est,
       ylab="X_E",
       zlab="Y", main="Estimated X_E*f(X_1)")
 dev.off()
+
+
+
+
+pdf(file="~/Dropbox/jobs/hec/talk/non_linear_example.pdf",width=11,height=8)#,units="in",res=150)
+par(tcl=-0.5, family="serif", omi=c(0.2,0.2,0,0))
+par(mai=c(0.,0.,0.3,0.))
+persp(x, e, z.truth,
+      zlim = z_range,
+      theta=30, phi=30,
+      ltheta = 120, expand = 0.5,
+      r=2, shade=0.3, axes=TRUE,scale=TRUE, box=T,
+      nticks=5,
+      # ticktype="detailed",
+      col=trop[2],
+      cex.lab = 2.5,
+      cex.main = 2.4,
+      xlab="Variable explicative",
+      ylab="Environnement",
+      zlab="Variable réponse", main="Interaction non-linéaire")
+dev.off()
+
+
 
 
 

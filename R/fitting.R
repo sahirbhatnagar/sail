@@ -232,7 +232,7 @@ lspath <- function(x, y, e, df,
                       main.effect.names = list_group_main,
                       interaction.names = list_group_inter,
                       group = group)
-    message(Q[1,1])
+    # message(Q[1,1])
 
     #iteration counter
     m <- 1
