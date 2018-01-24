@@ -152,35 +152,51 @@
 #'
 #' @export
 
-sail <- function(x, y, e, df,
-                    group.penalty = c("gglasso", "MCP", "SCAD"),
-                    family = c("gaussian", "binomial"),
-                    weights,
-                    lambda.factor = ifelse(nobs < nvars, 0.01, 0.001),
-                    lambda.beta = NULL,
-                    lambda.gamma = NULL,
-                    nlambda.gamma = 10,
-                    nlambda.beta = 10,
-                    nlambda = 100,
-                    thresh = 1e-3,
-                    maxit = 2000,
-                    initialization.type = c("ridge","univariate"),
-                    center = TRUE,
-                    normalize = FALSE,
-                    verbose = TRUE,
-                    cores = 1) {
+sail <- function(x, y, e, df = 5, degree = 3,
+                 group.penalty = c("gglasso", "MCP", "SCAD"),
+                 family = c("gaussian", "binomial"),
+                 weights, # observation weights
+                 penalty.factor = rep(1,nvars), # predictor (adaptive lasso) weights
+                 lambda.factor = ifelse(nobs < nvars, 0.01, 0.0001),
+                 lambda = NULL,
+                 alpha = 0.5,
+                 nlambda = 100,
+                 thresh = 1e-3,
+                 maxit = 2000,
+                 dfmax = nvars + 1,
+                 exclude,
+                 # initialization.type = c("ridge","univariate"),
+                 # center = TRUE,
+                 # normalize = FALSE,
+                 verbose = TRUE,
+                 cores = 1) {
 
   # browser()
 
-  # if(missing(main.effect.names)) stop("main.effect.names cannot be missing")
-  # if(missing(interaction.names)) stop("interaction.names cannot be missing")
+  ### Prepare all the generic arguments, then hand off to family functions
 
-  message(sprintf("nlambda.gamma = %f, nlambda.beta = %f", nlambda.gamma, nlambda.beta))
-
-  initialization.type <- match.arg(initialization.type)
   family <- match.arg(family)
+  if(alpha >= 1){
+    warning("alpha >=1; set to 0.99")
+    alpha <- 0.99
+  }
+  if(alpha <= 0){
+    warning("alpha <= 0; set to 0.01")
+    alpha <- 0.01
+  }
+  alpha <- as.double(alpha)
+
+  df <- as.integer(df)
+  degree <- as.integer(degree)
+
+  if(df < degree){
+    warning(sprintf("df too small, needs to be >= degree; set to %g",degree))
+    df <- degree
+  }
+
   group.penalty <- match.arg(group.penalty)
   this.call <- match.call()
+  nlam <- as.integer(nlambda)
 
   if (!is.matrix(x))
     stop("x has to be a matrix")
@@ -188,6 +204,7 @@ sail <- function(x, y, e, df,
     stop("Missing values in x not allowed")
 
   y <- drop(y)
+  e <- drop(e)
   np <- dim(x)
   if (is.null(np) | (np[2] <= 1))
     stop("x should be a matrix with 2 or more columns")
@@ -202,47 +219,57 @@ sail <- function(x, y, e, df,
   nvars <- as.integer(np[2])
   dimy <- dim(y)
   nrowy <- ifelse(is.null(dimy), length(y), dimy[1])
+  dime <- dim(e)
+  nrowe <- ifelse(is.null(dime), length(e), dime[1])
+
   if (nrowy != nobs)
     stop(paste("number of observations in y (", nrowy, ") not equal to the
                number of rows of x (", nobs, ")", sep = ""))
 
+  if (nrowe != nobs)
+    stop(paste("number of observations in e (", nrowe, ") not equal to the
+               number of rows of x (", nobs, ")", sep = ""))
+
   if (length(y) != nobs)
     stop("x and y have different number of rows")
+
+  if (length(e) != nobs)
+    stop("x and e have different number of rows")
+
   if (!is.numeric(y))
     stop("The response y must be numeric. Factors must be converted to numeric")
 
+  if (!is.numeric(e))
+    stop("The environment variable e must be numeric. Factors must be converted to numeric")
+
   vnames <- colnames(x)
-  # if (!all(c(main.effect.names, interaction.names) %in% vnames))
-  #   stop("Some variables specified in main.effect.names were not found in
-  #        the columnames of x")
+  if (is.null(vnames)) vnames <- paste("V",seq(nvars),sep="")
 
-  if (any(c(is.null(lambda.beta) & !is.null(lambda.gamma),
-            !is.null(lambda.beta) & is.null(lambda.gamma))))
-    stop("lambda.beta or lambda.gamma is NULL while the other is not NULL. Both
-         should be NULL, or both should be specified")
+  ne <- as.integer(dfmax)
+  if (missing(exclude)) exclude <- integer(0)
+  if(any(penalty.factor == Inf)) {
+    exclude <- c(exclude,seq(nvars)[penalty.factor==Inf])
+    exclude <- sort(unique(exclude))
+  }
+  if(length(exclude)>0){
+    jd <- match(exclude,seq(nvars),0)
+    if(!all(jd>0)) stop("Some excluded variables out of range")
+    penalty.factor[jd] <- 1 #ow can change lambda sequence
+    jd <- as.integer(c(length(jd),jd))
+  } else jd <- as.integer(0)
+  vp <- as.double(penalty.factor)
 
-  if (any(c(is.null(lambda.beta),is.null(lambda.gamma)))) {
-    if (lambda.factor >= 1)
-      stop("lambda.factor should be less than 1")
+  thresh <- as.double(thresh)
+
+  if(is.null(lambda)){
+    if(lambda.factor >= 1) stop("lambda.factor should be less than 1")
+    flmin <- as.double(lambda.factor)
+    ulam <- double(1)
   } else {
-    flmin = as.double(1)
-
-    nDimLambdaBeta <- dim(lambda.beta)
-    nDimLambdaGamma <- dim(lambda.gamma)
-
-    if (!is.null(nDimLambdaBeta)) {
-      if (nDimLambdaBeta[2] > 1)
-        stop("lambda.beta must be a vector or 1 column matrix") }
-
-    if (!is.null(nDimLambdaGamma)) {
-      if (nDimLambdaGamma[2] > 1)
-        stop("lambda.gamma must be a vector or 1 column matrix")}
-
-    if (any(c(lambda.beta < 0, lambda.gamma < 0)))
-      stop("lambda.beta and lambda.gamma should be non-negative")
-
-    if (length(lambda.beta) != length(lambda.gamma))
-      stop("length of lambda.beta needs to be the same as length or lambda.gamma")
+    flmin <- as.double(1)
+    if(any(lambda<0)) stop("lambdas should be non-negative")
+    ulam <- as.double(rev(sort(lambda)))
+    nlam <- as.integer(length(lambda))
   }
 
 
