@@ -156,7 +156,7 @@ sail <- function(x, y, e, df = 5, degree = 3,
                  group.penalty = c("gglasso", "MCP", "SCAD"),
                  family = c("gaussian", "binomial"),
                  weights, # observation weights
-                 penalty.factor = rep(1,nvars), # predictor (adaptive lasso) weights
+                 penalty.factor = rep(1, nvars + 1), # predictor (adaptive lasso) weights, the last entry must be for the E variable
                  lambda.factor = ifelse(nobs < nvars, 0.01, 0.0001),
                  lambda = NULL,
                  alpha = 0.5,
@@ -168,8 +168,7 @@ sail <- function(x, y, e, df = 5, degree = 3,
                  # initialization.type = c("ridge","univariate"),
                  # center = TRUE,
                  # normalize = FALSE,
-                 verbose = TRUE,
-                 cores = 1) {
+                 verbose = TRUE) {
 
   # browser()
 
@@ -258,6 +257,11 @@ sail <- function(x, y, e, df = 5, degree = 3,
     jd <- as.integer(c(length(jd),jd))
   } else jd <- as.integer(0)
   vp <- as.double(penalty.factor)
+  if (length(vp) < (nvars + 1)) stop("penalty.factor must be of length ncol(x) + 1, and
+                                     the last entry should correspond to the penalty.factor
+                                     for e")
+  wj <- vp[seq_len(nvars)] # adaptive lasso weights for main effects
+  we <- vp[length(vp)] # adaptive lasso weights for environment
 
   thresh <- as.double(thresh)
 
@@ -274,22 +278,28 @@ sail <- function(x, y, e, df = 5, degree = 3,
 
 
   fit <- switch(family,
-                gaussian = lspath(x = x, y = y, e = e, df = df,
+                gaussian = lspath(x = x,
+                                  y = y,
+                                  e = e,
+                                  df = df,
+                                  degree = degree,
                                   group.penalty = group.penalty,
                                   weights = weights,
-                                  lambda.beta = lambda.beta,
-                                  lambda.gamma = lambda.gamma,
-                                  lambda.factor = lambda.factor,
-                                  nlambda.gamma = nlambda.gamma,
-                                  nlambda.beta = nlambda.beta,
-                                  nlambda = nlambda,
+                                  nlambda = nlam,
                                   thresh = thresh,
                                   maxit = maxit,
-                                  initialization.type = initialization.type,
-                                  center = center,
-                                  normalize = normalize,
                                   verbose = verbose,
-                                  cores = cores)
+                                  alpha = alpha,
+                                  nobs = nobs,
+                                  nvars = nvars,
+                                  jd = jd,
+                                  vp = vp, # penalty.factor
+                                  wj = wj,
+                                  we = we,
+                                  flmin = flmin, # lambda.factor
+                                  vnames = vnames, #variable names
+                                  ne = ne, # dfmax
+                                  ulam = ulam)
   )
 
   fit$call <- this.call
