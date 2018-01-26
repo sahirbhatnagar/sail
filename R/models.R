@@ -156,7 +156,7 @@ sail <- function(x, y, e, df = 5, degree = 3,
                  group.penalty = c("gglasso", "MCP", "SCAD"),
                  family = c("gaussian", "binomial"),
                  weights, # observation weights
-                 penalty.factor = rep(1, nvars + 1), # predictor (adaptive lasso) weights, the last entry must be for the E variable
+                 penalty.factor = rep(1, 1 + 2 * nvars), # predictor (adaptive lasso) weights, the last entry must be for the E variable
                  lambda.factor = ifelse(nobs < nvars, 0.01, 0.0001),
                  lambda = NULL,
                  alpha = 0.5,
@@ -257,11 +257,13 @@ sail <- function(x, y, e, df = 5, degree = 3,
     jd <- as.integer(c(length(jd),jd))
   } else jd <- as.integer(0)
   vp <- as.double(penalty.factor)
-  if (length(vp) < (nvars + 1)) stop("penalty.factor must be of length ncol(x) + 1, and
-                                     the last entry should correspond to the penalty.factor
-                                     for e")
-  wj <- vp[seq_len(nvars)] # adaptive lasso weights for main effects
-  we <- vp[length(vp)] # adaptive lasso weights for environment
+  if (length(vp) < (1 + 2 * nvars)) stop("penalty.factor must be of length 1 + 2*ncol(x), and
+                                     the first entry should correspond to the penalty.factor
+                                     for X_E, the next ncol(x) correspond to main effects, and then
+                                         interactions")
+  we <- vp[1] # adaptive lasso weights for environment
+  wj <- vp[(seq_len(nvars) + 1)] # adaptive lasso weights for main effects
+  wje <- vp[(nvars + 2):length(vp)] # adaptive lasso weights for interactions
 
   thresh <- as.double(thresh)
 
@@ -294,8 +296,9 @@ sail <- function(x, y, e, df = 5, degree = 3,
                                   nvars = nvars,
                                   jd = jd,
                                   vp = vp, # penalty.factor
-                                  wj = wj,
                                   we = we,
+                                  wj = wj,
+                                  wje = wje,
                                   flmin = flmin, # lambda.factor
                                   vnames = vnames, #variable names
                                   ne = ne, # dfmax

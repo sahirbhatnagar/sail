@@ -355,6 +355,10 @@ soft <- function(x, y, beta, lambda, weight) {
 
 }
 
+SoftThreshold <- function(x, lambda) {
+  sign(x)* pmax(0, abs(x) - lambda)
+}
+
 
 #' Fit Strong Heredity model with one iteration
 #'
@@ -918,29 +922,17 @@ xtilde_mod <- function(#interaction.names, data.main.effects, beta.main.effects,
 #' @note you dont use the intercept in the calculation of the Q function
 #' because its not being penalized
 
-Q_theta <- function(x, y, beta, gamma, weights,
-                    lambda.beta, lambda.gamma,
-                    main.effect.names,
-                    interaction.names,
-                    group){
+Q_theta <- function(R, nobs, lambda, alpha,
+                    we, wj, wje,
+                    betaE, theta_list, gamma){
 
   # browser()
-
-
-  # first convert gammas to alphas which will be used to calculate
-  # the linear predictor
-  betas.and.alphas <- convert2(beta = beta,
-                               gamma = gamma,
-                               main.effect.names = main.effect.names,
-                               interaction.names = interaction.names,
-                               group = group)
-
-  crossprod(y - x %*% betas.and.alphas) +
-    lambda.beta * (weights["X_E",] * abs(beta["X_E",]) +
-                     sum(sapply(unique(group), function(main)
-                       l2norm(beta[main.effect.names[[main]],]) * weights[paste0("X",main),]))) +
-    lambda.gamma * (sum(sapply(unique(group), function(inter)
-      abs(gamma[paste0("X",inter),]) * weights[paste0("X",inter,":X_E"),])))
+  (1 / (2 * nobs)) * crossprod(R) +
+    lambda * (1 - alpha) * (
+      we * abs(betaE) +
+        sum(sapply(seq_along(theta_list), function(i) l2norm(theta_list[[i]]) * wj[i]))
+      ) +
+    lambda * alpha * sum(wje * abs(gamma))
 
 }
 

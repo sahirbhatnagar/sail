@@ -16,28 +16,13 @@ lspath <- function(x,
                    nvars,
                    jd,
                    vp,
-                   wj,
                    we,
+                   wj,
+                   wje,
                    flmin,
                    vnames,
                    ne, #dfmax
                    ulam) {
-
-  # rm(list = ls())
-  # devtools::load_all()
-  # options(scipen = 999, digits = 4)
-  # DT <- gendata(n = 300, p = 50, df = 5)
-  # x = DT$x; y = DT$y; e = DT$e
-  # lambda.beta = NULL ; lambda.gamma = NULL
-  # thresh = 1e-7 ; maxit = 500 ; initialization.type = "ridge";
-  # nlambda.gamma = 10; nlambda.beta = 10;
-  # nlambda = 100 ; lambda.factor = 0.001
-  # cores = 1;
-  # df = DT$df;
-  # center=TRUE; normalize=TRUE; verbose = TRUE
-  # ==============================================================
-  # print(lambda.factor)
-  # browser()
 
   # Basis Expansion and Design Matrix ---------------------------------------
 
@@ -47,59 +32,37 @@ lspath <- function(x,
   # Expand X's
   Phi_j_list <- lapply(seq_len(nvars), function(j) splines::bs(x[,j], df = df, degree = degree))
   Phi_j <- do.call(cbind, Phi_j_list)
-
   main_effect_names <- paste(rep(vnames, each = df), rep(seq_len(df), times = nvars), sep = "_")
   dimnames(Phi_j)[[2]] <- main_effect_names
-
-  # the names of the main effects in list form.. Each element contains the main effect names
-  # for an X
-  # list_group_main <- split(main_effect_names, group)
 
   # X_E x Phi_j
   XE_Phi_j_list <- lapply(Phi_j_list, function(i) e * i)
   XE_Phi_j <- do.call(cbind, XE_Phi_j_list)
-  # Phi_j_list[[1]][1:5,1:5]
-  # XE_Phi_j_list[[1]][1:5,1:5]
-
   interaction_names <- paste(main_effect_names, "X_E", sep = ":")
   dimnames(XE_Phi_j)[[2]] <- interaction_names
 
-  # list_group_inter <- split(interaction_names, group)
-
   design <- cbind(Phi_j, "X_E" = e, XE_Phi_j)
-  # design[1:5,1:10]
-  # colnames(design)
-  # obj <- standardize(x = design, y = y, center = center, normalize = normalize)
-  # x <- obj$x
-  # y <- obj$y
-  # bx <- obj$bx
-  # by <- obj$by
-  # sx <- obj$sx
 
   nulldev <- as.numeric(crossprod(y))
-
-  # adaptive.weights <- ridge_weights(x = x,
-  #                                   y = y,
-  #                                   group = group,
-  #                                   main.effect.names.list = list_group_main,
-  #                                   interaction.names.list = list_group_inter,
-  #                                   include.intercept = F)
-  # browser()
-  # adaptive.weights[,1] <- 1
-  # used in the warm start strategy because we ONLY want to use warm starts
-  # for each lambda_gamma for a fixed lambda_beta. For the next lambda_beta
-  # we restart using the initial values
-  # adaptive.weights.start <- adaptive.weights
-  # initialization
-  # betas_and_alphas[,1] <- 0
-  # browser()
-
-
 
   # Initialize beta_0 for Lambda Max ----------------------------------------
 
   b0 <- mean(y)
 
+  # Initialize Theta_j and Beta_E needed for Residual of Gamma_j update ------------
+
+  # this outputs a list, each component of the list is a vector of coefs of lenght df
+  # theta <- split(drop(uni_fun(x = Phi_j, y = y,
+  #                   variables = main_effect_names,
+  #                   include.intercept = F,
+  #                   type = "univariate")), group)
+  # betaE <- as.double(lm.fit(as.matrix(e),y)$coef)
+
+  # the initial values here shouldnt matter, since at Lambda_max everything is 0
+  # I set it to 1 so that the convergence criterion isnt satisfied on the first iteration
+  theta <- split(setNames(rep(0, length(main_effect_names)), main_effect_names), group)
+  betaE <- 0
+  gamma <- rep(0, nvars)
 
   # Lambda Sequence ---------------------------------------------------------
 
@@ -119,34 +82,12 @@ lspath <- function(x,
 
   }
 
-  # lambdaNames <- dimnames(tuning_params_mat)[[2]]
-
-  # this converts the alphas to gammas
-  # uni_start <- convert(betas.and.alphas = betas_and_alphas,
-  #                      # main.effect.names = c(main_effect_names,"X_E"),
-  #                      # interaction.names = interaction_names,
-  #                      group = group,
-  #                      main.effect.names.list = list_group_main,
-  #                      interaction.names.list = list_group_inter)
-
-  # uni_start <- matrix(c(betas_and_alphas[c(main_effect_names,"X_E"),], rep(0, length(unique(group)))))
-
-  # used in the warm start strategy because we ONLY want to use warm starts
-  # for each lambda_gamma for a fixed lambda_beta. For the next lambda_beta
-  # we restart using the initial values
-  # uni_start_iteration1 <- uni_start
-
   # for all the x_tilde in zero_x_tilde, return the following matrix with 0 for each coefficient
   # this is like a place holder.
-  coef_zero_gamma_matrix <- matrix(data = 0,
-                                   nrow = nvars,
-                                   ncol = 1,
+  coef_zero_gamma_matrix <- matrix(data = 0, nrow = nvars, ncol = 1,
                                    dimnames = list(vnames))
 
-  # index data.frame to figure out which j < j'
-  # index <- data.frame(c(main_effect_names,"X_E"), seq_along(c(main_effect_names,"X_E")),
-  #                     stringsAsFactors = F)
-  # colnames(index) <- c("main.effect.names","index")
+  # Objects to store results ------------------------------------------------
 
   # matrix to store results of betas and alphas on standardized scale
   coefficientMat <- matrix(nrow = length(c(main_effect_names,"X_E",interaction_names)),
@@ -154,8 +95,8 @@ lspath <- function(x,
                            dimnames = list(c(main_effect_names,"X_E", interaction_names),
                                            lambdaNames))
 
-  betaMat <- matrix(nrow = length(c(main_effect_names,"X_E")), ncol = nlambda,
-                    dimnames = list(c(main_effect_names,"X_E"),
+  betaMat <- matrix(nrow = length(c("b0",main_effect_names,"X_E")), ncol = nlambda,
+                    dimnames = list(c("b0",main_effect_names,"X_E"),
                                     lambdaNames))
 
   gammaMat <- matrix(nrow = length(interaction_names), ncol = nlambda,
@@ -174,27 +115,9 @@ lspath <- function(x,
   #   total = 100, clear = FALSE, width= 90)
   # pb$tick(0)
 
-
-
-  # Initialize Theta_j and Beta_E needed for Residual of Gamma_j update ------------
-
-  # this outputs a list, each component of the list is a vector of coefs of lenght df
-  # thetas <- split(drop(uni_fun(x = Phi_j, y = y,
-  #                   variables = main_effect_names,
-  #                   include.intercept = F,
-  #                   type = "univariate")), group)
-  # betaE <- as.double(lm.fit(as.matrix(e),y)$coef)
-
-  thetas <- split(setNames(rep(0, length(main_effect_names)), main_effect_names), group)
-  betaE <- 0
-
-
   # Lambda Loop Start -------------------------------------------------------
 
   for (LAMBDA in lambdas) {
-    # (LAMBDA <- lambdaNames[1])
-
-    # browser()
 
     lambdaIndex <- which(LAMBDA==lambdas)
 
@@ -202,36 +125,18 @@ lspath <- function(x,
       message(sprintf("Index: %g, lambda: %0.2f", lambdaIndex, LAMBDA))
     }
 
-    # beta_hat_previous <- betas_and_alphas[c(main_effect_names,"X_E"), , drop = F]
-    # gamma_hat_previous <- as.matrix(rep(0, length(unique(group))))
-    # dimnames(gamma_hat_previous)[[1]] <- paste0("X",unique(group))
-
-    # gamma_hat_previous <- uni_start[interaction_names, , drop = F]
-
     # store likelihood values at each iteration in a matrix Q
     # rows: iteration number
-    # Q <- matrix(nrow = maxit + 1, ncol = 1)
-    #
-    # # store the value of the likelihood at the 0th iteration
-    # Q[1,1] <- Q_theta(x = x, y = y,
-    #                   beta = beta_hat_previous,
-    #                   gamma = gamma_hat_previous,
-    #                   lambda.beta = lambda_beta,
-    #                   lambda.gamma = lambda_gamma,
-    #                   weights = adaptive.weights,
-    #                   main.effect.names = list_group_main,
-    #                   interaction.names = list_group_inter,
-    #                   group = group)
-    # message(Q[1,1])
+    Q <- vector("numeric", length = maxit + 1)
+
+    # store the value of the likelihood at the 0th iteration
+    Q[1] <- (1 / (2 * nobs)) * crossprod(R1)
 
     #iteration counter
     m <- 1
 
     # to enter while loop
     converged <- FALSE
-
-
-    # XE_Phi_j_list[[1]] %*% thetas[[1]]
 
     # While loop for convergence at a given Lambda value ----------------------
 
@@ -243,72 +148,46 @@ lspath <- function(x,
       # update gamma (interaction parameter)
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
       # move this down to the betaE update, because we need this same computation for it
-      # after updating the thetas. on the first pass this is 0 anyways
+      # after updating the theta. on the first pass this is 0 anyways
       # R1 is initiated above
-      # Phi_j_theta_j <- do.call(cbind, lapply(seq_along(Phi_j_list), function(i) Phi_j_list[[i]] %*% thetas[[i]]))
+      # Phi_j_theta_j <- do.call(cbind, lapply(seq_along(Phi_j_list), function(i) Phi_j_list[[i]] %*% theta[[i]]))
       # R1 <- y - b0 - betaE * e - rowSums(Phi_j_theta_j)
 
-      # x_tilde <- xtilde(x = x,
-      #                   group = group,
-      #                   main.effect.names.list = list_group_main,
-      #                   interaction.names.list = list_group_inter,
-      #                   beta.main.effects = beta_hat_previous)
-
-      x_tilde <- betaE * do.call(cbind, lapply(seq_along(XE_Phi_j_list), function(i) XE_Phi_j_list[[i]] %*% thetas[[i]]))
+      x_tilde <- betaE * do.call(cbind,
+                                 lapply(seq_along(XE_Phi_j_list),
+                                        function(i) XE_Phi_j_list[[i]] %*% theta[[i]]))
 
       # indices of the x_tilde matrices that have all 0 columns
       zero_x_tilde <- is.null(colnames(check_col_0(x_tilde)))
 
-      # this will store the results but will be shorter than nlambda
-      gamma_hat_next <- if (zero_x_tilde) coef_zero_gamma_matrix else {
+      gamma_next <- drop(if (zero_x_tilde) coef_zero_gamma_matrix else {
         as.matrix(coef(glmnet::glmnet(
           x = x_tilde,
           y = R1,
-          # penalty.factor = adaptive.weights[paste0("X", unique(group), ":X_E"),,drop=F],
+          penalty.factor = wje,
           lambda = c(.Machine$double.xmax, LAMBDA * alpha),
-          standardize = F, intercept = F))[-1,2,drop = F]) }
+          standardize = F, intercept = F))[-1,2,drop = F])})
 
 
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      # update thetas (main effect parameters)
+      # update theta (main effect parameters)
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-      # this is actually theta_j and also includes Beta_E
-      # beta_hat_next <- beta_hat_previous
-      b0_next <- b0 ; thetas_next <- thetas
+      b0_next <- b0 ; theta_next <- theta
+
       x_tilde_2 <- lapply(seq_along(Phi_j_list),
-                          function(i) Phi_j_list[[i]] + gamma_hat_next[i,1] * betaE * XE_Phi_j_list[[i]])
-      # update beta_j, j = 1,..., p first
+                          function(i) Phi_j_list[[i]] + gamma_next[i] * betaE * XE_Phi_j_list[[i]])
+
       for (j in seq_len(nvars)) {
 
-        # j = 2
-        # ==================
-
-        # determine the main effects not in j
-        # j_prime_not_in_j <- as.vector(do.call(c, list_group_main[setdiff(unique(group),j)]))
-
-        # y_tilde_2 <- y -
-        #   beta_hat_next["X_E",] * x[,"X_E"] -
-        #   x[,j_prime_not_in_j, drop = F] %*% beta_hat_next[j_prime_not_in_j, , drop = F] -
-        #   rowSums(do.call(cbind, lapply(setdiff(unique(group),j), function(kk) {
-        #     beta_hat_next["X_E", ] *
-        #       gamma_hat_next[kk, ] *
-        #       (x[,list_group_inter[[kk]], drop = F] %*% beta_hat_next[list_group_main[[kk]], , drop = F])
-        #   })))
-        #
-        # x_tilde_2 <- x[,list_group_main[[j]], drop = F] + gamma_hat_next[j,] * beta_hat_next["X_E",] * x[,list_group_inter[[j]]]
-
-        # browser()
-
         delta <- if (j == 1) 0 else {
-          x_tilde_2[[j]] %*% thetas_next[[j]] - x_tilde_2[[j]] %*% thetas_next[[(j-1)]]
+          x_tilde_2[[j]] %*% theta_next[[j]] - x_tilde_2[[(j-1)]] %*% theta_next[[(j-1)]]
         }
 
         R2 <- R2 + delta
 
-        thetas_next_j <- switch(group.penalty,
+        theta_next_j <- switch(group.penalty,
                                   gglasso = coef(gglasso::gglasso(x = x_tilde_2[[j]],
                                                                   y = R2,
                                                                   group = rep(1, df),
@@ -332,59 +211,63 @@ lspath <- function(x,
                                                         lambda = LAMBDA * (1 - alpha),
                                                         intercept = T)$beta[-1,])
 
-        thetas_next[[j]] <- thetas_next_j
+        theta_next[[j]] <- theta_next_j
 
       }
 
-      browser()
+      # used to check convergence
+      theta_next_vec <- do.call(c, theta_next)
 
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       # update betaE
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-      # this will be used for R1 (the residual for gamma update also)
-      Phi_j_theta_j <- do.call(cbind, lapply(seq_along(Phi_j_list), function(i) Phi_j_list[[i]] %*% thetas_next[[i]]))
+      # this will be used for R1 (the residual for gamma update also) and R4
+      Phi_j_theta_j <- do.call(cbind,
+                               lapply(seq_along(Phi_j_list),
+                                      function(i) Phi_j_list[[i]] %*% theta_next[[i]]))
 
       R3 <- y - b0_next - rowSums(Phi_j_theta_j)
 
       # this can be used for betaE, b0 and gamma update!
       Phi_tilde_theta <- do.call(cbind,
                                  lapply(seq_along(XE_Phi_j_list),
-                                   function(i) XE_Phi_j_list[[i]] %*% thetas_next[[i]]))
+                                   function(i) XE_Phi_j_list[[i]] %*% theta_next[[i]]))
+
+      gamma_Phi_tilde_theta_sum <- rowSums(sweep(Phi_tilde_theta, 2, gamma_next, FUN = "*"))
+      x_tilde_E <- e + gamma_Phi_tilde_theta_sum
 
 
-      x_tilde_E <- x[,"X_E", drop = F] +
-        rowSums(do.call(cbind, lapply(unique(group), function(kk) {
-          gamma_hat_next[kk, ] *
-            (x[,list_group_inter[[kk]], drop = F] %*% beta_hat_next[list_group_main[[kk]], , drop = F])
-        })))
+      betaE_next <- SoftThreshold(x = (1 / (nobs * we)) * sum(x_tilde_E * R3),
+                                  lambda = LAMBDA * (1- alpha))
 
+      #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      # update beta0
+      #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-      beta_hat_next["X_E", ] <- soft(x = x_tilde_E,
-                                     y = R,
-                                     weight = adaptive.weights["X_E", , drop = F],
-                                     lambda = lambda_beta)
+      # this is the linear predictor without the intercept, used for b0 update and objective function value
+      lp <- betaE_next * e - rowSums(Phi_j_theta_j) - betaE_next * gamma_Phi_tilde_theta_sum
 
-      R1 <- y - b0 - betaE * e - rowSums(Phi_j_theta_j)
+      R4 <- y - lp
 
-      Q[m + 1, 1] <- Q_theta(x = x, y = y,
-                             beta = beta_hat_next,
-                             gamma = gamma_hat_next,
-                             lambda.beta = lambda_beta,
-                             lambda.gamma = lambda_gamma,
-                             weights = adaptive.weights,
-                             main.effect.names = list_group_main,
-                             interaction.names = list_group_inter,
-                             group = group)
+      b0_next <- mean(R4)
 
+      R1 <- y - b0_next - betaE_next * e - rowSums(Phi_j_theta_j)
 
-      # Theta_next <- c(drop(beta_hat_next), drop(gamma_hat_next))
-      converged <- abs(Q[m,1] - Q[m + 1, 1])/abs(Q[m,1]) < thresh
+      Q[m+1] <- Q_theta(R = R4 - b0_next, nobs = nobs, lambda = LAMBDA, alpha = alpha,
+                        we = we, wj = wj, wje = wje, betaE = betaE_next,
+                        theta_list = theta_next, gamma = gamma_next)
+
+      Theta_next <- c(b0_next, betaE_next, theta_next_vec, gamma_next)
+
+      converged <- abs(Q[m] - Q[m + 1])/abs(Q[m]) < thresh
       converged <- if (is.na(converged)) FALSE else converged
-      if (verbose) message(sprintf("Iteration: %f, Converged: %f, Crossprod: %f", m, converged, abs(Q[m,1] - Q[m + 1, 1])/abs(Q[m,1])))
+      # if (verbose) message(sprintf("Iteration: %f, Converged: %f, Crossprod: %f", m, converged, abs(Q[m,1] - Q[m + 1, 1])/abs(Q[m,1])))
 
-      beta_hat_previous <- beta_hat_next
-      gamma_hat_previous <- gamma_hat_next
+      b0 <- b0_next
+      betaE <- betaE_next
+      theta <- theta_next
+      gamma <- gamma_next
 
       m <- m + 1
       # adaptive weight for each tuning parameter. currently this is the
@@ -392,30 +275,31 @@ lspath <- function(x,
       # for flexibility in case we want to change the weights at each iteration
 
       # adaptive.weights <- update_weights(betas = beta_hat_previous,
-      #                                    gammas = gamma_hat_next,
+      #                                    gammas = gamma_next,
       #                                    main.effect.names = main.effect.names,
       #                                    interaction.names = interaction.names)
 
     }
 
-    Betas_and_Alphas <- convert2(beta = beta_hat_next,
-                                 gamma = gamma_hat_next,
-                                 main.effect.names = list_group_main,
-                                 interaction.names = list_group_inter,
-                                 group = group)
 
-    dfbeta <- length(nonzero(Betas_and_Alphas[c(main_effect_names,"X_E"),]))
-    dfalpha <- length(nonzero(Betas_and_Alphas[interaction_names,]))
-    deviance <- crossprod(y - x %*% Betas_and_Alphas)
-    devRatio <- 1 - deviance/nulldev
-    outPrint[LAMBDA,] <- c(if (dfbeta==0) 0 else dfbeta,
-                           if (dfalpha==0) 0 else dfalpha,
-                           deviance,
-                           devRatio,
-                           lambda_beta, lambda_gamma)
+    # Betas_and_Alphas <- convert2(beta = beta_hat_next,
+    #                              gamma = gamma_next,
+    #                              main.effect.names = list_group_main,
+    #                              interaction.names = list_group_inter,
+    #                              group = group)
+    #
+    # dfbeta <- length(nonzero(Betas_and_Alphas[c(main_effect_names,"X_E"),]))
+    # dfalpha <- length(nonzero(Betas_and_Alphas[interaction_names,]))
+    # deviance <- crossprod(y - x %*% Betas_and_Alphas)
+    # devRatio <- 1 - deviance/nulldev
+    # outPrint[LAMBDA,] <- c(if (dfbeta==0) 0 else dfbeta,
+    #                        if (dfalpha==0) 0 else dfalpha,
+    #                        deviance,
+    #                        devRatio,
+    #                        lambda_beta, lambda_gamma)
 
-    betaMat[,lambdaIndex] <- beta_hat_next
-    gammaMat[,lambdaIndex] <- gamma_hat_next
+    betaMat[,lambdaIndex] <- c(b0_next,theta_next_vec, betaE_next)
+    gammaMat[,lambdaIndex] <- gamma_next
 
     # for a fixed lambda.beta, keep using the previous solution for each lambda.gamma
     # for the next fixed lambda.beta restart the calculation using the initial value
@@ -423,13 +307,13 @@ lspath <- function(x,
     # betaWarmStart <- if (lambdaIndex %ni% switchWarmStart$X1) beta_hat_next
     # trying without warm start
 
-    # uni_start <- rbind(beta_hat_next, gamma_hat_next)
+    # uni_start <- rbind(beta_hat_next, gamma_next)
     # uni_start <- if (lambdaIndex %ni% switchWarmStart$X1) {
     #   rbind(betaWarmStart, gammaWarmStart) } else {
     #     uni_start_iteration1
     #   }
 
-    uni_start <- uni_start_iteration1
+    # uni_start <- uni_start_iteration1
 
     # need to update weights also!
     # adaptive.weights <- if (lambdaIndex %ni% switchWarmStart$X1) {
@@ -442,17 +326,20 @@ lspath <- function(x,
     #                    adaptive.weights.start
     #                  }
 
-    adaptive.weights <- adaptive.weights.start
+    # adaptive.weights <- adaptive.weights.start
 
-    devianceDiff <- outPrint[lambdaIndex,"deviance"] - outPrint[lambdaIndex-1,"deviance"]
+    # devianceDiff <- outPrint[lambdaIndex,"deviance"] - outPrint[lambdaIndex-1,"deviance"]
     #coefficientMat[,LAMBDA] <- Betas_and_Alphas
 
-    if (length(devianceDiff)!=0 && !is.na(devianceDiff) && devRatio>1e-3) {
+    # if (length(devianceDiff)!=0 && !is.na(devianceDiff) && devRatio>1e-3) {
       # if (devianceDiff < 1e-50 | outPrint[LAMBDA,"percentDev"] > 0.999) break }
-      if (outPrint[LAMBDA,"percentDev"] > 0.999) break }
+      # if (outPrint[LAMBDA,"percentDev"] > 0.999) break }
 
     # pb$tick()
   }
+
+  browser()
+
 
   # Rprof()
   # proftable(tmp)
@@ -470,10 +357,10 @@ lspath <- function(x,
   # convert to original scale
   betas_original_scale_list <- if (normalize) lapply(beta_hat_next_list, function(i) i / sx[c(main_effect_names, "X_E")]) else lapply(beta_hat_next_list, function(i) i )
 
-  gamma_hat_next_list <- lapply(seq_len(ncol(gammaMat)),
+  gamma_next_list <- lapply(seq_len(ncol(gammaMat)),
                                 function(i) gammaMat[,i,drop=F])
 
-  gammas_original_scale_list <- if (normalize) lapply(gamma_hat_next_list, function(i) i / sx[interaction_names]) else lapply(gamma_hat_next_list, function(i) i )
+  gammas_original_scale_list <- if (normalize) lapply(gamma_next_list, function(i) i / sx[interaction_names]) else lapply(gamma_next_list, function(i) i )
 
   # convert gammas to alphas
   betas_alphas_original_scale <- mapply(convert2,
