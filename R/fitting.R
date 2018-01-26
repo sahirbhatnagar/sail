@@ -243,9 +243,12 @@ lspath <- function(x,
       # update gamma (interaction parameter)
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-      Phi_j_theta_j <- do.call(cbind, lapply(seq_along(Phi_j_list), function(i) Phi_j_list[[i]] %*% thetas[[i]]))
 
-      R1 <- y - b0 - betaE * e - rowSums(Phi_j_theta_j)
+      # move this down to the betaE update, because we need this same computation for it
+      # after updating the thetas. on the first pass this is 0 anyways
+      # R1 is initiated above
+      # Phi_j_theta_j <- do.call(cbind, lapply(seq_along(Phi_j_list), function(i) Phi_j_list[[i]] %*% thetas[[i]]))
+      # R1 <- y - b0 - betaE * e - rowSums(Phi_j_theta_j)
 
       # x_tilde <- xtilde(x = x,
       #                   group = group,
@@ -269,7 +272,7 @@ lspath <- function(x,
 
 
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      # update beta (main effect parameter)
+      # update thetas (main effect parameters)
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       # this is actually theta_j and also includes Beta_E
@@ -282,7 +285,7 @@ lspath <- function(x,
 
         # j = 2
         # ==================
-      # browser()
+
         # determine the main effects not in j
         # j_prime_not_in_j <- as.vector(do.call(c, list_group_main[setdiff(unique(group),j)]))
 
@@ -298,6 +301,12 @@ lspath <- function(x,
         # x_tilde_2 <- x[,list_group_main[[j]], drop = F] + gamma_hat_next[j,] * beta_hat_next["X_E",] * x[,list_group_inter[[j]]]
 
         # browser()
+
+        delta <- if (j == 1) 0 else {
+          x_tilde_2[[j]] %*% thetas_next[[j]] - x_tilde_2[[j]] %*% thetas_next[[(j-1)]]
+        }
+
+        R2 <- R2 + delta
 
         thetas_next_j <- switch(group.penalty,
                                   gglasso = coef(gglasso::gglasso(x = x_tilde_2[[j]],
@@ -325,16 +334,23 @@ lspath <- function(x,
 
         thetas_next[[j]] <- thetas_next_j
 
-        delta <- ### NEED TO figure out what happens at the last j!!
-
       }
 
-      # Update Beta_E
-      R <- y - x[, as.vector(do.call(c, list_group_main))] %*% beta_hat_next[as.vector(do.call(c, list_group_main)),] -
-        rowSums(do.call(cbind, lapply(unique(group), function(kk) {
-          gamma_hat_next[kk, ] *
-            (x[,list_group_main[[kk]], drop = F] %*% beta_hat_next[list_group_main[[kk]], , drop = F])
-        })))
+      browser()
+
+      #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+      # update betaE
+      #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+      # this will be used for R1 (the residual for gamma update also)
+      Phi_j_theta_j <- do.call(cbind, lapply(seq_along(Phi_j_list), function(i) Phi_j_list[[i]] %*% thetas_next[[i]]))
+
+      R3 <- y - b0_next - rowSums(Phi_j_theta_j)
+
+      # this can be used for betaE, b0 and gamma update!
+      Phi_tilde_theta <- do.call(cbind,
+                                 lapply(seq_along(XE_Phi_j_list),
+                                   function(i) XE_Phi_j_list[[i]] %*% thetas_next[[i]]))
 
 
       x_tilde_E <- x[,"X_E", drop = F] +
@@ -348,6 +364,8 @@ lspath <- function(x,
                                      y = R,
                                      weight = adaptive.weights["X_E", , drop = F],
                                      lambda = lambda_beta)
+
+      R1 <- y - b0 - betaE * e - rowSums(Phi_j_theta_j)
 
       Q[m + 1, 1] <- Q_theta(x = x, y = y,
                              beta = beta_hat_next,
