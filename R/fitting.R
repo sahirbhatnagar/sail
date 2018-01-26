@@ -139,9 +139,9 @@ lspath <- function(x,
   # for all the x_tilde in zero_x_tilde, return the following matrix with 0 for each coefficient
   # this is like a place holder.
   coef_zero_gamma_matrix <- matrix(data = 0,
-                                   nrow = length(unique(group)),
+                                   nrow = nvars,
                                    ncol = 1,
-                                   dimnames = list(paste0("X", unique(group))))
+                                   dimnames = list(vnames))
 
   # index data.frame to figure out which j < j'
   # index <- data.frame(c(main_effect_names,"X_E"), seq_along(c(main_effect_names,"X_E")),
@@ -179,12 +179,14 @@ lspath <- function(x,
   # Initialize Theta_j and Beta_E needed for Residual of Gamma_j update ------------
 
   # this outputs a list, each component of the list is a vector of coefs of lenght df
-  thetas <- split(drop(uni_fun(x = Phi_j, y = y,
-                    variables = main_effect_names,
-                    include.intercept = F,
-                    type = "univariate")), group)
+  # thetas <- split(drop(uni_fun(x = Phi_j, y = y,
+  #                   variables = main_effect_names,
+  #                   include.intercept = F,
+  #                   type = "univariate")), group)
+  # betaE <- as.double(lm.fit(as.matrix(e),y)$coef)
 
-  betaE <- as.double(lm.fit(as.matrix(e),y)$coef)
+  thetas <- split(setNames(rep(0, length(main_effect_names)), main_effect_names), group)
+  betaE <- 0
 
 
   # Lambda Loop Start -------------------------------------------------------
@@ -192,7 +194,7 @@ lspath <- function(x,
   for (LAMBDA in lambdas) {
     # (LAMBDA <- lambdaNames[1])
 
-    browser()
+    # browser()
 
     lambdaIndex <- which(LAMBDA==lambdas)
 
@@ -229,7 +231,7 @@ lspath <- function(x,
     converged <- FALSE
 
 
-    XE_Phi_j_list[[1]] %*% thetas[[1]]
+    # XE_Phi_j_list[[1]] %*% thetas[[1]]
 
     # While loop for convergence at a given Lambda value ----------------------
 
@@ -242,6 +244,7 @@ lspath <- function(x,
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       Phi_j_theta_j <- do.call(cbind, lapply(seq_along(Phi_j_list), function(i) Phi_j_list[[i]] %*% thetas[[i]]))
+
       R1 <- y - b0 - betaE * e - rowSums(Phi_j_theta_j)
 
       # x_tilde <- xtilde(x = x,
@@ -256,73 +259,73 @@ lspath <- function(x,
       zero_x_tilde <- is.null(colnames(check_col_0(x_tilde)))
 
       # this will store the results but will be shorter than nlambda
-      gamma_hat_next <- if (zero_x_tilde) coef_zero_gamma_matrix else
+      gamma_hat_next <- if (zero_x_tilde) coef_zero_gamma_matrix else {
         as.matrix(coef(glmnet::glmnet(
           x = x_tilde,
           y = R1,
           # penalty.factor = adaptive.weights[paste0("X", unique(group), ":X_E"),,drop=F],
-          lambda = c(.Machine$double.xmax,LAMBDA),
-          standardize = F, intercept = F))[-1,2,drop = F])
-
-      #######
-      ######
-      ###################################################
+          lambda = c(.Machine$double.xmax, LAMBDA * alpha),
+          standardize = F, intercept = F))[-1,2,drop = F]) }
 
 
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-      # update beta (main effect parameter) step 4 of algortihm in Choi et al
+      # update beta (main effect parameter)
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       # this is actually theta_j and also includes Beta_E
-      beta_hat_next <- beta_hat_previous
-
+      # beta_hat_next <- beta_hat_previous
+      b0_next <- b0 ; thetas_next <- thetas
+      x_tilde_2 <- lapply(seq_along(Phi_j_list),
+                          function(i) Phi_j_list[[i]] + gamma_hat_next[i,1] * betaE * XE_Phi_j_list[[i]])
       # update beta_j, j = 1,..., p first
-      for (j in unique(group)) {
+      for (j in seq_len(nvars)) {
 
         # j = 2
         # ==================
-
+      # browser()
         # determine the main effects not in j
-        j_prime_not_in_j <- as.vector(do.call(c, list_group_main[setdiff(unique(group),j)]))
+        # j_prime_not_in_j <- as.vector(do.call(c, list_group_main[setdiff(unique(group),j)]))
 
-        y_tilde_2 <- y -
-          beta_hat_next["X_E",] * x[,"X_E"] -
-          x[,j_prime_not_in_j, drop = F] %*% beta_hat_next[j_prime_not_in_j, , drop = F] -
-          rowSums(do.call(cbind, lapply(setdiff(unique(group),j), function(kk) {
-            beta_hat_next["X_E", ] *
-              gamma_hat_next[kk, ] *
-              (x[,list_group_inter[[kk]], drop = F] %*% beta_hat_next[list_group_main[[kk]], , drop = F])
-          })))
-
-        x_tilde_2 <- x[,list_group_main[[j]], drop = F] + gamma_hat_next[j,] * beta_hat_next["X_E",] * x[,list_group_inter[[j]]]
+        # y_tilde_2 <- y -
+        #   beta_hat_next["X_E",] * x[,"X_E"] -
+        #   x[,j_prime_not_in_j, drop = F] %*% beta_hat_next[j_prime_not_in_j, , drop = F] -
+        #   rowSums(do.call(cbind, lapply(setdiff(unique(group),j), function(kk) {
+        #     beta_hat_next["X_E", ] *
+        #       gamma_hat_next[kk, ] *
+        #       (x[,list_group_inter[[kk]], drop = F] %*% beta_hat_next[list_group_main[[kk]], , drop = F])
+        #   })))
+        #
+        # x_tilde_2 <- x[,list_group_main[[j]], drop = F] + gamma_hat_next[j,] * beta_hat_next["X_E",] * x[,list_group_inter[[j]]]
 
         # browser()
 
-        beta_hat_next_j <- switch(group.penalty,
-                                  gglasso = coef(gglasso::gglasso(x = x_tilde_2,
-                                                                  y = y_tilde_2,
+        thetas_next_j <- switch(group.penalty,
+                                  gglasso = coef(gglasso::gglasso(x = x_tilde_2[[j]],
+                                                                  y = R2,
                                                                   group = rep(1, df),
-                                                                  pf = as.vector(adaptive.weights[paste0("X",j),]),
-                                                                  lambda = lambda_beta,
+                                                                  pf = wj[j],
+                                                                  lambda = LAMBDA * (1 - alpha),
                                                                   intercept = F))[-1,],
-                                  MCP = grpreg::grpreg(X = x_tilde_2,
-                                                       y = y_tilde_2,
+                                  MCP = grpreg::grpreg(X = x_tilde_2[[j]],
+                                                       y = R2,
                                                        group = rep(1, df),
                                                        penalty = "grMCP",
                                                        family = "gaussian",
-                                                       group.multiplier = as.vector(adaptive.weights[paste0("X",j),]),
-                                                       lambda = lambda_beta,
+                                                       group.multiplier = as.vector(wj[j]),
+                                                       lambda = LAMBDA * (1 - alpha),
                                                        intercept = T)$beta[-1,],
-                                  SCAD = grpreg::grpreg(X = x_tilde_2,
-                                                        y = y_tilde_2,
+                                  SCAD = grpreg::grpreg(X = x_tilde_2[[j]],
+                                                        y = R2,
                                                         group = rep(1, df),
                                                         penalty = "grSCAD",
                                                         family = "gaussian",
-                                                        group.multiplier = as.vector(adaptive.weights[paste0("X",j),]),
-                                                        lambda = lambda_beta,
+                                                        group.multiplier = as.vector(wj[j]),
+                                                        lambda = LAMBDA * (1 - alpha),
                                                         intercept = T)$beta[-1,])
 
-        beta_hat_next[list_group_main[[j]],] <- beta_hat_next_j
+        thetas_next[[j]] <- thetas_next_j
+
+        delta <- ### NEED TO figure out what happens at the last j!!
 
       }
 
