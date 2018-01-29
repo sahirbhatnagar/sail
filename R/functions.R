@@ -1432,9 +1432,9 @@ gendata <- function(n, p, df, E = rnorm(n = n, sd = 0.5), beta0 = 1, betaE = 2, 
   Y.star <- beta0 +
     bs(X[,1], df = df) %*% b1  +
     bs(X[,2], df = df) %*% b2 +
-    bs(X[,3], df = df) %*% b3 +
-    bs(X[,4], df = df) %*% b4 +
-    bs(X[,5], df = df) %*% b5 +
+    # bs(X[,3], df = df) %*% b3 +
+    # bs(X[,4], df = df) %*% b4 +
+    # bs(X[,5], df = df) %*% b5 +
     betaE * E +
     E * bs(X[,1], df = df) %*% bE1 +
     E * bs(X[,2], df = df) %*% bE2

@@ -63,6 +63,7 @@ lspath <- function(x,
   theta <- split(setNames(rep(0, length(main_effect_names)), main_effect_names), group)
   betaE <- 0
   gamma <- rep(0, nvars)
+  Theta_init <- c(b0, betaE, do.call(c,theta), gamma)
 
   # Lambda Sequence ---------------------------------------------------------
 
@@ -117,7 +118,12 @@ lspath <- function(x,
 
   # Lambda Loop Start -------------------------------------------------------
 
+
+
   for (LAMBDA in lambdas) {
+
+    # LAMBDA = lambdas[20]
+    #======================
 
     lambdaIndex <- which(LAMBDA==lambdas)
 
@@ -138,7 +144,17 @@ lspath <- function(x,
     # to enter while loop
     converged <- FALSE
 
+    # un-comment if we dont want warm starts
+    # b0 <- mean(y)
+    # theta <- split(setNames(rep(0, length(main_effect_names)), main_effect_names), group)
+    # betaE <- 0
+    # gamma <- rep(0, nvars)
+    # R1 <- R2 <- y - b0
+    # update this at the end
+    x_tilde <- matrix(0, nrow = nobs)
+
     # While loop for convergence at a given Lambda value ----------------------
+
 
     while (!converged && m < maxit){
 
@@ -154,25 +170,32 @@ lspath <- function(x,
       # Phi_j_theta_j <- do.call(cbind, lapply(seq_along(Phi_j_list), function(i) Phi_j_list[[i]] %*% theta[[i]]))
       # R1 <- y - b0 - betaE * e - rowSums(Phi_j_theta_j)
 
-      x_tilde <- betaE * do.call(cbind,
-                                 lapply(seq_along(XE_Phi_j_list),
-                                        function(i) XE_Phi_j_list[[i]] %*% theta[[i]]))
+      message("Update gamma")
+
+      # x_tilde <- betaE * do.call(cbind,
+      #                            lapply(seq_along(XE_Phi_j_list),
+      #                                   function(i) XE_Phi_j_list[[i]] %*% theta[[i]]))
+
 
       # indices of the x_tilde matrices that have all 0 columns
-      zero_x_tilde <- is.null(colnames(check_col_0(x_tilde)))
-
-      gamma_next <- drop(if (zero_x_tilde) coef_zero_gamma_matrix else {
-        as.matrix(coef(glmnet::glmnet(
+      zero_x_tilde <- dim(check_col_0(x_tilde))[2]
+      # message(zero_x_tilde)
+      gamma_next <- if (zero_x_tilde == 0) drop(coef_zero_gamma_matrix) else {
+        coef(glmnet::glmnet(
           x = x_tilde,
           y = R1,
+          # thresh = 1e-10,
           penalty.factor = wje,
           lambda = c(.Machine$double.xmax, LAMBDA * alpha),
-          standardize = F, intercept = F))[-1,2,drop = F])})
-
+          # lambda = c(LAMBDA * alpha),
+          standardize = F, intercept = F))[-1,2]
+        }
 
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       # update theta (main effect parameters)
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+      message("Update theta")
 
       b0_next <- b0 ; theta_next <- theta
 
@@ -187,9 +210,15 @@ lspath <- function(x,
 
         R2 <- R2 + delta
 
+        # R2 <- y - b0_next - betaE * e - rowSums(do.call(cbind,
+        #                                         lapply(seq_along(x_tilde_2),
+        #                                                function(i) x_tilde_2[[i]] %*% theta_next[[i]]))) +
+        #   x_tilde_2[[j]] %*% theta_next[[j]]
+
         theta_next_j <- switch(group.penalty,
                                   gglasso = coef(gglasso::gglasso(x = x_tilde_2[[j]],
                                                                   y = R2,
+                                                                  # eps = 1e-10,
                                                                   group = rep(1, df),
                                                                   pf = wj[j],
                                                                   lambda = LAMBDA * (1 - alpha),
@@ -222,12 +251,14 @@ lspath <- function(x,
       # update betaE
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-      # this will be used for R1 (the residual for gamma update also) and R4
+      message("Update betaE")
+
+      # this will be used for R1 (the residual for gamma update) also and R4
       Phi_j_theta_j <- do.call(cbind,
                                lapply(seq_along(Phi_j_list),
                                       function(i) Phi_j_list[[i]] %*% theta_next[[i]]))
 
-      R3 <- y - b0_next - rowSums(Phi_j_theta_j)
+      R3 <- y - b0_next - rowSums(Phi_j_theta_j) - rowSums(sweep(Phi_j_theta_j, 2, gamma_next, FUN = "*"))
 
       # this can be used for betaE, b0 and gamma update!
       Phi_tilde_theta <- do.call(cbind,
@@ -245,6 +276,8 @@ lspath <- function(x,
       # update beta0
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+      message("Update beta0")
+
       # this is the linear predictor without the intercept, used for b0 update and objective function value
       lp <- betaE_next * e - rowSums(Phi_j_theta_j) - betaE_next * gamma_Phi_tilde_theta_sum
 
@@ -252,7 +285,10 @@ lspath <- function(x,
 
       b0_next <- mean(R4)
 
+      # used for gamma update
       R1 <- y - b0_next - betaE_next * e - rowSums(Phi_j_theta_j)
+      x_tilde <- betaE_next * Phi_tilde_theta
+      # message(sprintf("betaE = %0.2f", betaE_next))
 
       Q[m+1] <- Q_theta(R = R4 - b0_next, nobs = nobs, lambda = LAMBDA, alpha = alpha,
                         we = we, wj = wj, wje = wje, betaE = betaE_next,
@@ -260,16 +296,23 @@ lspath <- function(x,
 
       Theta_next <- c(b0_next, betaE_next, theta_next_vec, gamma_next)
 
-      converged <- abs(Q[m] - Q[m + 1])/abs(Q[m]) < thresh
+      criterion <- abs(Q[m] - Q[m + 1])/abs(Q[m])
+      # criterion <- l2norm(Theta_next - Theta_init)^2
+      converged <- criterion < thresh
       converged <- if (is.na(converged)) FALSE else converged
-      # if (verbose) message(sprintf("Iteration: %f, Converged: %f, Crossprod: %f", m, converged, abs(Q[m,1] - Q[m + 1, 1])/abs(Q[m,1])))
+      if (verbose) message(sprintf("Iteration: %f, Converged: %f, Crossprod: %f", m, converged,
+                                   criterion))
 
       b0 <- b0_next
       betaE <- betaE_next
       theta <- theta_next
       gamma <- gamma_next
+      Theta_init <- Theta_next
+
+
 
       m <- m + 1
+      message(paste0(capture.output(Theta_next), collapse = "\n"))
       # adaptive weight for each tuning parameter. currently this is the
       # same for iterations, but I am coding it here
       # for flexibility in case we want to change the weights at each iteration
