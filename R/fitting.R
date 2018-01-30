@@ -47,7 +47,8 @@ lspath <- function(x,
 
   # Initialize beta_0 for Lambda Max ----------------------------------------
 
-  b0 <- mean(y)
+  # b0 <- mean(y)
+  b0 <- 0
 
   # Initialize Theta_j and Beta_E needed for Residual of Gamma_j update ------------
 
@@ -58,11 +59,11 @@ lspath <- function(x,
   #                   type = "univariate")), group)
   # betaE <- as.double(lm.fit(as.matrix(e),y)$coef)
 
-  # the initial values here shouldnt matter, since at Lambda_max everything is 0
-  # I set it to 1 so that the convergence criterion isnt satisfied on the first iteration
+  # the initial values here dont matter, since at Lambda_max everything is 0
   theta <- split(setNames(rep(0, length(main_effect_names)), main_effect_names), group)
   betaE <- 0
   gamma <- rep(0, nvars)
+  b0_next <- b0 ; theta_next <- theta
   Theta_init <- c(b0, betaE, do.call(c,theta), gamma)
 
   # Lambda Sequence ---------------------------------------------------------
@@ -118,8 +119,6 @@ lspath <- function(x,
 
   # Lambda Loop Start -------------------------------------------------------
 
-
-
   for (LAMBDA in lambdas) {
 
     # LAMBDA = lambdas[20]
@@ -145,11 +144,12 @@ lspath <- function(x,
     converged <- FALSE
 
     # un-comment if we dont want warm starts
-    # b0 <- mean(y)
+    # b0 <- 0
     # theta <- split(setNames(rep(0, length(main_effect_names)), main_effect_names), group)
     # betaE <- 0
     # gamma <- rep(0, nvars)
     # R1 <- R2 <- y - b0
+
     # update this at the end
     x_tilde <- matrix(0, nrow = nobs)
 
@@ -170,7 +170,7 @@ lspath <- function(x,
       # Phi_j_theta_j <- do.call(cbind, lapply(seq_along(Phi_j_list), function(i) Phi_j_list[[i]] %*% theta[[i]]))
       # R1 <- y - b0 - betaE * e - rowSums(Phi_j_theta_j)
 
-      message("Update gamma")
+      # message("Update gamma")
 
       # x_tilde <- betaE * do.call(cbind,
       #                            lapply(seq_along(XE_Phi_j_list),
@@ -195,25 +195,25 @@ lspath <- function(x,
       # update theta (main effect parameters)
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-      message("Update theta")
+      # message("Update theta")
 
-      b0_next <- b0 ; theta_next <- theta
+      # b0_next <- b0 ; theta_next <- theta
 
       x_tilde_2 <- lapply(seq_along(Phi_j_list),
                           function(i) Phi_j_list[[i]] + gamma_next[i] * betaE * XE_Phi_j_list[[i]])
 
       for (j in seq_len(nvars)) {
 
-        delta <- if (j == 1) 0 else {
-          x_tilde_2[[j]] %*% theta_next[[j]] - x_tilde_2[[(j-1)]] %*% theta_next[[(j-1)]]
-        }
+      #   delta <- if (j == 1) 0 else {
+      #     x_tilde_2[[j]] %*% theta_next[[j]] - x_tilde_2[[(j-1)]] %*% theta_next[[(j-1)]]
+      #   }
+      #
+      #   R2 <- R2 + delta
 
-        R2 <- R2 + delta
-
-        # R2 <- y - b0_next - betaE * e - rowSums(do.call(cbind,
-        #                                         lapply(seq_along(x_tilde_2),
-        #                                                function(i) x_tilde_2[[i]] %*% theta_next[[i]]))) +
-        #   x_tilde_2[[j]] %*% theta_next[[j]]
+        R2 <- y - b0_next - betaE * e - rowSums(do.call(cbind,
+                                                lapply(seq_along(x_tilde_2),
+                                                       function(i) x_tilde_2[[i]] %*% theta_next[[i]]))) +
+          x_tilde_2[[j]] %*% theta_next[[j]]
 
         theta_next_j <- switch(group.penalty,
                                   gglasso = coef(gglasso::gglasso(x = x_tilde_2[[j]],
@@ -251,14 +251,14 @@ lspath <- function(x,
       # update betaE
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-      message("Update betaE")
+      # message("Update betaE")
 
       # this will be used for R1 (the residual for gamma update) also and R4
       Phi_j_theta_j <- do.call(cbind,
                                lapply(seq_along(Phi_j_list),
                                       function(i) Phi_j_list[[i]] %*% theta_next[[i]]))
 
-      R3 <- y - b0_next - rowSums(Phi_j_theta_j) - rowSums(sweep(Phi_j_theta_j, 2, gamma_next, FUN = "*"))
+      R3 <- y - b0_next - rowSums(Phi_j_theta_j) #- rowSums(sweep(Phi_j_theta_j, 2, gamma_next, FUN = "*"))
 
       # this can be used for betaE, b0 and gamma update!
       Phi_tilde_theta <- do.call(cbind,
@@ -272,11 +272,13 @@ lspath <- function(x,
       betaE_next <- SoftThreshold(x = (1 / (nobs * we)) * sum(x_tilde_E * R3),
                                   lambda = LAMBDA * (1- alpha))
 
+
+
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       # update beta0
       #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-      message("Update beta0")
+      # message(sprintf("Update beta0, lambda = %0.2f", LAMBDA))
 
       # this is the linear predictor without the intercept, used for b0 update and objective function value
       lp <- betaE_next * e - rowSums(Phi_j_theta_j) - betaE_next * gamma_Phi_tilde_theta_sum
@@ -312,7 +314,6 @@ lspath <- function(x,
 
 
       m <- m + 1
-      message(paste0(capture.output(Theta_next), collapse = "\n"))
       # adaptive weight for each tuning parameter. currently this is the
       # same for iterations, but I am coding it here
       # for flexibility in case we want to change the weights at each iteration
@@ -324,6 +325,7 @@ lspath <- function(x,
 
     }
 
+    message(paste0(capture.output(Theta_next), collapse = "\n"))
 
     # Betas_and_Alphas <- convert2(beta = beta_hat_next,
     #                              gamma = gamma_next,
