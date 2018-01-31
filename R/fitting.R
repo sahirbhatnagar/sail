@@ -26,6 +26,8 @@ lspath <- function(x,
 
   # Basis Expansion and Design Matrix ---------------------------------------
 
+  # Rprof(tmp <- tempfile())
+
   # group membership
   group <- rep(seq_len(nvars), each = df)
 
@@ -45,25 +47,19 @@ lspath <- function(x,
 
   nulldev <- as.numeric(crossprod(y))
 
-  # Initialize beta_0 for Lambda Max ----------------------------------------
-
-  # b0 <- mean(y)
-  b0 <- 0
-
-  # Initialize Theta_j and Beta_E needed for Residual of Gamma_j update ------------
-
-  # this outputs a list, each component of the list is a vector of coefs of lenght df
-  # theta <- split(drop(uni_fun(x = Phi_j, y = y,
-  #                   variables = main_effect_names,
-  #                   include.intercept = F,
-  #                   type = "univariate")), group)
-  # betaE <- as.double(lm.fit(as.matrix(e),y)$coef)
+  # Initialize -------------------------------------------------------------
 
   # the initial values here dont matter, since at Lambda_max everything is 0
-  theta <- split(setNames(rep(0, length(main_effect_names)), main_effect_names), group)
+  b0 <- mean(y)
   betaE <- 0
+  theta <- split(setNames(rep(0, length(main_effect_names)), main_effect_names), group)
   gamma <- rep(0, nvars)
-  b0_next <- b0 ; theta_next <- theta
+  theta_next <- theta
+  R.star <- y - b0
+  # update this at the end once betaE and theta are updated. x_tilde is used for gamma update
+  x_tilde <- matrix(0, nrow = nobs, ncol = nvars)
+  add_back <- rep(0, nobs)
+
   Theta_init <- c(b0, betaE, do.call(c,theta), gamma)
 
   # Lambda Sequence ---------------------------------------------------------
@@ -71,10 +67,8 @@ lspath <- function(x,
   if (ulam == 0) {
 
     # R1 <- R2 <- y - b0 # this is used as the starting residual for Gamma and Theta update
-    R1 <- y - mean(y)
-    R.star <- y
-    term1 <- (1 / we) * (crossprod(e, R1))
-    term2 <- (1 / wj) * sapply(Phi_j_list, function(i) l2norm(crossprod(i, R1)))
+    term1 <- (1 / we) * (crossprod(e, R.star))
+    term2 <- (1 / wj) * sapply(Phi_j_list, function(i) l2norm(crossprod(i, R.star)))
     lambda_max <- (1 / (nobs * (1 - alpha))) * max(term1, max(term2))
     lambdas <- rev(exp(seq(log(flmin * lambda_max), log(lambda_max), length.out = nlambda)))
     lambdaNames <- paste0("s", seq_along(lambdas))
@@ -103,8 +97,8 @@ lspath <- function(x,
                     dimnames = list(c("b0",main_effect_names,"X_E"),
                                     lambdaNames))
 
-  gammaMat <- matrix(nrow = length(interaction_names), ncol = nlambda,
-                     dimnames = list(c(interaction_names),
+  gammaMat <- matrix(nrow = nvars, ncol = nlambda,
+                     dimnames = list(c(paste0(vnames,"X_E")),
                                      lambdaNames))
 
   outPrint <- matrix(NA, nrow = nlambda, ncol = 5,
@@ -137,7 +131,7 @@ lspath <- function(x,
     Q <- vector("numeric", length = maxit + 1)
 
     # store the value of the likelihood at the 0th iteration
-    Q[1] <- (1 / (2 * nobs)) * crossprod(R1)
+    Q[1] <- (1 / (2 * nobs)) * crossprod(R.star)
 
     #iteration counter
     m <- 1
@@ -146,18 +140,17 @@ lspath <- function(x,
     converged <- FALSE
 
     # un-comment if we dont want warm starts
-    # b0 <- 0
+    # b0 <- mean(y)
     # theta <- split(setNames(rep(0, length(main_effect_names)), main_effect_names), group)
     # betaE <- 0
     # gamma <- rep(0, nvars)
-    # R1 <- R2 <- y - b0
-
-    # update this at the end
-    # x_tilde <- matrix(0, nrow = nobs)
+    # R.star <- y - b0
+    # b0_next <- b0 ;
+    # theta_next <- theta
 
     # While loop for convergence at a given Lambda value ----------------------
 
-
+# browser()
     while (!converged && m < maxit){
 
       # Theta_init <- c(drop(beta_hat_previous), drop(gamma_hat_previous))
@@ -170,23 +163,18 @@ lspath <- function(x,
       # after updating the theta. on the first pass this is 0 anyways
       # R1 is initiated above
 
-      add_back <- do.call(cbind,
-                   lapply(seq_along(Phi_j_list),
-                     function(i) (
-                       ( Phi_j_list[[i]] + gamma[i] * betaE * XE_Phi_j_list[[i]] ) %*% theta[[i]]
-                       )
-                     )
-                   )
+      # x_tilde <- betaE * do.call(cbind,
+      #                            lapply(seq_along(XE_Phi_j_list),
+      #                                   function(i) XE_Phi_j_list[[i]] %*% theta[[i]]))
+
+
+      # add_back <- rowSums(sweep(x_tilde, 2, gamma, FUN = "*"))
 
       # gamma_Phi_tilde_theta_sum <- rowSums(sweep(Phi_tilde_theta, 2, gamma, FUN = "*"))
       # R1 <- y - b0 - betaE * e - rowSums(Phi_j_theta_j)
       # message("Update gamma")
 
-      R <- R.star + rowSums(add_back)
-
-      x_tilde <- betaE * do.call(cbind,
-                                 lapply(seq_along(XE_Phi_j_list),
-                                        function(i) XE_Phi_j_list[[i]] %*% theta[[i]]))
+      R <- R.star + add_back
 
       # indices of the x_tilde matrices that have all 0 columns
       zero_x_tilde <- dim(check_col_0(x_tilde))[2]
@@ -198,19 +186,21 @@ lspath <- function(x,
           # thresh = 1e-10,
           penalty.factor = wje,
           lambda = c(.Machine$double.xmax, LAMBDA * alpha),
-          # lambda = c(LAMBDA * alpha),
           standardize = F, intercept = F))[-1,2]
       }
 
-      Delta <- rowSums(
-        do.call(cbind,
-                lapply(seq_along(Phi_j_list),
-                       function(i) (
-                       ( ( gamma[i] - gamma_next[i] ) * betaE * XE_Phi_j_list[[i]] ) %*% theta[[i]]
-                       )
-                )
-        )
-      )
+      # Delta <- rowSums(
+      #   do.call(cbind,
+      #           lapply(seq_along(Phi_j_list),
+      #                  function(i) (
+      #                  ( ( gamma[i] - gamma_next[i] ) * betaE * XE_Phi_j_list[[i]] ) %*% theta[[i]]
+      #                  )
+      #           )
+      #   )
+      # )
+
+      Delta <- rowSums(sweep(x_tilde, 2, (gamma - gamma_next), FUN = "*"))
+
 
       R.star <- R.star + Delta
 
@@ -220,59 +210,72 @@ lspath <- function(x,
 
       # message("Update theta")
 
-      b0_next <- b0 ; theta_next <- theta
 
       x_tilde_2 <- lapply(seq_along(Phi_j_list),
                           function(i) Phi_j_list[[i]] + gamma_next[i] * betaE * XE_Phi_j_list[[i]])
 
-      for (j in seq_len(nvars)) {
+      # converged_theta <- FALSE
+      # k <- 1
+      # while (!converged_theta && k < maxit){
 
-      #   delta <- if (j == 1) 0 else {
-      #     x_tilde_2[[j]] %*% theta_next[[j]] - x_tilde_2[[(j-1)]] %*% theta_next[[(j-1)]]
-      #   }
-      #
-      #   R2 <- R2 + delta
+        for (j in seq_len(nvars)) {
 
-        R <- R.star + x_tilde_2[[j]] %*% theta_next[[j]]
+          #   delta <- if (j == 1) 0 else {
+          #     x_tilde_2[[j]] %*% theta_next[[j]] - x_tilde_2[[(j-1)]] %*% theta_next[[(j-1)]]
+          #   }
+          #
+          #   R2 <- R2 + delta
 
-        # R2 <- y - b0_next - betaE * e - rowSums(do.call(cbind,
-        #                                         lapply(seq_along(x_tilde_2),
-        #                                                function(i) x_tilde_2[[i]] %*% theta_next[[i]]))) +
-        #   x_tilde_2[[j]] %*% theta_next[[j]]
+          R <- R.star + x_tilde_2[[j]] %*% theta_next[[j]]
 
-        theta_next_j <- switch(group.penalty,
-                                  gglasso = coef(gglasso::gglasso(x = x_tilde_2[[j]],
-                                                                  y = R,
-                                                                  # eps = 1e-10,
-                                                                  group = rep(1, df),
-                                                                  pf = wj[j],
-                                                                  lambda = LAMBDA * (1 - alpha),
-                                                                  intercept = F))[-1,],
-                                  MCP = grpreg::grpreg(X = x_tilde_2[[j]],
+          # R2 <- y - b0_next - betaE * e - rowSums(do.call(cbind,
+          #                                         lapply(seq_along(x_tilde_2),
+          #                                                function(i) x_tilde_2[[i]] %*% theta_next[[i]]))) +
+          #   x_tilde_2[[j]] %*% theta_next[[j]]
+
+          theta_next_j <- switch(group.penalty,
+                                 gglasso = coef(gglasso::gglasso(x = x_tilde_2[[j]],
+                                                                 y = R,
+                                                                 # eps = 1e-10,
+                                                                 group = rep(1, df),
+                                                                 pf = wj[j],
+                                                                 lambda = LAMBDA * (1 - alpha),
+                                                                 intercept = F))[-1,],
+                                 MCP = grpreg::grpreg(X = x_tilde_2[[j]],
+                                                      y = R,
+                                                      group = rep(1, df),
+                                                      penalty = "grMCP",
+                                                      family = "gaussian",
+                                                      group.multiplier = as.vector(wj[j]),
+                                                      lambda = LAMBDA * (1 - alpha),
+                                                      intercept = T)$beta[-1,],
+                                 SCAD = grpreg::grpreg(X = x_tilde_2[[j]],
                                                        y = R,
                                                        group = rep(1, df),
-                                                       penalty = "grMCP",
+                                                       penalty = "grSCAD",
                                                        family = "gaussian",
                                                        group.multiplier = as.vector(wj[j]),
                                                        lambda = LAMBDA * (1 - alpha),
-                                                       intercept = T)$beta[-1,],
-                                  SCAD = grpreg::grpreg(X = x_tilde_2[[j]],
-                                                        y = R,
-                                                        group = rep(1, df),
-                                                        penalty = "grSCAD",
-                                                        family = "gaussian",
-                                                        group.multiplier = as.vector(wj[j]),
-                                                        lambda = LAMBDA * (1 - alpha),
-                                                        intercept = T)$beta[-1,])
+                                                       intercept = T)$beta[-1,])
 
 
-        Delta <- x_tilde_2[[j]] %*% (theta_next[[j]] - theta_next_j)
+          Delta <- x_tilde_2[[j]] %*% (theta_next[[j]] - theta_next_j)
 
-        theta_next[[j]] <- theta_next_j
+          theta_next[[j]] <- theta_next_j
 
-        R.star <- R.star + Delta
+          R.star <- R.star + Delta
 
-      }
+        }
+
+      #   criterion_theta <- l2norm(do.call(c,theta_next) - do.call(c,theta)) ^ 2
+      #   converged_theta <- criterion_theta < 1e-2
+      #   converged_theta <- if (is.na(converged_theta)) FALSE else converged_theta
+      #   # if (verbose) message(sprintf("Iteration: %f, l2norm((theta_next - theta)^2: %f", k,
+      #   #                              criterion_theta))
+      #   k <- k + 1
+      #   theta <- theta_next
+      #
+      # }
 
       # used to check convergence
       theta_next_vec <- do.call(c, theta_next)
@@ -322,8 +325,8 @@ lspath <- function(x,
       b0_next <- mean(R)
 
       # used for gamma update
-      # R1 <- y - b0_next - betaE_next * e - rowSums(Phi_j_theta_j)
-      # x_tilde <- betaE_next * Phi_tilde_theta
+      x_tilde <- betaE_next * Phi_tilde_theta
+      add_back <- rowSums(sweep(x_tilde, 2, gamma_next, FUN = "*"))
       # message(sprintf("betaE = %0.2f", betaE_next))
 
       Delta <- (b0 - b0_next)
@@ -383,6 +386,8 @@ lspath <- function(x,
 
     betaMat[,lambdaIndex] <- c(b0_next,theta_next_vec, betaE_next)
     gammaMat[,lambdaIndex] <- gamma_next
+
+    # par(mfrow=c(2,1))
     # matplot(t(betaMat), type = "l")
     # matplot(t(gammaMat), type = "l")
 
@@ -423,9 +428,11 @@ lspath <- function(x,
     # pb$tick()
   }
 
+  return(betaMat)
+
   browser()
-
-
+  #
+  #
   # Rprof()
   # proftable(tmp)
   # summaryRprof(tmp)

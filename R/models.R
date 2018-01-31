@@ -157,7 +157,7 @@ sail <- function(x, y, e, df = 5, degree = 3,
                  family = c("gaussian", "binomial"),
                  weights, # observation weights
                  penalty.factor = rep(1, 1 + 2 * nvars), # predictor (adaptive lasso) weights, the last entry must be for the E variable
-                 lambda.factor = ifelse(nobs < nvars, 0.01, 0.0001),
+                 lambda.factor = ifelse(nobs < (1 + 2 * df * nvars), 0.01, 0.0001),
                  lambda = NULL,
                  alpha = 0.5,
                  nlambda = 100,
