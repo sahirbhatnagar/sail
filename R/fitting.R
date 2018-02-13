@@ -88,17 +88,24 @@ lspath <- function(x,
   # Objects to store results ------------------------------------------------
 
   # matrix to store results of betas and alphas on standardized scale
-  coefficientMat <- matrix(nrow = length(c(main_effect_names,"X_E",interaction_names)),
-                           ncol = nlambda,
-                           dimnames = list(c(main_effect_names,"X_E", interaction_names),
-                                           lambdaNames))
+  # coefficientMat <- matrix(nrow = length(c(main_effect_names,"X_E",interaction_names)),
+  #                          ncol = nlambda,
+  #                          dimnames = list(c(main_effect_names,"X_E", interaction_names),
+  #                                          lambdaNames))
 
-  betaMat <- matrix(nrow = length(c("b0",main_effect_names,"X_E")), ncol = nlambda,
-                    dimnames = list(c("b0",main_effect_names,"X_E"),
+  a0 <- setNames(rep(0, nlambda), lambdaNames)
+
+  betaMat <- matrix(nrow = length(c(main_effect_names,"X_E")), ncol = nlambda,
+                    dimnames = list(c(main_effect_names,"X_E"),
                                     lambdaNames))
 
   gammaMat <- matrix(nrow = nvars, ncol = nlambda,
                      dimnames = list(c(paste0(vnames,"X_E")),
+                                     lambdaNames))
+
+  alphaMat <- matrix(nrow = length(c(main_effect_names)),
+                     ncol = nlambda,
+                     dimnames = list(paste(main_effect_names,"X_E", sep = ":"),
                                      lambdaNames))
 
   outPrint <- matrix(NA, nrow = nlambda, ncol = 5,
@@ -354,6 +361,7 @@ lspath <- function(x,
 
 
 
+
       m <- m + 1
       # adaptive weight for each tuning parameter. currently this is the
       # same for iterations, but I am coding it here
@@ -366,7 +374,7 @@ lspath <- function(x,
 
     }
 
-    message(paste0(capture.output(Theta_next), collapse = "\n"))
+    # message(paste0(capture.output(Theta_next), collapse = "\n"))
 
     # Betas_and_Alphas <- convert2(beta = beta_hat_next,
     #                              gamma = gamma_next,
@@ -374,8 +382,7 @@ lspath <- function(x,
     #                              interaction.names = list_group_inter,
     #                              group = group)
     #
-    # dfbeta <- length(nonzero(Betas_and_Alphas[c(main_effect_names,"X_E"),]))
-    # dfalpha <- length(nonzero(Betas_and_Alphas[interaction_names,]))
+
     # deviance <- crossprod(y - x %*% Betas_and_Alphas)
     # devRatio <- 1 - deviance/nulldev
     # outPrint[LAMBDA,] <- c(if (dfbeta==0) 0 else dfbeta,
@@ -383,40 +390,32 @@ lspath <- function(x,
     #                        deviance,
     #                        devRatio,
     #                        lambda_beta, lambda_gamma)
+    #
 
-    betaMat[,lambdaIndex] <- c(b0_next,theta_next_vec, betaE_next)
+    a0[lambdaIndex] <- b0_next
+    betaMat[,lambdaIndex] <- c(theta_next_vec, betaE_next)
     gammaMat[,lambdaIndex] <- gamma_next
+    alphaMat[,lambdaIndex] <- do.call(c,lapply(seq_along(theta_next), function(i) betaE_next * gamma_next[i] * theta_next[[i]]))
 
-    # par(mfrow=c(2,1))
+
+    dfbeta <- sum(abs(betaMat[,lambdaIndex])>1e-12)
+    dfalpha <- sum(abs(alphaMat[,lambdaIndex])>1e-12)
+
+    outPrint[lambdaIndex,] <- c(if (dfbeta==0) 0 else dfbeta,
+                           if (dfalpha==0) 0 else dfalpha,
+                           # deviance,
+                           0,
+                           # devRatio,
+                           0,
+                           LAMBDA)
+
+    # browser()
+
+    # dev.off()
+    # par(mfrow=c(3,1), mai = c(0.2,0.2,0.2,0.2))
     # matplot(t(betaMat), type = "l")
     # matplot(t(gammaMat), type = "l")
-
-    # for a fixed lambda.beta, keep using the previous solution for each lambda.gamma
-    # for the next fixed lambda.beta restart the calculation using the initial value
-    # from the uni_fun function
-    # betaWarmStart <- if (lambdaIndex %ni% switchWarmStart$X1) beta_hat_next
-    # trying without warm start
-
-    # uni_start <- rbind(beta_hat_next, gamma_next)
-    # uni_start <- if (lambdaIndex %ni% switchWarmStart$X1) {
-    #   rbind(betaWarmStart, gammaWarmStart) } else {
-    #     uni_start_iteration1
-    #   }
-
-    # uni_start <- uni_start_iteration1
-
-    # need to update weights also!
-    # adaptive.weights <- if (lambdaIndex %ni% switchWarmStart$X1) {
-    #   update_weights(betas = betaWarmStart,
-    #                  # gammas = gammaWarmStart,
-    #                  alphas = Betas_and_Alphas[interaction_names,,drop=F],
-    #                  main.effect.names = list_group_main,
-    #                  interaction.names = list_group_inter,
-    #                  group = group) } else {
-    #                    adaptive.weights.start
-    #                  }
-
-    # adaptive.weights <- adaptive.weights.start
+    # matplot(t(alphaMat), type = "l")
 
     # devianceDiff <- outPrint[lambdaIndex,"deviance"] - outPrint[lambdaIndex-1,"deviance"]
     #coefficientMat[,LAMBDA] <- Betas_and_Alphas
@@ -428,82 +427,65 @@ lspath <- function(x,
     # pb$tick()
   }
 
-  return(betaMat)
-
-  browser()
-  #
-  #
-  # Rprof()
-  # proftable(tmp)
-  # summaryRprof(tmp)
-  # b <- Sys.time()
-
-  # outPrint[complete.cases(outPrint),]
-  # coefficientMat
-  # b-a
-
+  # return(betaMat)
   # browser()
 
-  beta_hat_next_list <- lapply(seq_len(ncol(betaMat)),
-                               function(i) betaMat[,i,drop=F])
+  # beta_hat_next_list <- lapply(seq_len(ncol(betaMat)),
+  #                              function(i) betaMat[,i,drop=F])
+
   # convert to original scale
-  betas_original_scale_list <- if (normalize) lapply(beta_hat_next_list, function(i) i / sx[c(main_effect_names, "X_E")]) else lapply(beta_hat_next_list, function(i) i )
+  # betas_original_scale_list <- if (normalize) lapply(beta_hat_next_list, function(i) i / sx[c(main_effect_names, "X_E")]) else lapply(beta_hat_next_list, function(i) i )
 
-  gamma_next_list <- lapply(seq_len(ncol(gammaMat)),
-                                function(i) gammaMat[,i,drop=F])
+  # gamma_next_list <- lapply(seq_len(ncol(gammaMat)),
+  #                               function(i) gammaMat[,i,drop=F])
 
-  gammas_original_scale_list <- if (normalize) lapply(gamma_next_list, function(i) i / sx[interaction_names]) else lapply(gamma_next_list, function(i) i )
+  # gammas_original_scale_list <- if (normalize) lapply(gamma_next_list, function(i) i / sx[interaction_names]) else lapply(gamma_next_list, function(i) i )
 
   # convert gammas to alphas
-  betas_alphas_original_scale <- mapply(convert2,
-                                        beta = betas_original_scale_list,
-                                        gamma = gammas_original_scale_list,
-                                        MoreArgs = list(main.effect.names = list_group_main,
-                                                        interaction.names = list_group_inter,
-                                                        group = group))
+  # betas_alphas_original_scale <- mapply(convert2,
+  #                                       beta = betas_original_scale_list,
+  #                                       gamma = gammas_original_scale_list,
+  #                                       MoreArgs = list(main.effect.names = list_group_main,
+  #                                                       interaction.names = list_group_inter,
+  #                                                       group = group))
+  #
+  # dimnames(betas_alphas_original_scale) <- list(c(main_effect_names,"X_E",interaction_names),
+  #                                               paste0("s",1:nlambda))
 
-  dimnames(betas_alphas_original_scale) <- list(c(main_effect_names,"X_E",interaction_names),
-                                                paste0("s",1:nlambda))
+  # betas_original_scale <- betas_alphas_original_scale[c(main_effect_names,"X_E"), , drop = F]
+  # alphas_original_scale <- betas_alphas_original_scale[interaction_names, , drop = F]
 
-  betas_original_scale <- betas_alphas_original_scale[c(main_effect_names,"X_E"), , drop = F]
-  alphas_original_scale <- betas_alphas_original_scale[interaction_names, , drop = F]
+  # b0 <- vector(length = nlambda)
+  # for (lam in seq_len(nlambda)) {
+  #   b0[lam] <- by - sum(betas_original_scale[,lam,drop = F] * bx[c(main_effect_names,"X_E")]) -
+  #     sum(alphas_original_scale[,lam,drop=F] * bx[interaction_names])
+  # }
+  #
+  # names(b0) <- paste0("s", 1:nlambda)
 
-  b0 <- vector(length = nlambda)
-  for (lam in seq_len(nlambda)) {
-    b0[lam] <- by - sum(betas_original_scale[,lam,drop = F] * bx[c(main_effect_names,"X_E")]) -
-      sum(alphas_original_scale[,lam,drop=F] * bx[interaction_names])
-  }
-  names(b0) <- paste0("s", 1:nlambda)
+  # gamma_final <- as(matrix(unlist(gammas_original_scale_list, use.names = F),
+  #                          ncol = nlambda,
+  #                          byrow = T,
+  #                          dimnames = list(interaction_names, paste0("s",1:nlambda))),
+  #                   "dgCMatrix")
+  beta_final <- as(betaMat,"dgCMatrix")
+  alpha_final <- as(alphaMat,"dgCMatrix")
 
-  gamma_final <- as(matrix(unlist(gammas_original_scale_list, use.names = F),
-                           ncol = nlambda,
-                           byrow = T,
-                           dimnames = list(interaction_names, paste0("s",1:nlambda))),
-                    "dgCMatrix")
-  beta_final <- as(betas_original_scale,"dgCMatrix")
-  alpha_final <- as(alphas_original_scale,"dgCMatrix")
+  # dfbeta <- length(nonzero(betaMat))
+  # dfalpha <- length(nonzero(Betas_and_Alphas[interaction_names,]))
 
-  lambda.beta <- unlist(lambda_beta_list)
-  names(lambda.beta) <- paste0("s",1:nlambda,".beta")
-  lambda.gamma <- unlist(lambda_gamma_list)
-  names(lambda.gamma) <- paste0("s",1:nlambda, ".gamma")
-
-  out <- list(b0 = b0,
+  out <- list(a0 = a0,
               beta = beta_final,
               alpha = alpha_final,
-              gamma = gamma_final,
               group = group,
-              lambda.beta = lambda.beta,
-              lambda.gamma = lambda.gamma,
-              tuning.parameters = tuning_params_mat,
-              dfbeta = outPrint[,"dfBeta", drop = F],
-              dfalpha = outPrint[,"dfAlpha", drop = F],
-              dev.ratio = outPrint[,"percentDev", drop = F],
-              deviance = outPrint[,"deviance", drop = F],
-              converged = converged, x = x, y = y, bx = bx, by = by, sx = sx,
-              center = center, normalize = normalize,
-              nlambda.gamma = nlambda.gamma,
-              nlambda.beta = nlambda.beta,
+              lambda = lambdas,
+              outPrint = outPrint,
+              # dfbeta = outPrint[,"dfBeta", drop = F],
+              # dfalpha = outPrint[,"dfAlpha", drop = F],
+              # dev.ratio = outPrint[,"percentDev", drop = F],
+              # deviance = outPrint[,"deviance", drop = F],
+              # converged = converged, x = x, y = y, bx = bx, by = by, sx = sx,
+              # center = center, normalize = normalize,
               nlambda = nlambda,
               design = design,
               df = df,
