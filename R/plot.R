@@ -130,66 +130,110 @@ plotCoefSail <- function(beta, norm, lambda, df, dev, label = FALSE,
   }
 }
 
+# myplotgrp(fit, log.l = T, ylab = "main")
+
+plotSailCoef <- function(coefs, lambda, group, df, dev, vnames,
+                          alpha = 1, legend.loc, label = FALSE, log.l = FALSE, norm = FALSE, ...) {
+
+  # browser()
 
 
-
-
-plot.grpreg <- function(x, alpha=1, legend.loc, label=FALSE, log.l=FALSE, norm=FALSE, ...) {
-
-  browser()
-
-    beta <- as(x$beta, "matrix")
-
-    penalized <- which(x$group!=0)
-    nonzero <- which(apply(abs(beta),1,sum)!=0)
+  if (norm) { # not implemented for now
+    # Y <- predict(x, type = "norm")
+    # index <- Y
+    # approx.f = 1
+    # if (any(x$group == 0))
+    #   Y <- Y[-1, ]
+    # nonzero <- which(apply(abs(Y), 1, sum) != 0)
+    # Y <- Y[nonzero, ]
+    # g <- 1:nrow(Y)
+  }  else {
+    if (length(dim(coefs)) == 3) {
+      beta <- matrix(coefs[, -1, , drop = FALSE], ncol = dim(coefs)[3])
+    }  else {
+      beta <- coefs
+    }
+    penalized <- which(group != 0)
+    nonzero <- which(apply(abs(beta), 1, sum) != 0)
     ind <- intersect(penalized, nonzero)
-    Y <- beta[ind,,drop=FALSE]
-    g <- as.numeric(as.factor(x$group[ind]))
-
+    Y <- as.matrix(beta[ind, , drop = FALSE])
+    g <- as.numeric(as.factor(group[ind]))
+  }
   p <- nrow(Y)
-  l <- x$lambda.beta
+  l <- lambda
   n.g <- max(g)
-
   if (log.l) {
     l <- log(l)
+    index <- l
+    approx.f = 0
     xlab <- expression(log(lambda))
-  } else xlab <- expression(lambda)
-
-  plot.args <- list(x=l, y=1:length(l), ylim=range(Y), xlab=xlab, ylab="", type="n", xlim=rev(range(l)), las=1, bty="n")
+  }  else {
+    xlab <- expression(lambda)
+    index <- lambda
+    approx.f = 0
+  }
+  plot.args <- list(x = l, y = 1:length(l), ylim = range(Y),
+                    xlab = xlab, ylab = "", type = "n",
+                    xlim = rev(range(l)),
+                    las = 1,
+                    cex.lab = 2,
+                    cex.axis = 1.5,
+                    cex = 2,
+                    # bty = "n",
+                    # mai=c(1,1,0.1,0.2),
+                    # tcl = -0.5,
+                    omi = c(0.2,1,0.2,0.2),
+                    family = "serif")
   new.args <- list(...)
   if (length(new.args)) {
-    new.plot.args <- new.args[names(new.args) %in% c(names(par()), names(formals(plot.default)))]
+    new.plot.args <- new.args[names(new.args) %in% c(names(par()),
+                                                     names(formals(plot.default)))]
     plot.args[names(new.plot.args)] <- new.plot.args
   }
   do.call("plot", plot.args)
-  if (plot.args$ylab=="") {
-    ylab <- if (norm) expression("||"*hat(beta)*"||") else expression(hat(beta))
-    mtext(ylab, 2, 3.5, las=1, adj=0)
+  if (plot.args$ylab == "") {
+    ylab <- if (norm)
+      expression("||" * hat(theta) * "||")
+    else expression(hat(theta))
+    mtext(ylab, 2, 3.5, las = 1, adj = 0, cex = 2)
   }
-  abline(h=0,lwd=0.5,col="gray")
-
-  cols <- hcl(h=seq(15,375,len=max(4,n.g+1)),l=60,c=150,alpha=alpha)
-  cols <- if (n.g==2) cols[c(1,3)] else cols[1:n.g]
-  line.args <- list(col=cols, lwd=1+2*exp(-p/20), lty=1, pch="")
-  if (length(new.args)) line.args[names(new.args)] <- new.args
+  abline(h = 0, lwd = 0.8, col = "gray")
+  cols <- hcl(h = seq(15, 375, len = max(4, n.g + 1)), l = 60,
+              c = 150, alpha = alpha)
+  cols <- if (n.g == 2) cols[c(1, 3)] else cols[1:n.g]
+  line.args <- list(col = cols, lwd = 1 + 2 * exp(-p/20),
+                    lty = 1, pch = "")
+  if (length(new.args))
+    line.args[names(new.args)] <- new.args
   line.args$x <- l
   line.args$y <- t(Y)
   line.args$col <- line.args$col[g]
-  line.args$lty <- rep(line.args$lty, length.out=max(g))
+  line.args$lty <- rep(line.args$lty, length.out = max(g))
   line.args$lty <- line.args$lty[g]
-  do.call("matlines",line.args)
-
-  if(!missing(legend.loc)) {
-    legend.args <- list(col=cols, lwd=line.args$lwd, lty=line.args$lty, legend=names(x$group.multiplier))
+  do.call("matlines", line.args)
+  if (!missing(legend.loc)) {
+    legend.args <- list(col = cols, lwd = line.args$lwd,
+                        lty = line.args$lty, legend = vnames)
     if (length(new.args)) {
-      new.legend.args <- new.args[names(new.args) %in% names(formals(legend))]
+      new.legend.args <- new.args[names(new.args) %in%
+                                    names(formals(legend))]
       legend.args[names(new.legend.args)] <- new.legend.args
     }
     legend.args$x <- legend.loc
-    do.call("legend",legend.args)
+    do.call("legend", legend.args)
   }
   if (label) {
-    ypos <- Y[,ncol(Y)]
-    text(-0.001, ypos, names(ypos), xpd=NA, adj=c(0,NA))
+    ypos <- Y[, ncol(Y)]
+    text(min(l), ypos, names(ypos), xpd = NA, adj = c(0,
+                                                      NA))
   }
+
+  atdf = pretty(index)
+  prettydf = approx(x = index, y = df, xout = atdf, rule = 2,
+                    method = "constant", f = approx.f)$y
+  axis(3, at = atdf, labels = prettydf, tcl = NA, cex.axis = 1.5)
+
+
 }
+
+

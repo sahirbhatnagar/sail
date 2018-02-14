@@ -122,21 +122,21 @@ print.sail <- function (x, digits = max(3, getOption("digits") - 3), ...) {
 #' @description plot method for sail function
 #' @export
 
-plot.sail <- function(x, xvar = c("norm", "lambda", "dev"), label = T,
-                      ...) {
-  xvar = match.arg(xvar)
-  plotCoefSail(x$beta,
-               lambda = x$lambda.beta,
-               df = x$dfbeta,
-               dev = x$dev.ratio,
-               label = label,
-               xvar = xvar, ...)
-}
+# plot.sail <- function(x, xvar = c("norm", "lambda", "dev"), label = T,
+#                       ...) {
+#   xvar = match.arg(xvar)
+#   plotCoefSail(x$beta,
+#                lambda = x$lambda.beta,
+#                df = x$dfbeta,
+#                dev = x$dev.ratio,
+#                label = label,
+#                xvar = xvar, ...)
+# }
 
 
 
-plot.sail <- function(x, xvar = c("norm", "lambda", "dev"), label = T,
-                      ...) {
+plot.sail <- function(x, type = c("main","interaction","both"), ...) {
+
   # xvar = match.arg(xvar)
   # plotCoefSail(x$beta,
   #              lambda = x$lambda.beta,
@@ -145,6 +145,93 @@ plot.sail <- function(x, xvar = c("norm", "lambda", "dev"), label = T,
   #              label = label,
   #              xvar = xvar, ...)
 
-  plot.grpreg(x = x, ...)
+  type <- match.arg(type)
 
-}
+
+  if (type == "main") {
+
+
+    plotSailCoef(coefs = x$beta,
+                 lambda = x$lambda,
+                 df = x$dfbeta,
+                 group = x$group,
+                 dev = x$dev.ratio,
+                 vnames = x$vnames,
+                 ...)
+
+
+
+  }
+
+  if (type == "interaction") {
+
+    plotSailCoef(coefs = x$alpha,
+                 lambda = x$lambda,
+                 df = x$dfalpha,
+                 group = x$group,
+                 dev = x$dev.ratio,
+                 vnames = x$vnames,
+                 ...)
+
+  }
+
+
+  if (type == "both") {
+
+
+    # c(bottom, left, top, right)
+
+    par(mfrow=c(2,1), mai = c(0.5,0.8,0.5,0.4))
+
+    plotSailCoef(coefs = x$beta,
+                 lambda = x$lambda,
+                 df = x$dfbeta,
+                 group = x$group,
+                 dev = x$dev.ratio,
+                 vnames = x$vnames,
+                 ylab = "Main effects",
+                 ...)
+
+    plotSailCoef(coefs = x$alpha,
+                 lambda = x$lambda,
+                 df = x$dfalpha,
+                 group = x$group,
+                 dev = x$dev.ratio,
+                 vnames = x$vnames,
+                 ylab = "Interactions",
+                 ...)
+
+  }
+
+
+
+
+
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
