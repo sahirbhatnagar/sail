@@ -1412,7 +1412,7 @@ l2norm <- function(x) sqrt(sum(x^2))
 #'
 #' @description function to simulate data
 #'
-gendata <- function(n, p, df, E = rnorm(n = n, sd = 0.5), beta0 = 1, betaE = 2, SNR = 1) {
+gendata <- function(n, p, df, degree, E = rnorm(n = n, sd = 0.5), beta0 = 1, betaE = 2, SNR = 1) {
 
   # covariates
   X <- replicate(n = p, runif(n))
@@ -1429,15 +1429,14 @@ gendata <- function(n, p, df, E = rnorm(n = n, sd = 0.5), beta0 = 1, betaE = 2, 
   # error
   error <- stats::rnorm(n)
 
-  Y.star <- beta0 +
-    bs(X[,1], df = df) %*% b1  +
-    bs(X[,2], df = df) %*% b2 +
+  Y.star <- bs(X[,1], df = df, degree = degree) %*% b1  +
+    bs(X[,2], df = df, degree = degree) %*% b2 +
     # bs(X[,3], df = df) %*% b3 +
     # bs(X[,4], df = df) %*% b4 +
     # bs(X[,5], df = df) %*% b5 +
     betaE * E +
-    E * bs(X[,1], df = df) %*% bE1 +
-    E * bs(X[,2], df = df) %*% bE2
+    E * bs(X[,1], df = df, degree = degree) %*% bE1 +
+    E * bs(X[,2], df = df, degree = degree) %*% bE2
 
   k <- sqrt(stats::var(Y.star) / (SNR * stats::var(error)))
 

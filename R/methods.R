@@ -108,20 +108,13 @@ coef.cv.sail <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
 
 print.sail <- function (x, digits = max(3, getOption("digits") - 3), ...) {
   cat("\nCall: ", deparse(x$call), "\n\n")
-  print(cbind(DfBeta = x$dfbeta, DfAlpha = x$dfalpha,
+  print(cbind(df_main = x$dfbeta, df_interaction = x$dfalpha,
+              df_environment = x$dfenviron,
               `%Dev` = signif(x$dev.ratio, digits),
-              LambdaBeta = signif(x$lambda.beta, digits),
-              LambdaGamma = signif(x$lambda.gamma, digits)))
+              Lambda = signif(x$lambda, digits)))
 }
 
 
-print.sail <- function (x, digits = max(3, getOption("digits") - 3), ...) {
-  cat("\nCall: ", deparse(x$call), "\n\n")
-  print(cbind(DfBeta = x$dfbeta, DfAlpha = x$dfalpha,
-              `%Dev` = signif(x$dev.ratio, digits),
-              LambdaBeta = signif(x$lambda.beta, digits),
-              LambdaGamma = signif(x$lambda.gamma, digits)))
-}
 
 
 #' Plot Method for sail function
