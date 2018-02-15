@@ -4,7 +4,7 @@
 \alias{plot.cv.sail}
 \title{Plot the cross-validation curve produced by cv.sail}
 \usage{
-plot.cv.sail(x)
+\method{plot}{cv.sail}(x)
 }
 \arguments{
 \item{x}{fitted \code{cv.sail} object}

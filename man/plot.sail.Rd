@@ -4,7 +4,7 @@
 \alias{plot.sail}
 \title{Plot Method for sail function}
 \usage{
-plot.sail(x, xvar = c("norm", "lambda", "dev"), label = T, ...)
+\method{plot}{sail}(x, type = c("main", "interaction", "both"), ...)
 }
 \description{
 plot method for sail function

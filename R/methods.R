@@ -122,76 +122,38 @@ print.sail <- function (x, digits = max(3, getOption("digits") - 3), ...) {
 #' @description plot method for sail function
 #' @export
 
-# plot.sail <- function(x, xvar = c("norm", "lambda", "dev"), label = T,
-#                       ...) {
-#   xvar = match.arg(xvar)
-#   plotCoefSail(x$beta,
-#                lambda = x$lambda.beta,
-#                df = x$dfbeta,
-#                dev = x$dev.ratio,
-#                label = label,
-#                xvar = xvar, ...)
-# }
+plot.sail <- function(x, type = c("both","main","interaction"), ...) {
 
-
-
-plot.sail <- function(x, type = c("main","interaction","both"), ...) {
-
-  # xvar = match.arg(xvar)
-  # plotCoefSail(x$beta,
-  #              lambda = x$lambda.beta,
-  #              df = x$dfbeta,
-  #              dev = x$dev.ratio,
-  #              label = label,
-  #              xvar = xvar, ...)
+  op <- par(no.readonly=TRUE)
 
   type <- match.arg(type)
+
+  if (type != "main") {
+    if (all(x$dfalpha == 0)) {
+      warning("All interactions were estimated to be 0.\nPlotting solution path for main effects only")
+      type <- "main"
+    }
+  }
 
 
   if (type == "main") {
 
-
+    par(mar = 0.1 + c(4, 5, 2.5, 1))
     plotSailCoef(coefs = x$beta,
+                 environ = x$bE,
                  lambda = x$lambda,
-                 df = x$dfbeta,
-                 group = x$group,
-                 dev = x$dev.ratio,
-                 vnames = x$vnames,
-                 ...)
-
-
-
-  }
-
-  if (type == "interaction") {
-
-    plotSailCoef(coefs = x$alpha,
-                 lambda = x$lambda,
-                 df = x$dfalpha,
-                 group = x$group,
-                 dev = x$dev.ratio,
-                 vnames = x$vnames,
-                 ...)
-
-  }
-
-
-  if (type == "both") {
-
-
-    # c(bottom, left, top, right)
-
-    par(mfrow=c(2,1), mai = c(0.5,0.8,0.5,0.4))
-
-    plotSailCoef(coefs = x$beta,
-                 lambda = x$lambda,
-                 df = x$dfbeta,
+                 df = x$dfbeta + x$dfenviron,
                  group = x$group,
                  dev = x$dev.ratio,
                  vnames = x$vnames,
                  ylab = "Main effects",
                  ...)
 
+  }
+
+  if (type == "interaction") {
+
+    par(mar = 0.1 + c(4, 5, 2.5, 1))
     plotSailCoef(coefs = x$alpha,
                  lambda = x$lambda,
                  df = x$dfalpha,
@@ -204,10 +166,42 @@ plot.sail <- function(x, type = c("main","interaction","both"), ...) {
   }
 
 
+  if (type == "both") {
+
+     op <- par(mfrow = c(2, 1),
+              mar = 0.1 + c(4.2, 4.0, 1, 1),
+              oma = c(0, 1, 1, 0),
+              cex.lab = 1.2, font.lab = 1.2, cex.axis = 1.2,
+              cex.main = 1.2)
 
 
+    plotSailCoef(coefs = x$beta,
+                 environ = x$bE,
+                 lambda = x$lambda,
+                 df = x$dfbeta + x$dfenviron,
+                 group = x$group,
+                 dev = x$dev.ratio,
+                 vnames = x$vnames,
+                 ylab = "Main effects",
+                 xlab = "", xaxt='n',
+                 ...)
+
+    plotSailCoef(coefs = x$alpha,
+                 lambda = x$lambda,
+                 df = x$dfalpha,
+                 group = x$group,
+                 dev = x$dev.ratio,
+                 vnames = x$vnames,
+                 ylab = "Interactions",
+                 ...)
+
+    par(op)
 
   }
+
+  par(op)
+
+}
 
 
 

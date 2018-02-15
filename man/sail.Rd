@@ -4,12 +4,12 @@
 \alias{sail}
 \title{Fit Strong Heredity Interaction Model}
 \usage{
-sail(x, y, e, df, group.penalty = c("gglasso", "MCP", "SCAD"),
-  family = c("gaussian", "binomial"), weights, lambda.factor = ifelse(nobs <
-  nvars, 0.01, 0.001), lambda.beta = NULL, lambda.gamma = NULL,
-  nlambda.gamma = 10, nlambda.beta = 10, nlambda = 100, thresh = 0.001,
-  maxit = 2000, initialization.type = c("ridge", "univariate"),
-  center = TRUE, normalize = FALSE, verbose = TRUE, cores = 1)
+sail(x, y, e, df = 5, degree = 3, group.penalty = c("gglasso", "MCP",
+  "SCAD"), family = c("gaussian", "binomial"), weights,
+  penalty.factor = rep(1, 1 + 2 * nvars), lambda.factor = ifelse(nobs < (1 +
+  2 * df * nvars), 0.01, 1e-04), lambda = NULL, alpha = 0.5,
+  nlambda = 100, thresh = 0.001, maxit = 2000, dfmax = 2 * nvars + 1,
+  exclude, verbose = TRUE)
 }
 \arguments{
 \item{x}{Design matrix of dimension \code{n x q}, where \code{n} is the
@@ -44,6 +44,33 @@ predictors). If \code{N > p}, the default is \code{1e-6}, close to zero. If
 \code{N < p}, the default is \code{0.01}. A very small value of
 lambda.factor will lead to a saturated fit.}
 
+\item{nlambda}{total number of tuning parameters. If \code{lambda.beta =
+NULL} and \code{lambda.gamma = NULL} then \code{nlambda} should be equal to
+\code{nlambda.beta x nlambda.gamma}. This is important to specify
+especially when a user defined sequence of tuning parameters is set.}
+
+\item{thresh}{Convergence thresh for coordinate descent. Each
+coordinate-descent loop continues until the change in the objective
+function after all coefficient updates is less than thresh. Default
+value is \code{1e-4}.}
+
+\item{maxit}{Maximum number of passes over the data for all tuning
+parameter values; default is 100.}
+
+\item{verbose}{Should iteration number and vector of length \code{nlambda} be
+printed to console? Default is \code{TRUE}. 0 represents the algorithm has
+not converged for the pair of tuning parameters lambda.beta and
+lambda.gamma and 1 means it has converged}
+
+\item{main.effect.names}{character vector of main effects names. MUST be
+ordered in the same way as the column names of \code{x}. e.g. if the column
+names of \code{x} are \code{"x1","x2"} then \code{main.effect.names =
+c("x1","x2")}}
+
+\item{interaction.names}{character vector of interaction names. MUST be
+separated by a colon (e.g. x1:x2), AND MUST be ordered in the same way as
+the column names of \code{x}}
+
 \item{lambda.beta}{sequence of tuning parameters for the main effects. If
 \code{NULL} (default), this function will automatically calculate a
 sequence using the \code{\link{sail_once}} function which will be over a
@@ -63,18 +90,10 @@ specified even for user defined inputs}
 \item{nlambda.beta}{number of tuning parameters for beta. This needs to be
 specified even for user defined inputs}
 
-\item{nlambda}{total number of tuning parameters. If \code{lambda.beta =
-NULL} and \code{lambda.gamma = NULL} then \code{nlambda} should be equal to
-\code{nlambda.beta x nlambda.gamma}. This is important to specify
-especially when a user defined sequence of tuning parameters is set.}
-
-\item{thresh}{Convergence thresh for coordinate descent. Each
-coordinate-descent loop continues until the change in the objective
-function after all coefficient updates is less than thresh. Default
-value is \code{1e-4}.}
-
-\item{maxit}{Maximum number of passes over the data for all tuning
-parameter values; default is 100.}
+\item{cores}{The number of cores to use for certain calculations in the
+\code{\link{sail}} function, i.e. at most how many child processes will be
+run simultaneously using the \code{parallel} package. Must be at least one,
+and parallelization requires at least two cores. Default is 2.}
 
 \item{initialization.type}{The procedure used to estimate the regression
 coefficients and used in the \code{\link{uni_fun}} function. If
@@ -89,25 +108,6 @@ default is \code{"ridge"}.}
 
 \item{normalize}{Should \code{x} be scaled to have unit variance. Default is
 \code{TRUE}}
-
-\item{verbose}{Should iteration number and vector of length \code{nlambda} be
-printed to console? Default is \code{TRUE}. 0 represents the algorithm has
-not converged for the pair of tuning parameters lambda.beta and
-lambda.gamma and 1 means it has converged}
-
-\item{cores}{The number of cores to use for certain calculations in the
-\code{\link{sail}} function, i.e. at most how many child processes will be
-run simultaneously using the \code{parallel} package. Must be at least one,
-and parallelization requires at least two cores. Default is 2.}
-
-\item{main.effect.names}{character vector of main effects names. MUST be
-ordered in the same way as the column names of \code{x}. e.g. if the column
-names of \code{x} are \code{"x1","x2"} then \code{main.effect.names =
-c("x1","x2")}}
-
-\item{interaction.names}{character vector of interaction names. MUST be
-separated by a colon (e.g. x1:x2), AND MUST be ordered in the same way as
-the column names of \code{x}}
 }
 \value{
 An object with S3 class "sail" \describe{ \item{b0}{Intercept

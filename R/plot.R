@@ -75,68 +75,73 @@ plot.cv.sail <- function(x) {
 }
 
 
-#' Plot the coefficient plot produced by sail
-#'
-#' @description Plot the coefficient plot produced by sail
-#'
-#' @export
 
-plotCoefSail <- function(beta, norm, lambda, df, dev, label = FALSE,
-                         xvar = c("norm", "lambda", "dev"),
-                         xlab = iname, ylab = "Coefficients", ...) {
-  which = nonzero(beta)
-  nwhich = length(which)
-  switch(nwhich + 1, `0` = {
-    warning("No plot produced since all coefficients zero")
-    return()
-  }, `1` = warning("1 or less nonzero coefficients; glmnet plot is not meaningful"))
-  beta = as.matrix(beta[which, , drop = FALSE])
-  xvar = match.arg(xvar)
-  switch(xvar, norm = {
-    index = if (missing(norm)) apply(abs(beta), 2, sum) else norm
-    iname = "L1 Norm"
-    approx.f = 1
-  }, lambda = {
-    index = log(lambda)
-    iname = "Log Lambda"
-    approx.f = 0
-  }, dev = {
-    index = dev
-    iname = "Fraction Deviance Explained"
-    approx.f = 1
-  })
-  dotlist = list(...)
-  type = dotlist$type
-  if (is.null(type))
-    matplot(index, t(beta), lty = 1, xlab = xlab, ylab = ylab,
-            type = "l", ...)
-  else matplot(index, t(beta), lty = 1, xlab = xlab, ylab = ylab,
-               ...)
-  atdf = pretty(index)
-  prettydf = approx(x = index, y = df, xout = atdf, rule = 2,
-                    method = "constant", f = approx.f)$y
-  axis(3, at = atdf, labels = prettydf, tcl = NA)
-  if (label) {
-    nnz = length(which)
-    xpos = max(index)
-    pos = 4
-    if (xvar == "lambda") {
-      xpos = min(index)
-      pos = 2
-    }
-    xpos = rep(xpos, nnz)
-    ypos = beta[, ncol(beta)]
-    text(xpos, ypos, paste(which), cex = 0.5, pos = pos)
-  }
-}
+
+# plotCoefSail <- function(beta, norm, lambda, df, dev, label = FALSE,
+#                          xvar = c("norm", "lambda", "dev"),
+#                          xlab = iname, ylab = "Coefficients", ...) {
+#   which = nonzero(beta)
+#   nwhich = length(which)
+#   switch(nwhich + 1, `0` = {
+#     warning("No plot produced since all coefficients zero")
+#     return()
+#   }, `1` = warning("1 or less nonzero coefficients; glmnet plot is not meaningful"))
+#   beta = as.matrix(beta[which, , drop = FALSE])
+#   xvar = match.arg(xvar)
+#   switch(xvar, norm = {
+#     index = if (missing(norm)) apply(abs(beta), 2, sum) else norm
+#     iname = "L1 Norm"
+#     approx.f = 1
+#   }, lambda = {
+#     index = log(lambda)
+#     iname = "Log Lambda"
+#     approx.f = 0
+#   }, dev = {
+#     index = dev
+#     iname = "Fraction Deviance Explained"
+#     approx.f = 1
+#   })
+#   dotlist = list(...)
+#   type = dotlist$type
+#   if (is.null(type))
+#     matplot(index, t(beta), lty = 1, xlab = xlab, ylab = ylab,
+#             type = "l", ...)
+#   else matplot(index, t(beta), lty = 1, xlab = xlab, ylab = ylab,
+#                ...)
+#   atdf = pretty(index)
+#   prettydf = approx(x = index, y = df, xout = atdf, rule = 2,
+#                     method = "constant", f = approx.f)$y
+#   axis(3, at = atdf, labels = prettydf, tcl = NA)
+#   if (label) {
+#     nnz = length(which)
+#     xpos = max(index)
+#     pos = 4
+#     if (xvar == "lambda") {
+#       xpos = min(index)
+#       pos = 2
+#     }
+#     xpos = rep(xpos, nnz)
+#     ypos = beta[, ncol(beta)]
+#     text(xpos, ypos, paste(which), cex = 0.5, pos = pos)
+#   }
+# }
 
 # myplotgrp(fit, log.l = T, ylab = "main")
 
-plotSailCoef <- function(coefs, lambda, group, df, dev, vnames,
-                          alpha = 1, legend.loc, label = FALSE, log.l = FALSE, norm = FALSE, ...) {
+#' Plot the coefficient plot produced by sail
+#'
+#' @description Plot the coefficient plot produced by sail
+#' @export
+
+plotSailCoef <- function(coefs, lambda, group, df, dev, vnames, environ,
+                          alpha = 1, legend.loc, label = FALSE, log.l = TRUE,
+                         norm = FALSE, ...) {
 
   # browser()
-
+  if (alpha < 0 | alpha > 1) {
+    warning("alpha must be in the range [0,1]. Setting alpha = 1")
+    alpha <- 1
+  }
 
   if (norm) { # not implemented for now
     # Y <- predict(x, type = "norm")
@@ -172,17 +177,19 @@ plotSailCoef <- function(coefs, lambda, group, df, dev, vnames,
     index <- lambda
     approx.f = 0
   }
-  plot.args <- list(x = l, y = 1:length(l), ylim = range(Y),
+
+  ylims <- if (!missing(environ)) range(Y,environ) else range(Y)
+  plot.args <- list(x = l, y = 1:length(l), ylim = ylims,
                     xlab = xlab, ylab = "", type = "n",
                     xlim = rev(range(l)),
-                    las = 1,
-                    cex.lab = 2,
+                    # las = 1,
+                    cex.lab = 1.5,
                     cex.axis = 1.5,
-                    cex = 2,
+                    cex = 1.5,
                     # bty = "n",
                     # mai=c(1,1,0.1,0.2),
                     # tcl = -0.5,
-                    omi = c(0.2,1,0.2,0.2),
+                    # omi = c(0.2,1,0.2,0.2),
                     family = "serif")
   new.args <- list(...)
   if (length(new.args)) {
@@ -211,6 +218,7 @@ plotSailCoef <- function(coefs, lambda, group, df, dev, vnames,
   line.args$lty <- rep(line.args$lty, length.out = max(g))
   line.args$lty <- line.args$lty[g]
   do.call("matlines", line.args)
+  if (!missing(environ)) lines(l, environ, lwd = line.args$lwd)
   if (!missing(legend.loc)) {
     legend.args <- list(col = cols, lwd = line.args$lwd,
                         lty = line.args$lty, legend = vnames)
@@ -231,7 +239,9 @@ plotSailCoef <- function(coefs, lambda, group, df, dev, vnames,
   atdf = pretty(index)
   prettydf = approx(x = index, y = df, xout = atdf, rule = 2,
                     method = "constant", f = approx.f)$y
-  axis(3, at = atdf, labels = prettydf, tcl = NA, cex.axis = 1.5)
+  axis(3, at = atdf, labels = prettydf,mgp=c(3, .3, 0),
+       tcl = NA,
+       cex.axis = 1.2)
 
 
 }
