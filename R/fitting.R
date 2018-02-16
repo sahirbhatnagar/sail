@@ -59,7 +59,7 @@ lspath <- function(x,
 
   }
 
-  design <- cbind(Phi_j, "E" = e, XE_Phi_j)
+  # design <- cbind(Phi_j, "E" = e, XE_Phi_j)
 
   nulldev <- as.numeric(crossprod(y))
 
@@ -149,6 +149,21 @@ lspath <- function(x,
 
     #iteration counter
     m <- 1
+
+
+    # un-comment if we dont want warm starts for not converged lambdas
+
+    # if (lambdaIndex > 1) {
+    #   if (!converged[lambdaIndex - 1]) {
+    #     b0 <- mean(y)
+    #     theta <- split(setNames(rep(0, length(main_effect_names)), main_effect_names), group)
+    #     betaE <- 0
+    #     gamma <- rep(0, nvars)
+    #     # R.star <- y - b0
+    #     b0_next <- b0 ;
+    #     theta_next <- theta
+    #   }
+    # }
 
     # While loop for convergence at a given Lambda value ----------------------
 
@@ -341,6 +356,8 @@ lspath <- function(x,
 
   beta_final <- as(betaMat, "dgCMatrix")
   alpha_final <- as(alphaMat, "dgCMatrix")
+  gamma_final <- as(gammaMat, "dgCMatrix") # used for KKT check
+
 
   # browser()
 
@@ -350,10 +367,12 @@ lspath <- function(x,
   out <- list(a0 = a0[converged],
               beta = beta_final[ , converged, drop = FALSE],
               alpha = alpha_final[, converged, drop = FALSE],
+              gamma = gamma_final[, converged, drop = FALSE],
               bE = environ[converged],
               group = group,
               active = active[converged],
               lambda = lambdas[converged],
+              lambda2 = alpha,
               # outPrint = outPrint,
               dfbeta = outPrint[converged, "dfBeta"],
               dfalpha = outPrint[converged, "dfAlpha"],
@@ -364,7 +383,14 @@ lspath <- function(x,
               # x = x, y = y, bx = bx, by = by, sx = sx,
               # center = center, normalize = normalize,
               nlambda = sum(converged),
-              design = design,
+              # design = design,
+              we = we,
+              wj = wj,
+              wje = wje,
+              Phi_j_list = Phi_j_list,
+              XE_Phi_j_list = XE_Phi_j_list,
+              Phi_j = Phi_j,
+              XE_Phi_j = XE_Phi_j,
               nobs = nobs,
               vnames = vnames,
               df = df,
