@@ -82,9 +82,6 @@ margin <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df, loss 
   # this is a matrix of -R = -(Y - hat(Y)) of dimension nobs x nlambda
   dMat <- apply(r, c(1, 2), eval(fun))
 
-  # this is the gradient for beta0, this should be of length nlambda
-  # t(dMat) %*% matrix(1, nrow = nobs) / nobs
-
 #   e + dim(xe_phij %*% beta)
 # dim(gamma)
 #
@@ -99,44 +96,144 @@ margin <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df, loss 
 }
 
 
-tt <- KKT(b0 = fit$a0, betaE = fit$bE, beta = fit$beta, gamma = fit$gamma,
-          alpha = fit$alpha, y = DT$y, phij = fit$Phi_j, xe_phij = fit$XE_Phi_j,
-          e = DT$e, df = fit$df,
-          lambda = fit$lambda, lambda2 = fit$lambda2, group = fit$group,
-          we = fit$we, wj = fit$wj, wje = fit$wje, thr = 1e-5, loss = "ls")
+# tt <- KKT(b0 = fit$a0, betaE = fit$bE, beta = fit$beta, gamma = fit$gamma,
+#           alpha = fit$alpha, y = DT$y, phij = fit$Phi_j, xe_phij = fit$XE_Phi_j,
+#           e = DT$e, df = fit$df,
+#           lambda = fit$lambda, lambda2 = fit$lambda2, group = fit$group,
+#           we = fit$we, wj = fit$wj, wje = fit$wje, thr = 1e-2, loss = "ls")
 
 KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
                 lambda, lambda2, group, we, wj, wje, thr, loss = c("ls","logit")) {
 
   loss <- match.arg(loss)
   bn <- as.integer(max(group))
+  nobs <- length(as.vector(y))
+
+  # this gives -R = -(Y - hat(Y)) for loss = "ls"
   dl <- margin(b0 = b0, betaE = betaE, beta = beta, gamma = gamma, alpha = alpha,
                y = y, phij = phij, xe_phij = xe_phij, e = e, df = df, loss = loss)
 
-  browser()
-  B <- matrix(NA, ncol = length(lambda))
+  dim(dl)
+
+  # this is the gradient for beta0, this should be of length nlambda
+  B0 <- t(dl) %*% matrix(1, nrow = nobs) / nobs
+
+
+
+  # KKT for betaE -----------------------------------------------------------
+
+
+  # results for betaE
+  # BE <- matrix(NA, ncol = length(lambda))
+
   ctr <- 0
   for (l in 1:length(lambda)) {
+
+    xdMat_betaE <- e + rowSums(do.call(cbind, lapply(seq_along(unique(group)), function(j) {
+      index <- (group == j)
+      as.matrix(gamma[j, l] * (xe_phij[,index,drop=F] %*% beta[index, l, drop=F]))
+    })))
+
+    dl_norm_betaE <- t(xdMat_betaE) %*% dl[,l,drop=FALSE] / nobs
+
+    if (betaE[l] == 0) {
+      BE <- dl_norm_betaE /  (- lambda[l] * (1 - lambda2) * we)
+      if (abs(BE) > 1 + thr) {
+        cat("violate at bE = 0", BE, " lambda=",lambda[l], "\n")
+        ctr <- ctr + 1
+      }
+    } else {
+      BE <- as.vector(dl_norm_betaE + lambda[l] * (1 - lambda2) * we * sign(betaE[l]))
+      if (abs(BE) > thr) {
+        cat("violate at bE != 0", BE, " lambda=",lambda[l], "\n")
+        ctr <- ctr + 1
+      } #else {cat("no violation at bE != 0", BE, " lambda=",lambda[l], "\n")}
+    }
+
+  }
+
+  cat("% of violations for betaE", ctr/length(lambda), "\n")
+  # return(list(v = ctr/length(lambda)))
+
+  # browser()
+
+
+  # KKT for gamma -----------------------------------------------------------
+
+  ctr <- 0
+  for (l in 1:length(lambda)) {
+
     for (g in 1:bn) {
+
+      # browser()
       ind <- (group == g)
-      dl_norm <- sqrt(crossprod(dl[ind, l], dl[ind, l]))
-      b_norm <- sqrt(crossprod(beta[ind, l], beta[ind, l]))
-      if (b_norm != 0) {
-        AA <- dl[ind, l] + beta[ind, l] * lambda[l] * as.vector(pf[g]/b_norm)
-        if (sum(abs(AA)) >= thr) {
-          cat("violate at b != 0", sum(abs(AA)), "\n")
+
+      xdMat_gammaj <- as.matrix(betaE[l] * (xe_phij[,ind, drop=F] %*% beta[ind, l, drop = F]))
+
+      dl_norm_gammaj <- t(xdMat_gammaj) %*% dl[,l,drop=FALSE] / nobs
+
+      if (gamma[g,l] == 0) {
+        BE <- dl_norm_gammaj /  (- lambda[l] * (1 - lambda2) * we)
+        if (abs(BE) > 1 + thr) {
+          cat("violate at gamma_j = 0", BE, " lambda=",lambda[l], "\n")
           ctr <- ctr + 1
         }
       } else {
-        BB <- dl_norm - pf[g] * lambda[l]
+        BE <- as.vector(dl_norm_gammaj + lambda[l] * (1 - lambda2) * we * sign(gamma[g,l]))
+        if (abs(BE) > thr) {
+          cat("violate at gamma_j != 0", BE, " lambda=",lambda[l], "\n")
+          ctr <- ctr + 1
+        } #else {cat("no violation at bE != 0", BE, " lambda=",lambda[l], "\n")}
+      }
+    }
+  }
+
+  cat("% of violations for gamma", ctr/length(lambda), "\n")
+
+
+
+  # KKT for theta -----------------------------------------------------------
+
+  # results for beta (aka theta)
+  # B <- matrix(NA, ncol = length(lambda))
+
+  ctr <- 0
+  for (l in 1:length(lambda)) {
+
+    for (g in 1:bn) {
+
+      # browser()
+      ind <- (group == g)
+
+      # this is the pre-multiplier of R in eq (17)
+      xdMat <- phij[,ind,drop=F] + gamma[g, l] * betaE[l] * xe_phij[,ind,drop=F]
+
+      # this is the first part of eq (17)
+      dl_prod <- t(xdMat) %*% dl[,l,drop=FALSE] / nobs
+
+      dl_norm <- l2norm(dl_prod)
+
+      # l2 norm of beta for the expansion of covariate corresponding to group g
+      b_norm <- l2norm(beta[ind, l])
+
+      if (b_norm != 0) {
+        AA <- dl_prod + beta[ind, l] * lambda[l] * (1 - lambda2) * wj[g] / b_norm
+        # cat(AA,"\n")
+        if (sum(abs(AA)) >= thr) {
+          cat("violate at bX != 0", sum(abs(AA))," lambda=",lambda[l],  "\n")
+          ctr <- ctr + 1
+        }
+      } else {
+        BB <- dl_norm - lambda[l] * (1 - lambda2) * wj[g]
+        # cat(BB,"\n")
         if (BB > thr) {
-          cat("violate at b = 0", BB, "\n")
+          cat("violate at bX = 0", BB, " lambda=",lambda[l],  "\n")
           ctr <- ctr + 1
         }
       }
     }
   }
-  # cat("# of violations", ctr/length(lambda), "\n")
+  cat("% of violations for bTheta", ctr/length(lambda), "\n")
   return(ctr/length(lambda))
 }
 
