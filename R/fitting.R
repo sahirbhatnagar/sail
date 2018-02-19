@@ -59,7 +59,8 @@ lspath <- function(x,
 
   }
 
-  # design <- cbind(Phi_j, "E" = e, XE_Phi_j)
+  # this is used for the predict function
+  design <- cbind(Phi_j, "E" = e, XE_Phi_j)
 
   nulldev <- as.numeric(crossprod(y))
 
@@ -383,7 +384,7 @@ lspath <- function(x,
               # x = x, y = y, bx = bx, by = by, sx = sx,
               # center = center, normalize = normalize,
               nlambda = sum(converged),
-              # design = design,
+              design = design,
               we = we,
               wj = wj,
               wje = wje,

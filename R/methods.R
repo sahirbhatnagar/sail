@@ -16,7 +16,7 @@
 
 predict.sail <- function(object, newx, s = NULL,
                             type = c("link", "response", "coefficients",
-                                     "nonzero", "class")) {
+                                     "nonzero", "class"), ...) {
 
   # object = fit
   # type = "coefficients"
@@ -26,43 +26,38 @@ predict.sail <- function(object, newx, s = NULL,
 
   if (missing(newx)) {
     if (!match(type, c("coefficients", "nonzero"), FALSE))
-      stop("You need to supply a value for 'newx'")
+      newx <- object$design
   }
 
-  a0 = t(as.matrix(object$b0))
+  a0 <- t(as.matrix(object$a0))
   rownames(a0) = "(Intercept)"
-  # this includes tuning parameters pairs that didnt converge
-  nbeta = rbind(a0, object$beta, object$alpha)
-  nbeta@Dimnames <- list(X = c("(Intercept)", object$main.effect.names,
-                               object$interaction.names),
-                         Y = paste0("s",seq_len(object$nlambda)))
+  # this has only values for which lambda did converge
+  nbeta <- rbind(a0, object$beta, object$bE, object$alpha)
 
-  # this is the default returned by coef.sail i.e. any object of class sail
-  # it will return all tuning parameters (including those that didnt converge)
-  if (type == "coefficients" && is.null(s)) {
-    return(nbeta)
+  if (!is.null(s)) {
+    vnames <- dimnames(nbeta)[[1]]
+    dimnames(nbeta) <- list(NULL, NULL)
+    lambda <- object$lambda
+    lamlist <- lambda.interp(lambda, s)
+    if(length(s) == 1) {
+      nbeta = nbeta[, lamlist$left, drop=FALSE] * lamlist$frac +
+        nbeta[, lamlist$right, drop=FALSE] * (1 - lamlist$frac)
+    } else {
+      nbeta = nbeta[, lamlist$left, drop=FALSE] %*% diag(lamlist$frac) +
+        nbeta[, lamlist$right, drop=FALSE] %*% diag(1 - lamlist$frac)
+    }
+    dimnames(nbeta) <- list(vnames, paste(seq(along = s)))
   }
 
-  if (type == "coefficients" && !is.null(s)) {
-    return(nbeta[ , s, drop = F])
-  }
+  if(type == "coefficients") return(nbeta)
 
-  if (type == "nonzero") {
-    nbeta = rbind(a0, object$beta, object$alpha)
-    return(list(main = nonzero(nbeta[object$main.effect.names, , drop = FALSE], bystep = TRUE),
-                interaction = nonzero(nbeta[object$interaction.names, , drop = FALSE], bystep = TRUE)))
-  }
+  if(type == "nonzero") return(nonzero(nbeta[-1,,drop=FALSE],bystep=TRUE))
 
-  if (inherits(newx, "sparseMatrix")) {
-    newx = as(newx, "dgCMatrix")
-  }
 
   # this is used by the cv_lspath function to calculate predicted values
   # which will subsequently be used for calculating MSE for each fold
   if (type == "link") {
-
-    nfit = as.matrix(cbind2(1, newx) %*% nbeta)
-
+    nfit <- as.matrix(methods::cbind2(1, newx) %*% nbeta)
     return(nfit)
   }
 

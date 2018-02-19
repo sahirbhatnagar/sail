@@ -995,6 +995,8 @@ check_col_0 <- function(M) {
 #' @rdname eclust-internal
 #' @export
 nonzero <- function(beta, bystep = FALSE) {
+  ### bystep = FALSE means which variables were ever nonzero
+  ### bystep = TRUE means which variables are nonzero for each step
   beta <- as.matrix(beta)
   nr = nrow(beta)
   if (nr == 1) {
@@ -1194,30 +1196,47 @@ getmin_type <- function(lambda, cvm, cvsd, type) {
 }
 
 
-#' @describeIn cv_lspath Interpolation function. Currently not implemented.
+#' @describeIn cv_lspath Interpolation function.
+getmin <- function(lambda, cvm, cvsd) {
+  cvmin <- min(cvm)
+  idmin <- cvm <= cvmin
+  lambda.min <- max(lambda[idmin])
+  idmin <- match(lambda.min, lambda)
+  semin <- (cvm + cvsd)[idmin]
+  idmin <- cvm <= semin
+  lambda.1se <- max(lambda[idmin])
+  list(lambda.min = lambda.min, lambda.1se = lambda.1se)
+}
+
+
+#' @describeIn cv_lspath Interpolation function.
 lambda.interp <- function(lambda, s) {
   if (length(lambda) == 1) {
-    nums = length(s)
-    left = rep(1, nums)
-    right = left
-    sfrac = rep(1, nums)
-  }
-  else {
-    s[s > max(lambda)] = max(lambda)
-    s[s < min(lambda)] = min(lambda)
-    k = length(lambda)
+    nums <- length(s)
+    left <- rep(1, nums)
+    right <- left
+    sfrac <- rep(1, nums)
+  } else {
+    s[s > max(lambda)] <- max(lambda)
+    s[s < min(lambda)] <- min(lambda)
+    k <- length(lambda)
     sfrac <- (lambda[1] - s)/(lambda[1] - lambda[k])
     lambda <- (lambda[1] - lambda)/(lambda[1] - lambda[k])
     coord <- approx(lambda, seq(lambda), sfrac)$y
     left <- floor(coord)
     right <- ceiling(coord)
-    sfrac = (sfrac - lambda[right])/(lambda[left] - lambda[right])
+    sfrac <- (sfrac - lambda[right])/(lambda[left] - lambda[right])
     sfrac[left == right] = 1
   }
   list(left = left, right = right, frac = sfrac)
 }
 
-
+#' @describeIn cv_lspath Interpolation function.
+lamfix <- function(lam) {
+  llam <- log(lam)
+  lam[1] <- exp(2 * llam[2] - llam[3])
+  lam
+}
 
 #' Update Weights based on betas and gammas.
 #'
