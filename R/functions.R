@@ -355,8 +355,13 @@ soft <- function(x, y, beta, lambda, weight) {
 
 }
 
+# SoftThreshold <- function(x, lambda) {
+#   sign(x)* pmax(0, abs(x) - lambda)
+# }
+
 SoftThreshold <- function(x, lambda) {
-  sign(x)* pmax(0, abs(x) - lambda)
+  # note: this works also if lam is a matrix of the same size as x.
+  sign(x) * (abs(x) - lambda) * (abs(x) > lambda)
 }
 
 
@@ -1459,7 +1464,7 @@ gendata <- function(n, p, df, degree,
 
 }
 
-gendata2 <- function(n, p, corr = 1, E = rnorm(n = n, sd = 0.5), beta0 = 1, betaE = 2, SNR = 1) {
+gendata2 <- function(n, p, corr = 0.1, E = rnorm(n = n, sd = 0.5), beta0 = 1, betaE = 2, SNR = 1) {
 
   # n = 200
   # p = 10
@@ -1493,8 +1498,7 @@ gendata2 <- function(n, p, corr = 1, E = rnorm(n = n, sd = 0.5), beta0 = 1, beta
   # error
   error <- stats::rnorm(n)
 
-  Y.star <- beta0 +
-    f1(X1)  +
+  Y.star <- f1(X1)  +
     f2(X2) +
     f3(X3) +
     f4(X4) +

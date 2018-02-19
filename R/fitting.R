@@ -86,7 +86,7 @@ lspath <- function(x,
     # R1 <- R2 <- y - b0 # this is used as the starting residual for Gamma and Theta update
     term1 <- (1 / we) * (crossprod(e, R.star))
     term2 <- (1 / wj) * sapply(Phi_j_list, function(i) l2norm(crossprod(i, R.star)))
-    lambda_max <- (1 / (nobs * (1 - alpha))) * max(term1, max(term2))
+    lambda_max <- (1 / (nobs * (1 - alpha))) * max(term1, max(term2)) + thresh
     lambdas <- rev(exp(seq(log(flmin * lambda_max), log(lambda_max), length.out = nlambda)))
     lambdaNames <- paste0("s", seq_along(lambdas))
 

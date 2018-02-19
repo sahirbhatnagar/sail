@@ -39,6 +39,7 @@ dlogit <- function(r, delta) {
 
 dls <- function(r, delta) {
   dl <- -r
+  dl
 }
 
 # m1 <- gglasso(x = bardet$x, y = bardet$y, group = group1, loss = "ls")
@@ -96,11 +97,7 @@ margin <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df, loss 
 }
 
 
-# tt <- KKT(b0 = fit$a0, betaE = fit$bE, beta = fit$beta, gamma = fit$gamma,
-#           alpha = fit$alpha, y = DT$y, phij = fit$Phi_j, xe_phij = fit$XE_Phi_j,
-#           e = DT$e, df = fit$df,
-#           lambda = fit$lambda, lambda2 = fit$lambda2, group = fit$group,
-#           we = fit$we, wj = fit$wj, wje = fit$wje, thr = 1e-2, loss = "ls")
+
 
 KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
                 lambda, lambda2, group, we, wj, wje, thr, loss = c("ls","logit")) {
@@ -113,11 +110,21 @@ KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
   dl <- margin(b0 = b0, betaE = betaE, beta = beta, gamma = gamma, alpha = alpha,
                y = y, phij = phij, xe_phij = xe_phij, e = e, df = df, loss = loss)
 
-  dim(dl)
+  # KKT for beta0 -----------------------------------------------------------
 
   # this is the gradient for beta0, this should be of length nlambda
   B0 <- t(dl) %*% matrix(1, nrow = nobs) / nobs
 
+  ctr <- 0
+
+  for (l in 1:length(lambda)) {
+    if (abs(B0[l,]) > thr) {
+      cat("violate at b0 ", B0[l,], " lambda=", lambda[l], "\n")
+      ctr <- ctr + 1
+    }
+  }
+
+  cat("% of violations for beta0", ctr/length(lambda), "\n")
 
 
   # KKT for betaE -----------------------------------------------------------
