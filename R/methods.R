@@ -73,9 +73,8 @@ predict.sail <- function(object, newx, newe, s = NULL,
 #' @rdname predict.sail
 #' @export
 
-coef.sail <- function(object, s = NULL) {
-  predict(object, s = s, type = "coefficients")
-}
+coef.sail=function(object,s=NULL,exact=FALSE,...)
+  predict(object,s=s,type="coefficients",exact=exact,...)
 
 
 #' Make predictions from a "cv.sail" object
@@ -86,18 +85,15 @@ coef.sail <- function(object, s = NULL) {
 #'   object. Alternatively \code{s="lambda.min"} can be used.
 #' @export
 
-coef.cv.sail <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
-
-  if (is.numeric(s) || s %ni% c("lambda.1se", "lambda.min")) stop("s must be in lambda.1se or lambda.min")
-
-  s <- match.arg(s)
-
-  lambda <- switch(s,
-                   lambda.min = object$lambda.min.name,
-                   lambda.1se = object$lambda.1se.name
-  )
-
-  coef(object$sail.fit, s = lambda, ...)
+coef.cv.sail=function(object,s=c("lambda.1se","lambda.min"),...){
+  if(is.numeric(s))lambda=s
+  else
+    if(is.character(s)){
+      s=match.arg(s)
+      lambda=object[[s]]
+    }
+  else stop("Invalid form for s")
+  coef(object$sail.fit,s=lambda,...)
 }
 
 

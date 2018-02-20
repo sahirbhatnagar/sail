@@ -341,167 +341,97 @@ sail <- function(x, y, e, df = 5, degree = 3,
 #'   Maintainer: Sahir Bhatnagar \email{sahir.bhatnagar@@mail.mcgill.ca}
 #' @export
 
-cv.sail <- function(x, y, e, df,
-                       weights,
-                       lambda.beta = NULL, lambda.gamma = NULL,
-                       nlambda.gamma = 10,
-                       nlambda.beta = 10,
-                       nlambda = 100,
-                       parallel = TRUE,
-                       type.measure = c("mse"),
-                       cores = 6,
-                       nfolds = 10, ...) {
+cv.sail <- function (x, y, e, df, degree, weights,
+                     lambda = NULL,
+                     type.measure = c("mse", "deviance", "class", "auc", "mae"),
+                     nfolds = 10, foldid, grouped = TRUE, keep = FALSE, parallel = FALSE, ...) {
 
-
-  # x = X; y = Y; main.effect.names = main_effect_names;
-  # interaction.names = interaction_names;
-  # lambda.beta = NULL ; lambda.gamma = NULL
-  # thresh = 1e-4 ; maxit = 500 ; initialization.type = "ridge";
-  # nlambda.gamma = 5; nlambda.beta = 20; cores = 1;
-  # center=TRUE; normalize=TRUE
-  #
-  # nfolds = 5
-  # grouped = TRUE; keep = FALSE; parallel = TRUE
-# browser()
-  #initialization.type <- match.arg(initialization.type)
-  # ==========================================
-  type.measure <- match.arg(type.measure)
-
-  if (!is.null(lambda.beta) && length(lambda.beta) < 2)
-    stop("Need more than one value of lambda.beta for cv.sail")
-  if (!is.null(lambda.gamma) && length(lambda.gamma) < 2)
-    stop("Need more than one value of lambda.gamma for cv.sail")
-
+  if (missing(type.measure)) type.measure <- "default" else type.measure <- match.arg(type.measure)
+  if (!is.null(lambda) && length(lambda) < 2)
+    stop("Need more than one value of lambda for cv.sail")
   N <- nrow(x)
   if (missing(weights))
-    weights = rep(1, N)
-  else weights = as.double(weights)
+    weights <- rep(1, N)
+  else weights <- as.double(weights)
   y <- drop(y)
   sail.call <- match.call(expand.dots = TRUE)
-  which <- match(c("type.measure", "nfolds"), names(sail.call), F)
-  if (any(which)) sail.call = sail.call[-which]
-  sail.call[[1]] = as.name("sail")
+  which <- match(c("type.measure", "nfolds", "foldid", "grouped",
+                  "keep"), names(sail.call), F)
+  if (any(which))
+    sail.call <- sail.call[-which]
+  sail.call[[1]] <- as.name("sail")
+  sail.object <- sail(x = x, y = y, e = e, df = df, degree = degree,
+                     weights = weights, lambda = lambda, ...)
 
-  sail.object <- sail(x = x, y = y, e = e, df = df,
-                            weights = weights,
-                            lambda.beta = lambda.beta,
-                            lambda.gamma = lambda.gamma,
-                            nlambda = nlambda,
-                            nlambda.gamma = nlambda.gamma,
-                            nlambda.beta = nlambda.beta,
-                            ...)
-# browser()
-  sail.object$call = sail.call
+  sail.object$call <- sail.call
 
-  nz.main = sapply(predict(sail.object, type = "nonzero")[["main"]], length)
-  nz.interaction = sapply(predict(sail.object, type = "nonzero")[["interaction"]], length)
+  ###Next line is commented out so each call generates its own lambda sequence
+  # lambda <- sail.object$lambda
 
-  foldid <- createfolds(y, k = nfolds)
+  nz = sapply(predict(sail.object, type = "nonzero"), length)
+  if (missing(foldid)) foldid = sample(rep(seq(nfolds), length = N)) else nfolds = max(foldid)
   if (nfolds < 3)
     stop("nfolds must be bigger than 3; nfolds=10 recommended")
   outlist = as.list(seq(nfolds))
-
-  pb <- progress::progress_bar$new(
-    format = "  performing cross validation [:bar] :percent eta: :eta",
-    total = nfolds, clear = FALSE, width= 90)
-  pb$tick(0)
-
   if (parallel) {
-
-    outlist = foreach(i = seq(nfolds), .packages = c("glmnet")) %dopar%
+    outlist = foreach(i = seq(nfolds), .packages = c("sail")) %dopar%
     {
       which = foldid == i
-      if (is.matrix(y)) y_sub = y[!which, ] else y_sub = y[!which]
-      #print(paste("Foldid = ",i))
-      pb$tick()
-      sail(x = x[!which, , drop = FALSE],
-              y = y_sub,
-              e = e[!which],
-              df = df,
-              weights = weights[!which],
-              lambda.beta = sail.object$lambda.beta,
-              lambda.gamma = sail.object$lambda.gamma,
-              nlambda = sail.object$nlambda,
-              nlambda.gamma = sail.object$nlambda.gamma,
-              nlambda.beta = sail.object$nlambda.beta, ...)
 
+      if (length(dim(y)) > 1)
+        y_sub = y[!which, ]
+      else y_sub = y[!which]
+
+      if (length(dim(e)) > 1)
+        e_sub = e[!which, ]
+      else e_sub = e[!which]
+
+      sail(x = x[!which, , drop = FALSE], y = y_sub, e = e_sub, df = df, degree = degree,
+           lambda = lambda, weights = weights[!which], ...)
     }
   } else {
     for (i in seq(nfolds)) {
+
       which = foldid == i
 
       if (is.matrix(y))
-        y_sub = y[!which, ] else y_sub = y[!which]
+        y_sub = y[!which, ]
+      else y_sub = y[!which]
 
-        pb$tick()
+      if (length(dim(e)) > 1)
+        e_sub = e[!which, ]
+      else e_sub = e[!which]
 
-        outlist[[i]] = sail(x[!which, , drop = FALSE],
-                               y = y_sub,
-                               e = e[!which],
-                               df = df,
-                               weights = weights[!which],
-                               lambda.beta = sail.object$lambda.beta,
-                               lambda.gamma = sail.object$lambda.gamma,
-                               nlambda = sail.object$nlambda,
-                               nlambda.gamma = sail.object$nlambda.gamma,
-                               nlambda.beta = sail.object$nlambda.beta, ...)
+      outlist[[i]] = sail(x = x[!which, , drop = FALSE], y = y_sub, e = e_sub, df = df, degree = degree,
+                          lambda = lambda, weights = weights[!which], ...)
     }
   }
 
-  lambda.beta <- sail.object$lambda.beta
-  lambda.gamma <- sail.object$lambda.gamma
-  fun <- paste("cv", class(sail.object)[[1]], sep = "_")
-  cvstuff <- do.call(fun, list(outlist = outlist,
-                               y = y, df = df,
-                               design = sail.object$design,
-                               foldid = foldid,
-                               nlambda = sail.object$nlambda,
-                               nlambda.beta = sail.object$nlambda.beta,
-                               nlambda.gamma = sail.object$nlambda.gamma))
+  fun = paste("cv", class(sail.object)[[1]], sep = ".")
+  lambda = sail.object$lambda
 
-  cvm <- cvstuff$cvm
-  cvsd <- cvstuff$cvsd
-  # the following checks is any of the tunining parameter pairs
-  # have a cvsd==NA or did not converge. cvstuff$converged should be
-  # equal to the number of folds because it is the sum of booleans
-  # that converged over all folds.
-  nas <- (is.na(cvsd) + (cvstuff$converged != nfolds)) != 0
+  cvstuff = do.call(fun, list(outlist, lambda, x, y, e, df, degree, weights,
+                              foldid, type.measure, grouped, keep))
+  cvm = cvstuff$cvm
+  cvsd = cvstuff$cvsd
+  nas = is.na(cvsd)
   if (any(nas)) {
-    lambda.beta = sail.object$lambda.beta[!nas]
-    lambda.gamma = sail.object$lambda.gamma[!nas]
+    lambda = lambda[!nas]
     cvm = cvm[!nas]
     cvsd = cvsd[!nas]
-    # this is the total number of non-zero parameters (both betas and alphas)
-    nz.main = nz.main[!nas]
-    nz.interaction = nz.interaction[!nas]
+    nz = nz[!nas]
   }
-  cvname <- cvstuff$name
-
-  df <- as.data.frame(cbind(lambda.beta = lambda.beta,
-                            lambda.gamma = lambda.gamma,
-                            mse = cvm,
-                            upper = cvm + cvsd,
-                            lower = cvm - cvsd,
-                            nz.main = nz.main,
-                            nz.interaction = nz.interaction,
-                            log.gamma = round(log(lambda.gamma),2)))
-# browser()
-  rownames(df) <- gsub("\\.(.*)", "",rownames(df))
-
-  out <- list(lambda.beta = lambda.beta, lambda.gamma = lambda.gamma,
-              cvm = cvm, cvsd = cvsd, cvup = cvm + cvsd,
-              cvlo = cvm - cvsd, nz.main = nz.main, name = cvname,
-              nz.interaction = nz.interaction,
-              sail.fit = sail.object, converged = cvstuff$converged,
-              cvm.mat.all = cvstuff$cvm.mat.all,
-              df = df, nfolds = nfolds)
-
-  lamin.beta = if (cvname == "AUC")
-    getmin_type(lambda.beta, -cvm, cvsd, type = "beta") else getmin_type(lambda.beta, cvm, cvsd, type = "beta")
-
-  obj <- c(out, as.list(lamin.beta))
-  class(obj) <- "cv.sail"
+  cvname = cvstuff$name
+  out = list(lambda = lambda, cvm = cvm, cvsd = cvsd, cvup = cvm +
+               cvsd, cvlo = cvm - cvsd, nzero = nz, name = cvname,
+             sail.fit = sail.object)
+  if (keep)
+    out = c(out, list(fit.preval = cvstuff$fit.preval, foldid = foldid))
+  lamin = if (cvname == "AUC")
+    getmin(lambda, -cvm, cvsd)
+  else getmin(lambda, cvm, cvsd)
+  obj = c(out, as.list(lamin))
+  class(obj) = "cv.sail"
   obj
 }
-
 

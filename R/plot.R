@@ -18,7 +18,7 @@
 #' @import data.table
 #' @export
 
-plot.cv.sail <- function(x) {
+plot.cv.sail_old <- function(x) {
 
   pacman::p_load(ggplot2)
   pacman::p_load(data.table)
@@ -72,6 +72,24 @@ plot.cv.sail <- function(x) {
                   vjust = 2)) +
     ylab(c("5 fold CV MSE")) #+
     # coord_cartesian(ylim = c(l$panel$ranges[[1]]$y.range[1], l$panel$ranges[[1]]$y.range[2]*1.1))
+}
+
+
+#' @export
+plot.cv.sail <- function(x,sign.lambda=1,...){
+  cvobj=x
+  xlab="log(Lambda)"
+  if(sign.lambda<0)xlab=paste("-",xlab,sep="")
+  plot.args=list(x=sign.lambda*log(cvobj$lambda),y=cvobj$cvm,ylim=range(cvobj$cvup,cvobj$cvlo),xlab=xlab,ylab=cvobj$name,type="n")
+  new.args=list(...)
+  if(length(new.args))plot.args[names(new.args)]=new.args
+  do.call("plot",plot.args)
+  error.bars(sign.lambda*log(cvobj$lambda),cvobj$cvup,cvobj$cvlo,width=0.01,col="darkgrey")
+  points(sign.lambda*log(cvobj$lambda),cvobj$cvm,pch=20,col="red")
+  axis(side=3,at=sign.lambda*log(cvobj$lambda),labels=paste(cvobj$nz),tick=FALSE,line=0)
+  abline(v=sign.lambda*log(cvobj$lambda.min),lty=3)
+  abline(v=sign.lambda*log(cvobj$lambda.1se),lty=3)
+  invisible()
 }
 
 

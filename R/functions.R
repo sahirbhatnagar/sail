@@ -1154,20 +1154,78 @@ cv_lspath <- function(outlist, y, df, foldid, design,
        cvm.mat.all = cvm_mat_all)
 }
 
+
+
+cv.lspath <- function(outlist, lambda, x, y, e, df, degree, weights,
+                      foldid, type.measure, grouped, keep = FALSE) {
+  typenames = c(deviance = "Mean-Squared Error", mse = "Mean-Squared Error",
+                mae = "Mean Absolute Error")
+  if (type.measure == "default")
+    type.measure = "mse"
+  if (!match(type.measure, c("mse", "mae", "deviance"), FALSE)) {
+    warning("Only 'mse', 'deviance' or 'mae'  available for Gaussian models; 'mse' used")
+    type.measure = "mse"
+  }
+
+  mlami = max(sapply(outlist, function(obj) min(obj$lambda)))
+  which_lam = lambda >= mlami
+  predmat = matrix(NA, length(y), length(lambda))
+  nfolds = max(foldid)
+  nlams = double(nfolds)
+  for (i in seq(nfolds)) {
+    which = foldid == i
+    fitobj = outlist[[i]]
+    # fitobj$offset = FALSE
+    preds = predict(fitobj, newx = x[which, , drop = FALSE], newe = e[which], s = lambda[which_lam])
+    nlami = sum(which_lam)
+    predmat[which, seq(nlami)] = preds
+    nlams[i] = nlami
+  }
+  N = length(y) - apply(is.na(predmat), 2, sum)
+  cvraw = switch(type.measure, mse = (y - predmat)^2, deviance = (y - predmat)^2, mae = abs(y - predmat))
+  if ((length(y)/nfolds < 3) && grouped) {
+    warning("Option grouped=FALSE enforced in cv.sail, since < 3 observations per fold",
+            call. = FALSE)
+    grouped = FALSE
+  }
+  if (grouped) {
+    cvob = cvcompute(cvraw, weights, foldid, nlams)
+    cvraw = cvob$cvraw
+    weights = cvob$weights
+    N = cvob$N
+  }
+  cvm = apply(cvraw, 2, weighted.mean, w = weights, na.rm = TRUE)
+  cvsd = sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, weighted.mean,
+                    w = weights, na.rm = TRUE)/(N - 1))
+  out = list(cvm = cvm, cvsd = cvsd, name = typenames[type.measure])
+  if (keep)
+    out$fit.preval = predmat
+  out
+}
+
+
+
+
+
+
+
 #' @describeIn cv_lspath Computations for crossvalidation error
 #' @export
-cvcompute <- function(mat, foldid, nlams) {
-  nfolds <- max(foldid)
-  outmat <- matrix(NA, nfolds, ncol(mat))
-  good <- matrix(0, nfolds, ncol(mat))
-  mat[is.infinite(mat)] <- NA
-  for (i in seq(nfolds)) {
-    mati <- mat[foldid == i, ]
-    outmat[i, ] <- apply(mati, 2, mean, na.rm = TRUE)
-    good[i, seq(nlams[i])] <- 1
+cvcompute <- function(mat,weights,foldid,nlams){
+  ###Computes the weighted mean and SD within folds, and hence the se of the mean
+  wisum=tapply(weights,foldid,sum)
+  nfolds=max(foldid)
+  outmat=matrix(NA,nfolds,ncol(mat))
+  good=matrix(0,nfolds,ncol(mat))
+  mat[is.infinite(mat)]=NA#just in case some infinities crept in
+  for(i in seq(nfolds)){
+    mati=mat[foldid==i,,drop=FALSE]
+    wi=weights[foldid==i]
+    outmat[i,]=apply(mati,2,weighted.mean,w=wi,na.rm=TRUE)
+    good[i,seq(nlams[i])]=1
   }
-  N <- apply(good, 2, sum)
-  list(cvraw = outmat, N = N)
+  N=apply(good,2,sum)
+  list(cvraw=outmat,weights=wisum,N=N)
 }
 
 #' @describeIn cv_lspath Function that returns the tuning paramter corresponding
@@ -1197,15 +1255,15 @@ getmin_type <- function(lambda, cvm, cvsd, type) {
 
 
 #' @describeIn cv_lspath Interpolation function.
-getmin <- function(lambda, cvm, cvsd) {
-  cvmin <- min(cvm)
-  idmin <- cvm <= cvmin
-  lambda.min <- max(lambda[idmin])
-  idmin <- match(lambda.min, lambda)
-  semin <- (cvm + cvsd)[idmin]
-  idmin <- cvm <= semin
-  lambda.1se <- max(lambda[idmin])
-  list(lambda.min = lambda.min, lambda.1se = lambda.1se)
+getmin=function(lambda,cvm,cvsd){
+  cvmin=min(cvm,na.rm=TRUE)
+  idmin=cvm<=cvmin
+  lambda.min=max(lambda[idmin],na.rm=TRUE)
+  idmin=match(lambda.min,lambda)
+  semin=(cvm+cvsd)[idmin]
+  idmin=cvm<=semin
+  lambda.1se=max(lambda[idmin],na.rm=TRUE)
+  list(lambda.min=lambda.min,lambda.1se=lambda.1se)
 }
 
 
@@ -1530,6 +1588,58 @@ gendata2 <- function(n, p, corr = 0.1, E = rnorm(n = n, sd = 0.5), beta0 = 1, be
   Y <- Y.star + as.vector(k) * error
 
   return(list(x = Xall, y = Y, e = E, f1 = f1, f2 = f2, f3 = f3, f4 = f4))
+
+}
+
+
+# from radchenko
+gendata3 <- function(n = 300, p = 50, betaE = 1, SNR = 1) {
+
+  # n = 200
+  # p = 10
+  # corr = 1
+  #===================
+
+  # covariates
+  # browser()
+
+  W <- replicate(n = p, runif(n, min = 0, max = 1))
+
+  X1 <- W[,1]
+  X2 <- W[,2]
+  X3 <- W[,3]
+  X4 <- W[,4]
+  X5 <- W[,5]
+  E <- runif(n, min = 0, max = 1)
+
+  Xall <- W
+
+  colnames(Xall) <- paste0("X", seq_len(p))
+
+  # see "Variable Selection in NonParametric Addditive Model" Huang Horowitz and Wei
+  f1 <- function(t) t
+  f2 <- function(t) 1 / (1 + t)
+  f3 <- function(t) sin(t)
+  f4 <- function(t) exp(t)
+  f5 <- function(t) t ^ 2
+
+  # error
+  error <- stats::rnorm(n)
+
+  Y.star <- sqrt(0.5) * (f1(X1)  +
+                           f2(X2) +
+                           f3(X3) +
+                           f4(X4) +
+                           f5(X5) +
+                           betaE * E +
+                           betaE * E * f1(X1) +
+                           betaE * E * f2(X2))
+
+  # k <- sqrt(stats::var(Y.star) / (SNR * stats::var(error)))
+
+  Y <- Y.star + error
+
+  return(list(x = Xall, y = Y, e = E, f1 = f1, f2 = f2, f3 = f3, f4 = f4, f5 = f5))
 
 }
 

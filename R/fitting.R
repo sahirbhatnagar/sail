@@ -6,7 +6,7 @@ lspath <- function(x,
                    df,
                    degree,
                    group.penalty,
-                   weights,
+                   weights, #currently not being used
                    nlambda,
                    thresh,
                    maxit,
@@ -164,7 +164,7 @@ lspath <- function(x,
         coef(glmnet::glmnet(
           x = x_tilde,
           y = R,
-          thresh = 1e-9,
+          thresh = 1e-12,
           penalty.factor = wje,
           lambda = c(.Machine$double.xmax, LAMBDA * alpha),
           standardize = F, intercept = F))[-1,2]
@@ -192,7 +192,7 @@ lspath <- function(x,
           theta_next_j <- switch(group.penalty,
                                  gglasso = coef(gglasso::gglasso(x = x_tilde_2[[j]],
                                                                  y = R,
-                                                                 eps = 1e-10,
+                                                                 eps = 1e-12,
                                                                  group = rep(1, df),
                                                                  pf = wj[j],
                                                                  lambda = LAMBDA * (1 - alpha),
@@ -272,14 +272,14 @@ lspath <- function(x,
 
       R.star <- R.star + Delta
 
-      # Q[m+1] <- Q_theta(R = R.star, nobs = nobs, lambda = LAMBDA, alpha = alpha,
-      #                   we = we, wj = wj, wje = wje, betaE = betaE_next,
-      #                   theta_list = theta_next, gamma = gamma_next)
+      Q[m+1] <- Q_theta(R = R.star, nobs = nobs, lambda = LAMBDA, alpha = alpha,
+                        we = we, wj = wj, wje = wje, betaE = betaE_next,
+                        theta_list = theta_next, gamma = gamma_next)
 
       Theta_next <- c(b0_next, betaE_next, theta_next_vec, gamma_next)
 
-      # criterion <- abs(Q[m] - Q[m + 1])/abs(Q[m])
-      criterion <- l2norm(Theta_next - Theta_init)
+      criterion <- abs(Q[m] - Q[m + 1])/abs(Q[m])
+      # criterion <- l2norm(Theta_next - Theta_init)
       converged[lambdaIndex] <- criterion < thresh
       converged[lambdaIndex] <- if (is.na(converged[lambdaIndex])) FALSE else converged[lambdaIndex]
       if (verbose) message(sprintf("Iteration: %f, Converged: %f, Crossprod: %f", m, converged[lambdaIndex],
