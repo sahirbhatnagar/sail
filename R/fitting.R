@@ -40,7 +40,7 @@ lspath <- function(x,
   interaction_names <- expansion$interaction_names
 
   # this is used for the predict function
-  design <- cbind(Phi_j, "E" = e, XE_Phi_j)
+  design <- expansion$design
 
   nulldev <- as.numeric(crossprod(y))
 
@@ -378,6 +378,7 @@ lspath <- function(x,
               Phi_j = Phi_j,
               XE_Phi_j = XE_Phi_j,
               nobs = nobs,
+              nvars = nvars,
               vnames = vnames,
               df = df,
               degree = degree,

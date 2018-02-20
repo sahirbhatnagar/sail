@@ -1575,9 +1575,13 @@ design_sail <- function(x, e, nvars, vnames, df, degree) {
 
   }
 
+  # this is used for the predict function
+  design <- cbind(Phi_j, "E" = e, XE_Phi_j)
+
   return(list(Phi_j_list = Phi_j_list, Phi_j = Phi_j,
               XE_Phi_j_list = XE_Phi_j_list, XE_Phi_j = XE_Phi_j,
-              main_effect_names = main_effect_names, interaction_names = interaction_names))
+              main_effect_names = main_effect_names, interaction_names = interaction_names,
+              design = design))
 
 }
 
