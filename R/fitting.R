@@ -29,35 +29,15 @@ lspath <- function(x,
   # group membership
   group <- rep(seq_len(nvars), each = df)
 
-  if (df == 1 & degree == 1) {
+  expansion <- design_sail(x = x, e = e, nvars = nvars, vnames = vnames,
+                           df = df, degree = degree)
 
-    # Dont Expand X's is both df and degree is 1, which means use original data
-    Phi_j_list <- lapply(seq_len(nvars), function(j) x[ , j, drop = FALSE])
-    Phi_j <- do.call(cbind, Phi_j_list)
-    main_effect_names <- paste(rep(vnames, each = df), rep(seq_len(df), times = nvars), sep = "_")
-    dimnames(Phi_j)[[2]] <- main_effect_names
-
-    # X_E x Phi_j
-    XE_Phi_j_list <- lapply(Phi_j_list, function(i) e * i)
-    XE_Phi_j <- do.call(cbind, XE_Phi_j_list)
-    interaction_names <- paste(main_effect_names, "E", sep = ":")
-    dimnames(XE_Phi_j)[[2]] <- interaction_names
-
-  } else {
-
-    # Expand X's
-    Phi_j_list <- lapply(seq_len(nvars), function(j) splines::bs(x[,j], df = df, degree = degree))
-    Phi_j <- do.call(cbind, Phi_j_list)
-    main_effect_names <- paste(rep(vnames, each = df), rep(seq_len(df), times = nvars), sep = "_")
-    dimnames(Phi_j)[[2]] <- main_effect_names
-
-    # E x Phi_j
-    XE_Phi_j_list <- lapply(Phi_j_list, function(i) e * i)
-    XE_Phi_j <- do.call(cbind, XE_Phi_j_list)
-    interaction_names <- paste(main_effect_names, "E", sep = ":")
-    dimnames(XE_Phi_j)[[2]] <- interaction_names
-
-  }
+  Phi_j_list <- expansion$Phi_j_list
+  Phi_j <- expansion$Phi_j
+  XE_Phi_j_list <- expansion$XE_Phi_j_list
+  XE_Phi_j <- expansion$XE_Phi_j
+  main_effect_names <- expansion$main_effect_names
+  interaction_names <- expansion$interaction_names
 
   # this is used for the predict function
   design <- cbind(Phi_j, "E" = e, XE_Phi_j)
@@ -131,6 +111,7 @@ lspath <- function(x,
 
   active <- vector("list", length = nlambda)
 
+
   # Lambda Loop Start -------------------------------------------------------
 
   for (LAMBDA in lambdas) {
@@ -183,7 +164,7 @@ lspath <- function(x,
         coef(glmnet::glmnet(
           x = x_tilde,
           y = R,
-          # thresh = 1e-10,
+          thresh = 1e-9,
           penalty.factor = wje,
           lambda = c(.Machine$double.xmax, LAMBDA * alpha),
           standardize = F, intercept = F))[-1,2]
@@ -211,7 +192,7 @@ lspath <- function(x,
           theta_next_j <- switch(group.penalty,
                                  gglasso = coef(gglasso::gglasso(x = x_tilde_2[[j]],
                                                                  y = R,
-                                                                 # eps = 1e-10,
+                                                                 eps = 1e-10,
                                                                  group = rep(1, df),
                                                                  pf = wj[j],
                                                                  lambda = LAMBDA * (1 - alpha),
@@ -291,14 +272,14 @@ lspath <- function(x,
 
       R.star <- R.star + Delta
 
-      Q[m+1] <- Q_theta(R = R.star, nobs = nobs, lambda = LAMBDA, alpha = alpha,
-                        we = we, wj = wj, wje = wje, betaE = betaE_next,
-                        theta_list = theta_next, gamma = gamma_next)
+      # Q[m+1] <- Q_theta(R = R.star, nobs = nobs, lambda = LAMBDA, alpha = alpha,
+      #                   we = we, wj = wj, wje = wje, betaE = betaE_next,
+      #                   theta_list = theta_next, gamma = gamma_next)
 
       Theta_next <- c(b0_next, betaE_next, theta_next_vec, gamma_next)
 
-      criterion <- abs(Q[m] - Q[m + 1])/abs(Q[m])
-      # criterion <- l2norm(Theta_next - Theta_init)^2
+      # criterion <- abs(Q[m] - Q[m + 1])/abs(Q[m])
+      criterion <- l2norm(Theta_next - Theta_init)
       converged[lambdaIndex] <- criterion < thresh
       converged[lambdaIndex] <- if (is.na(converged[lambdaIndex])) FALSE else converged[lambdaIndex]
       if (verbose) message(sprintf("Iteration: %f, Converged: %f, Crossprod: %f", m, converged[lambdaIndex],
@@ -339,8 +320,12 @@ lspath <- function(x,
                                 if (dfenviron == 0) 0 else dfenviron,
                                 deviance, devRatio)
 
+
     # dfmax
     if (sum(outPrint[lambdaIndex,c("dfBeta","dfAlpha","dfEnviron")]) > ne) break
+
+
+
 
     # dev.off()
     # par(mfrow=c(3,1), mai = c(0.2,0.2,0.2,0.2))
