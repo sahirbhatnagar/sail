@@ -107,8 +107,8 @@ KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
   nobs <- length(as.vector(y))
 
   # this gives -R = -(Y - hat(Y)) for loss = "ls"
-  dl <- margin(b0 = b0, betaE = betaE, beta = beta, gamma = gamma, alpha = alpha,
-               y = y, phij = phij, xe_phij = xe_phij, e = e, df = df, loss = loss)
+  dl <- margin(b0 = b0, betaE = betaE, beta = beta, gamma = gamma, alpha = alpha, y = y,
+               phij = phij, xe_phij = xe_phij, e = e, df = df, loss = loss)
 
   # KKT for beta0 -----------------------------------------------------------
 
@@ -146,13 +146,13 @@ KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
     if (betaE[l] == 0) {
       BE <- dl_norm_betaE /  (- lambda[l] * (1 - lambda2) * we)
       if (abs(BE) > 1 + thr) {
-        cat("violate at bE = 0", BE, " lambda=",lambda[l], "\n")
+        cat("violate at bE = 0", abs(BE), " lambda=",lambda[l], "\n")
         ctr <- ctr + 1
       }
     } else {
       BE <- as.vector(dl_norm_betaE + lambda[l] * (1 - lambda2) * we * sign(betaE[l]))
       if (abs(BE) > thr) {
-        cat("violate at bE != 0", BE, " lambda=",lambda[l], "\n")
+        cat("violate at bE != 0", abs(BE), " lambda=",lambda[l], "\n")
         ctr <- ctr + 1
       } #else {cat("no violation at bE != 0", BE, " lambda=",lambda[l], "\n")}
     }

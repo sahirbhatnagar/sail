@@ -1542,3 +1542,43 @@ bic <- function(eta, sigma2, beta, eigenvalues, x, y, nt, c, df_lambda) {
 }
 
 
+
+design_sail <- function(x, e, nvars, vnames, df, degree) {
+
+  if (df == 1 & degree == 1) {
+
+    # Dont Expand X's is both df and degree is 1, which means use original data
+    Phi_j_list <- lapply(seq_len(nvars), function(j) x[ , j, drop = FALSE])
+    Phi_j <- do.call(cbind, Phi_j_list)
+    main_effect_names <- paste(rep(vnames, each = df), rep(seq_len(df), times = nvars), sep = "_")
+    dimnames(Phi_j)[[2]] <- main_effect_names
+
+    # X_E x Phi_j
+    XE_Phi_j_list <- lapply(Phi_j_list, function(i) e * i)
+    XE_Phi_j <- do.call(cbind, XE_Phi_j_list)
+    interaction_names <- paste(main_effect_names, "E", sep = ":")
+    dimnames(XE_Phi_j)[[2]] <- interaction_names
+
+  } else {
+
+    # Expand X's
+    Phi_j_list <- lapply(seq_len(nvars), function(j) splines::bs(x[,j], df = df, degree = degree))
+    Phi_j <- do.call(cbind, Phi_j_list)
+    main_effect_names <- paste(rep(vnames, each = df), rep(seq_len(df), times = nvars), sep = "_")
+    dimnames(Phi_j)[[2]] <- main_effect_names
+
+    # E x Phi_j
+    XE_Phi_j_list <- lapply(Phi_j_list, function(i) e * i)
+    XE_Phi_j <- do.call(cbind, XE_Phi_j_list)
+    interaction_names <- paste(main_effect_names, "E", sep = ":")
+    dimnames(XE_Phi_j)[[2]] <- interaction_names
+
+  }
+
+  return(list(Phi_j_list = Phi_j_list, Phi_j = Phi_j,
+              XE_Phi_j_list = XE_Phi_j_list, XE_Phi_j = XE_Phi_j,
+              main_effect_names = main_effect_names, interaction_names = interaction_names))
+
+}
+
+

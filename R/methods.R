@@ -14,7 +14,7 @@
 #'   coefficients for each value of s.
 #' @export
 
-predict.sail <- function(object, newx, s = NULL,
+predict.sail <- function(object, newx, newe, s = NULL,
                             type = c("link", "response", "coefficients",
                                      "nonzero", "class"), ...) {
 
@@ -27,6 +27,8 @@ predict.sail <- function(object, newx, s = NULL,
   if (missing(newx)) {
     if (!match(type, c("coefficients", "nonzero"), FALSE))
       newx <- object$design
+  } else {
+
   }
 
   a0 <- t(as.matrix(object$a0))
