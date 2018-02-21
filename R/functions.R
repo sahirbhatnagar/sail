@@ -1542,8 +1542,8 @@ gendata <- function(n, p, df, degree,
 
 }
 
-gendata2 <- function(n, p, corr = 0.1, E = rnorm(n = n, sd = 0.5), beta0 = 1, betaE = 2, SNR = 1) {
-
+gendata2 <- function(n, p, corr = 0, E = rnorm(n = n, sd = 0.5), beta0 = 1, betaE = 2, SNR = 3) {
+  # this is modified from "VARIABLE SELECTION IN NONPARAMETRIC ADDITIVE MODEL" huang et al, Ann Stat.
   # n = 200
   # p = 10
   # corr = 1
@@ -1581,14 +1581,15 @@ gendata2 <- function(n, p, corr = 0.1, E = rnorm(n = n, sd = 0.5), beta0 = 1, be
     f3(X3) +
     f4(X4) +
     betaE * E +
-    E * f3(X3) +
-    E * f4(X4)
+    2.5 * E * f3(X3) +
+    3.5* E * f4(X4)
 
   k <- sqrt(stats::var(Y.star) / (SNR * stats::var(error)))
 
   Y <- Y.star + as.vector(k) * error
 
-  return(list(x = Xall, y = Y, e = E, f1 = f1, f2 = f2, f3 = f3, f4 = f4))
+  return(list(x = Xall, y = Y, e = E, f1 = f1(X1),
+              f2 = f2(X2), f3 = f3(X3), f4 = f4(X4), betaE = betaE))
 
 }
 

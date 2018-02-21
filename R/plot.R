@@ -279,7 +279,8 @@ plotMain <- function(object, xvar, s, f.truth, col = c("#D55E00","#009E73"), leg
   design.mat <- object$design[,object$main.effect.names[ind],drop = FALSE]
   originalX <- object$x[,unique(object$group[ind])]
 
-  f.hat <- drop(a0 + design.mat %*% betas)
+  # f.hat <- drop(a0 + design.mat %*% betas)
+  f.hat <- drop(design.mat %*% betas)
   ylims <- if(!missing(f.truth)) range(f.truth,f.hat) else range(f.hat)
 
   plot.args <- list(x = originalX[order(originalX)],
