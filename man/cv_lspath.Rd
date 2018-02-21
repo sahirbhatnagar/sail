@@ -4,16 +4,22 @@
 \alias{cv_lspath}
 \alias{cvcompute}
 \alias{getmin_type}
+\alias{getmin}
 \alias{lambda.interp}
+\alias{lamfix}
 \title{Compute cross validation error}
 \usage{
 cv_lspath(outlist, y, df, foldid, design, nlambda, nlambda.beta, nlambda.gamma)
 
-cvcompute(mat, foldid, nlams)
+cvcompute(mat, weights, foldid, nlams)
 
 getmin_type(lambda, cvm, cvsd, type)
 
+getmin(lambda, cvm, cvsd)
+
 lambda.interp(lambda, s)
+
+lamfix(lam)
 }
 \arguments{
 \item{outlist}{list of cross validated fitted models. List is of length equal
@@ -52,7 +58,11 @@ The output of the \code{cv_lspath} function only returns values for those tuning
 to the minimum cross validated error and cross validated error within 1
 standard error of the minimum
 
-\item \code{lambda.interp}: Interpolation function. Currently not implemented.
+\item \code{getmin}: Interpolation function.
+
+\item \code{lambda.interp}: Interpolation function.
+
+\item \code{lamfix}: Interpolation function.
 }}
 
 \seealso{

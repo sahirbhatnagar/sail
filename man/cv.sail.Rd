@@ -4,9 +4,9 @@
 \alias{cv.sail}
 \title{Cross-validation for sail}
 \usage{
-cv.sail(x, y, e, df, weights, lambda.beta = NULL, lambda.gamma = NULL,
-  nlambda.gamma = 10, nlambda.beta = 10, nlambda = 100, parallel = TRUE,
-  type.measure = c("mse"), cores = 6, nfolds = 10, ...)
+cv.sail(x, y, e, df, degree, weights, lambda = NULL, type.measure = c("mse",
+  "deviance", "class", "auc", "mae"), nfolds = 10, foldid, grouped = TRUE,
+  keep = FALSE, parallel = FALSE, ...)
 }
 \arguments{
 \item{x}{Design matrix of dimension \code{n x q}, where \code{n} is the
@@ -29,47 +29,18 @@ the response can be a matrix where the first column is the number of
 proportion matrices. Default is 1 for each observation. Currently NOT
 IMPLEMENTED}
 
-\item{lambda.beta}{sequence of tuning parameters for the main effects. If
-\code{NULL} (default), this function will automatically calculate a
-sequence using the \code{\link{sail_once}} function which will be over a
-grid of tuning parameters for gamma as well. If the user specifies a
-sequence then this function will not automatically perform the serach over
-a grid. You will need to create the grid yourself e.g. repeat the
-lambda.gamma for each value of lambda.beta}
+\item{type.measure}{loss to use for cross-validation. Currently only 1
+option. The default is \code{type.measure="mse"}, which uses squared-error
+for gaussian models}
 
-\item{lambda.gamma}{sequence of tuning parameters for the interaction
-effects. Default is \code{NULL} which means this function will
-automatically calculate a sequence of tuning paramters. See
-\code{\link{sail_once}} for details on how this sequence is calculated.}
-
-\item{nlambda.gamma}{number of tuning parameters for gamma. This needs to be
-specified even for user defined inputs}
-
-\item{nlambda.beta}{number of tuning parameters for beta. This needs to be
-specified even for user defined inputs}
-
-\item{nlambda}{total number of tuning parameters. If \code{lambda.beta =
-NULL} and \code{lambda.gamma = NULL} then \code{nlambda} should be equal to
-\code{nlambda.beta x nlambda.gamma}. This is important to specify
-especially when a user defined sequence of tuning parameters is set.}
+\item{nfolds}{number of folds - default is 10. Although nfolds can be as
+large as the sample size (leave-one-out CV), it is not recommended for
+large datasets. Smallest value allowable is \code{nfolds=3}}
 
 \item{parallel}{If \code{TRUE}, use parallel \code{foreach} to fit each fold.
 Must register parallel before hand using the
 \code{\link[doMC]{registerDoMC}} function from the \code{doMC} package. See
 the example below for details.}
-
-\item{type.measure}{loss to use for cross-validation. Currently only 1
-option. The default is \code{type.measure="mse"}, which uses squared-error
-for gaussian models}
-
-\item{cores}{The number of cores to use for certain calculations in the
-\code{\link{sail}} function, i.e. at most how many child processes will be
-run simultaneously using the \code{parallel} package. Must be at least one,
-and parallelization requires at least two cores. Default is 2.}
-
-\item{nfolds}{number of folds - default is 10. Although nfolds can be as
-large as the sample size (leave-one-out CV), it is not recommended for
-large datasets. Smallest value allowable is \code{nfolds=3}}
 }
 \description{
 Does k-fold cross-validation for sail and determines the optimal

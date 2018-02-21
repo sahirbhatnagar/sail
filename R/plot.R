@@ -265,3 +265,54 @@ plotSailCoef <- function(coefs, lambda, group, df, dev, vnames, environ,
 }
 
 
+
+
+#' @param object sail object
+#' @export
+plotMain <- function(object, xvar, s, f.truth, col = c("#D55E00","#009E73"), legend.position = "bottomleft", ...) {
+
+  # browser()
+  ind <- object$group == which(object$vnames == xvar)
+  allCoefs <- coef(object, s = s)
+  a0 <- allCoefs[1,]
+  betas <- as.matrix(allCoefs[object$main.effect.names[ind],,drop = FALSE])
+  design.mat <- object$design[,object$main.effect.names[ind],drop = FALSE]
+  originalX <- object$x[,unique(object$group[ind])]
+
+  f.hat <- drop(a0 + design.mat %*% betas)
+  ylims <- if(!missing(f.truth)) range(f.truth,f.hat) else range(f.hat)
+
+  plot.args <- list(x = originalX[order(originalX)],
+                    y = f.hat[order(originalX)],
+                    ylim = ylims,
+                    xlab = xvar,
+                    ylab = sprintf("f(%s)",xvar),
+                    type = "n",
+                    # xlim = rev(range(l)),
+                    # las = 1,
+                    cex.lab = 1.5,
+                    cex.axis = 1.5,
+                    cex = 1.5,
+                    # bty = "n",
+                    # mai=c(1,1,0.1,0.2),
+                    # tcl = -0.5,
+                    # omi = c(0.2,1,0.2,0.2),
+                    family = "serif")
+  new.args <- list(...)
+  if (length(new.args)) {
+    new.plot.args <- new.args[names(new.args) %in% c(names(par()),
+                                                     names(formals(plot.default)))]
+    plot.args[names(new.plot.args)] <- new.plot.args
+  }
+  do.call("plot", plot.args)
+  abline(h = 0, lwd = 1, col = "gray")
+  lines(originalX[order(originalX)], f.hat[order(originalX)], col = col[1], lwd = 3)
+  rug(originalX, side = 1)
+  if(!missing(f.truth))
+    lines(originalX[order(originalX)], f.truth[order(originalX)], col = col[2], lwd = 3)
+  if(!missing(f.truth)) legend(legend.position,
+                               c("Estimated","Truth"),
+                               col = col, cex = 1, bty = "n", lwd = 3)
+}
+
+

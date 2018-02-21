@@ -5,7 +5,7 @@
 \title{Plot the coefficient plot produced by sail}
 \usage{
 plotSailCoef(coefs, lambda, group, df, dev, vnames, environ, alpha = 1,
-  legend.loc, label = FALSE, log.l = FALSE, norm = FALSE, ...)
+  legend.loc, label = FALSE, log.l = TRUE, norm = FALSE, ...)
 }
 \description{
 Plot the coefficient plot produced by sail

@@ -37,7 +37,7 @@ predict.sail <- function(object, newx, newe, s = NULL,
   a0 <- t(as.matrix(object$a0))
   rownames(a0) = "(Intercept)"
   # this has only values for which lambda did converge
-  nbeta <- rbind(a0, object$beta, object$bE, object$alpha)
+  nbeta <- rbind(a0, object$beta, E = object$bE, object$alpha)
 
   if (!is.null(s)) {
     vnames <- dimnames(nbeta)[[1]]
@@ -67,6 +67,19 @@ predict.sail <- function(object, newx, newe, s = NULL,
   }
 
 }
+
+
+predict.cv.sail <- function(object,newx, newe, s=c("lambda.1se","lambda.min"),...){
+  if(is.numeric(s)) lambda=s
+  else
+    if(is.character(s)){
+      s=match.arg(s)
+      lambda=object[[s]]
+    }
+  else stop("Invalid form for s")
+  predict(object$sail.fit, newx, newe, s=lambda, ...)
+}
+
 
 #' Get coefficients from a "sail" object
 #'

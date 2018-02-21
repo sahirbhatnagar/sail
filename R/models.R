@@ -368,7 +368,8 @@ cv.sail <- function (x, y, e, df, degree, weights,
   ###Next line is commented out so each call generates its own lambda sequence
   # lambda <- sail.object$lambda
 
-  nz = sapply(predict(sail.object, type = "nonzero"), length)
+  # nz = sapply(predict(sail.object, type = "nonzero"), length)
+  nz <- sapply(sail.object$active, length)
   if (missing(foldid)) foldid = sample(rep(seq(nfolds), length = N)) else nfolds = max(foldid)
   if (nfolds < 3)
     stop("nfolds must be bigger than 3; nfolds=10 recommended")

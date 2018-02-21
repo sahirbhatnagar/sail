@@ -4,8 +4,7 @@
 \alias{gendata}
 \title{Simulate Data}
 \usage{
-gendata(n, p, df, degree, E = rnorm(n = n, sd = 0.5), beta0 = 1,
-  betaE = 2, SNR = 1)
+gendata(n, p, df, degree, E = rnorm(n = n, sd = 0.7), betaE = 2, SNR = 1)
 }
 \description{
 function to simulate data

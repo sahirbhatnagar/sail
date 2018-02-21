@@ -5,10 +5,10 @@
 \alias{coef.sail}
 \title{Make predictions from a sail object}
 \usage{
-\method{predict}{sail}(object, newx, s = NULL, type = c("link", "response",
-  "coefficients", "nonzero", "class"))
+\method{predict}{sail}(object, newx, newe, s = NULL, type = c("link",
+  "response", "coefficients", "nonzero", "class"), ...)
 
-\method{coef}{sail}(object, s = NULL)
+\method{coef}{sail}(object, s = NULL, exact = FALSE, ...)
 }
 \arguments{
 \item{object}{Fitted sail model object}
