@@ -1497,7 +1497,7 @@ l2norm <- function(x) sqrt(sum(x^2))
 #' @description function to simulate data
 #'
 gendata <- function(n, p, df, degree,
-                    E = rnorm(n = n, sd=0.7),
+                    E = rnorm(n = n, sd = 0.5),
                     # E = rbinom(n = n, size = 1, prob = 0.5),
                     # E = runif(n=n),
                     betaE = 2, SNR = 1) {
@@ -1529,7 +1529,7 @@ gendata <- function(n, p, df, degree,
     bs(X[,2], df = df, degree = degree) %*% b2 +
     bs(X[,3], df = df, degree = degree) %*% b3 +
     bs(X[,4], df = df, degree = degree) %*% b4 +
-    bs(X[,5], df = df, degree = degree) %*% b5 +
+    # bs(X[,5], df = df, degree = degree) %*% b5 +
     betaE * E +
     E * bs(X[,1], df = df, degree = degree) %*% bE1 +
     E * bs(X[,2], df = df, degree = degree) %*% bE2
@@ -1622,11 +1622,11 @@ gendata3 <- function(n = 300, p = 50, betaE = 1, SNR = 1) {
   colnames(Xall) <- paste0("X", seq_len(p))
 
   # see "Variable Selection in NonParametric Addditive Model" Huang Horowitz and Wei
-  f1 <- function(t) t
-  f2 <- function(t) 1 / (1 + t)
-  f3 <- function(t) sin(t)
-  f4 <- function(t) exp(t)
-  f5 <- function(t) t ^ 2
+  # f1 <- function(t) t
+  f2 <- function(t) 3 / (1 + t)^2
+  f3 <- function(t) 2*sin(t)
+  f4 <- function(t) 4*exp(t)
+  f5 <- function(t) 6 * t ^ 3
 
   # error
   error <- stats::rnorm(n)
@@ -1640,20 +1640,23 @@ gendata3 <- function(n = 300, p = 50, betaE = 1, SNR = 1) {
   #                          E * f1(X1) +
   #                          E * f2(X2))
 
-  Y.star <- f1(X1)  +
+  Y.star <-
+    # f1(X1)  +
     f2(X2) +
     f3(X3) +
     f4(X4) +
     f5(X5) +
     betaE * E +
-    E * f1(X1) +
-    E * f2(X2)
+    # E * f1(X1) +
+    E * f5(X5)
 
   k <- sqrt(stats::var(Y.star) / (SNR * stats::var(error)))
 
   Y <- Y.star + as.vector(k) * error
 
-  return(list(x = Xall, y = Y, e = E, f1 = f1(X1), f2 = f2(X2), f3 = f3(X3),
+  return(list(x = Xall, y = Y, e = E,
+              # f1 = f1(X1),
+              f2 = f2(X2), f3 = f3(X3),
               f4 = f4(X4), f5 = f5(X5)))
 
 }
