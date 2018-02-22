@@ -31,7 +31,7 @@ lspath <- function(x,
 
   expansion <- design_sail(x = x, e = e, nvars = nvars, vnames = vnames,
                            df = df, degree = degree)
-
+  # y <- drop(scale(y, center = TRUE, scale = FALSE))
   Phi_j_list <- expansion$Phi_j_list
   Phi_j <- expansion$Phi_j
   XE_Phi_j_list <- expansion$XE_Phi_j_list

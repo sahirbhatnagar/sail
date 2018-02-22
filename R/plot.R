@@ -267,6 +267,8 @@ plotSailCoef <- function(coefs, lambda, group, df, dev, vnames, environ,
 
 
 
+
+#' Plot Main Effects from sail object
 #' @param object sail object
 #' @export
 plotMain <- function(object, xvar, s, f.truth, col = c("#D55E00","#009E73"), legend.position = "bottomleft", ...) {
@@ -317,3 +319,102 @@ plotMain <- function(object, xvar, s, f.truth, col = c("#D55E00","#009E73"), leg
 }
 
 
+
+#' Plot Interaction Effects from sail object
+#' @param object sail object
+#' @export
+plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, npoints = 30, col = c("#D55E00","#009E73"),
+                      legend.position = "bottomleft", ...) {
+
+  # browser()
+
+  ind <- object$group == which(object$vnames == xvar)
+  allCoefs <- coef(object, s = s)
+  a0 <- allCoefs[1,]
+
+  betas <- as.matrix(allCoefs[object$main.effect.names[ind],,drop = FALSE])
+  alphas <- as.matrix(allCoefs[object$interaction.names[ind],,drop = FALSE])
+  betaE <- as.matrix(allCoefs["E",,drop = FALSE])
+
+  design.mat.main <- object$design[,object$main.effect.names[ind],drop = FALSE]
+  design.mat.int <- object$design[,object$interaction.names[ind],drop = FALSE]
+  originalE <- object$design[,"E",drop = FALSE] # this is the centered E
+  originalX <- object$x[,unique(object$group[ind])]
+
+  # f.hat <- drop(a0 + design.mat %*% betas)
+  # f.hat <- drop(originalE %*% betaE + design.mat.main %*% betas + design.mat.int %*% alphas)
+
+  # all.equal((e * standardize(splines::bs(x, df = object$df, degree = object$degree))$x),
+  #           sweep(standardize(splines::bs(x, df = object$df, degree = object$degree))$x, 1, e, FUN = "*"))
+
+  x <- seq(range(originalX)[1], range(originalX)[2], length.out = npoints)
+  e <- seq(range(originalE)[1], range(originalE)[2], length.out = npoints)
+
+  # show interaction effect only for simulation
+  if (simulation) {
+    f.est <- function(X, E) {
+      # E * as.vector(betaE) + standardize(splines::bs(X, df = object$df, degree = object$degree))$x %*% betas +
+        (E * standardize(splines::bs(X, df = object$df, degree = object$degree))$x) %*% alphas
+    }
+  } else {
+    f.est <- function(X, E) {
+      E * as.vector(betaE) + standardize(splines::bs(X, df = object$df, degree = object$degree))$x %*% betas +
+        (E * standardize(splines::bs(X, df = object$df, degree = object$degree))$x) %*% alphas
+    }
+  }
+
+  # f.truth <- function(x, e) { e * DT$f4(x)  }
+  z.est <- outer(x, e, f.est)
+
+  if(!missing(f.truth)) {
+    z.truth <- outer(x, e, f.truth)
+    z_range <- c(min(z.est, z.truth), max(z.est, z.truth))
+
+  } else {
+    z_range <- c(min(z.est), max(z.est))
+  }
+
+  op <- par(bg = "white")
+
+  if(!missing(f.truth)) {
+    par(mfrow=c(1,2), tcl=-0.5, family="serif", omi=c(0.2,0.2,0,0))
+    par(mai=c(0.,0.,0.3,0.))
+    persp(x, e, z.truth,
+          zlim = z_range,
+          theta=30, phi=30,
+          ltheta = 120, expand = 0.5,
+          r=2, shade=0.3, axes=TRUE,scale=TRUE, box=T,
+          nticks=5,
+          # ticktype="detailed",
+          col=col[2],
+          xlab=sprintf("f(%s)",xvar),
+          ylab="X_E",
+          zlab="Y", main="Truth")
+    persp(x, e, z.est,
+          theta=30, phi=30,
+          ltheta = 120, expand = 0.5,
+          r=2, shade=0.3, axes=TRUE,scale=TRUE, box=T,
+          nticks=5,
+          zlim = z_range,
+          # ticktype="detailed",
+          col=col[1],
+          xlab=sprintf("f(%s)",xvar),
+          ylab="X_E",
+          zlab="Y", main="Estimated")
+  } else {
+    par(mfrow=c(1,1), tcl=-0.5, family="serif", omi=c(0.2,0.2,0,0))
+    par(mai=c(0.,0.,0.3,0.))
+    persp(x, e, z.est,
+          theta=30, phi=30,
+          ltheta = 120, expand = 0.5,
+          r=2, shade=0.3, axes=TRUE,scale=TRUE, box=T,
+          nticks=5,
+          zlim = z_range,
+          col=col[1],
+          xlab=sprintf("f(x_%s)",as.numeric(gsub("X","",4))),
+          ylab="X_E",
+          zlab="Y", main=sprintf("Estimated Interaction Effect for %s",xvar))
+  }
+
+
+}

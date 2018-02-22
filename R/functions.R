@@ -1066,17 +1066,17 @@ nonzero <- function(beta, bystep = FALSE) {
 #' Maintainer: Sahir Bhatnagar \email{sahir.bhatnagar@@mail.mcgill.ca}
 #' @export
 
-standardize <- function(x, y, center = TRUE, normalize = TRUE) {
+standardize <- function(x, y, center = TRUE, normalize = FALSE) {
   x <- as.matrix(x)
-  y <- as.numeric(y)
+  # y <- as.numeric(y)
   n <- nrow(x)
   p <- ncol(x)
 
   if (center) {
     bx <- colMeans(x)
-    by <- mean(y)
+    # by <- mean(y)
     x <- scale(x,bx,FALSE)
-    y <- y - mean(y)
+    # y <- y - mean(y)
   } else {
     bx <- rep(0,p)
     by <- 0
@@ -1088,7 +1088,9 @@ standardize <- function(x, y, center = TRUE, normalize = TRUE) {
     sx <- rep(1,p)
   }
 
-  return(list(x = x, y = y, bx = bx, by = by, sx = sx))
+  return(list(x = x,
+              # y = y,
+              bx = bx, by = by, sx = sx))
 }
 
 #' @description \code{\%ni\%} is the opposite of \code{\%in\%}
@@ -1542,7 +1544,7 @@ gendata <- function(n, p, df, degree,
 
 }
 
-gendata2 <- function(n, p, corr = 0, E = rnorm(n = n, sd = 0.5), beta0 = 1, betaE = 2, SNR = 3) {
+gendata2 <- function(n, p, corr = 0, E = truncnorm::rtruncnorm(n, a = -1, b = 1), betaE = 1, SNR = 3) {
   # this is modified from "VARIABLE SELECTION IN NONPARAMETRIC ADDITIVE MODEL" huang et al, Ann Stat.
   # n = 200
   # p = 10
@@ -1567,7 +1569,7 @@ gendata2 <- function(n, p, corr = 0, E = rnorm(n = n, sd = 0.5), beta0 = 1, beta
 
   # see "Variable Selection in NonParametric Addditive Model" Huang Horowitz and Wei
   f1 <- function(t) 5 * t
-  f2 <- function(t) 3 * (2 * t - 1) ^ 2
+  f2 <- function(t) 4.5 * (2 * t - 1) ^ 2
   f3 <- function(t) 4 * sin(2 * pi * t) / (2 - sin(2 * pi * t))
   f4 <- function(t) 6 * (0.1 * sin(2 * pi * t) + 0.2 * cos(2 * pi * t) +
                            0.3 * sin(2 * pi * t) ^ 2 + 0.4 * cos(2 * pi * t) ^ 3 +
@@ -1581,15 +1583,16 @@ gendata2 <- function(n, p, corr = 0, E = rnorm(n = n, sd = 0.5), beta0 = 1, beta
     f3(X3) +
     f4(X4) +
     betaE * E +
-    2.5 * E * f3(X3) +
-    3.5* E * f4(X4)
+    E * f3(X3) +
+    E * f4(X4)
 
   k <- sqrt(stats::var(Y.star) / (SNR * stats::var(error)))
 
   Y <- Y.star + as.vector(k) * error
 
   return(list(x = Xall, y = Y, e = E, f1 = f1(X1),
-              f2 = f2(X2), f3 = f3(X3), f4 = f4(X4), betaE = betaE))
+              f2 = f2(X2), f3 = f3(X3), f4 = f4(X4), betaE = betaE,
+              f1.f = f1, f2.f = f2, f3.f = f3, f4.f = f4))
 
 }
 
@@ -1628,20 +1631,30 @@ gendata3 <- function(n = 300, p = 50, betaE = 1, SNR = 1) {
   # error
   error <- stats::rnorm(n)
 
-  Y.star <- sqrt(0.5) * (f1(X1)  +
-                           f2(X2) +
-                           f3(X3) +
-                           f4(X4) +
-                           f5(X5) +
-                           betaE * E +
-                           betaE * E * f1(X1) +
-                           betaE * E * f2(X2))
+  # Y.star <- sqrt(0.5) * (f1(X1)  +
+  #                          f2(X2) +
+  #                          f3(X3) +
+  #                          f4(X4) +
+  #                          f5(X5) +
+  #                          betaE * E +
+  #                          E * f1(X1) +
+  #                          E * f2(X2))
 
-  # k <- sqrt(stats::var(Y.star) / (SNR * stats::var(error)))
+  Y.star <- f1(X1)  +
+    f2(X2) +
+    f3(X3) +
+    f4(X4) +
+    f5(X5) +
+    betaE * E +
+    E * f1(X1) +
+    E * f2(X2)
 
-  Y <- Y.star + error
+  k <- sqrt(stats::var(Y.star) / (SNR * stats::var(error)))
 
-  return(list(x = Xall, y = Y, e = E, f1 = f1, f2 = f2, f3 = f3, f4 = f4, f5 = f5))
+  Y <- Y.star + as.vector(k) * error
+
+  return(list(x = Xall, y = Y, e = E, f1 = f1(X1), f2 = f2(X2), f3 = f3(X3),
+              f4 = f4(X4), f5 = f5(X5)))
 
 }
 
@@ -1656,6 +1669,9 @@ bic <- function(eta, sigma2, beta, eigenvalues, x, y, nt, c, df_lambda) {
 
 
 design_sail <- function(x, e, nvars, vnames, df, degree) {
+
+  e <- drop(standardize(e, center = TRUE, normalize = FALSE)$x)
+
 
   if (df == 1 & degree == 1) {
 
@@ -1674,7 +1690,7 @@ design_sail <- function(x, e, nvars, vnames, df, degree) {
   } else {
 
     # Expand X's
-    Phi_j_list <- lapply(seq_len(nvars), function(j) splines::bs(x[,j], df = df, degree = degree))
+    Phi_j_list <- lapply(seq_len(nvars), function(j) standardize(splines::bs(x[,j], df = df, degree = degree), center = TRUE)$x)
     Phi_j <- do.call(cbind, Phi_j_list)
     main_effect_names <- paste(rep(vnames, each = df), rep(seq_len(df), times = nvars), sep = "_")
     dimnames(Phi_j)[[2]] <- main_effect_names
@@ -1698,3 +1714,7 @@ design_sail <- function(x, e, nvars, vnames, df, degree) {
 }
 
 
+#' Color Blind Palette
+cbbPalette <- function() {
+  c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+}

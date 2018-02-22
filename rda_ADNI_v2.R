@@ -25,22 +25,27 @@ covr <- read.csv("~/git_repositories/sail/data/adni_new/covariates.csv", strings
 DT <- dplyr::inner_join(amy_mat, covr, by = c("PTID" = "IID")) %>%
   select(-AV45_path_bl)
 
-X <- DT %>% select(starts_with("X"), Age_bl, diag_3bl.x) %>% as.matrix()
+# X <- DT %>% select(starts_with("X"), Age_bl, diag_3bl.x) %>% as.matrix()
+X <- DT %>% select(starts_with("X"), Age_bl, EDUCAT) %>% as.matrix()
+# X <- DT %>% select(starts_with("X")) %>% as.matrix()
+# X <- DT %>% select(starts_with("X"), diag_3bl.x) %>% as.matrix()
 dimnames(X)[[1]] <- DT$PTID
 # X <- X[,80:97]
 
-ind <- which(X[,"diag_3bl.x"]!=3)
-X <- X[ind,,drop = F]
+# ind <- which(DT$diag_3bl.x==2)
+# X <- X[ind,,drop = F]
 
-E <- DT %>% pull(APOE_bin) %>% as.numeric
-E <- E[ind]
+# E <- DT %>% pull(APOE_bin) %>% as.numeric
+# E <- DT %>% pull(APOE_bin) %>% as.numeric
+# E <- E[ind]
 # E <- DT %>% pull(EDUCAT) %>% as.numeric
-# E <- DT %>% pull(diag_3bl.x) %>% as.numeric
+E <- DT %>% pull(diag_3bl.x) %>% as.numeric
 
 Y <- DT %>% pull(MMSCORE_bl) %>% as.numeric
-Y <- Y[ind]
+# Y <- Y[ind]
 
 hist(Y)
+hist(E)
 table(Y)
 hist(scale(Y, scale = F))
 # summary(lm(Y ~ X*E))
@@ -66,10 +71,10 @@ tt <- KKT(b0 = fit$a0, betaE = fit$bE, beta = fit$beta, gamma = fit$gamma,
 registerDoMC(cores = 8)
 system.time(
   cvfit <- cv.sail(x = X, y = Y, e = E, df = 3, degree = 3, maxit = 1000,
-                   alpha = 0.05,
+                   alpha = 0.1,
                    nlambda = 100,
                    nfolds = 10,
-                   verbose = FALSE,
+                   verbose = TRUE,
                    thresh = 1e-4, parallel = TRUE)
 )
 
