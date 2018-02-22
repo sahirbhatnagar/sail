@@ -1597,6 +1597,51 @@ gendata2 <- function(n, p, corr = 0, E = truncnorm::rtruncnorm(n, a = -1, b = 1)
 }
 
 
+
+gendata4 <- function(n = 100, p = 100, E = rnorm(n), betaE = 1, SNR = 1) {
+  # this is modified from SPAM Ravikumar et all JRSSB
+  # n = 200
+  # p = 10
+  # corr = 1
+  #===================
+
+  # covariates
+  X <- replicate(n = p, runif(n, -2.5, 2.5))
+  colnames(X) <- paste0("X", seq_len(p))
+
+  # see "Variable Selection in NonParametric Addditive Model" Huang Horowitz and Wei
+  f1 <- function(t) -sin(1.5 * t)
+  f2 <- function(t) t^3 + 1.5 * (t - 0.5)^2
+  f3 <- function(t) -dnorm(t, 0.5, 0.8)
+  f4 <- function(t) sin(exp(-0.5 * t))
+
+  X1 <- X[,1]
+  X2 <- X[,2]
+  X3 <- X[,3]
+  X4 <- X[,4]
+
+  # error
+  error <- stats::rnorm(n)
+
+  Y.star <- f1(X1)  +
+    f2(X2) +
+    f3(X3) +
+    f4(X4) +
+    betaE * E +
+    E * f3(X3) +
+    E * f4(X4)
+
+  k <- sqrt(stats::var(Y.star) / (SNR * stats::var(error)))
+
+  Y <- Y.star + as.vector(k) * error
+
+  return(list(x = X, y = Y, e = E, f1 = f1(X1),
+              f2 = f2(X2), f3 = f3(X3), f4 = f4(X4), betaE = betaE,
+              f1.f = f1, f2.f = f2, f3.f = f3, f4.f = f4))
+
+}
+
+
 # from radchenko
 gendata3 <- function(n = 300, p = 50, betaE = 1, SNR = 1) {
 
@@ -1674,7 +1719,7 @@ bic <- function(eta, sigma2, beta, eigenvalues, x, y, nt, c, df_lambda) {
 design_sail <- function(x, e, nvars, vnames, df, degree) {
 
   e <- drop(standardize(e, center = TRUE, normalize = FALSE)$x)
-
+# browser()
 
   if (df == 1 & degree == 1) {
 
@@ -1694,6 +1739,7 @@ design_sail <- function(x, e, nvars, vnames, df, degree) {
 
     # Expand X's
     Phi_j_list <- lapply(seq_len(nvars), function(j) standardize(splines::bs(x[,j], df = df, degree = degree), center = TRUE)$x)
+    # Phi_j_list <- lapply(seq_len(nvars), function(j) gamsel::basis.gen(x[,j], df = df, degree = degree))
     Phi_j <- do.call(cbind, Phi_j_list)
     main_effect_names <- paste(rep(vnames, each = df), rep(seq_len(df), times = nvars), sep = "_")
     dimnames(Phi_j)[[2]] <- main_effect_names
