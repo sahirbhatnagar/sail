@@ -5,6 +5,8 @@ lspath <- function(x,
                    e,
                    df,
                    degree,
+                   basis.intercept,
+                   center.x,
                    group.penalty,
                    weights, #currently not being used
                    nlambda,
@@ -26,11 +28,9 @@ lspath <- function(x,
 
   # Basis Expansion and Design Matrix ---------------------------------------
 
-  # group membership
-  group <- rep(seq_len(nvars), each = df)
-
   expansion <- design_sail(x = x, e = e, nvars = nvars, vnames = vnames,
-                           df = df, degree = degree)
+                           df = df, degree = degree, basis.intercept = basis.intercept,
+                           center.x = center.x)
   # y <- drop(scale(y, center = TRUE, scale = FALSE))
   Phi_j_list <- expansion$Phi_j_list
   Phi_j <- expansion$Phi_j
@@ -38,6 +38,10 @@ lspath <- function(x,
   XE_Phi_j <- expansion$XE_Phi_j
   main_effect_names <- expansion$main_effect_names
   interaction_names <- expansion$interaction_names
+  ncols <- expansion$ncols
+
+  # group membership
+  group <- rep(seq_len(nvars), each = ncols)
 
   # this is used for the predict function
   design <- expansion$design
@@ -193,13 +197,13 @@ lspath <- function(x,
                                  gglasso = coef(gglasso::gglasso(x = x_tilde_2[[j]],
                                                                  y = R,
                                                                  eps = 1e-12,
-                                                                 group = rep(1, df),
+                                                                 group = rep(1, ncols),
                                                                  pf = wj[j],
                                                                  lambda = LAMBDA * (1 - alpha),
                                                                  intercept = F))[-1,],
                                  MCP = grpreg::grpreg(X = x_tilde_2[[j]],
                                                       y = R,
-                                                      group = rep(1, df),
+                                                      group = rep(1, ncols),
                                                       penalty = "grMCP",
                                                       family = "gaussian",
                                                       group.multiplier = as.vector(wj[j]),
@@ -207,7 +211,7 @@ lspath <- function(x,
                                                       intercept = T)$beta[-1,],
                                  SCAD = grpreg::grpreg(X = x_tilde_2[[j]],
                                                        y = R,
-                                                       group = rep(1, df),
+                                                       group = rep(1, ncols),
                                                        penalty = "grSCAD",
                                                        family = "gaussian",
                                                        group.multiplier = as.vector(wj[j]),
@@ -310,8 +314,8 @@ lspath <- function(x,
 
     deviance <- crossprod(R.star)
     devRatio <- 1 - deviance/nulldev
-    dfbeta <- sum(abs(betaMat[,lambdaIndex]) > 0) / df
-    dfalpha <- sum(abs(alphaMat[,lambdaIndex]) > 0) / df
+    dfbeta <- sum(abs(betaMat[,lambdaIndex]) > 0) / ncols
+    dfalpha <- sum(abs(alphaMat[,lambdaIndex]) > 0) / ncols
     dfenviron <- sum(abs(environ[lambdaIndex]) > 0)
 
 
@@ -385,6 +389,9 @@ lspath <- function(x,
               vnames = vnames,
               df = df,
               degree = degree,
+              ncols = ncols,
+              center.x = center.x,
+              basis.intercept = basis.intercept,
               interaction.names = interaction_names,
               main.effect.names = main_effect_names)
   class(out) <- "lspath"

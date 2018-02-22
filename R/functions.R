@@ -1496,7 +1496,7 @@ l2norm <- function(x) sqrt(sum(x^2))
 #'
 #' @description function to simulate data
 #'
-gendata <- function(n, p, df, degree,
+gendata <- function(n, p, df, degree, intercept = TRUE,
                     E = rnorm(n = n, sd = 0.5),
                     # E = rbinom(n = n, size = 1, prob = 0.5),
                     # E = runif(n=n),
@@ -1505,14 +1505,15 @@ gendata <- function(n, p, df, degree,
   # covariates
   X <- replicate(n = p, runif(n))
 
+  ncols <- degree + intercept
   # coefficients: each is a vector of length df and corresponds to the expansion of X_j
-  b1 <- stats::rnorm(n = df)
-  b2 <- stats::rnorm(n = df)
-  b3 <- stats::rnorm(n = df)
-  b4 <- stats::rnorm(n = df)
-  b5 <- stats::rnorm(n = df)
-  bE1 <- stats::rnorm(n = df)
-  bE2 <- stats::rnorm(n = df)
+  b1 <- stats::rnorm(n = ncols)
+  b2 <- stats::rnorm(n = ncols)
+  b3 <- stats::rnorm(n = ncols)
+  b4 <- stats::rnorm(n = ncols)
+  b5 <- stats::rnorm(n = ncols)
+  bE1 <- stats::rnorm(n = ncols)
+  bE2 <- stats::rnorm(n = ncols)
 
   # b1 <- stats::runif(n = df, 0.5, 1.5)
   # b2 <- stats::runif(n = df, 1, 1.5)
@@ -1549,7 +1550,7 @@ gendata2 <- function(n, p, corr = 0, E = truncnorm::rtruncnorm(n, a = -1, b = 1)
   # n = 200
   # p = 10
   # corr = 1
-  #===================
+
 
   # covariates
   W <- replicate(n = p, truncnorm::rtruncnorm(n, a = 0, b = 1))
@@ -1603,13 +1604,11 @@ gendata4 <- function(n = 100, p = 100, E = rnorm(n), betaE = 1, SNR = 1) {
   # n = 200
   # p = 10
   # corr = 1
-  #===================
 
   # covariates
   X <- replicate(n = p, runif(n, -2.5, 2.5))
   colnames(X) <- paste0("X", seq_len(p))
 
-  # see "Variable Selection in NonParametric Addditive Model" Huang Horowitz and Wei
   f1 <- function(t) -sin(1.5 * t)
   f2 <- function(t) t^3 + 1.5 * (t - 0.5)^2
   f3 <- function(t) -dnorm(t, 0.5, 0.8)
@@ -1716,17 +1715,24 @@ bic <- function(eta, sigma2, beta, eigenvalues, x, y, nt, c, df_lambda) {
 
 
 
-design_sail <- function(x, e, nvars, vnames, df, degree) {
+design_sail <- function(x, e, nvars, vnames, df, degree, basis.intercept, center.x) {
 
-  e <- drop(standardize(e, center = TRUE, normalize = FALSE)$x)
-# browser()
+  if (center.x) {
+    e <- drop(standardize(e, center = TRUE, normalize = FALSE)$x)
+  }
 
-  if (df == 1 & degree == 1) {
+  if (degree == 1) {
 
-    # Dont Expand X's is both df and degree is 1, which means use original data
-    Phi_j_list <- lapply(seq_len(nvars), function(j) x[ , j, drop = FALSE])
+    # Dont Expand X's if either df or degree is 1, which means use original data
+
+    if (center.x) {
+      Phi_j_list <- lapply(seq_len(nvars), function(j) standardize(x[ , j, drop = FALSE],
+                                                                   center = TRUE)$x)
+    } else {
+      Phi_j_list <- lapply(seq_len(nvars), function(j) x[ , j, drop = FALSE])
+    }
     Phi_j <- do.call(cbind, Phi_j_list)
-    main_effect_names <- paste(rep(vnames, each = df), rep(seq_len(df), times = nvars), sep = "_")
+    main_effect_names <- paste(rep(vnames, each = 1), rep(seq_len(1), times = nvars), sep = "_")
     dimnames(Phi_j)[[2]] <- main_effect_names
 
     # X_E x Phi_j
@@ -1738,10 +1744,21 @@ design_sail <- function(x, e, nvars, vnames, df, degree) {
   } else {
 
     # Expand X's
-    Phi_j_list <- lapply(seq_len(nvars), function(j) standardize(splines::bs(x[,j], df = df, degree = degree), center = TRUE)$x)
+    if (center.x) {
+      Phi_j_list <- lapply(seq_len(nvars),
+                           function(j) standardize(splines::bs(x[,j], df = df, degree = degree,
+                                                               intercept = basis.intercept),
+                                                   center = TRUE)$x)
+    } else {
+      Phi_j_list <- lapply(seq_len(nvars),
+                           function(j) splines::bs(x[,j], df = df, degree = degree,
+                                                   intercept = basis.intercept))
+    }
+
+    ncols <- ncol(Phi_j_list[[1]]) # this is to get the number of columns for each expansion
     # Phi_j_list <- lapply(seq_len(nvars), function(j) gamsel::basis.gen(x[,j], df = df, degree = degree))
     Phi_j <- do.call(cbind, Phi_j_list)
-    main_effect_names <- paste(rep(vnames, each = df), rep(seq_len(df), times = nvars), sep = "_")
+    main_effect_names <- paste(rep(vnames, each = ncols), rep(seq_len(ncols), times = nvars), sep = "_")
     dimnames(Phi_j)[[2]] <- main_effect_names
 
     # E x Phi_j
@@ -1758,7 +1775,7 @@ design_sail <- function(x, e, nvars, vnames, df, degree) {
   return(list(Phi_j_list = Phi_j_list, Phi_j = Phi_j,
               XE_Phi_j_list = XE_Phi_j_list, XE_Phi_j = XE_Phi_j,
               main_effect_names = main_effect_names, interaction_names = interaction_names,
-              design = design))
+              design = design, ncols = ncols))
 
 }
 

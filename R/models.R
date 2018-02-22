@@ -152,12 +152,13 @@
 #'
 #' @export
 
-sail <- function(x, y, e, df = 5, degree = 3,
+sail <- function(x, y, e, df = NULL, degree = 3, basis.intercept = FALSE,
+                 center.x = TRUE,
                  group.penalty = c("gglasso", "MCP", "SCAD"),
                  family = c("gaussian", "binomial"),
                  weights, # observation weights
                  penalty.factor = rep(1, 1 + 2 * nvars), # predictor (adaptive lasso) weights, the last entry must be for the E variable
-                 lambda.factor = ifelse(nobs < (1 + 2 * df * nvars), 0.01, 0.0001),
+                 lambda.factor = ifelse(nobs < (1 + 2 * bscols * nvars), 0.01, 0.0001),
                  lambda = NULL,
                  alpha = 0.5,
                  nlambda = 100,
@@ -185,13 +186,15 @@ sail <- function(x, y, e, df = 5, degree = 3,
   }
   alpha <- as.double(alpha)
 
-  df <- as.integer(df)
-  degree <- as.integer(degree)
+  # if (missing(df) & missing(degree)) stop("at least one of either df or degree must be supplied")
 
-  if(df < degree){
-    warning(sprintf("df too small, needs to be >= degree; set to %g",degree))
-    df <- degree
-  }
+  # if(!missing(df)) df <- as.integer(df)
+  # if(!missing(degree)) degree <- as.integer(degree)
+
+  # if(df < degree){
+  #   warning(sprintf("df too small, needs to be >= degree; set to %g",degree))
+  #   df <- degree
+  # }
 
   group.penalty <- match.arg(group.penalty)
   this.call <- match.call()
@@ -267,6 +270,8 @@ sail <- function(x, y, e, df = 5, degree = 3,
 
   thresh <- as.double(thresh)
 
+  bscols <- ncol(splines::bs(x[,1], df = df, degree = degree, intercept = basis.intercept))
+
   if(is.null(lambda)){
     if(lambda.factor >= 1) stop("lambda.factor should be less than 1")
     flmin <- as.double(lambda.factor)
@@ -285,6 +290,8 @@ sail <- function(x, y, e, df = 5, degree = 3,
                                   e = e,
                                   df = df,
                                   degree = degree,
+                                  basis.intercept = basis.intercept,
+                                  center.x = center.x,
                                   group.penalty = group.penalty,
                                   weights = weights,
                                   nlambda = nlam,
@@ -341,7 +348,8 @@ sail <- function(x, y, e, df = 5, degree = 3,
 #'   Maintainer: Sahir Bhatnagar \email{sahir.bhatnagar@@mail.mcgill.ca}
 #' @export
 
-cv.sail <- function (x, y, e, df, degree, weights,
+cv.sail <- function (x, y, e, df = NULL, degree = 3,
+                     weights,
                      lambda = NULL,
                      type.measure = c("mse", "deviance", "class", "auc", "mae"),
                      nfolds = 10, foldid, grouped = TRUE, keep = FALSE, parallel = FALSE, ...) {

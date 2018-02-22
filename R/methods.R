@@ -31,7 +31,8 @@ predict.sail <- function(object, newx, newe, s = NULL,
     stop("newe is missing. please supply the vector of the environment variable.")
   } else if (!missing(newx) & !missing(newe)) {
     newx <- design_sail(x = newx, e = newe, nvars = object$nvars,
-                        vnames = object$vnames, df = object$df, degree = object$degree)$design
+                        vnames = object$vnames, df = object$df, degree = object$degree,
+                        basis.intercept = object$basis.intercept, center.x = object$center.x)$design
   }
 
   a0 <- t(as.matrix(object$a0))
