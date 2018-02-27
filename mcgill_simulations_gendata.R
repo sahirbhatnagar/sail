@@ -1,40 +1,95 @@
+# for i in 1 ; do qsub -v index=$i mcgill-simulation.sh ; done
+
 pacman::p_load(splines)
 pacman::p_load(magrittr)
 pacman::p_load(foreach)
 pacman::p_load(methods)
 pacman::p_load(doMC)
-pacman::p_load(gamsel)
+# pacman::p_load(gamsel)
 
-rm(list=ls())
+# rm(list=ls())
 # dev.off()
-devtools::load_all()
+devtools::load_all("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/")
 
+parameterIndex <- as.numeric(as.character(commandArgs(trailingOnly = T)[1]))
+# parameterIndex = 6
 
-# Gendata -----------------------------------------------------------------
+if (parameterIndex == 1) { # 1a
+  hierarchy = "strong" ; nonlinear = TRUE ; interactions = TRUE
+} else if (parameterIndex == 2) { # 1b
+  hierarchy = "weak" ; nonlinear = TRUE ; interactions = TRUE
+} else if (parameterIndex == 3) { # 1c
+  hierarchy = "none" ; nonlinear = TRUE ; interactions = TRUE
+} else if (parameterIndex == 4) { # 2
+  hierarchy = "strong"; nonlinear = FALSE; interactions = TRUE
+} else if (parameterIndex == 5) { # 3
+  hierarchy = "strong" ; nonlinear = TRUE ; interactions = FALSE
+} else if (parameterIndex == 6) { # this is scenario 2 but we fit sail with degree=1
+  hierarchy = "strong"; nonlinear = FALSE; interactions = TRUE
+}
 
-DT <- gendata2(n = 200, p = 50, SNR = 3, betaE = 2)
-# DT <- gendata(n = 200, p = 25, SNR = 1, betaE = 2, df = 5, degree = 3)
-# DT <- gendata3(n = 200, p = 50, betaE = 2, SNR = 3)
-# DT <- gendata4(n = 100, p = 100, E = truncnorm::rtruncnorm(100, a = -1, b = 1), betaE = 2, SNR = 2)
+lambda.type <- "lambda.min"
+# hierarchy = "strong", nonlinear = TRUE, interactions = TRUE, # scenario 1a
+# hierarchy = "weak", nonlinear = TRUE, interactions = TRUE, # scenario 1b
+# hierarchy = "none", nonlinear = TRUE, interactions = TRUE, # scenario 1c
+# hierarchy = "strong", nonlinear = FALSE, interactions = TRUE, # scenario 2
+# hierarchy = "strong", nonlinear = TRUE, interactions = FALSE, # scenario 3
 
-# DT$y <- scale(DT$y, center = TRUE, scale = FALSE)
-# foldid <- sample(1:10,size=length(DT$y),replace=TRUE)
+# Simulate Data -----------------------------------------------------------
+
+n = 200
+p = 1000
+
+DT <- gendataPaper(n = n, p = p, SNR = 2, betaE = 1,
+                   hierarchy = hierarchy, nonlinear = nonlinear, interactions = interactions,
+                   corr = 0,
+                   E = truncnorm::rtruncnorm(n, a = -1, b = 1))
+
+DT$y <- scale(DT$y, center = TRUE, scale = FALSE)
 
 registerDoMC(cores = 10)
 
-cvfit <- cv.sail(x = DT$x, y = DT$y, e = DT$e, df = 5, degree = 3, thresh = 1e-4, maxit = 1000,
+if (parameterIndex != 6) {
+cvfit <- cv.sail(x = DT$x, y = DT$y, e = DT$e, df = 5, degree = 3, basis.intercept = FALSE,
+                 thresh = 1e-4,
+                 maxit = 1000,
                  alpha = .2,
                  parallel = TRUE,
                  # foldid = foldid,
                  nfolds = 10, verbose = T, nlambda = 100)
-plot(cvfit)
-plot(cvfit$sail.fit)
-cvfit$sail.fit
-coef(cvfit, s = "lambda.min")[nonzero(coef(cvfit, s = "lambda.min")),,drop=F]
-coef(cvfit, s = "lambda.1se")[nonzero(coef(cvfit, s = "lambda.1se")),,drop=F]
+} else if (parameterIndex == 6){
+  cvfit <- cv.sail(x = DT$x, y = DT$y, e = DT$e, degree = 1, basis.intercept = FALSE,
+                   thresh = 1e-4,
+                   maxit = 1000,
+                   alpha = .05,
+                   parallel = TRUE,
+                   # foldid = foldid,
+                   nfolds = 10, verbose = T, nlambda = 100)
+  DT$scenario <- "6"
+}
+# plot(cvfit)
+# plot(cvfit2)
+# plot(cvfit$sail.fit)
+# cvfit$sail.fit
+# coef(cvfit, s = "lambda.min")[nonzero(coef(cvfit, s = "lambda.min")),,drop=F]
+# coef(cvfit, s = "lambda.1se")[nonzero(coef(cvfit, s = "lambda.1se")),,drop=F]
+# coef(cvfit2, s = "lambda.min")[nonzero(coef(cvfit2, s = "lambda.min")),,drop=F]
+# coef(cvfit2, s = "lambda.1se")[nonzero(coef(cvfit2, s = "lambda.1se")),,drop=F]
+# cvfit <- cvfit2
+# par(mfrow=c(2,2))
+# for (i in 1:4){
+#   xv <- paste0("X",i)
+#   ind <- cvfit$sail.fit$group == which(cvfit$sail.fit$vnames == xv)
+#   design.mat <- cvfit$sail.fit$design[,cvfit$sail.fit$main.effect.names[ind],drop = FALSE]
+#   # f.truth <- design.mat %*% DT$b1
+#   f.truth <- DT[[paste0("f",i)]]
+#   plotMain(object = cvfit$sail.fit, xvar = xv, s = cvfit$lambda.min, f.truth = f.truth, legend.position = "topleft")
+# }
+
+
 saveRDS(object = cvfit,
-        file = tempfile(pattern = "cvfit_gendata_n200_p50_SNR3_betaE2_df5_degree3_alpha2_",
-                        tmpdir = "/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/gendata",
+        file = tempfile(pattern = sprintf("cvfit_gendata2_n200_p1000_SNR2_betaE1_df5_degree3_alpha05_%s_",DT$scenario),
+                        tmpdir = "/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/gendata2_p1000_1c_2_3_6",
                         fileext = ".rds")
 )
 

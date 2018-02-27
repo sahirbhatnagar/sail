@@ -1545,7 +1545,9 @@ gendata <- function(n, p, df, degree, intercept = TRUE,
 
 }
 
-gendata2 <- function(n, p, corr = 0, E = truncnorm::rtruncnorm(n, a = -1, b = 1), betaE = 1, SNR = 3) {
+gendata2 <- function(n, p, corr = 0,
+                     E = truncnorm::rtruncnorm(n, a = -2, b = 2),
+                     betaE = 2, SNR = 1, hierarchy = TRUE) {
   # this is modified from "VARIABLE SELECTION IN NONPARAMETRIC ADDITIVE MODEL" huang et al, Ann Stat.
   # n = 200
   # p = 10
@@ -1579,13 +1581,23 @@ gendata2 <- function(n, p, corr = 0, E = truncnorm::rtruncnorm(n, a = -1, b = 1)
   # error
   error <- stats::rnorm(n)
 
-  Y.star <- f1(X1)  +
-    f2(X2) +
-    f3(X3) +
-    f4(X4) +
-    betaE * E +
-    E * f3(X3) +
-    E * f4(X4)
+  if (hierarchy) {
+    Y.star <- f1(X1)  +
+      f2(X2) +
+      f3(X3) +
+      f4(X4) +
+      betaE * E +
+      E * f3(X3) +
+      E * f4(X4)
+  } else {
+    Y.star <- f1(X1)  +
+      f2(X2) +
+      # f3(X3) +
+      # f4(X4) +
+      betaE * E +
+      E * f3(X3) +
+      E * f4(X4)
+  }
 
   k <- sqrt(stats::var(Y.star) / (SNR * stats::var(error)))
 
@@ -1596,6 +1608,117 @@ gendata2 <- function(n, p, corr = 0, E = truncnorm::rtruncnorm(n, a = -1, b = 1)
               f1.f = f1, f2.f = f2, f3.f = f3, f4.f = f4))
 
 }
+
+
+gendataPaper <- function(n, p, corr = 0,
+                         E = truncnorm::rtruncnorm(n, a = -1, b = 1),
+                         betaE = 2, SNR = 2, hierarchy = c("strong","weak","none"),
+                         nonlinear = TRUE, interactions = TRUE) {
+  # this is modified from "VARIABLE SELECTION IN NONPARAMETRIC ADDITIVE MODEL" huang et al, Ann Stat.
+  # n = 200
+  # p = 10
+  # corr = 1
+
+  hierarchy <- match.arg(hierarchy)
+
+  # covariates
+  W <- replicate(n = p, truncnorm::rtruncnorm(n, a = 0, b = 1))
+  U <- truncnorm::rtruncnorm(n, a = 0, b = 1)
+  V <- truncnorm::rtruncnorm(n, a = 0, b = 1)
+
+  X1 <- (W[,1] + corr * U) / (1 + corr)
+  X2 <- (W[,2] + corr * U) / (1 + corr)
+  X3 <- (W[,3] + corr * U) / (1 + corr)
+  X4 <- (W[,4] + corr * U) / (1 + corr)
+
+  X <- (W[,5:p] + corr * V) / (1 + corr)
+
+  Xall <- cbind(X1, X2, X3, X4, X)
+
+  colnames(Xall) <- paste0("X", seq_len(p))
+
+  # see "Variable Selection in NonParametric Addditive Model" Huang Horowitz and Wei
+  f1 <- function(t) 5 * t
+  f2 <- function(t) 4.5 * (2 * t - 1) ^ 2
+  f3 <- function(t) 4 * sin(2 * pi * t) / (2 - sin(2 * pi * t))
+  f4 <- function(t) 6 * (0.1 * sin(2 * pi * t) + 0.2 * cos(2 * pi * t) +
+                           0.3 * sin(2 * pi * t) ^ 2 + 0.4 * cos(2 * pi * t) ^ 3 +
+                           0.5 * sin(2 * pi * t) ^ 3)
+
+  # error
+  error <- stats::rnorm(n)
+
+  if (!nonlinear) {
+    # linear scenario; obeys hierachy. Scenario 2
+    # Y.star <- 2 * (X1 - 1)  +
+    #   2.5 * (X2 + 2) +
+    #   2.7 * (X3) +
+    #   3 * X4 +
+    #   betaE * E +
+    #   2 * E * X3 +
+    #   2.5 * E * X4
+
+    Y.star <- 0.5 * (X1)  +
+      1 * (X2) +
+      1.5 * (X3) +
+      2 * X4 +
+      betaE * E +
+      E * X3 +
+      1.5 * E * X4
+
+
+    scenario <- "2"
+  } else {
+    if (!interactions) {
+      # main effects only; non-linear Scenario 3
+      Y.star <- f1(X1)  +
+        f2(X2) +
+        f3(X3) +
+        f4(X4) +
+        betaE * E
+      scenario <- "3"
+    } else {
+      if (hierarchy =="none" & interactions) {
+        # interactions only; non-linear
+        Y.star <- E * f3(X3) +
+          E * f4(X4)
+        scenario <- "1c"
+      } else if (hierarchy=="strong" & interactions) {
+        # strong hierarchy; non-linear
+        Y.star <- f1(X1)  +
+          f2(X2) +
+          f3(X3) +
+          f4(X4) +
+          betaE * E +
+          E * f3(X3) +
+          E * f4(X4)
+        scenario <- "1a"
+      } else if (hierarchy=="weak" & interactions){
+        # weak hierarchy; linear
+        Y.star <- f1(X1)  +
+          f2(X2) +
+          # f3(X3) +
+          # f4(X4) +
+          betaE * E +
+          E * f3(X3) +
+          E * f4(X4)
+        scenario <- "1b"
+      }
+    }
+  }
+
+  k <- sqrt(stats::var(Y.star) / (SNR * stats::var(error)))
+
+  Y <- Y.star + as.vector(k) * error
+
+  return(list(x = Xall, y = Y, e = E, Y.star = Y.star, f1 = f1(X1),
+              f2 = f2(X2), f3 = f3(X3), f4 = f4(X4), betaE = betaE,
+              f1.f = f1, f2.f = f2, f3.f = f3, f4.f = f4,
+              X1 = X1, X2 = X2, X3 = X3, X4 = X4, scenario = scenario
+              ))
+
+}
+
 
 
 
@@ -1732,7 +1855,7 @@ design_sail <- function(x, e, nvars, vnames, df, degree, basis.intercept, center
       Phi_j_list <- lapply(seq_len(nvars), function(j) x[ , j, drop = FALSE])
     }
     Phi_j <- do.call(cbind, Phi_j_list)
-    main_effect_names <- paste(rep(vnames, each = 1), rep(seq_len(1), times = nvars), sep = "_")
+    main_effect_names <- vnames
     dimnames(Phi_j)[[2]] <- main_effect_names
 
     # X_E x Phi_j
@@ -1775,9 +1898,13 @@ design_sail <- function(x, e, nvars, vnames, df, degree, basis.intercept, center
   return(list(Phi_j_list = Phi_j_list, Phi_j = Phi_j,
               XE_Phi_j_list = XE_Phi_j_list, XE_Phi_j = XE_Phi_j,
               main_effect_names = main_effect_names, interaction_names = interaction_names,
-              design = design, ncols = ncols))
+              design = design, ncols = if (degree==1) 1 else ncols))
 
 }
+
+
+#' Not in convenience function
+'%ni%' <- Negate('%in%')
 
 
 #' Color Blind Palette

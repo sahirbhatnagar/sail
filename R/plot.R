@@ -281,8 +281,8 @@ plotMain <- function(object, xvar, s, f.truth, col = c("#D55E00","#009E73"), leg
   design.mat <- object$design[,object$main.effect.names[ind],drop = FALSE]
   originalX <- object$x[,unique(object$group[ind])]
 
-  # f.hat <- drop(a0 + design.mat %*% betas)
-  f.hat <- drop(design.mat %*% betas)
+  f.hat <- drop(a0 + design.mat %*% betas)
+  # f.hat <- drop(design.mat %*% betas)
   ylims <- if(!missing(f.truth)) range(f.truth,f.hat) else range(f.hat)
 
   plot.args <- list(x = originalX[order(originalX)],
@@ -323,7 +323,8 @@ plotMain <- function(object, xvar, s, f.truth, col = c("#D55E00","#009E73"), leg
 #' Plot Interaction Effects from sail object
 #' @param object sail object
 #' @export
-plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, npoints = 30, col = c("#D55E00","#009E73"),
+plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, truthonly = FALSE,
+                      npoints = 30, col = c("#56B4E9","#D55E00"),title_z,
                       legend.position = "bottomleft", ...) {
 
   # browser()
@@ -376,9 +377,10 @@ plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, npoints = 30,
 
   op <- par(bg = "white")
 
-  if(!missing(f.truth)) {
-    par(mfrow=c(1,2), tcl=-0.5, family="serif", omi=c(0.2,0.2,0,0))
-    par(mai=c(0.,0.,0.3,0.))
+# c(bottom, left, top, right)
+  if (truthonly) {
+    par(mfrow=c(1,1), tcl=-0.5, family="serif", omi=c(0.2,0.2,0,0))
+    par(mai=c(0.,0.2,0.4,0.))
     persp(x, e, z.truth,
           zlim = z_range,
           theta=30, phi=30,
@@ -387,6 +389,24 @@ plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, npoints = 30,
           nticks=5,
           # ticktype="detailed",
           col=col[2],
+          cex.lab=3,
+          cex.main=3,
+          xlab=sprintf("f(%s)",xvar),
+          ylab="X_E",
+          zlab="Y", main="Truth")
+  } else if(!missing(f.truth)) {
+    par(mfrow=c(1,2), tcl=-0.5, family="serif", omi=c(0.2,0.2,0,0))
+    par(mai=c(0.,0.8,0.6,0.))
+    persp(x, e, z.truth,
+          zlim = z_range,
+          theta=30, phi=30,
+          ltheta = 120, expand = 0.5,
+          r=2, shade=0.3, axes=TRUE,scale=TRUE, box=T,
+          nticks=5,
+          # ticktype="detailed",
+          col=col[2],
+          cex.lab=3,
+          cex.main=3,
           xlab=sprintf("f(%s)",xvar),
           ylab="X_E",
           zlab="Y", main="Truth")
@@ -396,24 +416,32 @@ plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, npoints = 30,
           r=2, shade=0.3, axes=TRUE,scale=TRUE, box=T,
           nticks=5,
           zlim = z_range,
+          cex.lab=3,
+          cex.main=3,
           # ticktype="detailed",
           col=col[1],
           xlab=sprintf("f(%s)",xvar),
           ylab="X_E",
-          zlab="Y", main="Estimated")
+          zlab="Y", main=title_z)
   } else {
     par(mfrow=c(1,1), tcl=-0.5, family="serif", omi=c(0.2,0.2,0,0))
-    par(mai=c(0.,0.,0.3,0.))
+    par(mai=c(0.,0.2,0.4,0.))
     persp(x, e, z.est,
+          cex.lab=3,
+          cex.main=3,
           theta=30, phi=30,
           ltheta = 120, expand = 0.5,
           r=2, shade=0.3, axes=TRUE,scale=TRUE, box=T,
           nticks=5,
           zlim = z_range,
           col=col[1],
-          xlab=sprintf("f(x_%s)",as.numeric(gsub("X","",4))),
+          # xlab=sprintf("f(x_%s)",as.numeric(gsub("X","",4))),
+          xlab=sprintf("f(%s)",xvar),
           ylab="X_E",
-          zlab="Y", main=sprintf("Estimated Interaction Effect for %s",xvar))
+          zlab="Y",
+          # main=sprintf("Estimated Interaction Effect for %s",xvar)
+          main = title_z
+          )
   }
 
 
