@@ -33,6 +33,7 @@ pacman::p_load(glinternet)
 source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/my_sims/model_functions.R")
 source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/my_sims/method_functions.R")
 source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/my_sims/eval_functions.R")
+source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git/sail/R/functions.R")
 devtools::load_all("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/")
 
 sim <- new_simulation(name = "sail_lassoBT_glinternet",
@@ -41,8 +42,11 @@ sim <- new_simulation(name = "sail_lassoBT_glinternet",
                  n = 200, p = 1000, corr = 0, betaE = 1, SNR = 2, lambda.type = "lambda.min",
                  parameterIndex = list(1,4,5),
                  vary_along = "parameterIndex") %>%
-  simulate_from_model(nsim = 2, index = 2) %>%
-  run_method(list(lassoBT, GLinternet))
+  simulate_from_model(nsim = 2, index = 21) %>%
+  run_method(list(lassoBT, GLinternet),
+             parallel = list(socket_names = 5,
+                        libraries = c("LassoBacktracking", "glinternet","glmnet","splines","magrittr")))
+
 
 sim <- sim %>% evaluate(list(mse, cvmse, r2, tpr, fpr, correct_sparsity,nactive))
 res <- as.data.frame(evals(sim))

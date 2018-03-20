@@ -86,14 +86,19 @@ cvfit <- cv.sail(x = DT$x, y = DT$y, e = DT$e, df = 5, degree = 3, basis.interce
 #   plotMain(object = cvfit$sail.fit, xvar = xv, s = cvfit$lambda.min, f.truth = f.truth, legend.position = "topleft")
 # }
 
-
-saveRDS(object = cvfit,
-        file = tempfile(pattern = sprintf("cvfit_gendata2_n200_p1000_SNR2_betaE1_df5_degree3_alpha05_%s_",DT$scenario),
-                        tmpdir = "/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/gendata2_p1000_1c_2_3_6",
-                        fileext = ".rds")
-)
-
-
+if (parameterIndex != 6) {
+  saveRDS(object = cvfit,
+          file = tempfile(pattern = sprintf("cvfit_gendata2_n200_p1000_SNR2_betaE1_df5_degree3_alpha05_%s_",DT$scenario),
+                          tmpdir = "/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/gendata2_p1000_1c_2_3_6",
+                          fileext = ".rds")
+  )
+} else if (parameterIndex == 6) {
+  saveRDS(object = cvfit,
+          file = tempfile(pattern = sprintf("cvfit_gendata2_n200_p1000_SNR2_betaE1_df1_degree1_alpha05_%s_",DT$scenario),
+                          tmpdir = "/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/gendata2_p1000_1c_2_3_6",
+                          fileext = ".rds")
+  )
+}
 # files = list.files(path = '/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims',
 #                    pattern = '*.rds', full.names = TRUE)
 # dat_list = lapply(files, function (x) readRDS(x))

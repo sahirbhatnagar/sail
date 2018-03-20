@@ -12,17 +12,17 @@ devtools::load_all("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_
 
 # Gendata2-Hierarchy=TRUE ----------------------------------------------------------------
 
-files = list.files(path = '/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/gendata2_p1000_1a',
-                   pattern = '*.rds', full.names = TRUE)
+# files = list.files(path = '/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/gendata2_p1000_1a',
+                   # pattern = '*.rds', full.names = TRUE)
 # files = list.files(path = '/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/gendata2_p1000_weak_hier',
 #                    pattern = '*.rds', full.names = TRUE)
 # files <- list.files(path = '/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/gendata2/',
 #                    pattern = '*.rds', full.names = TRUE)
-# files <- list.files(path = '/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/gendata2_p1000_1c_2_3_6',
-#                     pattern = '_6_', full.names = TRUE)
+files <- list.files(path = '/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/gendata2_p1000_1c_2_3_6',
+                    pattern = 'degree1_alpha05_6_', full.names = TRUE)
 dat_list <- lapply(files, function (x) readRDS(x))
 lambda.type <- "lambda.min"
-nonlinear <- TRUE
+nonlinear <- FALSE
 
 # Gendata2-Hierarchy=TRUE main effects ----------------------------------------------------------------
 
@@ -50,10 +50,10 @@ if (nonlinear) {
                            0.5 * sin(2 * pi * x) ^ 3)
 } else {
   # linear (Scenario 2)
-  f1 <- function(x) 0.5 * x
-  f2 <- function(x) 1 * x
+  f1 <- function(x) -1.5 * (x-2)
+  f2 <- function(x) 1 * (x+1)
   f3 <- function(x) 1.5 * x
-  f4 <- function(x) 2 * x
+  f4 <- function(x) -2 * x
 }
 
 dev.off()
@@ -165,7 +165,7 @@ if (nonlinear) {
 
   f4.persp = function(X, E) {
     # E * as.vector(DT$betaE) + DT$f4.f(X) +
-    1.5 * E * f4(X)
+    -1.5 * E * f4(X)
   }
 }
 
@@ -370,7 +370,7 @@ active_set$`False_Positive_Rate` <- fpr
 head(active_set)
 png("mcgillsims/figures/upset_selection.png", width = 11, height = 8, units = "in", res = 100)
 
-pdf("mcgillsims/figures/upset_selection.pdf", width = 10, height = 8)
+pdf("mcgillsims/figures/upset_selection_truth_linear_sail_degree1.pdf", width = 10, height = 8)
 upset(active_set,
       sets = rev(show),
       # sets =
@@ -394,6 +394,231 @@ dev.off()
 #     attribute.plots = list(gridrows = 45, plots = list(list(plot = scatter_plot,
 #     x = "ReleaseDate", y = "AvgRating", queries = T), list(plot = scatter_plot,
 #     x = "AvgRating", y = "Watches", queries = F)), ncols = 2), query.legend = "bottom")
+
+
+
+
+
+# Results from simulator package -----------------------------------------
+# comparing methods
+rm(list=ls())
+pacman::p_load(cowplot)
+pacman::p_load(tidyverse)
+pacman::p_load(data.table)
+
+df <- do.call(rbind, lapply(list.files(path = "/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/sim_results/",
+                                       pattern = "*.rds", full.names = TRUE), readRDS))
+
+head(df)
+
+df <- df %>% separate(Model, into = c("simnames","betaE","corr","lambda.type","n","p","parameterIndex","SNR_2"),
+                sep = "/")
+
+df2 <- readRDS("/mnt/GREENWOOD_SCRATCH/sahir.bhatnagar/sail_simulations_other/res_lassoBT_glinternet42e1653665d9.rds") %>%
+  separate(Model, into = c("simnames","betaE","corr","lambda.type","n","p","parameterIndex","SNR_2"),
+           sep = "/")
+
+colnames(df) %in% colnames(df2)
+
+DT <- data.table::rbindlist(list(df, df2), use.names = T, fill = T)
+
+# DT[Method=="GLinternet", cvmse:= mse]
+# DT[Method=="GLinternet", cvmse:= ifelse(cvmse<mse, mse, cvmse), by = parameterIndex]
+
+trop = RSkittleBrewer::RSkittleBrewer("trop")
+
+DT[parameterIndex=="parameterIndex_1", table(Method)]
+
+
+cbbPalette <- function() {
+  c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+}
+trop <- RSkittleBrewer::RSkittleBrewer("trop")
+gg_sy <- theme(legend.position = "bottom", axis.text = element_text(size = 20),
+               axis.title = element_text(size = 20), legend.text = element_text(size = 20),
+               legend.title = element_text(size = 20),plot.title = element_text(size = 20) )
+
+
+
+
+# Scenario 1 --------------------------------------------------------------
+
+(p1_cvmse <- ggplot(DT[parameterIndex=="parameterIndex_1"], aes(Method, cvmse, fill = Method)) +
+    ggplot2::geom_boxplot() +
+    scale_fill_manual(values=cbbPalette()[c(2,3,4,7)]) +
+    ggplot2::labs(y = "Minimum 10-Fold CV MSE", title = "") + xlab("") + gg_sy +
+  theme(legend.position = "none"))
+
+save_plot("mcgillsims/figures/p1_cvmse.pdf", p1_cvmse,
+          base_height = 7, base_width = 9)
+
+(p1_time <- ggplot(DT[parameterIndex=="parameterIndex_1"], aes(Method, time/60, fill = Method)) +
+    ggplot2::geom_boxplot() +
+    scale_fill_manual(values=cbbPalette()[c(2,3,4,7)]) +
+    ylim(c(0,6)) +
+    # scale_y_continuous(breaks = seq(0, 6, 1)) +
+    ggplot2::labs(y = "Run Time (min) for Entire Solution Path and 10-Fold CV", title = "") + xlab("") + gg_sy +
+    theme(legend.position = "none"))
+
+save_plot("mcgillsims/figures/p1_time.pdf", p1_time,
+          base_height = 8, base_width = 9)
+
+(p1_fprtpr <- ggplot(DT[parameterIndex=="parameterIndex_1"], aes(fpr, tpr,group=Method, color = Method)) +
+    ggplot2::geom_point(size=2) +
+    # geom_jitter(size=3.5)+
+    scale_color_manual(values=cbbPalette()[c(2,3,4,7)]) + gg_sy + coord_equal(ratio=.07)+
+    ggplot2::labs(y = "True Positive Rate", title = "") +
+    xlab("False Positive Rate"))
+save_plot("mcgillsims/figures/p1_fprtpr.pdf", p1_fprtpr,
+          base_height = 7, base_width = 9)
+
+
+(p1_gl <- ggplot(DT[Method=="GLinternet" & parameterIndex == "parameterIndex_1"], aes(x=mse, y=cvmse, colour = mse > cvmse)) +
+    geom_point(size=2.8) + gg_sy + geom_abline(intercept = 0, slope = 1) +
+    ylim(c(0,43)) + xlim(c(0,45)) +
+    coord_equal(ratio=1) +
+    xlab("") +
+    ylab("10-Fold CV MSE") + labs(title = "GLinternet") +
+    # geom_point(aes(x = C1, y = C2, colour = C1 >0)) +
+    scale_colour_manual(name = 'PC1 > 0', values = setNames(c(cbbPalette()[c(7)],"black"),c(T, F))) +
+    theme(legend.position = "none")) #+ annotate("text", label = sprintf("%0.2f %% of simulations "), x = 30, y = 5, size = 8, colour = "black"))
+save_plot("mcgillsims/figures/cvmse_mse_GLinternet.pdf", p1_gl,
+          base_height = 7, base_width = 7)
+
+
+(p1_gl <- ggplot(DT[Method=="lassoBT" & parameterIndex == "parameterIndex_1"], aes(x=mse, y=cvmse, colour = mse > cvmse)) +
+  geom_point(size=2.8) + gg_sy + geom_abline(intercept = 0, slope = 1) +
+    ylim(c(0,43)) + xlim(c(0,40)) +
+  coord_equal(ratio=1) +
+    xlab("Training Set MSE") + ylab("10-Fold CV MSE") + labs(title = "lassoBT") +
+  # geom_point(aes(x = C1, y = C2, colour = C1 >0)) +
+  scale_colour_manual(name = 'PC1 > 0', values = setNames(c(cbbPalette()[c(7)],"black"),c(T, F))) +
+  theme(legend.position = "none")) #+ annotate("text", label = sprintf("%0.2f %% of simulations "), x = 30, y = 5, size = 8, colour = "black"))
+save_plot("mcgillsims/figures/cvmse_mse_lassoBT.pdf", p1_gl,
+          base_height = 7, base_width = 7)
+
+
+(p1_gl <- ggplot(DT[Method=="sail" & parameterIndex == "parameterIndex_1"], aes(x=mse, y=cvmse, colour = mse > cvmse)) +
+    geom_point(size=2.8) + gg_sy + geom_abline(intercept = 0, slope = 1) +
+    ylim(c(0,43)) + xlim(c(0,40)) +
+    coord_equal(ratio=1) +
+    xlab("Training Set MSE") + ylab("10-Fold CV MSE") + labs(title = "sail") +
+    # geom_point(aes(x = C1, y = C2, colour = C1 >0)) +
+    scale_colour_manual(name = 'PC1 > 0', values = setNames(c(cbbPalette()[c(7)],"black"),c(T, F))) +
+    theme(legend.position = "none")) #+ annotate("text", label = sprintf("%0.2f %% of simulations "), x = 30, y = 5, size = 8, colour = "black"))
+save_plot("mcgillsims/figures/cvmse_mse_sail.pdf", p1_gl,
+          base_height = 7, base_width = 7)
+
+(p1_gl <- ggplot(DT[Method=="lasso" & parameterIndex == "parameterIndex_1"], aes(x=mse, y=cvmse, colour = mse > cvmse)) +
+    geom_point(size=2.8) + gg_sy + geom_abline(intercept = 0, slope = 1) +
+    ylim(c(0,43)) + xlim(c(0,40)) +
+    coord_equal(ratio=1) +
+    xlab("") +
+    ylab("10-Fold CV MSE") + labs(title = "lasso") +
+    # geom_point(aes(x = C1, y = C2, colour = C1 >0)) +
+    scale_colour_manual(name = 'PC1 > 0', values = setNames(c(cbbPalette()[c(7)],"black"),c(T, F))) +
+    theme(legend.position = "none")) #+ annotate("text", label = sprintf("%0.2f %% of simulations "), x = 30, y = 5, size = 8, colour = "black"))
+save_plot("mcgillsims/figures/cvmse_mse_lasso.pdf", p1_gl,
+          base_height = 7, base_width = 7)
+
+
+
+
+
+
+
+
+DT[Method=="GLinternet" & parameterIndex == "parameterIndex_1"][mse>cvmse]
+
+abline(a=0, b=1)
+
+gl <- melt(DT[Method=="GLinternet" & parameterIndex == "parameterIndex_1", c("Draw","mse","cvmse")], id.vars = "Draw")
+gl[variable=="mse", variable:="MSE"]
+gl[variable=="cvmse", variable:="10-Fold CV MSE"]
+
+(p1_gl <- ggplot(gl, aes(variable, value, fill = variable)) +
+    ggplot2::geom_boxplot() +
+    scale_fill_manual(values=cbbPalette()[c(8,4)]) +
+    ggplot2::labs(y = "", title = "GLinternet: MSE vs. 10-Fold CV MSE") + xlab("") + gg_sy +
+  theme(legend.position = "none"))
+save_plot("mcgillsims/figures/glint_cv_mse_scenario1.pdf", p1_gl,
+          base_height = 6, base_width = 8)
+
+
+
+
+# Scenario 5 --------------------------------------------------------------
+
+(p5_cvmse <- ggplot(DT[parameterIndex=="parameterIndex_5"], aes(Method, cvmse, fill = Method)) +
+   ggplot2::geom_boxplot() +
+   scale_fill_manual(values=cbbPalette()[c(2,3,4,7)]) +
+   ggplot2::labs(y = "Minimum 10-Fold CV MSE", title = "") + xlab("") + gg_sy +
+   theme(legend.position = "none"))
+
+save_plot("mcgillsims/figures/p5_cvmse.pdf", p5_cvmse,
+          base_height = 7, base_width = 9)
+
+(p5_fprtpr <- ggplot(DT[parameterIndex=="parameterIndex_5"], aes(fpr, tpr,group=Method, color = Method)) +
+    # ggplot2::geom_point(size=2) +
+    geom_jitter(size=3.5)+
+    scale_color_manual(values=cbbPalette()[c(2,3,4,7)]) + gg_sy + coord_equal(ratio=.07)+
+    ggplot2::labs(y = "True Positive Rate", title = "") +
+    xlab("False Positive Rate"))
+save_plot("mcgillsims/figures/p5_fprtpr.pdf", p5_fprtpr,
+          base_height = 7, base_width = 9)
+
+
+
+gl <- melt(DT[Method=="GLinternet" & parameterIndex == "parameterIndex_5", c("Draw","mse","cvmse")], id.vars = "Draw")
+gl[variable=="mse", variable:="MSE"]
+gl[variable=="cvmse", variable:="10-Fold CV MSE"]
+
+(p1_gl <- ggplot(gl, aes(variable, value, fill = variable)) +
+    ggplot2::geom_boxplot() +
+    scale_fill_manual(values=cbbPalette()[c(8,4)]) +
+    ggplot2::labs(y = "", title = "GLinternet: MSE vs. 10-Fold CV MSE") + xlab("") + gg_sy +
+    theme(legend.position = "none"))
+save_plot("mcgillsims/figures/glint_cv_mse_scenario1.pdf", p1_gl,
+          base_height = 6, base_width = 8)
+
+
+
+
+# Scenario 4 --------------------------------------------------------------
+
+(p4_cvmse <- ggplot(DT[parameterIndex=="parameterIndex_4"], aes(Method, cvmse, fill = Method)) +
+   ggplot2::geom_boxplot() +
+   scale_fill_manual(values=cbbPalette()[c(2,3,4,7)]) +
+   ggplot2::labs(y = "Minimum 10-Fold CV MSE", title = "") + xlab("") + gg_sy +
+   theme(legend.position = "none"))
+
+save_plot("mcgillsims/figures/p4_cvmse.pdf", p4_cvmse,
+          base_height = 7, base_width = 9)
+
+(p4_fprtpr <- ggplot(DT[parameterIndex=="parameterIndex_4"], aes(fpr, tpr,group=Method, color = Method)) +
+    # ggplot2::geom_point(size=2) +
+    geom_jitter(size=3.5)+
+    scale_color_manual(values=cbbPalette()[c(2,3,4,7)]) + gg_sy + coord_equal(ratio=.07)+
+    ggplot2::labs(y = "True Positive Rate", title = "") +
+    xlab("False Positive Rate"))
+save_plot("mcgillsims/figures/p4_fprtpr.pdf", p5_fprtpr,
+          base_height = 7, base_width = 9)
+
+
+
+gl <- melt(DT[Method=="GLinternet" & parameterIndex == "parameterIndex_5", c("Draw","mse","cvmse")], id.vars = "Draw")
+gl[variable=="mse", variable:="MSE"]
+gl[variable=="cvmse", variable:="10-Fold CV MSE"]
+
+(p1_gl <- ggplot(gl, aes(variable, value, fill = variable)) +
+    ggplot2::geom_boxplot() +
+    scale_fill_manual(values=cbbPalette()[c(8,4)]) +
+    ggplot2::labs(y = "", title = "GLinternet: MSE vs. 10-Fold CV MSE") + xlab("") + gg_sy +
+    theme(legend.position = "none"))
+save_plot("mcgillsims/figures/glint_cv_mse_scenario1.pdf", p1_gl,
+          base_height = 6, base_width = 8)
+
+
 
 
 
