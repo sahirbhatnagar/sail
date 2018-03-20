@@ -86,31 +86,46 @@ lassoBT <- new_method("lassoBT", "LassoBT",
 
 GLinternet <- new_method("GLinternet", "GLinternet",
                          method = function(model, draw) {
-                           cvglinternet <- glinternet.cv(X = model$EX, Y = draw,
-                                                         numLevels = rep(1, ncol(model$EX)),
-                                                         nLambda = 100, interactionCandidates = c(1),
-                                                         verbose = F)
 
-                           tc <- coef(cvglinternet)
+                           tryCatch({
+                             cvglinternet <- glinternet.cv(X = model$EX, Y = draw,
+                                                           numLevels = rep(1, ncol(model$EX)),
+                                                           nLambda = 100, interactionCandidates = c(1),
+                                                           verbose = F)
+                             tc <- coef(cvglinternet)
 
-                           mains <- colnames(model$EX)[tc$mainEffects$cont]
-                           inters <- paste0(colnames(model$EX)[tc$interactions$contcont[,2]],":E")
+                             mains <- colnames(model$EX)[tc$mainEffects$cont]
+                             inters <- paste0(colnames(model$EX)[tc$interactions$contcont[,2]],":E")
 
-                           # on the training
-                           # crossprod(predict(cvglinternet$glinternetFit, X = EX, lambda = cvglinternet$lambdaHat) - DT$y) / n
-                           # crossprod(predict(cvglinternet, X = EX) - DT$y) / n
+                             # on the training
+                             # crossprod(predict(cvglinternet$glinternetFit, X = EX, lambda = cvglinternet$lambdaHat) - DT$y) / n
+                             # crossprod(predict(cvglinternet, X = EX) - DT$y) / n
 
-                           list(beta = NULL,
-                                cvfit = cvglinternet,
-                                nonzero_coef = NULL,
-                                active = c(mains, inters),
-                                not_active = setdiff(model$vnames, c(mains, inters)),
-                                yhat = predict(cvglinternet, X = model$EX),
-                                cvmse = cvglinternet$cvErr[which(cvglinternet$lambdaHat==cvglinternet$lambda)],
-                                causal = model$causal,
-                                not_causal = model$not_causal,
-                                y = draw)
+                             return(list(beta = NULL,
+                                         cvfit = cvglinternet,
+                                         nonzero_coef = NULL,
+                                         active = c(mains, inters),
+                                         not_active = setdiff(model$vnames, c(mains, inters)),
+                                         yhat = predict(cvglinternet, X = model$EX),
+                                         cvmse = cvglinternet$cvErr[which(cvglinternet$lambdaHat==cvglinternet$lambda)],
+                                         causal = model$causal,
+                                         not_causal = model$not_causal,
+                                         y = draw))
+                           },
+                           error = function(err) {
+                             return(list(beta = NULL,
+                                         cvfit = NULL,
+                                         nonzero_coef = NULL,
+                                         active = c(""),
+                                         not_active = model$vnames,
+                                         yhat = NA,
+                                         cvmse = NA,
+                                         causal = model$causal,
+                                         not_causal = model$not_causal,
+                                         y = draw))
 
+                           }
+                           )
                          })
 
 

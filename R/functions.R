@@ -1658,12 +1658,12 @@ gendataPaper <- function(n, p, corr = 0,
     #   2 * E * X3 +
     #   2.5 * E * X4
 
-    Y.star <- 0.5 * (X1)  +
-      1 * (X2) +
-      1.5 * (X3) +
+    Y.star <- -1.5 * (X1 - 2)  +
+      1 * (X2 + 1) +
+      1.5 * (X3) -
       2 * X4 +
       betaE * E +
-      E * X3 +
+      E * X3 -
       1.5 * E * X4
 
 

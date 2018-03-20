@@ -32,10 +32,12 @@ source("/home/sahir/git_repositories/sail/my_sims/eval_functions.R")
 source("/home/sahir/git_repositories/sail/R/functions.R")
 devtools::load_all("/home/sahir/git_repositories/sail/")
 
-# source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/my_sims/model_functions.R")
-# source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/my_sims/method_functions.R")
-# source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/my_sims/eval_functions.R")
-# devtools::load_all("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/")
+source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/my_sims/model_functions.R")
+source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/my_sims/method_functions.R")
+source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/my_sims/eval_functions.R")
+source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/R/functions.R")
+
+devtools::load_all("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/")
 
 sim <- new_simulation(name = "sail_lassoBT_glinternet",
                       label = "Sail McGill Other",
@@ -44,24 +46,23 @@ sim <- new_simulation(name = "sail_lassoBT_glinternet",
                  n = 200, p = 1000, corr = 0, betaE = 1, SNR = 2, lambda.type = "lambda.min",
                  parameterIndex = list(1,4),
                  vary_along = "parameterIndex") %>%
-  simulate_from_model(nsim = 2, index = 21:22) %>%
+  simulate_from_model(nsim = 30, index = 1:7) %>%
   run_method(list(lassoBT, GLinternet),
-             parallel = list(socket_names = 2,
-                             # save_locally = TRUE,
+             parallel = list(socket_names = 30,
                              libraries = c("LassoBacktracking", "glinternet","glmnet","splines","magrittr")))
 
-sim <- sim %>% evaluate(list(mse, cvmse, r2, tpr, fpr, correct_sparsity,nactive))
+sim <- sim %>% evaluate(list(mse, cvmse, tpr, fpr, correct_sparsity,nactive))
 e <- evals(sim)
 res <- as(e, "data.frame")
 # saveRDS(res, file = "sail/sail_lambda_branch/mcgillsims/sim_results/res7.rds")
 
 saveRDS(object = res,
-        file = tempfile(pattern = sprintf("res_"),
-                        tmpdir = "/mnt/GREENWOOD_SCRATCH/sahir.bhatnagar/sail_simulations_other/lassoBT_glinternet",
+        file = tempfile(pattern = sprintf("res_lassoBT_glinternet"),
+                        tmpdir = "/mnt/GREENWOOD_SCRATCH/sahir.bhatnagar/sail_simulations_other",
                         fileext = ".rds")
 )
 
-ls()
+
 
 ## @knitr init
 
