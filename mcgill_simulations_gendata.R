@@ -5,14 +5,17 @@ pacman::p_load(magrittr)
 pacman::p_load(foreach)
 pacman::p_load(methods)
 pacman::p_load(doMC)
+pacman::p_load(profvis)
 # pacman::p_load(gamsel)
 
 # rm(list=ls())
 # dev.off()
-devtools::load_all("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/")
+# devtools::load_all("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/")
+devtools::load_all("/home/sahir/git_repositories/sail/")
+
 
 parameterIndex <- as.numeric(as.character(commandArgs(trailingOnly = T)[1]))
-# parameterIndex = 6
+# parameterIndex = 1
 
 if (parameterIndex == 1) { # 1a
   hierarchy = "strong" ; nonlinear = TRUE ; interactions = TRUE
@@ -38,7 +41,7 @@ lambda.type <- "lambda.min"
 # Simulate Data -----------------------------------------------------------
 
 n = 200
-p = 1000
+p = 50
 
 DT <- gendataPaper(n = n, p = p, SNR = 2, betaE = 1,
                    hierarchy = hierarchy, nonlinear = nonlinear, interactions = interactions,
@@ -47,14 +50,26 @@ DT <- gendataPaper(n = n, p = p, SNR = 2, betaE = 1,
 
 DT$y <- scale(DT$y, center = TRUE, scale = FALSE)
 
-registerDoMC(cores = 10)
-
+registerDoMC(cores = 5)
+# profvis(
+  # system.time(
+Rprof(tmp <- tempfile())
+fit <- sail(x = DT$x, y = DT$y, e = DT$e, df = 5, degree = 3, basis.intercept = FALSE,
+            thresh = 1e-3,
+            maxit = 1000,
+            alpha = .2,
+            center.x = TRUE,
+            verbose = T, nlambda = 100)
+Rprof()
+proftable(tmp)
+plot(fit)
 if (parameterIndex != 6) {
 cvfit <- cv.sail(x = DT$x, y = DT$y, e = DT$e, df = 5, degree = 3, basis.intercept = FALSE,
                  thresh = 1e-4,
                  maxit = 1000,
                  alpha = .2,
                  parallel = TRUE,
+                 center.x = TRUE,
                  # foldid = foldid,
                  nfolds = 10, verbose = T, nlambda = 100)
 } else if (parameterIndex == 6){

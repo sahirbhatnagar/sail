@@ -4,9 +4,9 @@
 \alias{cv.sail}
 \title{Cross-validation for sail}
 \usage{
-cv.sail(x, y, e, df, degree, weights, lambda = NULL, type.measure = c("mse",
-  "deviance", "class", "auc", "mae"), nfolds = 10, foldid, grouped = TRUE,
-  keep = FALSE, parallel = FALSE, ...)
+cv.sail(x, y, e, df = NULL, degree = 3, weights, lambda = NULL,
+  type.measure = c("mse", "deviance", "class", "auc", "mae"), nfolds = 10,
+  foldid, grouped = TRUE, keep = FALSE, parallel = FALSE, ...)
 }
 \arguments{
 \item{x}{Design matrix of dimension \code{n x q}, where \code{n} is the

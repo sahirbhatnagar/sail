@@ -4,12 +4,12 @@
 \alias{sail}
 \title{Fit Strong Heredity Interaction Model}
 \usage{
-sail(x, y, e, df = 5, degree = 3, group.penalty = c("gglasso", "MCP",
-  "SCAD"), family = c("gaussian", "binomial"), weights,
-  penalty.factor = rep(1, 1 + 2 * nvars), lambda.factor = ifelse(nobs < (1 +
-  2 * df * nvars), 0.01, 1e-04), lambda = NULL, alpha = 0.5,
-  nlambda = 100, thresh = 0.001, maxit = 2000, dfmax = 2 * nvars + 1,
-  exclude, verbose = TRUE)
+sail(x, y, e, df = NULL, degree = 3, basis.intercept = FALSE,
+  center.x = TRUE, group.penalty = c("gglasso", "MCP", "SCAD"),
+  family = c("gaussian", "binomial"), weights, penalty.factor = rep(1, 1 + 2
+  * nvars), lambda.factor = ifelse(nobs < (1 + 2 * bscols * nvars), 0.01,
+  1e-04), lambda = NULL, alpha = 0.5, nlambda = 100, thresh = 1e-04,
+  maxit = 1000, dfmax = 2 * nvars + 1, exclude, verbose = TRUE)
 }
 \arguments{
 \item{x}{Design matrix of dimension \code{n x q}, where \code{n} is the

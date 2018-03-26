@@ -153,7 +153,7 @@
 #' @export
 
 sail <- function(x, y, e, df = NULL, degree = 3, basis.intercept = FALSE,
-                 center.x = TRUE,
+                 center.x = TRUE, # if true, this also centers E
                  group.penalty = c("gglasso", "MCP", "SCAD"),
                  family = c("gaussian", "binomial"),
                  weights, # observation weights
