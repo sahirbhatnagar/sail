@@ -19,7 +19,10 @@
 #'   the response can be a matrix where the first column is the number of
 #'   "successes" and the second column is the number of "failures".
 #' @param family response type. see \code{y} for details. Currently only
-#' \code{family = "gaussian"} is implemented.
+#'   \code{family = "gaussian"} is implemented.
+#' @param penalty.factor penalty.factor must be of length 1 + 2*ncol(x), and the
+#'   first entry should correspond to the penalty.factor for X_E, the next
+#'   ncol(x) correspond to main effects, and then interactions
 #' @param main.effect.names character vector of main effects names. MUST be
 #'   ordered in the same way as the column names of \code{x}. e.g. if the column
 #'   names of \code{x} are \code{"x1","x2"} then \code{main.effect.names =
@@ -48,10 +51,10 @@
 #'   especially when a user defined sequence of tuning parameters is set.
 #' @param thresh Convergence thresh for coordinate descent. Each
 #'   coordinate-descent loop continues until the change in the objective
-#'   function after all coefficient updates is less than thresh. Default
-#'   value is \code{1e-4}.
-#' @param maxit Maximum number of passes over the data for all tuning
-#'   parameter values; default is 100.
+#'   function after all coefficient updates is less than thresh. Default value
+#'   is \code{1e-4}.
+#' @param maxit Maximum number of passes over the data for all tuning parameter
+#'   values; default is 100.
 #' @param cores The number of cores to use for certain calculations in the
 #'   \code{\link{sail}} function, i.e. at most how many child processes will be
 #'   run simultaneously using the \code{parallel} package. Must be at least one,
@@ -152,12 +155,16 @@
 #'
 #' @export
 
-sail <- function(x, y, e, df = NULL, degree = 3, basis.intercept = FALSE,
-                 center.x = TRUE, # if true, this also centers E
+sail <- function(x, y, e,
+                 basis = function(i) splines::bs(i, df = 5),
                  group.penalty = c("gglasso", "MCP", "SCAD"),
                  family = c("gaussian", "binomial"),
+                 center.x = TRUE, # if true, this centers X
+                 center.e = TRUE, # if true, this centers E
+                 expand = TRUE, # if true, use basis to expand X's, else user should provide main effects design with group membership
+                 group,
                  weights, # observation weights
-                 penalty.factor = rep(1, 1 + 2 * nvars), # predictor (adaptive lasso) weights, the last entry must be for the E variable
+                 penalty.factor = rep(1, 1 + 2 * nvars), # predictor (adaptive lasso) weights, the first entry must be for the E variable, then Xs, then X:E
                  lambda.factor = ifelse(nobs < (1 + 2 * bscols * nvars), 0.01, 0.0001),
                  lambda = NULL,
                  alpha = 0.5,
@@ -166,9 +173,6 @@ sail <- function(x, y, e, df = NULL, degree = 3, basis.intercept = FALSE,
                  maxit = 1000,
                  dfmax = 2 * nvars + 1,
                  exclude,
-                 # initialization.type = c("ridge","univariate"),
-                 # center = TRUE,
-                 # normalize = FALSE,
                  verbose = TRUE) {
 
   # browser()
@@ -176,89 +180,107 @@ sail <- function(x, y, e, df = NULL, degree = 3, basis.intercept = FALSE,
   ### Prepare all the generic arguments, then hand off to family functions
 
   family <- match.arg(family)
-  if(alpha >= 1){
+  if (alpha >= 1) {
     warning("alpha >=1; set to 0.99")
     alpha <- 0.99
   }
-  if(alpha <= 0){
+  if (alpha <= 0) {
     warning("alpha <= 0; set to 0.01")
     alpha <- 0.01
   }
   alpha <- as.double(alpha)
 
-  # if (missing(df) & missing(degree)) stop("at least one of either df or degree must be supplied")
-
-  # if(!missing(df)) df <- as.integer(df)
-  # if(!missing(degree)) degree <- as.integer(degree)
-
-  # if(df < degree){
-  #   warning(sprintf("df too small, needs to be >= degree; set to %g",degree))
-  #   df <- degree
-  # }
+  if (!expand & missing(group)) stop("group argument must be supplied when expand = FALSE")
+  if (expand & !is.function(basis)) stop("basis needs to be a valid function when expand = TRUE")
+  # tryCatch(is.function(function(i) splines::bs(i, df = 5)), error = function(e) FALSE)
 
   group.penalty <- match.arg(group.penalty)
   this.call <- match.call()
   nlam <- as.integer(nlambda)
 
-  if (!is.matrix(x))
+  if (!is.matrix(x)) {
     stop("x has to be a matrix")
-  if (any(is.na(x)))
+  }
+  if (any(is.na(x))) {
     stop("Missing values in x not allowed")
+  }
 
   y <- drop(y)
   e <- drop(e)
   np <- dim(x)
-  if (is.null(np) | (np[2] <= 1))
+  if (is.null(np) | (np[2] <= 1)) {
     stop("x should be a matrix with 2 or more columns")
+  }
 
   nobs <- as.integer(np[1])
-  if (missing(weights))
-    weights = rep(1, nobs)
-  else if (length(weights) != nobs)
+  if (missing(weights)) {
+    weights <- rep(1, nobs)
+  } else if (length(weights) != nobs) {
     stop(sprintf("number of elements in weights (%f) not equal to the number
                  of rows of x (%f)", length(weights), nobs))
+  }
 
-  nvars <- as.integer(np[2])
+  if (!expand) {
+    # nvars needs to be the number of original X variables.
+    # if user provides their own design matrix, then we need to derive this from
+    # the number of unique groups
+    nvars <- length(unique(group))
+  } else {
+    nvars <- as.integer(np[2])
+  }
+
   dimy <- dim(y)
   nrowy <- ifelse(is.null(dimy), length(y), dimy[1])
   dime <- dim(e)
   nrowe <- ifelse(is.null(dime), length(e), dime[1])
 
-  if (nrowy != nobs)
+  if (nrowy != nobs) {
     stop(paste("number of observations in y (", nrowy, ") not equal to the
                number of rows of x (", nobs, ")", sep = ""))
+  }
 
-  if (nrowe != nobs)
+  if (nrowe != nobs) {
     stop(paste("number of observations in e (", nrowe, ") not equal to the
                number of rows of x (", nobs, ")", sep = ""))
+  }
 
-  if (length(y) != nobs)
+  if (length(y) != nobs) {
     stop("x and y have different number of rows")
+  }
 
-  if (length(e) != nobs)
+  if (length(e) != nobs) {
     stop("x and e have different number of rows")
+  }
 
-  if (!is.numeric(y))
+  if (!is.numeric(y)) {
     stop("The response y must be numeric. Factors must be converted to numeric")
+  }
 
-  if (!is.numeric(e))
+  if (!is.numeric(e)) {
     stop("The environment variable e must be numeric. Factors must be converted to numeric")
+  }
 
   vnames <- colnames(x)
-  if (is.null(vnames)) vnames <- paste("V",seq(nvars),sep="")
+  if (is.null(vnames) & expand) {
+    vnames <- paste("V", seq(nvars), sep = "")
+  } else if (is.null(vnames) & !expand) {
+    stop("x must have column names when expand = FALSE")
+  }
 
   ne <- as.integer(dfmax)
   if (missing(exclude)) exclude <- integer(0)
-  if(any(penalty.factor == Inf)) {
-    exclude <- c(exclude,seq(nvars)[penalty.factor==Inf])
+  if (any(penalty.factor == Inf)) {
+    exclude <- c(exclude, seq(nvars)[penalty.factor == Inf])
     exclude <- sort(unique(exclude))
   }
-  if(length(exclude)>0){
-    jd <- match(exclude,seq(nvars),0)
-    if(!all(jd>0)) stop("Some excluded variables out of range")
-    penalty.factor[jd] <- 1 #ow can change lambda sequence
-    jd <- as.integer(c(length(jd),jd))
-  } else jd <- as.integer(0)
+  if (length(exclude) > 0) {
+    jd <- match(exclude, seq(nvars), 0)
+    if (!all(jd > 0)) stop("Some excluded variables out of range")
+    penalty.factor[jd] <- 1 # ow can change lambda sequence
+    jd <- as.integer(c(length(jd), jd))
+  } else {
+    jd <- as.integer(0)
+  }
   vp <- as.double(penalty.factor)
   if (length(vp) < (1 + 2 * nvars)) stop("penalty.factor must be of length 1 + 2*ncol(x), and
                                      the first entry should correspond to the penalty.factor
@@ -270,54 +292,60 @@ sail <- function(x, y, e, df = NULL, degree = 3, basis.intercept = FALSE,
 
   thresh <- as.double(thresh)
 
-  bscols <- ncol(splines::bs(x[,1], df = df, degree = degree, intercept = basis.intercept))
+  if (!expand) {
+    # this is for the user defined design matrix
+    lambda.factor <- ifelse(nobs < (1 + 2 * nvars), 0.01, 0.0001)
+  } else {
+    bscols <- ncol(basis(x[, 1])) # used for total number of variables for lambda.factor
+  }
 
-  if(is.null(lambda)){
-    if(lambda.factor >= 1) stop("lambda.factor should be less than 1")
+  if (is.null(lambda)) {
+    if (lambda.factor >= 1) stop("lambda.factor should be less than 1")
     flmin <- as.double(lambda.factor)
     ulam <- double(1)
   } else {
     flmin <- as.double(1)
-    if(any(lambda<0)) stop("lambdas should be non-negative")
+    if (any(lambda < 0)) stop("lambdas should be non-negative")
     ulam <- as.double(rev(sort(lambda)))
     nlam <- as.integer(length(lambda))
   }
 
-
   fit <- switch(family,
-                gaussian = lspath(x = x,
-                                  y = y,
-                                  e = e,
-                                  df = df,
-                                  degree = degree,
-                                  basis.intercept = basis.intercept,
-                                  center.x = center.x,
-                                  group.penalty = group.penalty,
-                                  weights = weights,
-                                  nlambda = nlam,
-                                  thresh = thresh,
-                                  maxit = maxit,
-                                  verbose = verbose,
-                                  alpha = alpha,
-                                  nobs = nobs,
-                                  nvars = nvars,
-                                  jd = jd,
-                                  vp = vp, # penalty.factor
-                                  we = we,
-                                  wj = wj,
-                                  wje = wje,
-                                  flmin = flmin, # lambda.factor
-                                  vnames = vnames, #variable names
-                                  ne = ne, # dfmax
-                                  ulam = ulam)
+    gaussian = lspath(
+      x = x,
+      y = y,
+      e = e,
+      basis = basis,
+      center.x = center.x,
+      center.e = center.e,
+      expand = expand,
+      group = group,
+      group.penalty = group.penalty,
+      weights = weights,
+      nlambda = nlam,
+      thresh = thresh,
+      maxit = maxit,
+      verbose = verbose,
+      alpha = alpha,
+      nobs = nobs,
+      nvars = nvars,
+      jd = jd, # exclude variables (currently not implemented)
+      vp = vp, # penalty.factor
+      we = we, #we, wj, wje are subsets of vp
+      wj = wj,
+      wje = wje,
+      flmin = flmin, # lambda.factor
+      vnames = vnames, # variable names
+      ne = ne, # dfmax
+      ulam = ulam
+    )
   )
 
   fit$call <- this.call
   fit$nobs <- nobs
-  class(fit) = c(class(fit), "sail")
+  class(fit) <- c(class(fit), "sail")
   fit
-
-  }
+}
 
 
 #' Cross-validation for sail
@@ -348,99 +376,123 @@ sail <- function(x, y, e, df = NULL, degree = 3, basis.intercept = FALSE,
 #'   Maintainer: Sahir Bhatnagar \email{sahir.bhatnagar@@mail.mcgill.ca}
 #' @export
 
-cv.sail <- function (x, y, e, df = NULL, degree = 3,
-                     weights,
-                     lambda = NULL,
-                     type.measure = c("mse", "deviance", "class", "auc", "mae"),
-                     nfolds = 10, foldid, grouped = TRUE, keep = FALSE, parallel = FALSE, ...) {
-
+cv.sail <- function(x, y, e, df = NULL, degree = 3,
+                    weights,
+                    lambda = NULL,
+                    type.measure = c("mse", "deviance", "class", "auc", "mae"),
+                    nfolds = 10, foldid, grouped = TRUE, keep = FALSE, parallel = FALSE, ...) {
   if (missing(type.measure)) type.measure <- "default" else type.measure <- match.arg(type.measure)
-  if (!is.null(lambda) && length(lambda) < 2)
+  if (!is.null(lambda) && length(lambda) < 2) {
     stop("Need more than one value of lambda for cv.sail")
+  }
   N <- nrow(x)
-  if (missing(weights))
+  if (missing(weights)) {
     weights <- rep(1, N)
-  else weights <- as.double(weights)
+  } else {
+    weights <- as.double(weights)
+  }
   y <- drop(y)
   sail.call <- match.call(expand.dots = TRUE)
-  which <- match(c("type.measure", "nfolds", "foldid", "grouped",
-                  "keep"), names(sail.call), F)
-  if (any(which))
+  which <- match(c(
+    "type.measure", "nfolds", "foldid", "grouped",
+    "keep"
+  ), names(sail.call), F)
+  if (any(which)) {
     sail.call <- sail.call[-which]
+  }
   sail.call[[1]] <- as.name("sail")
-  sail.object <- sail(x = x, y = y, e = e, df = df, degree = degree,
-                     weights = weights, lambda = lambda, ...)
+  sail.object <- sail(
+    x = x, y = y, e = e, df = df, degree = degree,
+    weights = weights, lambda = lambda, ...
+  )
 
   sail.object$call <- sail.call
 
-  ###Next line is commented out so each call generates its own lambda sequence
+  ### Next line is commented out so each call generates its own lambda sequence
   # lambda <- sail.object$lambda
 
   # nz = sapply(predict(sail.object, type = "nonzero"), length)
   nz <- sapply(sail.object$active, length)
-  if (missing(foldid)) foldid = sample(rep(seq(nfolds), length = N)) else nfolds = max(foldid)
-  if (nfolds < 3)
+  if (missing(foldid)) foldid <- sample(rep(seq(nfolds), length = N)) else nfolds <- max(foldid)
+  if (nfolds < 3) {
     stop("nfolds must be bigger than 3; nfolds=10 recommended")
-  outlist = as.list(seq(nfolds))
+  }
+  outlist <- as.list(seq(nfolds))
   if (parallel) {
-    outlist = foreach(i = seq(nfolds), .packages = c("sail")) %dopar%
-    {
-      which = foldid == i
+    outlist <- foreach(i = seq(nfolds), .packages = c("sail")) %dopar% {
+      which <- foldid == i
 
-      if (length(dim(y)) > 1)
-        y_sub = y[!which, ]
-      else y_sub = y[!which]
+      if (length(dim(y)) > 1) {
+        y_sub <- y[!which, ]
+      } else {
+        y_sub <- y[!which]
+      }
 
-      if (length(dim(e)) > 1)
-        e_sub = e[!which, ]
-      else e_sub = e[!which]
+      if (length(dim(e)) > 1) {
+        e_sub <- e[!which, ]
+      } else {
+        e_sub <- e[!which]
+      }
 
-      sail(x = x[!which, , drop = FALSE], y = y_sub, e = e_sub, df = df, degree = degree,
-           lambda = lambda, weights = weights[!which], ...)
+      sail(
+        x = x[!which, , drop = FALSE], y = y_sub, e = e_sub, df = df, degree = degree,
+        lambda = lambda, weights = weights[!which], ...
+      )
     }
   } else {
     for (i in seq(nfolds)) {
+      which <- foldid == i
 
-      which = foldid == i
+      if (is.matrix(y)) {
+        y_sub <- y[!which, ]
+      } else {
+        y_sub <- y[!which]
+      }
 
-      if (is.matrix(y))
-        y_sub = y[!which, ]
-      else y_sub = y[!which]
+      if (length(dim(e)) > 1) {
+        e_sub <- e[!which, ]
+      } else {
+        e_sub <- e[!which]
+      }
 
-      if (length(dim(e)) > 1)
-        e_sub = e[!which, ]
-      else e_sub = e[!which]
-
-      outlist[[i]] = sail(x = x[!which, , drop = FALSE], y = y_sub, e = e_sub, df = df, degree = degree,
-                          lambda = lambda, weights = weights[!which], ...)
+      outlist[[i]] <- sail(
+        x = x[!which, , drop = FALSE], y = y_sub, e = e_sub, df = df, degree = degree,
+        lambda = lambda, weights = weights[!which], ...
+      )
     }
   }
 
-  fun = paste("cv", class(sail.object)[[1]], sep = ".")
-  lambda = sail.object$lambda
+  fun <- paste("cv", class(sail.object)[[1]], sep = ".")
+  lambda <- sail.object$lambda
 
-  cvstuff = do.call(fun, list(outlist, lambda, x, y, e, df, degree, weights,
-                              foldid, type.measure, grouped, keep))
-  cvm = cvstuff$cvm
-  cvsd = cvstuff$cvsd
-  nas = is.na(cvsd)
+  cvstuff <- do.call(fun, list(
+    outlist, lambda, x, y, e, df, degree, weights,
+    foldid, type.measure, grouped, keep
+  ))
+  cvm <- cvstuff$cvm
+  cvsd <- cvstuff$cvsd
+  nas <- is.na(cvsd)
   if (any(nas)) {
-    lambda = lambda[!nas]
-    cvm = cvm[!nas]
-    cvsd = cvsd[!nas]
-    nz = nz[!nas]
+    lambda <- lambda[!nas]
+    cvm <- cvm[!nas]
+    cvsd <- cvsd[!nas]
+    nz <- nz[!nas]
   }
-  cvname = cvstuff$name
-  out = list(lambda = lambda, cvm = cvm, cvsd = cvsd, cvup = cvm +
-               cvsd, cvlo = cvm - cvsd, nzero = nz, name = cvname,
-             sail.fit = sail.object)
-  if (keep)
-    out = c(out, list(fit.preval = cvstuff$fit.preval, foldid = foldid))
-  lamin = if (cvname == "AUC")
+  cvname <- cvstuff$name
+  out <- list(
+    lambda = lambda, cvm = cvm, cvsd = cvsd, cvup = cvm +
+      cvsd, cvlo = cvm - cvsd, nzero = nz, name = cvname,
+    sail.fit = sail.object
+  )
+  if (keep) {
+    out <- c(out, list(fit.preval = cvstuff$fit.preval, foldid = foldid))
+  }
+  lamin <- if (cvname == "AUC") {
     getmin(lambda, -cvm, cvsd)
-  else getmin(lambda, cvm, cvsd)
-  obj = c(out, as.list(lamin))
-  class(obj) = "cv.sail"
+  } else {
+    getmin(lambda, cvm, cvsd)
+  }
+  obj <- c(out, as.list(lamin))
+  class(obj) <- "cv.sail"
   obj
 }
-

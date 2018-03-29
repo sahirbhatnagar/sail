@@ -4,11 +4,12 @@
 \alias{sail}
 \title{Fit Strong Heredity Interaction Model}
 \usage{
-sail(x, y, e, df = NULL, degree = 3, basis.intercept = FALSE,
-  center.x = TRUE, group.penalty = c("gglasso", "MCP", "SCAD"),
-  family = c("gaussian", "binomial"), weights, penalty.factor = rep(1, 1 + 2
-  * nvars), lambda.factor = ifelse(nobs < (1 + 2 * bscols * nvars), 0.01,
-  1e-04), lambda = NULL, alpha = 0.5, nlambda = 100, thresh = 1e-04,
+sail(x, y, e, basis = function(i) splines::bs(i, df = 5),
+  group.penalty = c("gglasso", "MCP", "SCAD"), family = c("gaussian",
+  "binomial"), center.x = TRUE, center.e = TRUE, expand = TRUE, group,
+  weights, penalty.factor = rep(1, 1 + 2 * nvars),
+  lambda.factor = ifelse(nobs < (1 + 2 * bscols * nvars), 0.01, 1e-04),
+  lambda = NULL, alpha = 0.5, nlambda = 100, thresh = 1e-04,
   maxit = 1000, dfmax = 2 * nvars + 1, exclude, verbose = TRUE)
 }
 \arguments{
@@ -35,6 +36,10 @@ the response can be a matrix where the first column is the number of
 proportion matrices. Default is 1 for each observation. Currently NOT
 IMPLEMENTED}
 
+\item{penalty.factor}{penalty.factor must be of length 1 + 2*ncol(x), and the
+first entry should correspond to the penalty.factor for X_E, the next
+ncol(x) correspond to main effects, and then interactions}
+
 \item{lambda.factor}{The factor for getting the minimal lambda in lambda
 sequence, where \code{min(lambda) = lambda.factor * max(lambda).
 max(lambda)} is the smallest value of lambda for which all coefficients are
@@ -51,11 +56,11 @@ especially when a user defined sequence of tuning parameters is set.}
 
 \item{thresh}{Convergence thresh for coordinate descent. Each
 coordinate-descent loop continues until the change in the objective
-function after all coefficient updates is less than thresh. Default
-value is \code{1e-4}.}
+function after all coefficient updates is less than thresh. Default value
+is \code{1e-4}.}
 
-\item{maxit}{Maximum number of passes over the data for all tuning
-parameter values; default is 100.}
+\item{maxit}{Maximum number of passes over the data for all tuning parameter
+values; default is 100.}
 
 \item{verbose}{Should iteration number and vector of length \code{nlambda} be
 printed to console? Default is \code{TRUE}. 0 represents the algorithm has

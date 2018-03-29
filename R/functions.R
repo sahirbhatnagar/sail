@@ -63,31 +63,33 @@ uni_fun <- function(x, y, type = c("ridge", "univariate"),
                     variables, include.intercept = FALSE) {
   type <- match.arg(type)
   res <- switch(type,
-                univariate = {
-                  plyr::ldply(variables, function(i) {
-                    if (include.intercept) {
-                      fit <- lm.fit(x = cbind2(rep(1, nrow(x)),x[,i, drop = F]), y = y )
-                      fit$coefficients[2]
-                    } else {
-                      fit <- lm.fit(x = x[,i, drop = F], y = y)
-                      fit$coefficients[1]
-                    }
-                  }) %>%
-                    magrittr::set_rownames(variables) %>%
-                    magrittr::set_colnames("univariate_beta") %>%
-                    as.matrix
-                },
-                ridge = {
-                  # fit the ridge to get betas and alphas
-                  fit <- glmnet::cv.glmnet(x = x, y = y, alpha = 0,
-                                    standardize = F,
-                                    intercept = include.intercept)
-                    # remove intercept (even if include.intercept is FALSE,
-                    # coef.glmnet returns
-                    # an intercept set to 0)
-                    as.matrix(coef(fit, s = "lambda.min")[-1,])
-
-                })
+    univariate = {
+      plyr::ldply(variables, function(i) {
+        if (include.intercept) {
+          fit <- stats::lm.fit(x = methods::cbind2(rep(1, nrow(x)), x[, i, drop = F]), y = y)
+          fit$coefficients[2]
+        } else {
+          fit <- stats::lm.fit(x = x[, i, drop = F], y = y)
+          fit$coefficients[1]
+        }
+      }) %>%
+        magrittr::set_rownames(variables) %>%
+        magrittr::set_colnames("univariate_beta") %>%
+        as.matrix()
+    },
+    ridge = {
+      # fit the ridge to get betas and alphas
+      fit <- glmnet::cv.glmnet(
+        x = x, y = y, alpha = 0,
+        standardize = F,
+        intercept = include.intercept
+      )
+      # remove intercept (even if include.intercept is FALSE,
+      # coef.glmnet returns
+      # an intercept set to 0)
+      as.matrix(coef(fit, s = "lambda.min")[-1, ])
+    }
+  )
 
   return(res)
 }
@@ -190,13 +192,14 @@ lambda_sequence <- function(x, y, weights = NULL,
   nobs <- as.integer(np[1])
   nvars <- as.integer(np[2])
 
-  if (!is.null(weights) & length(as.vector(weights)) < nvars)
+  if (!is.null(weights) & length(as.vector(weights)) < nvars) {
     stop("You must provide weights for every column of x")
+  }
 
   # scale the weights to sum to nvars
   w <- if (is.null(weights)) rep(1, nvars) else as.vector(weights) / sum(as.vector(weights)) * nvars
 
-  sx <- if (scale_x) apply(x,2, function(i) scale(i, center = TRUE, scale = mysd(i))) else x
+  sx <- if (scale_x) apply(x, 2, function(i) scale(i, center = TRUE, scale = mysd(i))) else x
   sy <- if (center_y) as.vector(scale(y, center = T, scale = F)) else as.vector(y)
   lambda.max <- max(abs(colSums(sy * sx) / w)) / nrow(sx)
 
@@ -284,36 +287,42 @@ ridge_weights <- function(x,
   # ===========================
 
   # fit the ridge to get betas and alphas
-  fit <- glmnet::cv.glmnet(x = x, y = y, alpha = 0,
-                           standardize = F,
-                           intercept = include.intercept)
+  fit <- glmnet::cv.glmnet(
+    x = x, y = y, alpha = 0,
+    standardize = F,
+    intercept = include.intercept
+  )
 
   # remove intercept (even if include.intercept is FALSE, coef.glmnet returns
   # an intercept set to 0)
-  betas.and.alphas <- as.matrix(coef(fit, s = "lambda.1se")[-1,])
+  betas.and.alphas <- as.matrix(coef(fit, s = "lambda.1se")[-1, ])
 
   # create output matrix
   weights <- matrix(nrow = 2 * length(unique(group)) + 1)
-  dimnames(weights)[[1]] <- c(paste0("X",unique(group)), "X_E", paste0("X",unique(group), ":X_E"))
+  dimnames(weights)[[1]] <- c(paste0("X", unique(group)), "X_E", paste0("X", unique(group), ":X_E"))
 
 
   # l2 norm of theta hat
-  norm_theta_hat <- sapply(seq_along(main.effect.names.list),
-                           function(k) l2norm(betas.and.alphas[main.effect.names.list[[k]],]))
+  norm_theta_hat <- sapply(
+    seq_along(main.effect.names.list),
+    function(k) l2norm(betas.and.alphas[main.effect.names.list[[k]], ])
+  )
 
   # l2 norm of alpha hat
-  norm_alpha_hat <- sapply(seq_along(interaction.names.list),
-                           function(k) l2norm(betas.and.alphas[interaction.names.list[[k]],]))
+  norm_alpha_hat <- sapply(
+    seq_along(interaction.names.list),
+    function(k) l2norm(betas.and.alphas[interaction.names.list[[k]], ])
+  )
 
   # beta_E hat
-  beta_E_hat <- betas.and.alphas["X_E",]
+  beta_E_hat <- betas.and.alphas["X_E", ]
 
   # main effects weights
-  weights[paste0("X",unique(group)),] <- 1 / norm_theta_hat
+  weights[paste0("X", unique(group)), ] <- 1 / norm_theta_hat
 
-  weights["X_E",] <- abs(1 / beta_E_hat)
+  weights["X_E", ] <- abs(1 / beta_E_hat)
 
-  weights[paste0("X",unique(group), ":X_E"), ] <- abs(beta_E_hat * norm_theta_hat / norm_alpha_hat)
+  weights[paste0("X", unique(group), ":X_E"), ] <- abs(beta_E_hat * norm_theta_hat / norm_alpha_hat)
 
   return(weights)
 }
@@ -340,19 +349,17 @@ ridge_weights <- function(x,
 #' @export
 
 soft <- function(x, y, beta, lambda, weight) {
-
   if (missing(x) & missing(y) & missing(beta)) stop("user must supply x AND y, or beta but not both")
   if (missing(x) & missing(y)) return(list("beta" = sign(beta) * pmax(0, abs(beta) - lambda * weight)))
   if (missing(beta)) {
     beta <- coef(lm.fit(x = x[, 1, drop = F], y = y))[1]
 
-    b_lasso <- sign(beta)* pmax(0, abs(beta) - lambda*weight)
+    b_lasso <- sign(beta) * pmax(0, abs(beta) - lambda * weight)
 
     # need to return a matrix, because this is used in the step to
     # calculate y_tilde in the sail function
     return(matrix(b_lasso, ncol = 1))
   }
-
 }
 
 # SoftThreshold <- function(x, lambda) {
@@ -430,7 +437,6 @@ sail_once <- function(x, y, main.effect.names, interaction.names,
                       nlambda.gamma = 20,
                       nlambda.beta = 20,
                       lambda.factor = ifelse(nobs < nvars, 0.01, 1e-6)) {
-
   initialization.type <- match.arg(initialization.type)
   np <- dim(x)
   nobs <- np[1]
@@ -439,56 +445,68 @@ sail_once <- function(x, y, main.effect.names, interaction.names,
   # total number of tuning parameters
   nlambda <- nlambda.gamma * nlambda.beta
 
-  adaptive.weights <- ridge_weights(x = x, y = y,
-                                    main.effect.names = main.effect.names,
-                                    interaction.names = interaction.names)
+  adaptive.weights <- ridge_weights(
+    x = x, y = y,
+    main.effect.names = main.effect.names,
+    interaction.names = interaction.names
+  )
 
   # initialization
-  betas_and_alphas <- uni_fun(variables = colnames(x), x = x, y = y,
-                              include.intercept = F,
-                              type = initialization.type)
+  betas_and_alphas <- uni_fun(
+    variables = colnames(x), x = x, y = y,
+    include.intercept = F,
+    type = initialization.type
+  )
 
   # this converts the alphas to gammas
-  uni_start <- convert(betas_and_alphas, main.effect.names = main.effect.names,
-                       interaction.names = interaction.names)
+  uni_start <- convert(betas_and_alphas,
+    main.effect.names = main.effect.names,
+    interaction.names = interaction.names
+  )
 
   beta_hat_previous <- uni_start[main.effect.names, , drop = F]
   gamma_hat_previous <- uni_start[interaction.names, , drop = F]
 
-  #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   # get tuning parameters for gamma
-  #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   # this is a nsubjects x lambda matrix for each tuning parameter stored in a list
   # each element of the list corresponds to a tuning parameter
-  y_tilde <- y - x[,main.effect.names,drop = F] %*% beta_hat_previous
+  y_tilde <- y - x[, main.effect.names, drop = F] %*% beta_hat_previous
 
   # calculate x_tilde for each beta vector corresponding to a diffent tuning parameter
-  x_tilde <- xtilde(interaction.names = interaction.names,
-                    data.main.effects = x[,main.effect.names, drop = F],
-                    beta.main.effects = beta_hat_previous)
+  x_tilde <- xtilde(
+    interaction.names = interaction.names,
+    data.main.effects = x[, main.effect.names, drop = F],
+    beta.main.effects = beta_hat_previous
+  )
 
   # get the sequence of lambda_gammas using the first iteration of
   # x_tilde and y_tilde
   # x_tilde only has the interaction columns, therefore, penalty.factor
   # must also only include the weights for the interaction terms
 
-  lambda_gamma <- lambda_sequence(x = x_tilde,
-                                  y = y_tilde,
-                                  weights = adaptive.weights[colnames(x_tilde), ],
-                                  nlambda = nlambda.gamma,
-                                  scale_x = F, center_y = F)
+  lambda_gamma <- lambda_sequence(
+    x = x_tilde,
+    y = y_tilde,
+    weights = adaptive.weights[colnames(x_tilde), ],
+    nlambda = nlambda.gamma,
+    scale_x = F, center_y = F
+  )
 
   # dont use GLMNET to get lambda sequence because it truncates the sequence,
   # so you may end up with a sequence that is less than nlambda.gamma
   # pass lambda_gamma to glmnet to get coefficients
-  fit_gamma_hat_glmnet <- glmnet::glmnet(x = x_tilde,
-                                         y = y_tilde,
-                                         lambda = lambda_gamma,
-                                         nlambda = nlambda.gamma,
-                                         penalty.factor = adaptive.weights[colnames(x_tilde), ],
-                                         standardize = F, intercept = F,
-                                         lambda.min.ratio = lambda.factor)
+  fit_gamma_hat_glmnet <- glmnet::glmnet(
+    x = x_tilde,
+    y = y_tilde,
+    lambda = lambda_gamma,
+    nlambda = nlambda.gamma,
+    penalty.factor = adaptive.weights[colnames(x_tilde), ],
+    standardize = F, intercept = F,
+    lambda.min.ratio = lambda.factor
+  )
 
   # use lambda gammas produced by lambda_sequence function
   lambda_gamma_glmnet <- lambda_gamma
@@ -499,9 +517,9 @@ sail_once <- function(x, y, main.effect.names, interaction.names,
   gamma_hat_next <- as.matrix(coef(fit_gamma_hat_glmnet))[-1, , drop = F]
 
 
-  #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   # get tuning parameters for beta
-  #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   beta_hat_next <- beta_hat_previous
 
@@ -521,38 +539,47 @@ sail_once <- function(x, y, main.effect.names, interaction.names,
   # only store the max and min for each main effect for each lambda_gamma
   lambda_beta_seq_for_every_lambda_gamma <-
     replicate(nlambda.gamma,
-              matrix(nrow = 2,
-                     ncol = length(main.effect.names),
-                     dimnames = list(paste0("lambda_",c("min","max")),
-                                     main.effect.names)),
-              simplify = "array")
+      matrix(
+        nrow = 2,
+        ncol = length(main.effect.names),
+        dimnames = list(
+          paste0("lambda_", c("min", "max")),
+          main.effect.names
+        )
+      ),
+      simplify = "array"
+    )
 
   # index data.frame to figure out which j < j'
   index <- data.frame(main.effect.names, seq_along(main.effect.names),
-                      stringsAsFactors = F)
-  colnames(index) <- c("main.effect.names","index")
+    stringsAsFactors = F
+  )
+  colnames(index) <- c("main.effect.names", "index")
 
   for (k in seq_len(ncol(gamma_hat_next))) {
-
     for (j in main.effect.names) {
 
       # determine the main effects not in j
-      j_prime_not_in_j <- setdiff(main.effect.names,j)
+      j_prime_not_in_j <- setdiff(main.effect.names, j)
 
       y_tilde_2 <- y -
-        x[,j_prime_not_in_j, drop = F] %*% beta_hat_next[j_prime_not_in_j, , drop = F] -
-        as.matrix(rowSums(xtilde_mod(beta.main.effects = beta_hat_next[j_prime_not_in_j, , drop = F],
-                                     gamma.interaction.effects = gamma_hat_next[,k,drop = F],
-                                     interaction.names = interaction.names[-grep(paste0("\\b",j,"\\b"), interaction.names)],
-                                     data.main.effects = x[,j_prime_not_in_j, drop = F])), ncol = 1)
+        x[, j_prime_not_in_j, drop = F] %*% beta_hat_next[j_prime_not_in_j, , drop = F] -
+        as.matrix(rowSums(xtilde_mod(
+          beta.main.effects = beta_hat_next[j_prime_not_in_j, , drop = F],
+          gamma.interaction.effects = gamma_hat_next[, k, drop = F],
+          interaction.names = interaction.names[-grep(paste0("\\b", j, "\\b"), interaction.names)],
+          data.main.effects = x[, j_prime_not_in_j, drop = F]
+        )), ncol = 1)
 
       # j' less than j (main effects)
-      j.prime.less <- index[which(index[,"index"] < index[which(index$main.effect.names == j),2]),
-                            "main.effect.names"]
+      j.prime.less <- index[
+        which(index[, "index"] < index[which(index$main.effect.names == j), 2]),
+        "main.effect.names"
+      ]
 
       # need to make sure paste(j.prime.less,j,sep=":") are variables in x matrix
       # this is to get around situations where there is only interactions with the E variable
-      j.prime.less.interaction <- intersect(paste(j.prime.less,j, sep = ":"), colnames(x))
+      j.prime.less.interaction <- intersect(paste(j.prime.less, j, sep = ":"), colnames(x))
 
       # need to get the main effects that are in j.prime.greater.interaction
       j.prime.less <- gsub("\\:(.*)", "", j.prime.less.interaction)
@@ -560,49 +587,63 @@ sail_once <- function(x, y, main.effect.names, interaction.names,
       # the if conditions in term1 and term2 are to check if there are
       # any variables greater or less than j
       # lapply is faster than mclapply here
-      term_1 <- if (length(j.prime.less.interaction) != 0 ) {
-        x[,j.prime.less.interaction] %*%
-          (gamma_hat_next[j.prime.less.interaction,k, drop = F] *
-             beta_hat_next[j.prime.less,,drop = F])} else matrix(rep(0,nrow(x)), ncol = 1)
+      term_1 <- if (length(j.prime.less.interaction) != 0) {
+        x[, j.prime.less.interaction] %*%
+          (gamma_hat_next[j.prime.less.interaction, k, drop = F] *
+            beta_hat_next[j.prime.less, , drop = F])
+      } else {
+        matrix(rep(0, nrow(x)), ncol = 1)
+      }
 
       # j' greater than j
-      j.prime.greater <- index[which(index[,"index"] > index[which(index$main.effect.names == j),2]),
-                               "main.effect.names"]
+      j.prime.greater <- index[
+        which(index[, "index"] > index[which(index$main.effect.names == j), 2]),
+        "main.effect.names"
+      ]
 
       # need to make sure j.prime.greater is a variable in x matrix
       # this is to get around situations where there is only interactions with the E variable
-      j.prime.greater.interaction <- intersect(paste(j,j.prime.greater,sep = ":"), colnames(x))
+      j.prime.greater.interaction <- intersect(paste(j, j.prime.greater, sep = ":"), colnames(x))
 
       # need to get the main effects that are in j.prime.greater.interaction
-      j.prime.greater <- if (all(gsub("\\:(.*)", "", j.prime.greater.interaction) == j))
-        gsub("(.*)\\:", "", j.prime.greater.interaction) else gsub("\\:(.*)", "", j.prime.greater.interaction)
+      j.prime.greater <- if (all(gsub("\\:(.*)", "", j.prime.greater.interaction) == j)) {
+        gsub("(.*)\\:", "", j.prime.greater.interaction)
+      } else {
+        gsub("\\:(.*)", "", j.prime.greater.interaction)
+      }
 
 
       term_2 <- if (length(j.prime.greater.interaction) != 0) {
-        x[,j.prime.greater.interaction] %*%
-          (gamma_hat_next[j.prime.greater.interaction,k, drop = F] *
-             beta_hat_next[j.prime.greater,,drop = F])
-      } else matrix(rep(0,nrow(x)), ncol = 1)
+        x[, j.prime.greater.interaction] %*%
+          (gamma_hat_next[j.prime.greater.interaction, k, drop = F] *
+            beta_hat_next[j.prime.greater, , drop = F])
+      } else {
+        matrix(rep(0, nrow(x)), ncol = 1)
+      }
 
-      x_tilde_2 <- x[,j, drop = F] + term_1 + term_2
+      x_tilde_2 <- x[, j, drop = F] + term_1 + term_2
 
       lambda_beta_seq <- lambda_sequence(x_tilde_2,
-                                         y_tilde_2,
-                                         weights = adaptive.weights[colnames(x_tilde_2),],
-                                         nlambda = nlambda.beta)
+        y_tilde_2,
+        weights = adaptive.weights[colnames(x_tilde_2), ],
+        nlambda = nlambda.beta
+      )
 
       # the seqeunce of lambda_betas for variable j
-      lambda_beta_seq_for_every_lambda_gamma[ , j ,k] <- c(min(lambda_beta_seq), max(lambda_beta_seq))
+      lambda_beta_seq_for_every_lambda_gamma[, j, k] <- c(min(lambda_beta_seq), max(lambda_beta_seq))
     }
   }
 
 
   # it is possible that the sequence of lambdas
-  return(list(lambda_gamma = lambda_gamma_glmnet,
-              lambda_beta = lapply(seq_len(length(lambda_gamma_glmnet)), function(i)
-                rev(exp(seq(log(min(lambda_beta_seq_for_every_lambda_gamma[ , ,i])),
-                            log(max(lambda_beta_seq_for_every_lambda_gamma[ , ,i])),
-                            length.out = nlambda.beta))))))
+  return(list(
+    lambda_gamma = lambda_gamma_glmnet,
+    lambda_beta = lapply(seq_len(length(lambda_gamma_glmnet)), function(i)
+      rev(exp(seq(log(min(lambda_beta_seq_for_every_lambda_gamma[, , i])),
+        log(max(lambda_beta_seq_for_every_lambda_gamma[, , i])),
+        length.out = nlambda.beta
+      ))))
+  ))
 }
 
 
@@ -649,20 +690,18 @@ convert <- function(betas.and.alphas,
                     group = group,
                     main.effect.names.list,
                     interaction.names.list) {
-
   browser()
   betas_and_gammas <- matrix(nrow = nrow(betas.and.alphas)) %>%
     magrittr::set_rownames(rownames(betas.and.alphas))
 
   sapply(unique(group), function(gr)
-    l2norm(betas.and.alphas[interaction.names.list[[gr]],]) / (l2norm(betas.and.alphas[main.effect.names.list[[gr]],]) * as.vector(betas.and.alphas["X_E",]))
-  )
+    l2norm(betas.and.alphas[interaction.names.list[[gr]], ]) / (l2norm(betas.and.alphas[main.effect.names.list[[gr]], ]) * as.vector(betas.and.alphas["X_E", ])))
 
 
 
   # add back the main effects which dont need to be transformed
   for (j in main.effect.names) {
-    betas_and_gammas[j,] <- betas.and.alphas[j,]
+    betas_and_gammas[j, ] <- betas.and.alphas[j, ]
   }
 
   return(betas_and_gammas)
@@ -687,28 +726,28 @@ convert2 <- function(beta,
                      interaction.names,
                      group = group,
                      intercept = NULL) {
-
-  betas.and.gammas <- rbind2(beta,gamma)
+  betas.and.gammas <- methods::rbind2(beta, gamma)
 
   # create output matrix
-  betas.and.alphas <- matrix(nrow = length(beta)*2 - 1)
-  dimnames(betas.and.alphas)[[1]] <- c(as.vector(do.call(c, main.effect.names)),"X_E",
-                                       as.vector(do.call(c, interaction.names)))
+  betas.and.alphas <- matrix(nrow = length(beta) * 2 - 1)
+  dimnames(betas.and.alphas)[[1]] <- c(
+    as.vector(do.call(c, main.effect.names)), "X_E",
+    as.vector(do.call(c, interaction.names))
+  )
 
-  alphas <- do.call(rbind,lapply(unique(group), function(ind) {
-    as.matrix(gamma[ind,] * beta["X_E",] * beta[main.effect.names[[ind]],,drop = FALSE])
+  alphas <- do.call(rbind, lapply(unique(group), function(ind) {
+    as.matrix(gamma[ind, ] * beta["X_E", ] * beta[main.effect.names[[ind]], , drop = FALSE])
   }))
 
   rownames(alphas) <- paste(rownames(alphas), "X_E", sep = ":")
 
-  betas.and.alphas[rownames(beta),1] <- beta
-  betas.and.alphas[rownames(alphas),1] <- alphas
+  betas.and.alphas[rownames(beta), 1] <- beta
+  betas.and.alphas[rownames(alphas), 1] <- alphas
 
   # add back intercept if it is non-NULL
-  if (!is.null(intercept)) betas.and.alphas["(Intercept)",] <- intercept
+  if (!is.null(intercept)) betas.and.alphas["(Intercept)", ] <- intercept
 
   return(betas.and.alphas)
-
 }
 
 
@@ -734,10 +773,12 @@ xtilde <- function(x,
 
   # note that x[,interaction.names.list[[jj]]] contains the product term X_E:Phi_j, so
   # you dont need to multiply by X_E
-  xtildas <- lapply(seq_along(unique(group)),
-                    function(jj)
-                      as.vector(beta.main.effects["X_E",]) *
-                      (x[,interaction.names.list[[jj]]] %*% beta.main.effects[main.effect.names.list[[jj]],,drop=F]))
+  xtildas <- lapply(
+    seq_along(unique(group)),
+    function(jj)
+      as.vector(beta.main.effects["X_E", ]) *
+        (x[, interaction.names.list[[jj]]] %*% beta.main.effects[main.effect.names.list[[jj]], , drop = F])
+  )
 
 
   xtildas <- do.call(cbind, xtildas)
@@ -766,18 +807,20 @@ xtilde <- function(x,
 #'   there was a typo. Math and results suggests that there is a typo in the
 #'   original paper.
 
-xtilde_mod <- function(#interaction.names, data.main.effects, beta.main.effects,
-                       #gamma.interaction.effects,
+xtilde_mod <- function( # interaction.names, data.main.effects, beta.main.effects,
+                       # gamma.interaction.effects,
                        x,
                        group,
                        main.effect.names.list,
                        interaction.names.list,
                        beta.main.effects,
-                       gamma.interaction.effects){
+                       gamma.interaction.effects) {
 
   # create output matrix. no pipe is faster
-  xtildas <- matrix(ncol = length(interaction.names),
-                    nrow = nrow(data.main.effects))
+  xtildas <- matrix(
+    ncol = length(interaction.names),
+    nrow = nrow(data.main.effects)
+  )
   colnames(xtildas) <- interaction.names
 
   for (k in interaction.names) {
@@ -786,18 +829,20 @@ xtilde_mod <- function(#interaction.names, data.main.effects, beta.main.effects,
     main <- strsplit(k, ":")[[1]]
 
     # step 4 to calculate x tilda
-    xtildas[,k] <- prod(beta.main.effects[main,]) * gamma.interaction.effects[k,] *
-      data.main.effects[,main[1],drop = F] *
-      data.main.effects[,main[2],drop = F]
+    xtildas[, k] <- prod(beta.main.effects[main, ]) * gamma.interaction.effects[k, ] *
+      data.main.effects[, main[1], drop = F] *
+      data.main.effects[, main[2], drop = F]
   }
 
 
 
-  xtildas <- lapply(seq_along(unique(group)),
-                    function(j)
-                      as.vector(beta.main.effects["X_E",]) *
-                      x[,"X_E"] *
-                      (x[,interaction.names.list[[j]]] %*% beta.main.effects[main.effect.names.list[[j]],,drop=F]))
+  xtildas <- lapply(
+    seq_along(unique(group)),
+    function(j)
+      as.vector(beta.main.effects["X_E", ]) *
+        x[, "X_E"] *
+        (x[, interaction.names.list[[j]]] %*% beta.main.effects[main.effect.names.list[[j]], , drop = F])
+  )
 
 
   xtildas <- do.call(cbind, xtildas)
@@ -929,16 +974,15 @@ xtilde_mod <- function(#interaction.names, data.main.effects, beta.main.effects,
 
 Q_theta <- function(R, nobs, lambda, alpha,
                     we, wj, wje,
-                    betaE, theta_list, gamma){
+                    betaE, theta_list, gamma) {
 
   # browser()
   (1 / (2 * nobs)) * crossprod(R) +
     lambda * (1 - alpha) * (
       we * abs(betaE) +
         sum(sapply(seq_along(theta_list), function(i) l2norm(theta_list[[i]]) * wj[i]))
-      ) +
+    ) +
     lambda * alpha * sum(wje * abs(gamma))
-
 }
 
 
@@ -998,43 +1042,52 @@ nonzero <- function(beta, bystep = FALSE) {
   ### bystep = FALSE means which variables were ever nonzero
   ### bystep = TRUE means which variables are nonzero for each step
   beta <- as.matrix(beta)
-  nr = nrow(beta)
+  nr <- nrow(beta)
   if (nr == 1) {
-    if (bystep)
-      apply(beta, 2, function(x) if (abs(x) > 0)
+    if (bystep) {
+      apply(beta, 2, function(x) if (abs(x) > 0) {
+          1
+        } else {
+          NULL
+        } )
+    } else {
+      if (any(abs(beta) > 0)) {
         1
-        else NULL)
-    else {
-      if (any(abs(beta) > 0))
-        1
-      else NULL
+      } else {
+        NULL
+      }
     }
   }
   else {
-    beta = abs(beta) > 0
-    which = seq(nr)
-    ones = rep(1, ncol(beta))
-    nz = as.vector((beta %*% ones) > 0)
-    which = which[nz]
+    beta <- abs(beta) > 0
+    which <- seq(nr)
+    ones <- rep(1, ncol(beta))
+    nz <- as.vector((beta %*% ones) > 0)
+    which <- which[nz]
     if (bystep) {
       if (length(which) > 0) {
-        beta = as.matrix(beta[which, , drop = FALSE])
-        nzel = function(x, which) if (any(x))
-          which[x]
-        else NULL
-        which = apply(beta, 2, nzel, which)
-        if (!is.list(which))
-          which = data.frame(which)
+        beta <- as.matrix(beta[which, , drop = FALSE])
+        nzel <- function(x, which) if (any(x)) {
+            which[x]
+          } else {
+            NULL
+          }
+        which <- apply(beta, 2, nzel, which)
+        if (!is.list(which)) {
+          which <- data.frame(which)
+        }
         which
       }
       else {
-        dn = dimnames(beta)[[2]]
-        which = vector("list", length(dn))
-        names(which) = dn
+        dn <- dimnames(beta)[[2]]
+        which <- vector("list", length(dn))
+        names(which) <- dn
         which
       }
     }
-    else which
+    else {
+      which
+    }
   }
 }
 
@@ -1075,22 +1128,24 @@ standardize <- function(x, y, center = TRUE, normalize = FALSE) {
   if (center) {
     bx <- colMeans(x)
     # by <- mean(y)
-    x <- scale(x,bx,FALSE)
+    x <- scale(x, bx, FALSE)
     # y <- y - mean(y)
   } else {
-    bx <- rep(0,p)
+    bx <- rep(0, p)
     by <- 0
   }
   if (normalize) {
-    sx <- sqrt(colSums(x ^ 2) / n)
-    x <- scale(x,FALSE,sx)
+    sx <- sqrt(colSums(x^2) / n)
+    x <- scale(x, FALSE, sx)
   } else {
-    sx <- rep(1,p)
+    sx <- rep(1, p)
   }
 
-  return(list(x = x,
-              # y = y,
-              bx = bx, by = by, sx = sx))
+  return(list(
+    x = x,
+    # y = y,
+    bx = bx, by = by, sx = sx
+  ))
 }
 
 #' @description \code{\%ni\%} is the opposite of \code{\%in\%}
@@ -1119,14 +1174,12 @@ standardize <- function(x, y, center = TRUE, normalize = FALSE) {
 
 cv_lspath <- function(outlist, y, df, foldid, design,
                       nlambda, nlambda.beta, nlambda.gamma) {
-
   y <- as.double(y)
   nfolds <- max(foldid)
   predmat <- matrix(NA, length(y), nlambda)
   nlams <- double(nfolds)
   converged <- matrix(nrow = nfolds, ncol = nlambda)
   for (i in seq(nfolds)) {
-
     which <- foldid == i
 
     # this gives be the fitted object for each CV fold
@@ -1135,73 +1188,81 @@ cv_lspath <- function(outlist, y, df, foldid, design,
     # this gives the predicted responses for the subjects in the held-out fold
     # for each lambda so if each fold has 20 subjects, and there are 100
     # lambdas, then this will return a 20 x 100 matrix
-    preds <- predict(fitobj, newx = design[which, ,drop = F], type = "link")
+    preds <- predict(fitobj, newx = design[which, , drop = F], type = "link")
 
     nlami <- fitobj$nlambda
     predmat[which, seq(nlami)] <- preds
     nlams[i] <- nlami
-    converged[i,] <- fitobj$converged
+    converged[i, ] <- fitobj$converged
   }
 
   conv <- colSums(converged)
-  cvraw <- (y - predmat) ^ 2
+  cvraw <- (y - predmat)^2
   cvob <- cvcompute(cvraw, foldid, nlams)
   cvraw <- cvob$cvraw
   N <- cvob$N
   cvm <- apply(cvraw, 2, mean, na.rm = TRUE)
   cvm_mat_all <- matrix(cvm, ncol = nlambda.gamma, nrow = nlambda.beta, byrow = T)
 
-  cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE) ^ 2, 2, mean, na.rm = TRUE)/(N - 1))
-  list(cvm = cvm, cvsd = cvsd, name = "MSE", converged = conv,
-       cvm.mat.all = cvm_mat_all)
+  cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, mean, na.rm = TRUE) / (N - 1))
+  list(
+    cvm = cvm, cvsd = cvsd, name = "MSE", converged = conv,
+    cvm.mat.all = cvm_mat_all
+  )
 }
 
 
 
 cv.lspath <- function(outlist, lambda, x, y, e, df, degree, weights,
                       foldid, type.measure, grouped, keep = FALSE) {
-  typenames = c(deviance = "Mean-Squared Error", mse = "Mean-Squared Error",
-                mae = "Mean Absolute Error")
-  if (type.measure == "default")
-    type.measure = "mse"
+  typenames <- c(
+    deviance = "Mean-Squared Error", mse = "Mean-Squared Error",
+    mae = "Mean Absolute Error"
+  )
+  if (type.measure == "default") {
+    type.measure <- "mse"
+  }
   if (!match(type.measure, c("mse", "mae", "deviance"), FALSE)) {
     warning("Only 'mse', 'deviance' or 'mae'  available for Gaussian models; 'mse' used")
-    type.measure = "mse"
+    type.measure <- "mse"
   }
 
-  mlami = max(sapply(outlist, function(obj) min(obj$lambda)))
-  which_lam = lambda >= mlami
-  predmat = matrix(NA, length(y), length(lambda))
-  nfolds = max(foldid)
-  nlams = double(nfolds)
+  mlami <- max(sapply(outlist, function(obj) min(obj$lambda)))
+  which_lam <- lambda >= mlami
+  predmat <- matrix(NA, length(y), length(lambda))
+  nfolds <- max(foldid)
+  nlams <- double(nfolds)
   for (i in seq(nfolds)) {
-    which = foldid == i
-    fitobj = outlist[[i]]
+    which <- foldid == i
+    fitobj <- outlist[[i]]
     # fitobj$offset = FALSE
-    preds = predict(fitobj, newx = x[which, , drop = FALSE], newe = e[which], s = lambda[which_lam])
-    nlami = sum(which_lam)
-    predmat[which, seq(nlami)] = preds
-    nlams[i] = nlami
+    preds <- predict(fitobj, newx = x[which, , drop = FALSE], newe = e[which], s = lambda[which_lam])
+    nlami <- sum(which_lam)
+    predmat[which, seq(nlami)] <- preds
+    nlams[i] <- nlami
   }
-  N = length(y) - apply(is.na(predmat), 2, sum)
-  cvraw = switch(type.measure, mse = (y - predmat)^2, deviance = (y - predmat)^2, mae = abs(y - predmat))
-  if ((length(y)/nfolds < 3) && grouped) {
+  N <- length(y) - apply(is.na(predmat), 2, sum)
+  cvraw <- switch(type.measure, mse = (y - predmat)^2, deviance = (y - predmat)^2, mae = abs(y - predmat))
+  if ((length(y) / nfolds < 3) && grouped) {
     warning("Option grouped=FALSE enforced in cv.sail, since < 3 observations per fold",
-            call. = FALSE)
-    grouped = FALSE
+      call. = FALSE
+    )
+    grouped <- FALSE
   }
   if (grouped) {
-    cvob = cvcompute(cvraw, weights, foldid, nlams)
-    cvraw = cvob$cvraw
-    weights = cvob$weights
-    N = cvob$N
+    cvob <- cvcompute(cvraw, weights, foldid, nlams)
+    cvraw <- cvob$cvraw
+    weights <- cvob$weights
+    N <- cvob$N
   }
-  cvm = apply(cvraw, 2, weighted.mean, w = weights, na.rm = TRUE)
-  cvsd = sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, weighted.mean,
-                    w = weights, na.rm = TRUE)/(N - 1))
-  out = list(cvm = cvm, cvsd = cvsd, name = typenames[type.measure])
-  if (keep)
-    out$fit.preval = predmat
+  cvm <- apply(cvraw, 2, weighted.mean, w = weights, na.rm = TRUE)
+  cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, weighted.mean,
+    w = weights, na.rm = TRUE
+  ) / (N - 1))
+  out <- list(cvm = cvm, cvsd = cvsd, name = typenames[type.measure])
+  if (keep) {
+    out$fit.preval <- predmat
+  }
   out
 }
 
@@ -1213,21 +1274,21 @@ cv.lspath <- function(outlist, lambda, x, y, e, df, degree, weights,
 
 #' @describeIn cv_lspath Computations for crossvalidation error
 #' @export
-cvcompute <- function(mat,weights,foldid,nlams){
-  ###Computes the weighted mean and SD within folds, and hence the se of the mean
-  wisum=tapply(weights,foldid,sum)
-  nfolds=max(foldid)
-  outmat=matrix(NA,nfolds,ncol(mat))
-  good=matrix(0,nfolds,ncol(mat))
-  mat[is.infinite(mat)]=NA#just in case some infinities crept in
-  for(i in seq(nfolds)){
-    mati=mat[foldid==i,,drop=FALSE]
-    wi=weights[foldid==i]
-    outmat[i,]=apply(mati,2,weighted.mean,w=wi,na.rm=TRUE)
-    good[i,seq(nlams[i])]=1
+cvcompute <- function(mat, weights, foldid, nlams) {
+  ### Computes the weighted mean and SD within folds, and hence the se of the mean
+  wisum <- tapply(weights, foldid, sum)
+  nfolds <- max(foldid)
+  outmat <- matrix(NA, nfolds, ncol(mat))
+  good <- matrix(0, nfolds, ncol(mat))
+  mat[is.infinite(mat)] <- NA # just in case some infinities crept in
+  for (i in seq(nfolds)) {
+    mati <- mat[foldid == i, , drop = FALSE]
+    wi <- weights[foldid == i]
+    outmat[i, ] <- apply(mati, 2, weighted.mean, w = wi, na.rm = TRUE)
+    good[i, seq(nlams[i])] <- 1
   }
-  N=apply(good,2,sum)
-  list(cvraw=outmat,weights=wisum,N=N)
+  N <- apply(good, 2, sum)
+  list(cvraw = outmat, weights = wisum, N = N)
 }
 
 #' @describeIn cv_lspath Function that returns the tuning paramter corresponding
@@ -1235,7 +1296,6 @@ cvcompute <- function(mat,weights,foldid,nlams){
 #'   standard error of the minimum
 #' @param type should be one of "beta" or "gamma"
 getmin_type <- function(lambda, cvm, cvsd, type) {
-
   cvmin <- min(cvm, na.rm = TRUE)
   idmin <- cvm <= cvmin
   lambda.min <- lambda[idmin][which.max(lambda[idmin])]
@@ -1246,26 +1306,30 @@ getmin_type <- function(lambda, cvm, cvsd, type) {
 
   # this is to get the index of the tuning parameter pair which is labelled by "s"
   # e.g. "s25" corresponds to the 25th pair of tuning parameters
-  lambda.min.name <- gsub("\\.(.*)", "",names(lambda.min))
-  lambda.1se.name <- gsub("\\.(.*)", "",names(lambda.1se))
-  res <- list(lambda.min = lambda.min, lambda.min.name,
-              lambda.1se = lambda.1se, lambda.1se.name )
-  names(res) <- c(paste0("lambda.min.",type),"lambda.min.name",
-                  paste0("lambda.1se.",type),"lambda.1se.name")
+  lambda.min.name <- gsub("\\.(.*)", "", names(lambda.min))
+  lambda.1se.name <- gsub("\\.(.*)", "", names(lambda.1se))
+  res <- list(
+    lambda.min = lambda.min, lambda.min.name,
+    lambda.1se = lambda.1se, lambda.1se.name
+  )
+  names(res) <- c(
+    paste0("lambda.min.", type), "lambda.min.name",
+    paste0("lambda.1se.", type), "lambda.1se.name"
+  )
   res
 }
 
 
 #' @describeIn cv_lspath Interpolation function.
-getmin=function(lambda,cvm,cvsd){
-  cvmin=min(cvm,na.rm=TRUE)
-  idmin=cvm<=cvmin
-  lambda.min=max(lambda[idmin],na.rm=TRUE)
-  idmin=match(lambda.min,lambda)
-  semin=(cvm+cvsd)[idmin]
-  idmin=cvm<=semin
-  lambda.1se=max(lambda[idmin],na.rm=TRUE)
-  list(lambda.min=lambda.min,lambda.1se=lambda.1se)
+getmin <- function(lambda, cvm, cvsd) {
+  cvmin <- min(cvm, na.rm = TRUE)
+  idmin <- cvm <= cvmin
+  lambda.min <- max(lambda[idmin], na.rm = TRUE)
+  idmin <- match(lambda.min, lambda)
+  semin <- (cvm + cvsd)[idmin]
+  idmin <- cvm <= semin
+  lambda.1se <- max(lambda[idmin], na.rm = TRUE)
+  list(lambda.min = lambda.min, lambda.1se = lambda.1se)
 }
 
 
@@ -1280,13 +1344,13 @@ lambda.interp <- function(lambda, s) {
     s[s > max(lambda)] <- max(lambda)
     s[s < min(lambda)] <- min(lambda)
     k <- length(lambda)
-    sfrac <- (lambda[1] - s)/(lambda[1] - lambda[k])
-    lambda <- (lambda[1] - lambda)/(lambda[1] - lambda[k])
+    sfrac <- (lambda[1] - s) / (lambda[1] - lambda[k])
+    lambda <- (lambda[1] - lambda) / (lambda[1] - lambda[k])
     coord <- approx(lambda, seq(lambda), sfrac)$y
     left <- floor(coord)
     right <- ceiling(coord)
-    sfrac <- (sfrac - lambda[right])/(lambda[left] - lambda[right])
-    sfrac[left == right] = 1
+    sfrac <- (sfrac - lambda[right]) / (lambda[left] - lambda[right])
+    sfrac[left == right] <- 1
   }
   list(left = left, right = right, frac = sfrac)
 }
@@ -1326,26 +1390,30 @@ update_weights <- function(betas,
 
   # create output matrix
   weights <- matrix(nrow = 2 * length(unique(group)) + 1)
-  dimnames(weights)[[1]] <- c(paste0("X",unique(group)), "X_E", paste0("X",unique(group), ":X_E"))
+  dimnames(weights)[[1]] <- c(paste0("X", unique(group)), "X_E", paste0("X", unique(group), ":X_E"))
 
 
   # l2 norm of theta hat
-  norm_theta_hat <- sapply(seq_along(main.effect.names),
-                           function(k) l2norm(betas.and.alphas[main.effect.names[[k]],]))
+  norm_theta_hat <- sapply(
+    seq_along(main.effect.names),
+    function(k) l2norm(betas.and.alphas[main.effect.names[[k]], ])
+  )
 
   # l2 norm of alpha hat
-  norm_alpha_hat <- sapply(seq_along(interaction.names),
-                           function(k) l2norm(betas.and.alphas[interaction.names[[k]],]))
+  norm_alpha_hat <- sapply(
+    seq_along(interaction.names),
+    function(k) l2norm(betas.and.alphas[interaction.names[[k]], ])
+  )
 
   # beta_E hat
-  beta_E_hat <- betas.and.alphas["X_E",]
+  beta_E_hat <- betas.and.alphas["X_E", ]
 
   # main effects weights
-  weights[paste0("X",unique(group)),] <- ifelse(norm_theta_hat < epsilon, 1e6, 1 / norm_theta_hat)
+  weights[paste0("X", unique(group)), ] <- ifelse(norm_theta_hat < epsilon, 1e6, 1 / norm_theta_hat)
 
-  weights["X_E",] <- if (abs(as.vector(beta_E_hat)) < epsilon) 1e6 else abs(1 / as.vector(beta_E_hat))
+  weights["X_E", ] <- if (abs(as.vector(beta_E_hat)) < epsilon) 1e6 else abs(1 / as.vector(beta_E_hat))
 
-  weights[paste0("X",unique(group), ":X_E"), ] <- ifelse(norm_alpha_hat < epsilon, 1e6, abs(beta_E_hat * norm_theta_hat / norm_alpha_hat))
+  weights[paste0("X", unique(group), ":X_E"), ] <- ifelse(norm_alpha_hat < epsilon, 1e6, abs(beta_E_hat * norm_theta_hat / norm_alpha_hat))
 
   return(weights)
 }
@@ -1375,12 +1443,11 @@ checkargs.xy <- function(x, y) {
 
 
 #' @rdname eclust-internal
-checkargs.misc <- function(sigma=NULL, alpha=NULL, k=NULL,
-                           gridrange=NULL, gridpts=NULL, griddepth=NULL,
-                           mult=NULL, ntimes=NULL,
-                           beta=NULL, lambda=NULL, tol.beta=NULL, tol.kkt=NULL,
-                           bh.q=NULL) {
-
+checkargs.misc <- function(sigma = NULL, alpha = NULL, k = NULL,
+                           gridrange = NULL, gridpts = NULL, griddepth = NULL,
+                           mult = NULL, ntimes = NULL,
+                           beta = NULL, lambda = NULL, tol.beta = NULL, tol.kkt = NULL,
+                           bh.q = NULL) {
   if (!is.null(sigma) && sigma <= 0) stop("sigma must be > 0")
   if (!is.null(lambda) && lambda < 0) stop("lambda must be >= 0")
   if (!is.null(alpha) && (alpha <= 0 || alpha >= 1)) stop("alpha must be
@@ -1388,15 +1455,19 @@ checkargs.misc <- function(sigma=NULL, alpha=NULL, k=NULL,
   if (!is.null(k) && length(k) != 1) stop("k must be a single number")
   if (!is.null(k) && (k < 1 || k != floor(k))) stop("k must be an integer >= 1")
   if (!is.null(gridrange) && (length(gridrange) != 2 ||
-                              gridrange[1] > gridrange[2]))
+    gridrange[1] > gridrange[2])) {
     stop("gridrange must be an interval of the form c(a,b) with a <= b")
-  if (!is.null(gridpts) && (gridpts < 20 || gridpts != round(gridpts)))
+  }
+  if (!is.null(gridpts) && (gridpts < 20 || gridpts != round(gridpts))) {
     stop("gridpts must be an integer >= 20")
-  if (!is.null(griddepth) && (griddepth > 10 || griddepth != round(griddepth)))
+  }
+  if (!is.null(griddepth) && (griddepth > 10 || griddepth != round(griddepth))) {
     stop("griddepth must be an integer <= 10")
+  }
   if (!is.null(mult) && mult < 0) stop("mult must be >= 0")
-  if (!is.null(ntimes) && (ntimes <= 0 || ntimes != round(ntimes)))
+  if (!is.null(ntimes) && (ntimes <= 0 || ntimes != round(ntimes))) {
     stop("ntimes must be an integer > 0")
+  }
   if (!is.null(beta) && sum(beta != 0) == 0) stop("Value of lambda too large,
                                                   beta is zero")
   if (!is.null(lambda) && length(lambda) != 1) stop("lambda must be a single
@@ -1414,11 +1485,15 @@ tabular <- function(df, ...) {
   col_align <- vapply(df, align, character(1))
 
   cols <- lapply(df, format, ...)
-  contents <- do.call("paste",
-                      c(cols, list(sep = " \\tab ", collapse = "\\cr\n  ")))
+  contents <- do.call(
+    "paste",
+    c(cols, list(sep = " \\tab ", collapse = "\\cr\n  "))
+  )
 
   paste("\\tabular{", paste(col_align, collapse = ""), "}{\n  ",
-        contents, "\n}\n", sep = "")
+    contents, "\n}\n",
+    sep = ""
+  )
 }
 
 
@@ -1445,14 +1520,17 @@ error.bars <- function(x, upper, lower, width = 0.02, ...) {
 #' @references \url{http://topepo.github.io/caret/splitting.html}
 
 createfolds <- function(y, k = 10, list = FALSE, returnTrain = FALSE) {
-  if (class(y)[1] == "Surv")
+  if (class(y)[1] == "Surv") {
     y <- y[, "time"]
+  }
   if (is.numeric(y)) {
-    cuts <- floor(length(y)/k)
-    if (cuts < 2)
+    cuts <- floor(length(y) / k)
+    if (cuts < 2) {
       cuts <- 2
-    if (cuts > 5)
+    }
+    if (cuts > 5) {
       cuts <- 5
+    }
     breaks <- unique(quantile(y, probs = seq(0, 1, length = cuts)))
     y <- cut(y, breaks, include.lowest = TRUE)
   }
@@ -1461,29 +1539,37 @@ createfolds <- function(y, k = 10, list = FALSE, returnTrain = FALSE) {
     numInClass <- table(y)
     foldVector <- vector(mode = "integer", length(y))
     for (i in 1:length(numInClass)) {
-      min_reps <- numInClass[i]%/%k
+      min_reps <- numInClass[i] %/% k
       if (min_reps > 0) {
-        spares <- numInClass[i]%%k
+        spares <- numInClass[i] %% k
         seqVector <- rep(1:k, min_reps)
-        if (spares > 0)
+        if (spares > 0) {
           seqVector <- c(seqVector, sample(1:k, spares))
+        }
         foldVector[which(y == names(numInClass)[i])] <- sample(seqVector)
       }
       else {
         foldVector[which(y == names(numInClass)[i])] <- sample(1:k,
-                                                               size = numInClass[i])
+          size = numInClass[i]
+        )
       }
     }
   }
-  else foldVector <- seq(along = y)
+  else {
+    foldVector <- seq(along = y)
+  }
   if (list) {
     out <- split(seq(along = y), foldVector)
     names(out) <- paste("Fold", gsub(" ", "0", format(seq(along = out))),
-                        sep = "")
-    if (returnTrain)
+      sep = ""
+    )
+    if (returnTrain) {
       out <- lapply(out, function(data, y) y[-data], y = seq(along = y))
+    }
   }
-  else out <- foldVector
+  else {
+    out <- foldVector
+  }
   out
 }
 
@@ -1526,23 +1612,24 @@ gendata <- function(n, p, df, degree, intercept = TRUE,
   # error
   error <- stats::rnorm(n)
 
-  Y.star <- bs(X[,1], df = df, degree = degree) %*% b1  +
-    bs(X[,2], df = df, degree = degree) %*% b2 +
-    bs(X[,3], df = df, degree = degree) %*% b3 +
-    bs(X[,4], df = df, degree = degree) %*% b4 +
+  Y.star <- bs(X[, 1], df = df, degree = degree) %*% b1 +
+    bs(X[, 2], df = df, degree = degree) %*% b2 +
+    bs(X[, 3], df = df, degree = degree) %*% b3 +
+    bs(X[, 4], df = df, degree = degree) %*% b4 +
     # bs(X[,5], df = df, degree = degree) %*% b5 +
     betaE * E +
-    E * bs(X[,1], df = df, degree = degree) %*% bE1 +
-    E * bs(X[,2], df = df, degree = degree) %*% bE2
+    E * bs(X[, 1], df = df, degree = degree) %*% bE1 +
+    E * bs(X[, 2], df = df, degree = degree) %*% bE2
 
   k <- sqrt(stats::var(Y.star) / (SNR * stats::var(error)))
 
   Y <- Y.star + as.vector(k) * error
 
-  return(list(x = X, y = Y, e = E, df = df, b1 = b1, b2 = b2, b3 = b3, b4 = b4,
-              b5 = b5,
-              bE1 = bE1, bE2 = bE2))
-
+  return(list(
+    x = X, y = Y, e = E, df = df, b1 = b1, b2 = b2, b3 = b3, b4 = b4,
+    b5 = b5,
+    bE1 = bE1, bE2 = bE2
+  ))
 }
 
 gendata2 <- function(n, p, corr = 0,
@@ -1559,12 +1646,12 @@ gendata2 <- function(n, p, corr = 0,
   U <- truncnorm::rtruncnorm(n, a = 0, b = 1)
   V <- truncnorm::rtruncnorm(n, a = 0, b = 1)
 
-  X1 <- (W[,1] + corr * U) / (1 + corr)
-  X2 <- (W[,2] + corr * U) / (1 + corr)
-  X3 <- (W[,3] + corr * U) / (1 + corr)
-  X4 <- (W[,4] + corr * U) / (1 + corr)
+  X1 <- (W[, 1] + corr * U) / (1 + corr)
+  X2 <- (W[, 2] + corr * U) / (1 + corr)
+  X3 <- (W[, 3] + corr * U) / (1 + corr)
+  X4 <- (W[, 4] + corr * U) / (1 + corr)
 
-  X <- (W[,5:p] + corr * V) / (1 + corr)
+  X <- (W[, 5:p] + corr * V) / (1 + corr)
 
   Xall <- cbind(X1, X2, X3, X4, X)
 
@@ -1572,17 +1659,17 @@ gendata2 <- function(n, p, corr = 0,
 
   # see "Variable Selection in NonParametric Addditive Model" Huang Horowitz and Wei
   f1 <- function(t) 5 * t
-  f2 <- function(t) 4.5 * (2 * t - 1) ^ 2
+  f2 <- function(t) 4.5 * (2 * t - 1)^2
   f3 <- function(t) 4 * sin(2 * pi * t) / (2 - sin(2 * pi * t))
   f4 <- function(t) 6 * (0.1 * sin(2 * pi * t) + 0.2 * cos(2 * pi * t) +
-                           0.3 * sin(2 * pi * t) ^ 2 + 0.4 * cos(2 * pi * t) ^ 3 +
-                           0.5 * sin(2 * pi * t) ^ 3)
+      0.3 * sin(2 * pi * t)^2 + 0.4 * cos(2 * pi * t)^3 +
+      0.5 * sin(2 * pi * t)^3)
 
   # error
   error <- stats::rnorm(n)
 
   if (hierarchy) {
-    Y.star <- f1(X1)  +
+    Y.star <- f1(X1) +
       f2(X2) +
       f3(X3) +
       f4(X4) +
@@ -1590,7 +1677,7 @@ gendata2 <- function(n, p, corr = 0,
       E * f3(X3) +
       E * f4(X4)
   } else {
-    Y.star <- f1(X1)  +
+    Y.star <- f1(X1) +
       f2(X2) +
       # f3(X3) +
       # f4(X4) +
@@ -1603,16 +1690,17 @@ gendata2 <- function(n, p, corr = 0,
 
   Y <- Y.star + as.vector(k) * error
 
-  return(list(x = Xall, y = Y, e = E, f1 = f1(X1),
-              f2 = f2(X2), f3 = f3(X3), f4 = f4(X4), betaE = betaE,
-              f1.f = f1, f2.f = f2, f3.f = f3, f4.f = f4))
-
+  return(list(
+    x = Xall, y = Y, e = E, f1 = f1(X1),
+    f2 = f2(X2), f3 = f3(X3), f4 = f4(X4), betaE = betaE,
+    f1.f = f1, f2.f = f2, f3.f = f3, f4.f = f4
+  ))
 }
 
 
 gendataPaper <- function(n, p, corr = 0,
                          E = truncnorm::rtruncnorm(n, a = -1, b = 1),
-                         betaE = 2, SNR = 2, hierarchy = c("strong","weak","none"),
+                         betaE = 2, SNR = 2, hierarchy = c("strong", "weak", "none"),
                          nonlinear = TRUE, interactions = TRUE) {
   # this is modified from "VARIABLE SELECTION IN NONPARAMETRIC ADDITIVE MODEL" huang et al, Ann Stat.
   # n = 200
@@ -1626,12 +1714,12 @@ gendataPaper <- function(n, p, corr = 0,
   U <- truncnorm::rtruncnorm(n, a = 0, b = 1)
   V <- truncnorm::rtruncnorm(n, a = 0, b = 1)
 
-  X1 <- (W[,1] + corr * U) / (1 + corr)
-  X2 <- (W[,2] + corr * U) / (1 + corr)
-  X3 <- (W[,3] + corr * U) / (1 + corr)
-  X4 <- (W[,4] + corr * U) / (1 + corr)
+  X1 <- (W[, 1] + corr * U) / (1 + corr)
+  X2 <- (W[, 2] + corr * U) / (1 + corr)
+  X3 <- (W[, 3] + corr * U) / (1 + corr)
+  X4 <- (W[, 4] + corr * U) / (1 + corr)
 
-  X <- (W[,5:p] + corr * V) / (1 + corr)
+  X <- (W[, 5:p] + corr * V) / (1 + corr)
 
   Xall <- cbind(X1, X2, X3, X4, X)
 
@@ -1639,11 +1727,11 @@ gendataPaper <- function(n, p, corr = 0,
 
   # see "Variable Selection in NonParametric Addditive Model" Huang Horowitz and Wei
   f1 <- function(t) 5 * t
-  f2 <- function(t) 4.5 * (2 * t - 1) ^ 2
+  f2 <- function(t) 4.5 * (2 * t - 1)^2
   f3 <- function(t) 4 * sin(2 * pi * t) / (2 - sin(2 * pi * t))
   f4 <- function(t) 6 * (0.1 * sin(2 * pi * t) + 0.2 * cos(2 * pi * t) +
-                           0.3 * sin(2 * pi * t) ^ 2 + 0.4 * cos(2 * pi * t) ^ 3 +
-                           0.5 * sin(2 * pi * t) ^ 3)
+      0.3 * sin(2 * pi * t)^2 + 0.4 * cos(2 * pi * t)^3 +
+      0.5 * sin(2 * pi * t)^3)
 
   # error
   error <- stats::rnorm(n)
@@ -1658,7 +1746,7 @@ gendataPaper <- function(n, p, corr = 0,
     #   2 * E * X3 +
     #   2.5 * E * X4
 
-    Y.star <- -1.5 * (X1 - 2)  +
+    Y.star <- -1.5 * (X1 - 2) +
       1 * (X2 + 1) +
       1.5 * (X3) -
       2 * X4 +
@@ -1671,21 +1759,21 @@ gendataPaper <- function(n, p, corr = 0,
   } else {
     if (!interactions) {
       # main effects only; non-linear Scenario 3
-      Y.star <- f1(X1)  +
+      Y.star <- f1(X1) +
         f2(X2) +
         f3(X3) +
         f4(X4) +
         betaE * E
       scenario <- "3"
     } else {
-      if (hierarchy =="none" & interactions) {
+      if (hierarchy == "none" & interactions) {
         # interactions only; non-linear
         Y.star <- E * f3(X3) +
           E * f4(X4)
         scenario <- "1c"
-      } else if (hierarchy=="strong" & interactions) {
+      } else if (hierarchy == "strong" & interactions) {
         # strong hierarchy; non-linear
-        Y.star <- f1(X1)  +
+        Y.star <- f1(X1) +
           f2(X2) +
           f3(X3) +
           f4(X4) +
@@ -1693,9 +1781,9 @@ gendataPaper <- function(n, p, corr = 0,
           E * f3(X3) +
           E * f4(X4)
         scenario <- "1a"
-      } else if (hierarchy=="weak" & interactions){
+      } else if (hierarchy == "weak" & interactions) {
         # weak hierarchy; linear
-        Y.star <- f1(X1)  +
+        Y.star <- f1(X1) +
           f2(X2) +
           # f3(X3) +
           # f4(X4) +
@@ -1711,41 +1799,41 @@ gendataPaper <- function(n, p, corr = 0,
 
   Y <- Y.star + as.vector(k) * error
 
-  return(list(x = Xall, y = Y, e = E, Y.star = Y.star, f1 = f1(X1),
-              f2 = f2(X2), f3 = f3(X3), f4 = f4(X4), betaE = betaE,
-              f1.f = f1, f2.f = f2, f3.f = f3, f4.f = f4,
-              X1 = X1, X2 = X2, X3 = X3, X4 = X4, scenario = scenario
-              ))
-
+  return(list(
+    x = Xall, y = Y, e = E, Y.star = Y.star, f1 = f1(X1),
+    f2 = f2(X2), f3 = f3(X3), f4 = f4(X4), betaE = betaE,
+    f1.f = f1, f2.f = f2, f3.f = f3, f4.f = f4,
+    X1 = X1, X2 = X2, X3 = X3, X4 = X4, scenario = scenario
+  ))
 }
 
 
 
 
-gendata4 <- function(n = 100, p = 100, E = rnorm(n), betaE = 1, SNR = 1) {
+gendata4 <- function(n = 100, p = 100, E = stats::rnorm(n), betaE = 1, SNR = 1) {
   # this is modified from SPAM Ravikumar et all JRSSB
   # n = 200
   # p = 10
   # corr = 1
 
   # covariates
-  X <- replicate(n = p, runif(n, -2.5, 2.5))
+  X <- replicate(n = p, stats::runif(n, -2.5, 2.5))
   colnames(X) <- paste0("X", seq_len(p))
 
   f1 <- function(t) -sin(1.5 * t)
   f2 <- function(t) t^3 + 1.5 * (t - 0.5)^2
-  f3 <- function(t) -dnorm(t, 0.5, 0.8)
+  f3 <- function(t) -stats::dnorm(t, 0.5, 0.8)
   f4 <- function(t) sin(exp(-0.5 * t))
 
-  X1 <- X[,1]
-  X2 <- X[,2]
-  X3 <- X[,3]
-  X4 <- X[,4]
+  X1 <- X[, 1]
+  X2 <- X[, 2]
+  X3 <- X[, 3]
+  X4 <- X[, 4]
 
   # error
   error <- stats::rnorm(n)
 
-  Y.star <- f1(X1)  +
+  Y.star <- f1(X1) +
     f2(X2) +
     f3(X3) +
     f4(X4) +
@@ -1757,10 +1845,11 @@ gendata4 <- function(n = 100, p = 100, E = rnorm(n), betaE = 1, SNR = 1) {
 
   Y <- Y.star + as.vector(k) * error
 
-  return(list(x = X, y = Y, e = E, f1 = f1(X1),
-              f2 = f2(X2), f3 = f3(X3), f4 = f4(X4), betaE = betaE,
-              f1.f = f1, f2.f = f2, f3.f = f3, f4.f = f4))
-
+  return(list(
+    x = X, y = Y, e = E, f1 = f1(X1),
+    f2 = f2(X2), f3 = f3(X3), f4 = f4(X4), betaE = betaE,
+    f1.f = f1, f2.f = f2, f3.f = f3, f4.f = f4
+  ))
 }
 
 
@@ -1770,19 +1859,19 @@ gendata3 <- function(n = 300, p = 50, betaE = 1, SNR = 1) {
   # n = 200
   # p = 10
   # corr = 1
-  #===================
+  # ===================
 
   # covariates
   # browser()
 
-  W <- replicate(n = p, runif(n, min = 0, max = 1))
+  W <- replicate(n = p, stats::runif(n, min = 0, max = 1))
 
-  X1 <- W[,1]
-  X2 <- W[,2]
-  X3 <- W[,3]
-  X4 <- W[,4]
-  X5 <- W[,5]
-  E <- runif(n, min = 0, max = 1)
+  X1 <- W[, 1]
+  X2 <- W[, 2]
+  X3 <- W[, 3]
+  X4 <- W[, 4]
+  X5 <- W[, 5]
+  E <- stats::runif(n, min = 0, max = 1)
 
   Xall <- W
 
@@ -1791,9 +1880,9 @@ gendata3 <- function(n = 300, p = 50, betaE = 1, SNR = 1) {
   # see "Variable Selection in NonParametric Addditive Model" Huang Horowitz and Wei
   # f1 <- function(t) t
   f2 <- function(t) 3 / (1 + t)^2
-  f3 <- function(t) 2*sin(t)
-  f4 <- function(t) 4*exp(t)
-  f5 <- function(t) 6 * t ^ 3
+  f3 <- function(t) 2 * sin(t)
+  f4 <- function(t) 4 * exp(t)
+  f5 <- function(t) 6 * t^3
 
   # error
   error <- stats::rnorm(n)
@@ -1810,50 +1899,113 @@ gendata3 <- function(n = 300, p = 50, betaE = 1, SNR = 1) {
   Y.star <-
     # f1(X1)  +
     f2(X2) +
-    f3(X3) +
-    f4(X4) +
-    f5(X5) +
-    betaE * E +
-    # E * f1(X1) +
-    E * f5(X5)
+      f3(X3) +
+      f4(X4) +
+      f5(X5) +
+      betaE * E +
+      # E * f1(X1) +
+      E * f5(X5)
 
   k <- sqrt(stats::var(Y.star) / (SNR * stats::var(error)))
 
   Y <- Y.star + as.vector(k) * error
 
-  return(list(x = Xall, y = Y, e = E,
-              # f1 = f1(X1),
-              f2 = f2(X2), f3 = f3(X3),
-              f4 = f4(X4), f5 = f5(X5)))
-
+  return(list(
+    x = Xall, y = Y, e = E,
+    # f1 = f1(X1),
+    f2 = f2(X2), f3 = f3(X3),
+    f4 = f4(X4), f5 = f5(X5)
+  ))
 }
 
 
 
 bic <- function(eta, sigma2, beta, eigenvalues, x, y, nt, c, df_lambda) {
-
   -2 * crossprod(y - x %*% betas.and.alphas) + c * df_lambda
-
 }
 
 
 
-design_sail <- function(x, e, nvars, vnames, df, degree, basis.intercept, center.x) {
+# expan2 <- function(expr, xname = "x") {
+#   sexpr <- substitute(expr)
+#   if (is.name(sexpr)) {
+#     expr <- call(as.character(sexpr), as.name(xname))
+#   }
+#   else {
+#     if (!((is.call(sexpr) || is.expression(sexpr)) && xname %in%
+#           all.vars(sexpr)))
+#       stop(gettextf("'expr' must be a function, or a call or an expression containing '%s'",
+#                     xname), domain = NA)
+#     expr <- sexpr
+#   }
+#
+#   Xmat = replicate(200, rnorm(100))
+#   ll <- list(x = Xmat)
+#   names(ll) <- xname
+#   y <- eval(expr, envir = ll, enclos = parent.frame())
+#
+#   return(y)
+#
+# }
+#
+# set.seed(123)
+# (mat <- replicate(4, rnorm(10)))
+#
+# fit <- function(x, expr = splines::bs(i, df = 5)) {
+#   sexpr <- substitute(expr)
+#   sexpr[[2]] <- substitute(x[,j])
+#
+#   lapply(seq_len(ncol(x)), function(j) eval(sexpr))
+#
+# }
+#
+# result <- fit(x = mat)
+# lapply(result, head)
+#
+#
+# set.seed(123)
+# (mat <- replicate(4, rnorm(10)))
+#
+# fit <- function(x, expr = function(i) splines::bs(i, df = 5)) {
+#
+#   nvars <- ncol(x)
+#   x <- scale(x, center = TRUE, scale = FALSE)
+#
+#   design <- design_mat(x = x, expr = expr, nvars = nvars)
+#   design
+#   # then fit some model on design
+#
+# }
+#
+# design_mat <- function(x, expr, nvars) {
+#
+#   lapply(seq_len(nvars), function(j) expr(x[, j]))
+#
+# }
+#
+# fit(x = mat)
+#
+#
+# expan(x = replicate(5, rnorm(10)))
+# splines::bs(rnorm(20), df = 5)
+# expan(expr = splines::bs(y, intercept = TRUE), xname = "y")
 
-  if (center.x) {
+design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, center.e) {
+
+  if (center.e) {
     e <- drop(standardize(e, center = TRUE, normalize = FALSE)$x)
   }
 
-  if (degree == 1) {
-
-    # Dont Expand X's if either df or degree is 1, which means use original data
-
+  if (!expand) {
+    # Dont Expand X's if expand=FALSE. use user supplied design matrix
     if (center.x) {
-      Phi_j_list <- lapply(seq_len(nvars), function(j) standardize(x[ , j, drop = FALSE],
-                                                                   center = TRUE)$x)
+      Phi_j_list <- lapply(split(seq(group), group), function(j) standardize(x[, j, drop = FALSE],
+          center = TRUE
+        )$x)
     } else {
-      Phi_j_list <- lapply(seq_len(nvars), function(j) x[ , j, drop = FALSE])
+      Phi_j_list <- lapply(split(seq(group), group), function(j) x[, j, drop = FALSE])
     }
+
     Phi_j <- do.call(cbind, Phi_j_list)
     main_effect_names <- vnames
     dimnames(Phi_j)[[2]] <- main_effect_names
@@ -1863,19 +2015,21 @@ design_sail <- function(x, e, nvars, vnames, df, degree, basis.intercept, center
     XE_Phi_j <- do.call(cbind, XE_Phi_j_list)
     interaction_names <- paste(main_effect_names, "E", sep = ":")
     dimnames(XE_Phi_j)[[2]] <- interaction_names
-
   } else {
 
     # Expand X's
     if (center.x) {
-      Phi_j_list <- lapply(seq_len(nvars),
-                           function(j) standardize(splines::bs(x[,j], df = df, degree = degree,
-                                                               intercept = basis.intercept),
-                                                   center = TRUE)$x)
+      Phi_j_list <- lapply(
+        seq_len(nvars),
+        function(j) standardize(basis(x[, j]),
+          center = TRUE
+          )$x
+      )
     } else {
-      Phi_j_list <- lapply(seq_len(nvars),
-                           function(j) splines::bs(x[,j], df = df, degree = degree,
-                                                   intercept = basis.intercept))
+      Phi_j_list <- lapply(
+        seq_len(nvars),
+        function(j) basis(x[, j])
+      )
     }
 
     ncols <- ncol(Phi_j_list[[1]]) # this is to get the number of columns for each expansion
@@ -1889,22 +2043,22 @@ design_sail <- function(x, e, nvars, vnames, df, degree, basis.intercept, center
     XE_Phi_j <- do.call(cbind, XE_Phi_j_list)
     interaction_names <- paste(main_effect_names, "E", sep = ":")
     dimnames(XE_Phi_j)[[2]] <- interaction_names
-
   }
 
   # this is used for the predict function
   design <- cbind(Phi_j, "E" = e, XE_Phi_j)
 
-  return(list(Phi_j_list = Phi_j_list, Phi_j = Phi_j,
-              XE_Phi_j_list = XE_Phi_j_list, XE_Phi_j = XE_Phi_j,
-              main_effect_names = main_effect_names, interaction_names = interaction_names,
-              design = design, ncols = if (degree==1) 1 else ncols))
-
+  return(list(
+    Phi_j_list = Phi_j_list, Phi_j = Phi_j,
+    XE_Phi_j_list = XE_Phi_j_list, XE_Phi_j = XE_Phi_j,
+    main_effect_names = main_effect_names, interaction_names = interaction_names,
+    design = design, ncols = ifelse(expand, ncols, 1)
+  ))
 }
 
 
 #' Not in convenience function
-'%ni%' <- Negate('%in%')
+"%ni%" <- Negate("%in%")
 
 
 #' Color Blind Palette
@@ -1944,11 +2098,11 @@ proftable <- function(file, lines = 10) {
   stacktable <- stacktable[order(stacktable$Freq[], decreasing = TRUE), 2:1]
   colnames(stacktable) <- c("PctTime", "Call")
   stacktable <- head(stacktable, lines)
-  shortcalls = strsplit(stacktable$Call, " > ")
+  shortcalls <- strsplit(stacktable$Call, " > ")
   shortcalls.len <- range(sapply(shortcalls, length))
-  parent.call <- unlist(lapply(seq(shortcalls.len[1]), function(i) Reduce(intersect, lapply(shortcalls,"[[", i))))
+  parent.call <- unlist(lapply(seq(shortcalls.len[1]), function(i) Reduce(intersect, lapply(shortcalls, "[[", i))))
   shortcalls <- lapply(shortcalls, function(x) setdiff(x, parent.call))
-  stacktable$Call = sapply(shortcalls, function(x) paste(x, collapse = " > "))
+  stacktable$Call <- sapply(shortcalls, function(x) paste(x, collapse = " > "))
   if (length(parent.call) > 0) {
     parent.call <- paste(paste(parent.call, collapse = " > "), "> ...")
   } else {
@@ -1959,15 +2113,15 @@ proftable <- function(file, lines = 10) {
   attr(stacktable, "parent.call") <- parent.call
   attr(stacktable, "files") <- files
   attr(stacktable, "total.pct.time") <- frac
-  print(stacktable, row.names=FALSE, right=FALSE, digits=3)
-  if(length(files) > 0) {
+  print(stacktable, row.names = FALSE, right = FALSE, digits = 3)
+  if (length(files) > 0) {
     cat("\n")
-    cat(paste(files, collapse="\n"))
+    cat(paste(files, collapse = "\n"))
     cat("\n")
   }
   cat(paste("\nParent Call:", parent.call))
   cat(paste("\n\nTotal Time:", total.time, "seconds\n"))
-  cat(paste0("Percent of run time represented: ", format(frac, digits=3)), "%")
+  cat(paste0("Percent of run time represented: ", format(frac, digits = 3)), "%")
 
   invisible(stacktable)
 }
