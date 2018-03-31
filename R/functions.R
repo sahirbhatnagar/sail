@@ -2052,7 +2052,7 @@ design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, cen
     Phi_j_list = Phi_j_list, Phi_j = Phi_j,
     XE_Phi_j_list = XE_Phi_j_list, XE_Phi_j = XE_Phi_j,
     main_effect_names = main_effect_names, interaction_names = interaction_names,
-    design = design, ncols = ifelse(expand, ncols, 1)
+    design = design, ncols = if(expand) ncols else sapply(Phi_j_list, ncol)
   ))
 }
 

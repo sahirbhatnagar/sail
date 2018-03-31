@@ -42,6 +42,7 @@ lspath <- function(x,
   main_effect_names <- expansion$main_effect_names
   interaction_names <- expansion$interaction_names
   ncols <- expansion$ncols
+  # group_list <- split(group, group)
 
   # group membership
   if (expand) { group <- rep(seq_len(nvars), each = ncols) }
@@ -52,7 +53,6 @@ lspath <- function(x,
   nulldev <- as.numeric(crossprod(y))
 
   # Initialize -------------------------------------------------------------
-# browser()
   # the initial values here dont matter, since at Lambda_max everything is 0
   b0 <- mean(y)
   betaE <- 0
@@ -83,12 +83,16 @@ lspath <- function(x,
     # or when using adaptive lasso?
   }
 
+  # browser()
+
   # for all the x_tilde in zero_x_tilde, return the following matrix with 0 for each coefficient
   # this is like a place holder.
+
   coef_zero_gamma_matrix <- matrix(
     data = 0, nrow = nvars, ncol = 1,
-    dimnames = list(vnames)
+    dimnames = ifelse(expand,list(vnames),list(paste0("V",seq(nvars))))
   )
+
 
   # Objects to store results ------------------------------------------------
 
@@ -104,13 +108,23 @@ lspath <- function(x,
     )
   )
 
-  gammaMat <- matrix(
-    nrow = nvars, ncol = nlambda,
-    dimnames = list(
-      c(paste0(vnames, "E")),
-      lambdaNames
+  if (expand) {
+    gammaMat <- matrix(
+      nrow = nvars, ncol = nlambda,
+      dimnames = list(
+        c(paste0(vnames, "E")),
+        lambdaNames
+      )
     )
-  )
+  } else {
+    gammaMat <- matrix(
+      nrow = nvars, ncol = nlambda,
+      dimnames = list(
+        c(paste0("V", seq(nvars))),
+        lambdaNames
+      )
+    )
+  }
 
   alphaMat <- matrix(
     nrow = length(c(main_effect_names)),
@@ -143,7 +157,7 @@ lspath <- function(x,
     lambdaIndex <- which(LAMBDA == lambdas)
 
     if (verbose) {
-      message(sprintf("Index: %g, lambda: %0.2f", lambdaIndex, LAMBDA))
+      message(sprintf("Index: %g, lambda: %0.4f", lambdaIndex, LAMBDA))
     }
 
     # store likelihood values at each iteration in a matrix Q
@@ -216,13 +230,13 @@ lspath <- function(x,
 
       for (j in seq_len(nvars)) {
         R <- R.star + x_tilde_2[[j]] %*% theta_next[[j]]
-
+# browser()
         theta_next_j <- switch(group.penalty,
           gglasso = coef(gglasso::gglasso(
             x = x_tilde_2[[j]],
             y = R,
             # eps = 1e-12,
-            group = rep(1, ncols),
+            group = if (expand) rep(1, ncols) else rep(1,ncols[j]),
             pf = wj[j],
             lambda = LAMBDA * (1 - alpha),
             intercept = F
@@ -230,7 +244,7 @@ lspath <- function(x,
           MCP = grpreg::grpreg(
             X = x_tilde_2[[j]],
             y = R,
-            group = rep(1, ncols),
+            group = if (expand) rep(1, ncols) else rep(1,ncols[j]),
             penalty = "gel",
             family = "gaussian",
             group.multiplier = as.vector(wj[j]),
@@ -240,7 +254,7 @@ lspath <- function(x,
           SCAD = grpreg::grpreg(
             X = x_tilde_2[[j]],
             y = R,
-            group = rep(1, ncols),
+            group = if (expand) rep(1, ncols) else rep(1,ncols[j]),
             penalty = "grSCAD",
             family = "gaussian",
             group.multiplier = as.vector(wj[j]),
@@ -324,12 +338,12 @@ lspath <- function(x,
       # criterion <- l2norm(Theta_next - Theta_init)
       converged[lambdaIndex] <- criterion < thresh
       converged[lambdaIndex] <- if (is.na(converged[lambdaIndex])) FALSE else converged[lambdaIndex]
-      if (verbose) {
-        message(sprintf(
-          "Iteration: %f, Converged: %f, Crossprod: %f", m, converged[lambdaIndex],
-          criterion
-        ))
-      }
+      # if (verbose) {
+      #   message(sprintf(
+      #     "Iteration: %f, Converged: %f, Crossprod: %f", m, converged[lambdaIndex],
+      #     criterion
+      #   ))
+      # }
 
       b0 <- b0_next
       betaE <- betaE_next
@@ -357,8 +371,8 @@ lspath <- function(x,
 
     deviance <- crossprod(R.star)
     devRatio <- 1 - deviance / nulldev
-    dfbeta <- sum(abs(betaMat[, lambdaIndex]) > 0) / ncols
-    dfalpha <- sum(abs(alphaMat[, lambdaIndex]) > 0) / ncols
+    dfbeta <- sum(abs(betaMat[, lambdaIndex]) > 0) / ifelse(expand,ncols,1)
+    dfalpha <- sum(abs(alphaMat[, lambdaIndex]) > 0) / ifelse(expand,ncols,1)
     dfenviron <- sum(abs(environ[lambdaIndex]) > 0)
 
 

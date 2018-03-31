@@ -267,7 +267,7 @@ sail <- function(x, y, e,
     stop("x must have column names when expand = FALSE")
   }
 
-  ne <- as.integer(dfmax)
+  ne <- ifelse(expand, as.integer(dfmax), 2 * length(group) + 1)
   if (missing(exclude)) exclude <- integer(0)
   if (any(penalty.factor == Inf)) {
     exclude <- c(exclude, seq(nvars)[penalty.factor == Inf])
@@ -294,7 +294,7 @@ sail <- function(x, y, e,
 
   if (!expand) {
     # this is for the user defined design matrix
-    lambda.factor <- ifelse(nobs < (1 + 2 * nvars), 0.01, 0.0001)
+    lambda.factor <- ifelse(nobs < (1 + 2 * length(group)), 0.01, 0.0001)
   } else {
     bscols <- ncol(basis(x[, 1])) # used for total number of variables for lambda.factor
   }
