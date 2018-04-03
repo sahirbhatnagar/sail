@@ -1049,7 +1049,7 @@ nonzero <- function(beta, bystep = FALSE) {
           1
         } else {
           NULL
-        } )
+        })
     } else {
       if (any(abs(beta) > 0)) {
         1
@@ -1950,7 +1950,6 @@ bic <- function(eta, sigma2, beta, eigenvalues, x, y, nt, c, df_lambda) {
 # expan(expr = splines::bs(y, intercept = TRUE), xname = "y")
 
 design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, center.e) {
-
   if (center.e) {
     e <- drop(standardize(e, center = TRUE, normalize = FALSE)$x)
   }
@@ -1981,7 +1980,7 @@ design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, cen
       Phi_j_list <- lapply(
         seq_len(nvars),
         function(j) standardize(basis(x[, j]),
-          center = TRUE
+            center = TRUE
           )$x
       )
     } else {
@@ -2011,7 +2010,7 @@ design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, cen
     Phi_j_list = Phi_j_list, Phi_j = Phi_j,
     XE_Phi_j_list = XE_Phi_j_list, XE_Phi_j = XE_Phi_j,
     main_effect_names = main_effect_names, interaction_names = interaction_names,
-    design = design, ncols = if(expand) ncols else sapply(Phi_j_list, ncol)
+    design = design, ncols = if (expand) ncols else sapply(Phi_j_list, ncol)
   ))
 }
 

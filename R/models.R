@@ -317,7 +317,7 @@ sail <- function(x, y, e,
       nobs = nobs,
       nvars = nvars,
       vp = vp, # penalty.factor
-      we = we, #we, wj, wje are subsets of vp
+      we = we, # we, wj, wje are subsets of vp
       wj = wj,
       wje = wje,
       flmin = flmin, # lambda.factor

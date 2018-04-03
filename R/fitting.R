@@ -17,7 +17,7 @@ lspath <- function(x,
                    alpha,
                    nobs,
                    nvars,
-                   vp, #penalty.factor
+                   vp, # penalty.factor
                    we, # we,wj,wje are subsets of vp
                    wj,
                    wje,
@@ -44,7 +44,9 @@ lspath <- function(x,
   # group_list <- split(group, group)
 
   # group membership
-  if (expand) { group <- rep(seq_len(nvars), each = ncols) }
+  if (expand) {
+    group <- rep(seq_len(nvars), each = ncols)
+  }
 
   # this is used for the predict function
   design <- expansion$design
@@ -67,12 +69,12 @@ lspath <- function(x,
   Theta_init <- c(b0, betaE, do.call(c, theta), gamma)
 
   # Lambda Sequence ---------------------------------------------------------
-# browser()
+  # browser()
   if (is.null(ulam)) {
     # R1 <- R2 <- y - b0 # this is used as the starting residual for Gamma and Theta update
     term1 <- (1 / we) * (crossprod(e, R.star))
     term2 <- (1 / wj) * sapply(Phi_j_list, function(i) l2norm(crossprod(i, R.star)))
-    lambda_max <- (1 / (nobs * (1 - alpha))) * max(term1[term1!=Inf], max(term2[term2!=Inf])) + thresh
+    lambda_max <- (1 / (nobs * (1 - alpha))) * max(term1[term1 != Inf], max(term2[term2 != Inf])) + thresh
     lambdas <- rev(exp(seq(log(flmin * lambda_max), log(lambda_max), length.out = nlambda)))
     lambdaNames <- paste0("s", seq_along(lambdas))
   } else {
@@ -88,7 +90,7 @@ lspath <- function(x,
 
   coef_zero_gamma_matrix <- matrix(
     data = 0, nrow = nvars, ncol = 1,
-    dimnames = ifelse(expand,list(vnames),list(paste0("V",seq(nvars))))
+    dimnames = ifelse(expand, list(vnames), list(paste0("V", seq(nvars))))
   )
 
 
@@ -147,7 +149,7 @@ lspath <- function(x,
   )
 
   active <- vector("list", length = nlambda)
-# browser()
+  # browser()
 
   # Lambda Loop Start -------------------------------------------------------
 
@@ -227,40 +229,40 @@ lspath <- function(x,
       # while (!converged_theta && k < maxit){
       # browser()
 
-      if (any(wj==0)) {
+      if (any(wj == 0)) {
         for (j in seq_len(nvars)) {
           R <- R.star + x_tilde_2[[j]] %*% theta_next[[j]]
           if (wj[j] != 0) {
             theta_next_j <- switch(group.penalty,
-                                   gglasso = coef(gglasso::gglasso(
-                                     x = x_tilde_2[[j]],
-                                     y = R,
-                                     # eps = 1e-12,
-                                     group = if (expand) rep(1, ncols) else rep(1,ncols[j]),
-                                     pf = wj[j],
-                                     lambda = LAMBDA * (1 - alpha),
-                                     intercept = F
-                                   ))[-1, ],
-                                   MCP = grpreg::grpreg(
-                                     X = x_tilde_2[[j]],
-                                     y = R,
-                                     group = if (expand) rep(1, ncols) else rep(1,ncols[j]),
-                                     penalty = "gel",
-                                     family = "gaussian",
-                                     group.multiplier = as.vector(wj[j]),
-                                     lambda = LAMBDA * (1 - alpha),
-                                     intercept = T
-                                   )$beta[-1, ],
-                                   SCAD = grpreg::grpreg(
-                                     X = x_tilde_2[[j]],
-                                     y = R,
-                                     group = if (expand) rep(1, ncols) else rep(1,ncols[j]),
-                                     penalty = "grSCAD",
-                                     family = "gaussian",
-                                     group.multiplier = as.vector(wj[j]),
-                                     lambda = LAMBDA * (1 - alpha),
-                                     intercept = T
-                                   )$beta[-1, ]
+              gglasso = coef(gglasso::gglasso(
+                x = x_tilde_2[[j]],
+                y = R,
+                # eps = 1e-12,
+                group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
+                pf = wj[j],
+                lambda = LAMBDA * (1 - alpha),
+                intercept = F
+              ))[-1, ],
+              MCP = grpreg::grpreg(
+                X = x_tilde_2[[j]],
+                y = R,
+                group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
+                penalty = "gel",
+                family = "gaussian",
+                group.multiplier = as.vector(wj[j]),
+                lambda = LAMBDA * (1 - alpha),
+                intercept = T
+              )$beta[-1, ],
+              SCAD = grpreg::grpreg(
+                X = x_tilde_2[[j]],
+                y = R,
+                group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
+                penalty = "grSCAD",
+                family = "gaussian",
+                group.multiplier = as.vector(wj[j]),
+                lambda = LAMBDA * (1 - alpha),
+                intercept = T
+              )$beta[-1, ]
             )
           } else {
             theta_next_j <- stats::lm.fit(x_tilde_2[[j]], R)$coef
@@ -276,35 +278,35 @@ lspath <- function(x,
         for (j in seq_len(nvars)) {
           R <- R.star + x_tilde_2[[j]] %*% theta_next[[j]]
           theta_next_j <- switch(group.penalty,
-                                 gglasso = coef(gglasso::gglasso(
-                                   x = x_tilde_2[[j]],
-                                   y = R,
-                                   # eps = 1e-12,
-                                   group = if (expand) rep(1, ncols) else rep(1,ncols[j]),
-                                   pf = wj[j],
-                                   lambda = LAMBDA * (1 - alpha),
-                                   intercept = F
-                                 ))[-1, ],
-                                 MCP = grpreg::grpreg(
-                                   X = x_tilde_2[[j]],
-                                   y = R,
-                                   group = if (expand) rep(1, ncols) else rep(1,ncols[j]),
-                                   penalty = "gel",
-                                   family = "gaussian",
-                                   group.multiplier = as.vector(wj[j]),
-                                   lambda = LAMBDA * (1 - alpha),
-                                   intercept = T
-                                 )$beta[-1, ],
-                                 SCAD = grpreg::grpreg(
-                                   X = x_tilde_2[[j]],
-                                   y = R,
-                                   group = if (expand) rep(1, ncols) else rep(1,ncols[j]),
-                                   penalty = "grSCAD",
-                                   family = "gaussian",
-                                   group.multiplier = as.vector(wj[j]),
-                                   lambda = LAMBDA * (1 - alpha),
-                                   intercept = T
-                                 )$beta[-1, ]
+            gglasso = coef(gglasso::gglasso(
+              x = x_tilde_2[[j]],
+              y = R,
+              # eps = 1e-12,
+              group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
+              pf = wj[j],
+              lambda = LAMBDA * (1 - alpha),
+              intercept = F
+            ))[-1, ],
+            MCP = grpreg::grpreg(
+              X = x_tilde_2[[j]],
+              y = R,
+              group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
+              penalty = "gel",
+              family = "gaussian",
+              group.multiplier = as.vector(wj[j]),
+              lambda = LAMBDA * (1 - alpha),
+              intercept = T
+            )$beta[-1, ],
+            SCAD = grpreg::grpreg(
+              X = x_tilde_2[[j]],
+              y = R,
+              group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
+              penalty = "grSCAD",
+              family = "gaussian",
+              group.multiplier = as.vector(wj[j]),
+              lambda = LAMBDA * (1 - alpha),
+              intercept = T
+            )$beta[-1, ]
           )
 
           Delta <- x_tilde_2[[j]] %*% (theta_next[[j]] - theta_next_j)
@@ -353,7 +355,7 @@ lspath <- function(x,
           lambda = LAMBDA * (1 - alpha)
         )
       } else {
-        betaE_next <- sum(x_tilde_E*R)/sum(x_tilde_E^2)
+        betaE_next <- sum(x_tilde_E * R) / sum(x_tilde_E^2)
       }
 
       Delta <- (betaE - betaE_next) * x_tilde_E
@@ -420,8 +422,8 @@ lspath <- function(x,
 
     deviance <- crossprod(R.star)
     devRatio <- 1 - deviance / nulldev
-    dfbeta <- sum(abs(betaMat[, lambdaIndex]) > 0) / ifelse(expand,ncols,1)
-    dfalpha <- sum(abs(alphaMat[, lambdaIndex]) > 0) / ifelse(expand,ncols,1)
+    dfbeta <- sum(abs(betaMat[, lambdaIndex]) > 0) / ifelse(expand, ncols, 1)
+    dfalpha <- sum(abs(alphaMat[, lambdaIndex]) > 0) / ifelse(expand, ncols, 1)
     dfenviron <- sum(abs(environ[lambdaIndex]) > 0)
 
 
