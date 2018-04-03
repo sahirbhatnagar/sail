@@ -1,6 +1,6 @@
 ## @knitr models
 
-# devtools::load_all()
+# devtools::load_all("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/")
 
 make_easy_sail_model <- function(n, p, df, SNR, betaE) {
 
@@ -52,6 +52,118 @@ make_easy_sail_model <- function(n, p, df, SNR, betaE) {
               return(split(y, col(y))) # make each col its own list element
             })
 }
+
+
+
+make_gendata_Paper <- function(n, p, corr, betaE, SNR, lambda.type, parameterIndex) {
+
+  main <- paste0("X", seq_len(p))
+  vnames <- c(main, "E", paste0(main,":E"))
+
+  if (parameterIndex == 1) { # 1a
+    hierarchy = "strong" ; nonlinear = TRUE ; interactions = TRUE
+    causal <- c("X1","X2","X3","X4","E","X3:E","X4:E")
+  } else if (parameterIndex == 2) { # 1b
+    hierarchy = "weak" ; nonlinear = TRUE ; interactions = TRUE
+    causal <- c("X1","X2","E","X3:E","X4:E")
+  } else if (parameterIndex == 3) { # 1c
+    hierarchy = "none" ; nonlinear = TRUE ; interactions = TRUE
+    causal <- c("X3:E","X4:E")
+  } else if (parameterIndex == 4) { # 2
+    hierarchy = "strong"; nonlinear = FALSE; interactions = TRUE
+    causal <- c("X1","X2","X3","X4","E","X3:E","X4:E")
+  } else if (parameterIndex == 5) { # 3
+    hierarchy = "strong" ; nonlinear = TRUE ; interactions = FALSE
+    causal <- c("X1","X2","X3","X4","E")
+  }
+
+  not_causal <- setdiff(vnames, causal)
+
+  DT <- gendataPaper(n = n, p = p, SNR = SNR, betaE = betaE,
+                     hierarchy = hierarchy, nonlinear = nonlinear, interactions = interactions,
+                     corr = corr, E = truncnorm::rtruncnorm(n, a = -1, b = 1))
+
+  # used for glmnet and lasso backtracking
+  X_linear_design <- design_sail(x = DT$x, e = DT$e, nvars = p,
+                                 vnames = paste0("X",1:p), degree = 1,
+                                 center.x = FALSE, basis.intercept = FALSE)$design
+
+  new_model(name = "gendata_Paper",
+            label = sprintf("n = %s, p = %s, corr = %s, betaE = %s, SNR = %s, hierarchy = %s,
+                            nonlinear = %s, interactions = %s, scenario = %s",
+                            n, p, corr, betaE, SNR, hierarchy,
+                            nonlinear, interactions, parameterIndex),
+            params = list(n = n, p = p, corr = corr, betaE = betaE, SNR = SNR, lambda.type = lambda.type,
+                          hierarchy = hierarchy, nonlinear = nonlinear, vnames = vnames,
+                          interactions = interactions, causal = causal, X_linear_design = X_linear_design,
+                          not_causal = not_causal, x = DT$x, e = DT$e, Y.star = DT$Y.star, EX = cbind(E=DT$e, DT$x)),
+            simulate = function(n, Y.star, nsim) {
+              error <- MASS::mvrnorm(nsim, mu = rep(0, n), Sigma = diag(n))
+              # Y.star <- as.numeric(design %*% true_beta)
+              k <- sqrt(stats::var(Y.star) / (SNR * apply(error, 1, var)))
+              error2 <- sweep(t(error), 2, k, FUN = "*")
+              y <- Y.star + error2
+              return(split(y, col(y))) # make each col its own list element
+            })
+
+}
+
+
+
+make_gendata_Paper_not_simulator <- function(n, p, corr, betaE, SNR, lambda.type, parameterIndex) {
+
+  main <- paste0("X", seq_len(p))
+  vnames <- c(main, "E", paste0(main,":E"))
+
+  if (parameterIndex == 1) { # 1a
+    hierarchy = "strong" ; nonlinear = TRUE ; interactions = TRUE
+    causal <- c("X1","X2","X3","X4","E","X3:E","X4:E")
+  } else if (parameterIndex == 2) { # 1b
+    hierarchy = "weak" ; nonlinear = TRUE ; interactions = TRUE
+    causal <- c("X1","X2","E","X3:E","X4:E")
+  } else if (parameterIndex == 3) { # 1c
+    hierarchy = "none" ; nonlinear = TRUE ; interactions = TRUE
+    causal <- c("X3:E","X4:E")
+  } else if (parameterIndex == 4) { # 2
+    hierarchy = "strong"; nonlinear = FALSE; interactions = TRUE
+    causal <- c("X1","X2","X3","X4","E","X3:E","X4:E")
+  } else if (parameterIndex == 5) { # 3
+    hierarchy = "strong" ; nonlinear = TRUE ; interactions = FALSE
+    causal <- c("X1","X2","X3","X4","E")
+  }
+
+  not_causal <- setdiff(vnames, causal)
+
+  DT <- gendataPaper(n = n, p = p, SNR = SNR, betaE = betaE,
+                     hierarchy = hierarchy, nonlinear = nonlinear, interactions = interactions,
+                     corr = corr, E = truncnorm::rtruncnorm(n, a = -1, b = 1))
+
+  return(DT)
+  # # used for glmnet and lasso backtracking
+  # X_linear_design <- design_sail(x = DT$x, e = DT$e, nvars = p,
+  #                                vnames = paste0("X",1:p), degree = 1,
+  #                                center.x = FALSE, basis.intercept = FALSE)$design
+  #
+  # new_model(name = "gendata_Paper",
+  #           label = sprintf("n = %s, p = %s, corr = %s, betaE = %s, SNR = %s, hierarchy = %s,
+  #                           nonlinear = %s, interactions = %s, scenario = %s",
+  #                           n, p, corr, betaE, SNR, hierarchy,
+  #                           nonlinear, interactions, parameterIndex),
+  #           params = list(n = n, p = p, corr = corr, betaE = betaE, SNR = SNR, lambda.type = lambda.type,
+  #                         hierarchy = hierarchy, nonlinear = nonlinear, vnames = vnames,
+  #                         interactions = interactions, causal = causal, X_linear_design = X_linear_design,
+  #                         not_causal = not_causal, x = DT$x, e = DT$e, Y.star = DT$Y.star, EX = cbind(E=DT$e, DT$x)),
+  #           simulate = function(n, Y.star, nsim) {
+  #             error <- MASS::mvrnorm(nsim, mu = rep(0, n), Sigma = diag(n))
+  #             # Y.star <- as.numeric(design %*% true_beta)
+  #             k <- sqrt(stats::var(Y.star) / (SNR * apply(error, 1, var)))
+  #             error2 <- sweep(t(error), 2, k, FUN = "*")
+  #             y <- Y.star + error2
+  #             return(split(y, col(y))) # make each col its own list element
+  #           })
+
+}
+
 
 
 # nsim = 10;n=100;SNR=3

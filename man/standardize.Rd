@@ -4,7 +4,7 @@
 \alias{standardize}
 \title{Standardize Data}
 \usage{
-standardize(x, y, center = TRUE, normalize = TRUE)
+standardize(x, y, center = TRUE, normalize = FALSE)
 }
 \arguments{
 \item{x}{Design matrix of dimension \code{n x q}, where \code{n} is the

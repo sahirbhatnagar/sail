@@ -4,23 +4,12 @@
 \alias{Q_theta}
 \title{Likelihood function}
 \usage{
-Q_theta(x, y, beta, gamma, weights, lambda.beta, lambda.gamma,
-  main.effect.names, interaction.names, group)
+Q_theta(R, nobs, lambda, alpha, we, wj, wje, betaE, theta_list, gamma)
 }
 \arguments{
-\item{x}{Design matrix of dimension \code{n x q}, where \code{n} is the
-number of subjects and q is the total number of variables; each row is an
-observation vector. This must include all main effects and interactions as
-well, with column names corresponding to the names of the main effects
-(e.g. \code{x1, x2, E}) and their interactions (e.g. \code{x1:E, x2:E}).
-All columns should be scaled to have mean 0 and variance 1; this is done
-internally by the \code{\link{sail}} function.}
-
-\item{y}{response variable (matrix form) of dimension \code{n x 1}}
+\item{gamma}{p*(p-1)/2 x 1 matrix of gamma estimates}
 
 \item{beta}{p x 1 matrix of main effect estimates}
-
-\item{gamma}{p*(p-1)/2 x 1 matrix of gamma estimates}
 
 \item{weights}{adaptive weights calculated by \code{ridge_weights} function
 with rownames corresponding to column names of x}

@@ -14,68 +14,87 @@
 #'   coefficients for each value of s.
 #' @export
 
-predict.sail <- function(object, newx, s = NULL,
-                            type = c("link", "response", "coefficients",
-                                     "nonzero", "class")) {
+predict.sail <- function(object, newx, newe, s = NULL,
+                         type = c(
+                           "link", "response", "coefficients",
+                           "nonzero", "class"
+                         ), ...) {
 
   # object = fit
   # type = "coefficients"
-  #==================
+  # ==================
 
-  type = match.arg(type)
+  type <- match.arg(type)
 
   if (missing(newx)) {
-    if (!match(type, c("coefficients", "nonzero"), FALSE))
-      stop("You need to supply a value for 'newx'")
+    if (!match(type, c("coefficients", "nonzero"), FALSE)) {
+      newx <- object$design
+    }
+  } else if (!missing(newx) & missing(newe)) {
+    stop("newe is missing. please supply the vector of the environment variable.")
+  } else if (!missing(newx) & !missing(newe)) {
+    newx <- design_sail(
+      x = newx, e = newe, expand = object$expand, group = object$group, basis = object$basis, nvars = object$nvars,
+      vnames = object$vnames, center.x = object$center.x, center.e = object$center.e
+    )$design
   }
 
-  a0 = t(as.matrix(object$b0))
-  rownames(a0) = "(Intercept)"
-  # this includes tuning parameters pairs that didnt converge
-  nbeta = rbind(a0, object$beta, object$alpha)
-  nbeta@Dimnames <- list(X = c("(Intercept)", object$main.effect.names,
-                               object$interaction.names),
-                         Y = paste0("s",seq_len(object$nlambda)))
+  a0 <- t(as.matrix(object$a0))
+  rownames(a0) <- "(Intercept)"
+  # this has only values for which lambda did converge
+  nbeta <- rbind(a0, object$beta, E = object$bE, object$alpha)
 
-  # this is the default returned by coef.sail i.e. any object of class sail
-  # it will return all tuning parameters (including those that didnt converge)
-  if (type == "coefficients" && is.null(s)) {
-    return(nbeta)
+  if (!is.null(s)) {
+    vnames <- dimnames(nbeta)[[1]]
+    dimnames(nbeta) <- list(NULL, NULL)
+    lambda <- object$lambda
+    lamlist <- lambda.interp(lambda, s)
+    if (length(s) == 1) {
+      nbeta <- nbeta[, lamlist$left, drop = FALSE] * lamlist$frac +
+        nbeta[, lamlist$right, drop = FALSE] * (1 - lamlist$frac)
+    } else {
+      nbeta <- nbeta[, lamlist$left, drop = FALSE] %*% diag(lamlist$frac) +
+        nbeta[, lamlist$right, drop = FALSE] %*% diag(1 - lamlist$frac)
+    }
+    dimnames(nbeta) <- list(vnames, paste(seq(along = s)))
   }
 
-  if (type == "coefficients" && !is.null(s)) {
-    return(nbeta[ , s, drop = F])
-  }
+  if (type == "coefficients") return(nbeta)
 
-  if (type == "nonzero") {
-    nbeta = rbind(a0, object$beta, object$alpha)
-    return(list(main = nonzero(nbeta[object$main.effect.names, , drop = FALSE], bystep = TRUE),
-                interaction = nonzero(nbeta[object$interaction.names, , drop = FALSE], bystep = TRUE)))
-  }
+  if (type == "nonzero") return(nonzero(nbeta[-1, , drop = FALSE], bystep = TRUE))
 
-  if (inherits(newx, "sparseMatrix")) {
-    newx = as(newx, "dgCMatrix")
-  }
 
   # this is used by the cv_lspath function to calculate predicted values
   # which will subsequently be used for calculating MSE for each fold
   if (type == "link") {
-
-    nfit = as.matrix(cbind2(1, newx) %*% nbeta)
-
+    nfit <- as.matrix(methods::cbind2(1, newx) %*% nbeta)
     return(nfit)
   }
-
 }
+
+
+predict.cv.sail <- function(object, newx, newe, s = c("lambda.1se", "lambda.min"), ...) {
+  if (is.numeric(s)) {
+    lambda <- s
+  } else
+  if (is.character(s)) {
+    s <- match.arg(s)
+    lambda <- object[[s]]
+  }
+  else {
+    stop("Invalid form for s")
+  }
+  predict(object$sail.fit, newx, newe, s = lambda, ...)
+}
+
 
 #' Get coefficients from a "sail" object
 #'
 #' @rdname predict.sail
 #' @export
 
-coef.sail <- function(object, s = NULL) {
-  predict(object, s = s, type = "coefficients")
-}
+coef.sail <- function(object, s = NULL, exact = FALSE, ...)
+  predict(object, s = s, type = "coefficients", exact = exact, ...)
 
 
 #' Make predictions from a "cv.sail" object
@@ -87,16 +106,16 @@ coef.sail <- function(object, s = NULL) {
 #' @export
 
 coef.cv.sail <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
-
-  if (is.numeric(s) || s %ni% c("lambda.1se", "lambda.min")) stop("s must be in lambda.1se or lambda.min")
-
-  s <- match.arg(s)
-
-  lambda <- switch(s,
-                   lambda.min = object$lambda.min.name,
-                   lambda.1se = object$lambda.1se.name
-  )
-
+  if (is.numeric(s)) {
+    lambda <- s
+  } else
+  if (is.character(s)) {
+    s <- match.arg(s)
+    lambda <- object[[s]]
+  }
+  else {
+    stop("Invalid form for s")
+  }
   coef(object$sail.fit, s = lambda, ...)
 }
 
@@ -106,22 +125,17 @@ coef.cv.sail <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
 #' @description print method for sail function
 #' @export
 
-print.sail <- function (x, digits = max(3, getOption("digits") - 3), ...) {
+print.sail <- function(x, digits = max(3, getOption("digits") - 3), ...) {
   cat("\nCall: ", deparse(x$call), "\n\n")
-  print(cbind(DfBeta = x$dfbeta, DfAlpha = x$dfalpha,
-              `%Dev` = signif(x$dev.ratio, digits),
-              LambdaBeta = signif(x$lambda.beta, digits),
-              LambdaGamma = signif(x$lambda.gamma, digits)))
+  print(cbind(
+    df_main = x$dfbeta, df_interaction = x$dfalpha,
+    df_environment = x$dfenviron,
+    `%Dev` = signif(x$dev.ratio, digits),
+    Lambda = signif(x$lambda, digits)
+  ))
 }
 
 
-print.sail <- function (x, digits = max(3, getOption("digits") - 3), ...) {
-  cat("\nCall: ", deparse(x$call), "\n\n")
-  print(cbind(DfBeta = x$dfbeta, DfAlpha = x$dfalpha,
-              `%Dev` = signif(x$dev.ratio, digits),
-              LambdaBeta = signif(x$lambda.beta, digits),
-              LambdaGamma = signif(x$lambda.gamma, digits)))
-}
 
 
 #' Plot Method for sail function
@@ -129,29 +143,85 @@ print.sail <- function (x, digits = max(3, getOption("digits") - 3), ...) {
 #' @description plot method for sail function
 #' @export
 
-plot.sail <- function(x, xvar = c("norm", "lambda", "dev"), label = T,
-                      ...) {
-  xvar = match.arg(xvar)
-  plotCoefSail(x$beta,
-               lambda = x$lambda.beta,
-               df = x$dfbeta,
-               dev = x$dev.ratio,
-               label = label,
-               xvar = xvar, ...)
-}
+plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
+  op <- par(no.readonly = TRUE)
+
+  type <- match.arg(type)
+
+  if (type != "main") {
+    if (all(x$dfalpha == 0)) {
+      warning("All interactions were estimated to be 0.\nPlotting solution path for main effects only")
+      type <- "main"
+    }
+  }
 
 
+  if (type == "main") {
+    par(mar = 0.1 + c(4, 5, 2.5, 1))
+    plotSailCoef(
+      coefs = x$beta,
+      environ = x$bE,
+      lambda = x$lambda,
+      df = x$dfbeta + x$dfenviron,
+      group = x$group,
+      dev = x$dev.ratio,
+      vnames = x$vnames,
+      ylab = "Main effects",
+      ...
+    )
+  }
 
-plot.sail <- function(x, xvar = c("norm", "lambda", "dev"), label = T,
-                      ...) {
-  # xvar = match.arg(xvar)
-  # plotCoefSail(x$beta,
-  #              lambda = x$lambda.beta,
-  #              df = x$dfbeta,
-  #              dev = x$dev.ratio,
-  #              label = label,
-  #              xvar = xvar, ...)
+  if (type == "interaction") {
+    par(mar = 0.1 + c(4, 5, 2.5, 1))
+    plotSailCoef(
+      coefs = x$alpha,
+      lambda = x$lambda,
+      df = x$dfalpha,
+      group = x$group,
+      dev = x$dev.ratio,
+      vnames = x$vnames,
+      ylab = "Interactions",
+      ...
+    )
+  }
 
-  plot.grpreg(x = x, ...)
 
+  if (type == "both") {
+    op <- par(
+      mfrow = c(2, 1),
+      mar = 0.1 + c(4.2, 4.0, 1, 1),
+      oma = c(0, 1, 1, 0),
+      cex.lab = 1.2, font.lab = 1.2, cex.axis = 1.2,
+      cex.main = 1.2
+    )
+
+
+    plotSailCoef(
+      coefs = x$beta,
+      environ = x$bE,
+      lambda = x$lambda,
+      df = x$dfbeta + x$dfenviron,
+      group = x$group,
+      dev = x$dev.ratio,
+      vnames = x$vnames,
+      ylab = "Main effects",
+      xlab = "", xaxt = "n",
+      ...
+    )
+
+    plotSailCoef(
+      coefs = x$alpha,
+      lambda = x$lambda,
+      df = x$dfalpha,
+      group = x$group,
+      dev = x$dev.ratio,
+      vnames = x$vnames,
+      ylab = "Interactions",
+      ...
+    )
+
+    par(op)
+  }
+
+  par(op)
 }

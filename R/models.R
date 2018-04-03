@@ -19,7 +19,12 @@
 #'   the response can be a matrix where the first column is the number of
 #'   "successes" and the second column is the number of "failures".
 #' @param family response type. see \code{y} for details. Currently only
-#' \code{family = "gaussian"} is implemented.
+#'   \code{family = "gaussian"} is implemented.
+#' @param penalty.factor penalty.factor must be of length 1 + 2*ncol(x), and the
+#'   first entry should correspond to the penalty.factor for X_E, the next
+#'   ncol(x) correspond to main effects, and then interactions. . 1st entry
+#'   should correspond to the penalty.factor for X_E, the next ncol(x)
+#'   correspond to main effects, and then interactions
 #' @param main.effect.names character vector of main effects names. MUST be
 #'   ordered in the same way as the column names of \code{x}. e.g. if the column
 #'   names of \code{x} are \code{"x1","x2"} then \code{main.effect.names =
@@ -48,10 +53,10 @@
 #'   especially when a user defined sequence of tuning parameters is set.
 #' @param thresh Convergence thresh for coordinate descent. Each
 #'   coordinate-descent loop continues until the change in the objective
-#'   function after all coefficient updates is less than thresh. Default
-#'   value is \code{1e-4}.
-#' @param maxit Maximum number of passes over the data for all tuning
-#'   parameter values; default is 100.
+#'   function after all coefficient updates is less than thresh. Default value
+#'   is \code{1e-4}.
+#' @param maxit Maximum number of passes over the data for all tuning parameter
+#'   values; default is 100.
 #' @param cores The number of cores to use for certain calculations in the
 #'   \code{\link{sail}} function, i.e. at most how many child processes will be
 #'   run simultaneously using the \code{parallel} package. Must be at least one,
@@ -152,125 +157,181 @@
 #'
 #' @export
 
-sail <- function(x, y, e, df,
-                    group.penalty = c("gglasso", "MCP", "SCAD"),
-                    family = c("gaussian", "binomial"),
-                    weights,
-                    lambda.factor = ifelse(nobs < nvars, 0.01, 0.001),
-                    lambda.beta = NULL,
-                    lambda.gamma = NULL,
-                    nlambda.gamma = 10,
-                    nlambda.beta = 10,
-                    nlambda = 100,
-                    thresh = 1e-3,
-                    maxit = 2000,
-                    initialization.type = c("ridge","univariate"),
-                    center = TRUE,
-                    normalize = FALSE,
-                    verbose = TRUE,
-                    cores = 1) {
+sail <- function(x, y, e,
+                 basis = function(i) splines::bs(i, df = 5),
+                 group.penalty = c("gglasso", "MCP", "SCAD"),
+                 family = c("gaussian", "binomial"),
+                 center.x = TRUE, # if true, this centers X
+                 center.e = TRUE, # if true, this centers E
+                 expand = TRUE, # if true, use basis to expand X's, else user should provide main effects design with group membership
+                 group,
+                 weights, # observation weights
+                 penalty.factor = rep(1, 1 + 2 * nvars), # predictor (adaptive lasso) weights, the first entry must be for the E variable, then Xs, then X:E (gammas)
+                 lambda.factor = ifelse(nobs < (1 + 2 * bscols * nvars), 0.01, 0.0001),
+                 lambda = NULL,
+                 alpha = 0.5,
+                 nlambda = 100,
+                 thresh = 1e-4,
+                 maxit = 1000,
+                 dfmax = 2 * nvars + 1,
+                 verbose = TRUE) {
 
   # browser()
 
-  # if(missing(main.effect.names)) stop("main.effect.names cannot be missing")
-  # if(missing(interaction.names)) stop("interaction.names cannot be missing")
+  ### Prepare all the generic arguments, then hand off to family functions
 
-  message(sprintf("nlambda.gamma = %f, nlambda.beta = %f", nlambda.gamma, nlambda.beta))
-
-  initialization.type <- match.arg(initialization.type)
   family <- match.arg(family)
+  if (alpha >= 1) {
+    warning("alpha >=1; set to 0.99")
+    alpha <- 0.99
+  }
+  if (alpha <= 0) {
+    warning("alpha <= 0; set to 0.01")
+    alpha <- 0.01
+  }
+  alpha <- as.double(alpha)
+
+  if (!expand & missing(group)) stop("group argument must be supplied when expand = FALSE")
+  if (expand & !is.function(basis)) stop("basis needs to be a valid function when expand = TRUE")
+  # tryCatch(is.function(function(i) splines::bs(i, df = 5)), error = function(e) FALSE)
+
   group.penalty <- match.arg(group.penalty)
   this.call <- match.call()
+  nlam <- as.integer(nlambda)
 
-  if (!is.matrix(x))
+  if (!is.matrix(x)) {
     stop("x has to be a matrix")
-  if (any(is.na(x)))
+  }
+  if (any(is.na(x))) {
     stop("Missing values in x not allowed")
-
-  y <- drop(y)
-  np <- dim(x)
-  if (is.null(np) | (np[2] <= 1))
-    stop("x should be a matrix with 2 or more columns")
-
-  nobs <- as.integer(np[1])
-  if (missing(weights))
-    weights = rep(1, nobs)
-  else if (length(weights) != nobs)
-    stop(sprintf("number of elements in weights (%f) not equal to the number
-                 of rows of x (%f)", length(weights), nobs))
-
-  nvars <- as.integer(np[2])
-  dimy <- dim(y)
-  nrowy <- ifelse(is.null(dimy), length(y), dimy[1])
-  if (nrowy != nobs)
-    stop(paste("number of observations in y (", nrowy, ") not equal to the
-               number of rows of x (", nobs, ")", sep = ""))
-
-  if (length(y) != nobs)
-    stop("x and y have different number of rows")
-  if (!is.numeric(y))
-    stop("The response y must be numeric. Factors must be converted to numeric")
-
-  vnames <- colnames(x)
-  # if (!all(c(main.effect.names, interaction.names) %in% vnames))
-  #   stop("Some variables specified in main.effect.names were not found in
-  #        the columnames of x")
-
-  if (any(c(is.null(lambda.beta) & !is.null(lambda.gamma),
-            !is.null(lambda.beta) & is.null(lambda.gamma))))
-    stop("lambda.beta or lambda.gamma is NULL while the other is not NULL. Both
-         should be NULL, or both should be specified")
-
-  if (any(c(is.null(lambda.beta),is.null(lambda.gamma)))) {
-    if (lambda.factor >= 1)
-      stop("lambda.factor should be less than 1")
-  } else {
-    flmin = as.double(1)
-
-    nDimLambdaBeta <- dim(lambda.beta)
-    nDimLambdaGamma <- dim(lambda.gamma)
-
-    if (!is.null(nDimLambdaBeta)) {
-      if (nDimLambdaBeta[2] > 1)
-        stop("lambda.beta must be a vector or 1 column matrix") }
-
-    if (!is.null(nDimLambdaGamma)) {
-      if (nDimLambdaGamma[2] > 1)
-        stop("lambda.gamma must be a vector or 1 column matrix")}
-
-    if (any(c(lambda.beta < 0, lambda.gamma < 0)))
-      stop("lambda.beta and lambda.gamma should be non-negative")
-
-    if (length(lambda.beta) != length(lambda.gamma))
-      stop("length of lambda.beta needs to be the same as length or lambda.gamma")
   }
 
+  y <- drop(y)
+  e <- drop(e)
+  np <- dim(x)
+  if (is.null(np) | (np[2] <= 1)) {
+    stop("x should be a matrix with 2 or more columns")
+  }
+
+  nobs <- as.integer(np[1])
+  if (missing(weights)) {
+    weights <- rep(1, nobs)
+  } else if (length(weights) != nobs) {
+    stop(sprintf("number of elements in weights (%f) not equal to the number
+                 of rows of x (%f)", length(weights), nobs))
+  }
+
+  if (!expand) {
+    # nvars needs to be the number of original X variables.
+    # if user provides their own design matrix, then we need to derive this from
+    # the number of unique groups
+    nvars <- length(unique(group))
+  } else {
+    nvars <- as.integer(np[2])
+  }
+
+  dimy <- dim(y)
+  nrowy <- ifelse(is.null(dimy), length(y), dimy[1])
+  dime <- dim(e)
+  nrowe <- ifelse(is.null(dime), length(e), dime[1])
+
+  if (nrowy != nobs) {
+    stop(paste("number of observations in y (", nrowy, ") not equal to the
+               number of rows of x (", nobs, ")", sep = ""))
+  }
+
+  if (nrowe != nobs) {
+    stop(paste("number of observations in e (", nrowe, ") not equal to the
+               number of rows of x (", nobs, ")", sep = ""))
+  }
+
+  if (length(y) != nobs) {
+    stop("x and y have different number of rows")
+  }
+
+  if (length(e) != nobs) {
+    stop("x and e have different number of rows")
+  }
+
+  if (!is.numeric(y)) {
+    stop("The response y must be numeric. Factors must be converted to numeric")
+  }
+
+  if (!is.numeric(e)) {
+    stop("The environment variable e must be numeric. Factors must be converted to numeric")
+  }
+
+  vnames <- colnames(x)
+  if (is.null(vnames) & expand) {
+    vnames <- paste("V", seq(nvars), sep = "")
+  } else if (is.null(vnames) & !expand) {
+    stop("x must have column names when expand = FALSE")
+  }
+
+  ne <- ifelse(expand, as.integer(dfmax), 2 * length(group) + 1)
+
+  vp <- as.double(penalty.factor)
+  if (length(vp) != (1 + 2 * nvars)) stop("penalty.factor must be of length 1 + 2*ncol(x)", call. = FALSE)
+  we <- vp[1] # adaptive lasso weights for environment
+  wj <- vp[(seq_len(nvars) + 1)] # adaptive lasso weights for main effects
+  wje <- vp[(nvars + 2):length(vp)] # adaptive lasso weights for interactions
+
+  thresh <- as.double(thresh)
+
+  if (!expand) {
+    # this is for the user defined design matrix
+    lambda.factor <- ifelse(nobs < (1 + 2 * length(group)), 0.01, 0.0001)
+  } else {
+    bscols <- ncol(basis(x[, 1, drop = FALSE])) # used for total number of variables for lambda.factor
+  }
+
+  if (is.null(lambda)) {
+    if (lambda.factor >= 1) stop("lambda.factor should be less than 1")
+    flmin <- as.double(lambda.factor)
+    # ulam <- double(1)
+    ulam <- NULL
+  } else {
+    flmin <- as.double(1)
+    if (any(lambda < 0)) stop("lambdas should be non-negative")
+    ulam <- as.double(rev(sort(lambda)))
+    nlam <- as.integer(length(lambda))
+  }
 
   fit <- switch(family,
-                gaussian = lspath(x = x, y = y, e = e, df = df,
-                                  group.penalty = group.penalty,
-                                  weights = weights,
-                                  lambda.beta = lambda.beta,
-                                  lambda.gamma = lambda.gamma,
-                                  lambda.factor = lambda.factor,
-                                  nlambda.gamma = nlambda.gamma,
-                                  nlambda.beta = nlambda.beta,
-                                  nlambda = nlambda,
-                                  thresh = thresh,
-                                  maxit = maxit,
-                                  initialization.type = initialization.type,
-                                  center = center,
-                                  normalize = normalize,
-                                  verbose = verbose,
-                                  cores = cores)
+    gaussian = lspath(
+      x = x,
+      y = y,
+      e = e,
+      basis = basis,
+      center.x = center.x,
+      center.e = center.e,
+      expand = expand,
+      group = group,
+      group.penalty = group.penalty,
+      weights = weights,
+      nlambda = nlam,
+      thresh = thresh,
+      maxit = maxit,
+      verbose = verbose,
+      alpha = alpha,
+      nobs = nobs,
+      nvars = nvars,
+      vp = vp, # penalty.factor
+      we = we, #we, wj, wje are subsets of vp
+      wj = wj,
+      wje = wje,
+      flmin = flmin, # lambda.factor
+      vnames = vnames, # variable names
+      ne = ne, # dfmax
+      ulam = ulam
+    )
   )
 
   fit$call <- this.call
   fit$nobs <- nobs
-  class(fit) = c(class(fit), "sail")
+  class(fit) <- c(class(fit), "sail")
   fit
-
-  }
+}
 
 
 #' Cross-validation for sail
@@ -301,167 +362,122 @@ sail <- function(x, y, e, df,
 #'   Maintainer: Sahir Bhatnagar \email{sahir.bhatnagar@@mail.mcgill.ca}
 #' @export
 
-cv.sail <- function(x, y, e, df,
-                       weights,
-                       lambda.beta = NULL, lambda.gamma = NULL,
-                       nlambda.gamma = 10,
-                       nlambda.beta = 10,
-                       nlambda = 100,
-                       parallel = TRUE,
-                       type.measure = c("mse"),
-                       cores = 6,
-                       nfolds = 10, ...) {
-
-
-  # x = X; y = Y; main.effect.names = main_effect_names;
-  # interaction.names = interaction_names;
-  # lambda.beta = NULL ; lambda.gamma = NULL
-  # thresh = 1e-4 ; maxit = 500 ; initialization.type = "ridge";
-  # nlambda.gamma = 5; nlambda.beta = 20; cores = 1;
-  # center=TRUE; normalize=TRUE
-  #
-  # nfolds = 5
-  # grouped = TRUE; keep = FALSE; parallel = TRUE
-# browser()
-  #initialization.type <- match.arg(initialization.type)
-  # ==========================================
-  type.measure <- match.arg(type.measure)
-
-  if (!is.null(lambda.beta) && length(lambda.beta) < 2)
-    stop("Need more than one value of lambda.beta for cv.sail")
-  if (!is.null(lambda.gamma) && length(lambda.gamma) < 2)
-    stop("Need more than one value of lambda.gamma for cv.sail")
-
+cv.sail <- function(x, y, e, ...,
+                    weights,
+                    lambda = NULL,
+                    type.measure = c("mse", "deviance", "class", "auc", "mae"),
+                    nfolds = 10, foldid, grouped = TRUE, keep = FALSE, parallel = FALSE) {
+  if (missing(type.measure)) type.measure <- "default" else type.measure <- match.arg(type.measure)
+  if (!is.null(lambda) && length(lambda) < 2) {
+    stop("Need more than one value of lambda for cv.sail")
+  }
   N <- nrow(x)
-  if (missing(weights))
-    weights = rep(1, N)
-  else weights = as.double(weights)
+  if (missing(weights)) {
+    weights <- rep(1, N)
+  } else {
+    weights <- as.double(weights)
+  }
   y <- drop(y)
   sail.call <- match.call(expand.dots = TRUE)
-  which <- match(c("type.measure", "nfolds"), names(sail.call), F)
-  if (any(which)) sail.call = sail.call[-which]
-  sail.call[[1]] = as.name("sail")
+  which <- match(c(
+    "type.measure", "nfolds", "foldid", "grouped",
+    "keep"
+  ), names(sail.call), F)
+  if (any(which)) {
+    sail.call <- sail.call[-which]
+  }
+  sail.call[[1]] <- as.name("sail")
+  sail.object <- sail(
+    x = x, y = y, e = e, ...,
+    weights = weights, lambda = lambda
+  )
 
-  sail.object <- sail(x = x, y = y, e = e, df = df,
-                            weights = weights,
-                            lambda.beta = lambda.beta,
-                            lambda.gamma = lambda.gamma,
-                            nlambda = nlambda,
-                            nlambda.gamma = nlambda.gamma,
-                            nlambda.beta = nlambda.beta,
-                            ...)
-# browser()
-  sail.object$call = sail.call
+  sail.object$call <- sail.call
 
-  nz.main = sapply(predict(sail.object, type = "nonzero")[["main"]], length)
-  nz.interaction = sapply(predict(sail.object, type = "nonzero")[["interaction"]], length)
+  ### Next line is commented out so each call generates its own lambda sequence
+  # lambda <- sail.object$lambda
 
-  foldid <- createfolds(y, k = nfolds)
-  if (nfolds < 3)
+  # nz = sapply(predict(sail.object, type = "nonzero"), length)
+  nz <- sapply(sail.object$active, length)
+  if (missing(foldid)) foldid <- sample(rep(seq(nfolds), length = N)) else nfolds <- max(foldid)
+  if (nfolds < 3) {
     stop("nfolds must be bigger than 3; nfolds=10 recommended")
-  outlist = as.list(seq(nfolds))
-
-  pb <- progress::progress_bar$new(
-    format = "  performing cross validation [:bar] :percent eta: :eta",
-    total = nfolds, clear = FALSE, width= 90)
-  pb$tick(0)
-
+  }
+  outlist <- as.list(seq(nfolds))
   if (parallel) {
+    outlist <- foreach(i = seq(nfolds), .packages = c("sail")) %dopar% {
+      which <- foldid == i
 
-    outlist = foreach(i = seq(nfolds), .packages = c("glmnet")) %dopar%
-    {
-      which = foldid == i
-      if (is.matrix(y)) y_sub = y[!which, ] else y_sub = y[!which]
-      #print(paste("Foldid = ",i))
-      pb$tick()
-      sail(x = x[!which, , drop = FALSE],
-              y = y_sub,
-              e = e[!which],
-              df = df,
-              weights = weights[!which],
-              lambda.beta = sail.object$lambda.beta,
-              lambda.gamma = sail.object$lambda.gamma,
-              nlambda = sail.object$nlambda,
-              nlambda.gamma = sail.object$nlambda.gamma,
-              nlambda.beta = sail.object$nlambda.beta, ...)
+      if (length(dim(y)) > 1) {
+        y_sub <- y[!which, ]
+      } else {
+        y_sub <- y[!which]
+      }
 
+      if (length(dim(e)) > 1) {
+        e_sub <- e[!which, ]
+      } else {
+        e_sub <- e[!which]
+      }
+
+      sail(
+        x = x[!which, , drop = FALSE], y = y_sub, e = e_sub, ...,
+        lambda = lambda, weights = weights[!which]
+      )
     }
   } else {
     for (i in seq(nfolds)) {
-      which = foldid == i
+      which <- foldid == i
 
-      if (is.matrix(y))
-        y_sub = y[!which, ] else y_sub = y[!which]
+      if (is.matrix(y)) {
+        y_sub <- y[!which, ]
+      } else {
+        y_sub <- y[!which]
+      }
 
-        pb$tick()
+      if (length(dim(e)) > 1) {
+        e_sub <- e[!which, ]
+      } else {
+        e_sub <- e[!which]
+      }
 
-        outlist[[i]] = sail(x[!which, , drop = FALSE],
-                               y = y_sub,
-                               e = e[!which],
-                               df = df,
-                               weights = weights[!which],
-                               lambda.beta = sail.object$lambda.beta,
-                               lambda.gamma = sail.object$lambda.gamma,
-                               nlambda = sail.object$nlambda,
-                               nlambda.gamma = sail.object$nlambda.gamma,
-                               nlambda.beta = sail.object$nlambda.beta, ...)
+      outlist[[i]] <- sail(
+        x = x[!which, , drop = FALSE], y = y_sub, e = e_sub, ...,
+        lambda = lambda, weights = weights[!which]
+      )
     }
   }
 
-  lambda.beta <- sail.object$lambda.beta
-  lambda.gamma <- sail.object$lambda.gamma
-  fun <- paste("cv", class(sail.object)[[1]], sep = "_")
-  cvstuff <- do.call(fun, list(outlist = outlist,
-                               y = y, df = df,
-                               design = sail.object$design,
-                               foldid = foldid,
-                               nlambda = sail.object$nlambda,
-                               nlambda.beta = sail.object$nlambda.beta,
-                               nlambda.gamma = sail.object$nlambda.gamma))
-
+  fun <- paste("cv", class(sail.object)[[1]], sep = ".")
+  lambda <- sail.object$lambda
+  cvstuff <- do.call(fun, list(
+    outlist, lambda, x, y, e, weights,
+    foldid, type.measure, grouped, keep
+  ))
   cvm <- cvstuff$cvm
   cvsd <- cvstuff$cvsd
-  # the following checks is any of the tunining parameter pairs
-  # have a cvsd==NA or did not converge. cvstuff$converged should be
-  # equal to the number of folds because it is the sum of booleans
-  # that converged over all folds.
-  nas <- (is.na(cvsd) + (cvstuff$converged != nfolds)) != 0
+  nas <- is.na(cvsd)
   if (any(nas)) {
-    lambda.beta = sail.object$lambda.beta[!nas]
-    lambda.gamma = sail.object$lambda.gamma[!nas]
-    cvm = cvm[!nas]
-    cvsd = cvsd[!nas]
-    # this is the total number of non-zero parameters (both betas and alphas)
-    nz.main = nz.main[!nas]
-    nz.interaction = nz.interaction[!nas]
+    lambda <- lambda[!nas]
+    cvm <- cvm[!nas]
+    cvsd <- cvsd[!nas]
+    nz <- nz[!nas]
   }
   cvname <- cvstuff$name
-
-  df <- as.data.frame(cbind(lambda.beta = lambda.beta,
-                            lambda.gamma = lambda.gamma,
-                            mse = cvm,
-                            upper = cvm + cvsd,
-                            lower = cvm - cvsd,
-                            nz.main = nz.main,
-                            nz.interaction = nz.interaction,
-                            log.gamma = round(log(lambda.gamma),2)))
-# browser()
-  rownames(df) <- gsub("\\.(.*)", "",rownames(df))
-
-  out <- list(lambda.beta = lambda.beta, lambda.gamma = lambda.gamma,
-              cvm = cvm, cvsd = cvsd, cvup = cvm + cvsd,
-              cvlo = cvm - cvsd, nz.main = nz.main, name = cvname,
-              nz.interaction = nz.interaction,
-              sail.fit = sail.object, converged = cvstuff$converged,
-              cvm.mat.all = cvstuff$cvm.mat.all,
-              df = df, nfolds = nfolds)
-
-  lamin.beta = if (cvname == "AUC")
-    getmin_type(lambda.beta, -cvm, cvsd, type = "beta") else getmin_type(lambda.beta, cvm, cvsd, type = "beta")
-
-  obj <- c(out, as.list(lamin.beta))
+  out <- list(
+    lambda = lambda, cvm = cvm, cvsd = cvsd, cvup = cvm +
+      cvsd, cvlo = cvm - cvsd, nzero = nz, name = cvname,
+    sail.fit = sail.object
+  )
+  if (keep) {
+    out <- c(out, list(fit.preval = cvstuff$fit.preval, foldid = foldid))
+  }
+  lamin <- if (cvname == "AUC") {
+    getmin(lambda, -cvm, cvsd)
+  } else {
+    getmin(lambda, cvm, cvsd)
+  }
+  obj <- c(out, as.list(lamin))
   class(obj) <- "cv.sail"
   obj
 }
-
-
