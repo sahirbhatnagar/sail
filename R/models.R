@@ -22,7 +22,9 @@
 #'   \code{family = "gaussian"} is implemented.
 #' @param penalty.factor penalty.factor must be of length 1 + 2*ncol(x), and the
 #'   first entry should correspond to the penalty.factor for X_E, the next
-#'   ncol(x) correspond to main effects, and then interactions
+#'   ncol(x) correspond to main effects, and then interactions. . 1st entry
+#'   should correspond to the penalty.factor for X_E, the next ncol(x)
+#'   correspond to main effects, and then interactions
 #' @param main.effect.names character vector of main effects names. MUST be
 #'   ordered in the same way as the column names of \code{x}. e.g. if the column
 #'   names of \code{x} are \code{"x1","x2"} then \code{main.effect.names =
@@ -164,7 +166,7 @@ sail <- function(x, y, e,
                  expand = TRUE, # if true, use basis to expand X's, else user should provide main effects design with group membership
                  group,
                  weights, # observation weights
-                 penalty.factor = rep(1, 1 + 2 * nvars), # predictor (adaptive lasso) weights, the first entry must be for the E variable, then Xs, then X:E
+                 penalty.factor = rep(1, 1 + 2 * nvars), # predictor (adaptive lasso) weights, the first entry must be for the E variable, then Xs, then X:E (gammas)
                  lambda.factor = ifelse(nobs < (1 + 2 * bscols * nvars), 0.01, 0.0001),
                  lambda = NULL,
                  alpha = 0.5,
@@ -172,7 +174,6 @@ sail <- function(x, y, e,
                  thresh = 1e-4,
                  maxit = 1000,
                  dfmax = 2 * nvars + 1,
-                 exclude,
                  verbose = TRUE) {
 
   # browser()
@@ -268,24 +269,9 @@ sail <- function(x, y, e,
   }
 
   ne <- ifelse(expand, as.integer(dfmax), 2 * length(group) + 1)
-  if (missing(exclude)) exclude <- integer(0)
-  if (any(penalty.factor == Inf)) {
-    exclude <- c(exclude, seq(nvars)[penalty.factor == Inf])
-    exclude <- sort(unique(exclude))
-  }
-  if (length(exclude) > 0) {
-    jd <- match(exclude, seq(nvars), 0)
-    if (!all(jd > 0)) stop("Some excluded variables out of range")
-    penalty.factor[jd] <- 1 # ow can change lambda sequence
-    jd <- as.integer(c(length(jd), jd))
-  } else {
-    jd <- as.integer(0)
-  }
+
   vp <- as.double(penalty.factor)
-  if (length(vp) < (1 + 2 * nvars)) stop("penalty.factor must be of length 1 + 2*ncol(x), and
-                                     the first entry should correspond to the penalty.factor
-                                     for X_E, the next ncol(x) correspond to main effects, and then
-                                         interactions")
+  if (length(vp) != (1 + 2 * nvars)) stop("penalty.factor must be of length 1 + 2*ncol(x)", call. = FALSE)
   we <- vp[1] # adaptive lasso weights for environment
   wj <- vp[(seq_len(nvars) + 1)] # adaptive lasso weights for main effects
   wje <- vp[(nvars + 2):length(vp)] # adaptive lasso weights for interactions
@@ -296,13 +282,14 @@ sail <- function(x, y, e,
     # this is for the user defined design matrix
     lambda.factor <- ifelse(nobs < (1 + 2 * length(group)), 0.01, 0.0001)
   } else {
-    bscols <- ncol(basis(x[, 1])) # used for total number of variables for lambda.factor
+    bscols <- ncol(basis(x[, 1, drop = FALSE])) # used for total number of variables for lambda.factor
   }
 
   if (is.null(lambda)) {
     if (lambda.factor >= 1) stop("lambda.factor should be less than 1")
     flmin <- as.double(lambda.factor)
-    ulam <- double(1)
+    # ulam <- double(1)
+    ulam <- NULL
   } else {
     flmin <- as.double(1)
     if (any(lambda < 0)) stop("lambdas should be non-negative")
@@ -329,7 +316,6 @@ sail <- function(x, y, e,
       alpha = alpha,
       nobs = nobs,
       nvars = nvars,
-      jd = jd, # exclude variables (currently not implemented)
       vp = vp, # penalty.factor
       we = we, #we, wj, wje are subsets of vp
       wj = wj,
@@ -376,11 +362,11 @@ sail <- function(x, y, e,
 #'   Maintainer: Sahir Bhatnagar \email{sahir.bhatnagar@@mail.mcgill.ca}
 #' @export
 
-cv.sail <- function(x, y, e, df = NULL, degree = 3,
+cv.sail <- function(x, y, e, ...,
                     weights,
                     lambda = NULL,
                     type.measure = c("mse", "deviance", "class", "auc", "mae"),
-                    nfolds = 10, foldid, grouped = TRUE, keep = FALSE, parallel = FALSE, ...) {
+                    nfolds = 10, foldid, grouped = TRUE, keep = FALSE, parallel = FALSE) {
   if (missing(type.measure)) type.measure <- "default" else type.measure <- match.arg(type.measure)
   if (!is.null(lambda) && length(lambda) < 2) {
     stop("Need more than one value of lambda for cv.sail")
@@ -402,8 +388,8 @@ cv.sail <- function(x, y, e, df = NULL, degree = 3,
   }
   sail.call[[1]] <- as.name("sail")
   sail.object <- sail(
-    x = x, y = y, e = e, df = df, degree = degree,
-    weights = weights, lambda = lambda, ...
+    x = x, y = y, e = e, ...,
+    weights = weights, lambda = lambda
   )
 
   sail.object$call <- sail.call
@@ -435,8 +421,8 @@ cv.sail <- function(x, y, e, df = NULL, degree = 3,
       }
 
       sail(
-        x = x[!which, , drop = FALSE], y = y_sub, e = e_sub, df = df, degree = degree,
-        lambda = lambda, weights = weights[!which], ...
+        x = x[!which, , drop = FALSE], y = y_sub, e = e_sub, ...,
+        lambda = lambda, weights = weights[!which]
       )
     }
   } else {
@@ -456,17 +442,16 @@ cv.sail <- function(x, y, e, df = NULL, degree = 3,
       }
 
       outlist[[i]] <- sail(
-        x = x[!which, , drop = FALSE], y = y_sub, e = e_sub, df = df, degree = degree,
-        lambda = lambda, weights = weights[!which], ...
+        x = x[!which, , drop = FALSE], y = y_sub, e = e_sub, ...,
+        lambda = lambda, weights = weights[!which]
       )
     }
   }
 
   fun <- paste("cv", class(sail.object)[[1]], sep = ".")
   lambda <- sail.object$lambda
-
   cvstuff <- do.call(fun, list(
-    outlist, lambda, x, y, e, df, degree, weights,
+    outlist, lambda, x, y, e, weights,
     foldid, type.measure, grouped, keep
   ))
   cvm <- cvstuff$cvm

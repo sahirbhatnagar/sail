@@ -1172,48 +1172,7 @@ standardize <- function(x, y, center = TRUE, normalize = FALSE) {
 #' @details The output of the \code{cv_lspath} function only returns values for those tuning
 #'   paramters that DID converge
 
-cv_lspath <- function(outlist, y, df, foldid, design,
-                      nlambda, nlambda.beta, nlambda.gamma) {
-  y <- as.double(y)
-  nfolds <- max(foldid)
-  predmat <- matrix(NA, length(y), nlambda)
-  nlams <- double(nfolds)
-  converged <- matrix(nrow = nfolds, ncol = nlambda)
-  for (i in seq(nfolds)) {
-    which <- foldid == i
-
-    # this gives be the fitted object for each CV fold
-    fitobj <- outlist[[i]]
-
-    # this gives the predicted responses for the subjects in the held-out fold
-    # for each lambda so if each fold has 20 subjects, and there are 100
-    # lambdas, then this will return a 20 x 100 matrix
-    preds <- predict(fitobj, newx = design[which, , drop = F], type = "link")
-
-    nlami <- fitobj$nlambda
-    predmat[which, seq(nlami)] <- preds
-    nlams[i] <- nlami
-    converged[i, ] <- fitobj$converged
-  }
-
-  conv <- colSums(converged)
-  cvraw <- (y - predmat)^2
-  cvob <- cvcompute(cvraw, foldid, nlams)
-  cvraw <- cvob$cvraw
-  N <- cvob$N
-  cvm <- apply(cvraw, 2, mean, na.rm = TRUE)
-  cvm_mat_all <- matrix(cvm, ncol = nlambda.gamma, nrow = nlambda.beta, byrow = T)
-
-  cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, mean, na.rm = TRUE) / (N - 1))
-  list(
-    cvm = cvm, cvsd = cvsd, name = "MSE", converged = conv,
-    cvm.mat.all = cvm_mat_all
-  )
-}
-
-
-
-cv.lspath <- function(outlist, lambda, x, y, e, df, degree, weights,
+cv.lspath <- function(outlist, lambda, x, y, e, weights,
                       foldid, type.measure, grouped, keep = FALSE) {
   typenames <- c(
     deviance = "Mean-Squared Error", mse = "Mean-Squared Error",
