@@ -25,8 +25,8 @@ covr <- read.csv("~/git_repositories/sail/data/adni_new/covariates.csv", strings
 DT <- dplyr::inner_join(amy_mat, covr, by = c("PTID" = "IID")) %>%
   select(-AV45_path_bl)
 
-# X <- DT %>% select(starts_with("X"), Age_bl, diag_3bl.x) %>% as.matrix()
-X <- DT %>% select(starts_with("X"), Age_bl, EDUCAT) %>% as.matrix()
+X <- DT %>% select(starts_with("X"), Age_bl, diag_3bl.x) %>% as.matrix()
+# X <- DT %>% select(starts_with("X"), Age_bl, EDUCAT) %>% as.matrix()
 # X <- DT %>% select(starts_with("X")) %>% as.matrix()
 # X <- DT %>% select(starts_with("X"), diag_3bl.x) %>% as.matrix()
 dimnames(X)[[1]] <- DT$PTID
@@ -35,11 +35,11 @@ dimnames(X)[[1]] <- DT$PTID
 # ind <- which(DT$diag_3bl.x==2)
 # X <- X[ind,,drop = F]
 
-# E <- DT %>% pull(APOE_bin) %>% as.numeric
+E <- DT %>% pull(APOE_bin) %>% as.numeric
 # E <- DT %>% pull(APOE_bin) %>% as.numeric
 # E <- E[ind]
 # E <- DT %>% pull(EDUCAT) %>% as.numeric
-E <- DT %>% pull(diag_3bl.x) %>% as.numeric
+# E <- DT %>% pull(diag_3bl.x) %>% as.numeric
 
 Y <- DT %>% pull(MMSCORE_bl) %>% as.numeric
 # Y <- Y[ind]
@@ -49,11 +49,9 @@ hist(E)
 table(Y)
 hist(scale(Y, scale = F))
 # summary(lm(Y ~ X*E))
+f.basis <- function(i) splines::bs(i, df = 5)
 system.time(
-fit <- sail(x = X, y = Y, e = E, df = 3, degree = 3, maxit = 1000,
-            thresh = 1e-4,
-            nlambda = 100,
-            verbose = TRUE, alpha = 0.05)
+  fit <- sail(x = X, y = Y, e = E, basis = f.basis, alpha = 0.1)
 )
 
 fit

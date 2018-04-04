@@ -1659,6 +1659,7 @@ gendata2 <- function(n, p, corr = 0,
 
 gendataPaper <- function(n, p, corr = 0,
                          E = truncnorm::rtruncnorm(n, a = -1, b = 1),
+                         # E = rnorm(n),
                          betaE = 2, SNR = 2, hierarchy = c("strong", "weak", "none"),
                          nonlinear = TRUE, interactions = TRUE) {
   # this is modified from "VARIABLE SELECTION IN NONPARAMETRIC ADDITIVE MODEL" huang et al, Ann Stat.
@@ -1672,6 +1673,10 @@ gendataPaper <- function(n, p, corr = 0,
   W <- replicate(n = p, truncnorm::rtruncnorm(n, a = 0, b = 1))
   U <- truncnorm::rtruncnorm(n, a = 0, b = 1)
   V <- truncnorm::rtruncnorm(n, a = 0, b = 1)
+
+  # W <- replicate(n = p, rnorm(n))
+  # U <- rnorm(n)
+  # V <- rnorm(n)
 
   X1 <- (W[, 1] + corr * U) / (1 + corr)
   X2 <- (W[, 2] + corr * U) / (1 + corr)
@@ -1979,19 +1984,18 @@ design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, cen
     if (center.x) {
       Phi_j_list <- lapply(
         seq_len(nvars),
-        function(j) standardize(basis(x[, j]),
+        function(j) standardize(basis(x[, j, drop = FALSE]),
             center = TRUE
           )$x
       )
     } else {
       Phi_j_list <- lapply(
         seq_len(nvars),
-        function(j) basis(x[, j])
+        function(j) basis(x[, j, drop = FALSE])
       )
     }
 
     ncols <- ncol(Phi_j_list[[1]]) # this is to get the number of columns for each expansion
-    # Phi_j_list <- lapply(seq_len(nvars), function(j) gamsel::basis.gen(x[,j], df = df, degree = degree))
     Phi_j <- do.call(cbind, Phi_j_list)
     main_effect_names <- paste(rep(vnames, each = ncols), rep(seq_len(ncols), times = nvars), sep = "_")
     dimnames(Phi_j)[[2]] <- main_effect_names

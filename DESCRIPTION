@@ -16,7 +16,8 @@ Imports:
     stats,
     splines,
     glmnet, 
-    gglasso
+    gglasso,
+    truncnorm
 Suggests:
     grpreg
 License: What license is it under?

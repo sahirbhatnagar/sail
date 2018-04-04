@@ -317,16 +317,6 @@ lspath <- function(x,
         }
       }
 
-      #   criterion_theta <- l2norm(do.call(c,theta_next) - do.call(c,theta)) ^ 2
-      #   converged_theta <- criterion_theta < 1e-2
-      #   converged_theta <- if (is.na(converged_theta)) FALSE else converged_theta
-      #   # if (verbose) message(sprintf("Iteration: %f, l2norm((theta_next - theta)^2: %f", k,
-      #   #                              criterion_theta))
-      #   k <- k + 1
-      #   theta <- theta_next
-      #
-      # }
-
       # used to check convergence
       theta_next_vec <- do.call(c, theta_next)
 
