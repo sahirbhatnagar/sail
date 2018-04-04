@@ -345,7 +345,7 @@ plotMain <- function(object, xvar, s, f.truth, col = c("#D55E00", "#009E73"), le
   do.call("plot", plot.args)
   abline(h = 0, lwd = 1, col = "gray")
   lines(originalX[order(originalX)], f.hat[order(originalX)], col = col[1], lwd = 3)
-  rug(originalX, side = 1)
+  graphics::rug(originalX, side = 1)
   if (!missing(f.truth)) {
     lines(originalX[order(originalX)], f.truth[order(originalX)], col = col[2], lwd = 3)
   }
@@ -394,12 +394,12 @@ plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, truthonly = F
   if (simulation) {
     f.est <- function(X, E) {
       # E * as.vector(betaE) + standardize(splines::bs(X, df = object$df, degree = object$degree))$x %*% betas +
-      (E * standardize(splines::bs(X, df = object$df, degree = object$degree))$x) %*% alphas
+      (E * sail::standardize(splines::bs(X, df = object$df, degree = object$degree))$x) %*% alphas
     }
   } else {
     f.est <- function(X, E) {
-      E * as.vector(betaE) + standardize(splines::bs(X, df = object$df, degree = object$degree))$x %*% betas +
-        (E * standardize(splines::bs(X, df = object$df, degree = object$degree))$x) %*% alphas
+      E * as.vector(betaE) + sail::standardize(splines::bs(X, df = object$df, degree = object$degree))$x %*% betas +
+        (E * sail::standardize(splines::bs(X, df = object$df, degree = object$degree))$x) %*% alphas
     }
   }
 
@@ -419,7 +419,7 @@ plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, truthonly = F
   if (truthonly) {
     par(mfrow = c(1, 1), tcl = -0.5, family = "serif", omi = c(0.2, 0.2, 0, 0))
     par(mai = c(0., 0.2, 0.4, 0.))
-    persp(x, e, z.truth,
+    graphics::persp(x, e, z.truth,
       zlim = z_range,
       theta = 30, phi = 30,
       ltheta = 120, expand = 0.5,
@@ -436,7 +436,7 @@ plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, truthonly = F
   } else if (!missing(f.truth)) {
     par(mfrow = c(1, 2), tcl = -0.5, family = "serif", omi = c(0.2, 0.2, 0, 0))
     par(mai = c(0., 0.8, 0.6, 0.))
-    persp(x, e, z.truth,
+    graphics::persp(x, e, z.truth,
       zlim = z_range,
       theta = 30, phi = 30,
       ltheta = 120, expand = 0.5,
@@ -450,7 +450,7 @@ plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, truthonly = F
       ylab = "X_E",
       zlab = "Y", main = "Truth"
     )
-    persp(x, e, z.est,
+    graphics::persp(x, e, z.est,
       theta = 30, phi = 30,
       ltheta = 120, expand = 0.5,
       r = 2, shade = 0.3, axes = TRUE, scale = TRUE, box = T,
@@ -467,7 +467,7 @@ plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, truthonly = F
   } else {
     par(mfrow = c(1, 1), tcl = -0.5, family = "serif", omi = c(0.2, 0.2, 0, 0))
     par(mai = c(0., 0.2, 0.4, 0.))
-    persp(x, e, z.est,
+    graphics::persp(x, e, z.est,
       cex.lab = 3,
       cex.main = 3,
       theta = 30, phi = 30,

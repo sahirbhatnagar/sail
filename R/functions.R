@@ -352,7 +352,7 @@ soft <- function(x, y, beta, lambda, weight) {
   if (missing(x) & missing(y) & missing(beta)) stop("user must supply x AND y, or beta but not both")
   if (missing(x) & missing(y)) return(list("beta" = sign(beta) * pmax(0, abs(beta) - lambda * weight)))
   if (missing(beta)) {
-    beta <- coef(lm.fit(x = x[, 1, drop = F], y = y))[1]
+    beta <- coef(stats::lm.fit(x = x[, 1, drop = F], y = y))[1]
 
     b_lasso <- sign(beta) * pmax(0, abs(beta) - lambda * weight)
 
@@ -1214,8 +1214,8 @@ cv.lspath <- function(outlist, lambda, x, y, e, weights,
     weights <- cvob$weights
     N <- cvob$N
   }
-  cvm <- apply(cvraw, 2, weighted.mean, w = weights, na.rm = TRUE)
-  cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, weighted.mean,
+  cvm <- apply(cvraw, 2, stats::weighted.mean, w = weights, na.rm = TRUE)
+  cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, stats::weighted.mean,
     w = weights, na.rm = TRUE
   ) / (N - 1))
   out <- list(cvm = cvm, cvsd = cvsd, name = typenames[type.measure])
@@ -1243,7 +1243,7 @@ cvcompute <- function(mat, weights, foldid, nlams) {
   for (i in seq(nfolds)) {
     mati <- mat[foldid == i, , drop = FALSE]
     wi <- weights[foldid == i]
-    outmat[i, ] <- apply(mati, 2, weighted.mean, w = wi, na.rm = TRUE)
+    outmat[i, ] <- apply(mati, 2, stats::weighted.mean, w = wi, na.rm = TRUE)
     good[i, seq(nlams[i])] <- 1
   }
   N <- apply(good, 2, sum)
@@ -1305,7 +1305,7 @@ lambda.interp <- function(lambda, s) {
     k <- length(lambda)
     sfrac <- (lambda[1] - s) / (lambda[1] - lambda[k])
     lambda <- (lambda[1] - lambda) / (lambda[1] - lambda[k])
-    coord <- approx(lambda, seq(lambda), sfrac)$y
+    coord <- stats::approx(lambda, seq(lambda), sfrac)$y
     left <- floor(coord)
     right <- ceiling(coord)
     sfrac <- (sfrac - lambda[right]) / (lambda[left] - lambda[right])
@@ -1490,7 +1490,7 @@ createfolds <- function(y, k = 10, list = FALSE, returnTrain = FALSE) {
     if (cuts > 5) {
       cuts <- 5
     }
-    breaks <- unique(quantile(y, probs = seq(0, 1, length = cuts)))
+    breaks <- unique(stats::quantile(y, probs = seq(0, 1, length = cuts)))
     y <- cut(y, breaks, include.lowest = TRUE)
   }
   if (k < length(y)) {
@@ -1542,13 +1542,13 @@ l2norm <- function(x) sqrt(sum(x^2))
 #' @description function to simulate data
 #'
 gendata <- function(n, p, df, degree, intercept = TRUE,
-                    E = rnorm(n = n, sd = 0.5),
+                    E = stats::rnorm(n = n, sd = 0.5),
                     # E = rbinom(n = n, size = 1, prob = 0.5),
                     # E = runif(n=n),
                     betaE = 2, SNR = 1) {
 
   # covariates
-  X <- replicate(n = p, runif(n))
+  X <- replicate(n = p, stats::runif(n))
 
   ncols <- degree + intercept
   # coefficients: each is a vector of length df and corresponds to the expansion of X_j
@@ -1571,14 +1571,14 @@ gendata <- function(n, p, df, degree, intercept = TRUE,
   # error
   error <- stats::rnorm(n)
 
-  Y.star <- bs(X[, 1], df = df, degree = degree) %*% b1 +
-    bs(X[, 2], df = df, degree = degree) %*% b2 +
-    bs(X[, 3], df = df, degree = degree) %*% b3 +
-    bs(X[, 4], df = df, degree = degree) %*% b4 +
+  Y.star <- splines::bs(X[, 1], df = df, degree = degree) %*% b1 +
+    splines::bs(X[, 2], df = df, degree = degree) %*% b2 +
+    splines::bs(X[, 3], df = df, degree = degree) %*% b3 +
+    splines::bs(X[, 4], df = df, degree = degree) %*% b4 +
     # bs(X[,5], df = df, degree = degree) %*% b5 +
     betaE * E +
-    E * bs(X[, 1], df = df, degree = degree) %*% bE1 +
-    E * bs(X[, 2], df = df, degree = degree) %*% bE2
+    E * splines::bs(X[, 1], df = df, degree = degree) %*% bE1 +
+    E * splines::bs(X[, 2], df = df, degree = degree) %*% bE2
 
   k <- sqrt(stats::var(Y.star) / (SNR * stats::var(error)))
 

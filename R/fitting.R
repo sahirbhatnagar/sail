@@ -96,9 +96,9 @@ lspath <- function(x,
 
   # Objects to store results ------------------------------------------------
 
-  a0 <- setNames(rep(0, nlambda), lambdaNames)
+  a0 <- stats::setNames(rep(0, nlambda), lambdaNames)
 
-  environ <- setNames(rep(0, nlambda), lambdaNames)
+  environ <- stats::setNames(rep(0, nlambda), lambdaNames)
 
   betaMat <- matrix(
     nrow = length(main_effect_names), ncol = nlambda,
@@ -243,17 +243,17 @@ lspath <- function(x,
                 lambda = LAMBDA * (1 - alpha),
                 intercept = F
               ))[-1, ],
-              MCP = grpreg::grpreg(
+              grMCP = grpreg::grpreg(
                 X = x_tilde_2[[j]],
                 y = R,
                 group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
-                penalty = "gel",
+                penalty = "grMCP",
                 family = "gaussian",
                 group.multiplier = as.vector(wj[j]),
                 lambda = LAMBDA * (1 - alpha),
                 intercept = T
               )$beta[-1, ],
-              SCAD = grpreg::grpreg(
+              grSCAD = grpreg::grpreg(
                 X = x_tilde_2[[j]],
                 y = R,
                 group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
@@ -469,31 +469,26 @@ lspath <- function(x,
     alpha = alpha_final[, converged, drop = FALSE],
     gamma = gamma_final[, converged, drop = FALSE],
     bE = environ[converged],
-    group = group,
     active = active[converged],
     lambda = lambdas[converged],
     lambda2 = alpha,
-    # outPrint = outPrint,
     dfbeta = outPrint[converged, "dfBeta"],
     dfalpha = outPrint[converged, "dfAlpha"],
     dfenviron = outPrint[converged, "dfEnviron"],
     dev.ratio = outPrint[converged, "percentDev"],
-    # deviance = outPrint[,"deviance", drop = F],
     converged = converged,
-    # x = x, y = y, bx = bx, by = by, sx = sx,
-    # center = center, normalize = normalize,
     nlambda = sum(converged),
     design = design,
-    we = we,
-    wj = wj,
-    wje = wje,
-    Phi_j_list = Phi_j_list,
-    XE_Phi_j_list = XE_Phi_j_list,
-    Phi_j = Phi_j,
-    XE_Phi_j = XE_Phi_j,
-    x = x,
-    e = e,
-    y = y,
+    # we = we,
+    # wj = wj,
+    # wje = wje,
+    # Phi_j_list = Phi_j_list,
+    # XE_Phi_j_list = XE_Phi_j_list,
+    # Phi_j = Phi_j,
+    # XE_Phi_j = XE_Phi_j,
+    # x = x,
+    # e = e,
+    # y = y,
     nobs = nobs,
     nvars = nvars,
     vnames = vnames,
@@ -502,6 +497,7 @@ lspath <- function(x,
     center.e = center.e,
     basis = basis,
     expand = expand,
+    group = group,
     interaction.names = interaction_names,
     main.effect.names = main_effect_names
   )

@@ -5,18 +5,20 @@ Authors@R: c(
   person("Sahir", "Bhatnagar", email = "sahir.bhatnagar@gmail.com",
   role = c("aut", "cre"), comment = "http://sahirbhatnagar.com/"),
   person("Yi", "Yang", email = "yi.yang6@mcgill.ca",
-  role = c("aut"), comment = "http://www.math.mcgill.ca/yyang/")
+  role = c("aut"), comment = "http://www.math.mcgill.ca/yyang/"),
+  person("Celia", "Greenwood", email = "celia.greenwood@mcgill.ca",
+  role = c("aut"), comment = "https://www.mcgill.ca/statisticalgenetics/")
   )
 Description: What the package does (one paragraph).
 Depends: R (>= 3.4.0)
 Imports:
-    data.table,
-    ggplot2,
     methods,
-    mgcv,
     stats,
-    survival,
-    VGAM
+    splines,
+    glmnet, 
+    gglasso
+Suggests:
+    grpreg
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
