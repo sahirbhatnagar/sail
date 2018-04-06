@@ -1541,9 +1541,9 @@ l2norm <- function(x) sqrt(sum(x^2))
 #'
 #' @description function to simulate data
 #'
-gendata <- function(n, p, df, degree, intercept = TRUE,
-                    E = stats::rnorm(n = n, sd = 0.5),
-                    # E = rbinom(n = n, size = 1, prob = 0.5),
+gendata <- function(n, p, df, degree, intercept = FALSE,
+                    # E = stats::rnorm(n = n, sd = 0.5),
+                    E = rbinom(n = n, size = 1, prob = 0.5),
                     # E = runif(n=n),
                     betaE = 2, SNR = 1) {
 
@@ -1573,8 +1573,8 @@ gendata <- function(n, p, df, degree, intercept = TRUE,
 
   Y.star <- splines::bs(X[, 1], df = df, degree = degree) %*% b1 +
     splines::bs(X[, 2], df = df, degree = degree) %*% b2 +
-    splines::bs(X[, 3], df = df, degree = degree) %*% b3 +
-    splines::bs(X[, 4], df = df, degree = degree) %*% b4 +
+    # splines::bs(X[, 3], df = df, degree = degree) %*% b3 +
+    # splines::bs(X[, 4], df = df, degree = degree) %*% b4 +
     # bs(X[,5], df = df, degree = degree) %*% b5 +
     betaE * E +
     E * splines::bs(X[, 1], df = df, degree = degree) %*% bE1 +
@@ -1659,7 +1659,7 @@ gendata2 <- function(n, p, corr = 0,
 
 gendataPaper <- function(n, p, corr = 0,
                          E = truncnorm::rtruncnorm(n, a = -1, b = 1),
-                         # E = rnorm(n),
+                         # E = rbinom(n,1,0.5),
                          betaE = 2, SNR = 2, hierarchy = c("strong", "weak", "none"),
                          nonlinear = TRUE, interactions = TRUE) {
   # this is modified from "VARIABLE SELECTION IN NONPARAMETRIC ADDITIVE MODEL" huang et al, Ann Stat.

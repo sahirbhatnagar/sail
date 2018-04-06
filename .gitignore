@@ -6,7 +6,8 @@
 *.out
 *.gz
 *.toc
-data/*
+data-nogit/*
+data-nogit
 .Rproj.user
 .Rhistory
 .RData

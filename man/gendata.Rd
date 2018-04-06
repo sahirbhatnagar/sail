@@ -4,8 +4,8 @@
 \alias{gendata}
 \title{Simulate Data}
 \usage{
-gendata(n, p, df, degree, intercept = TRUE, E = stats::rnorm(n = n, sd =
-  0.5), betaE = 2, SNR = 1)
+gendata(n, p, df, degree, intercept = FALSE, E = rbinom(n = n, size = 1,
+  prob = 0.5), betaE = 2, SNR = 1)
 }
 \description{
 function to simulate data

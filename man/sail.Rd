@@ -10,13 +10,14 @@ sail(x, y, e, basis = function(i) splines::bs(i, df = 5),
   weights, penalty.factor = rep(1, 1 + 2 * nvars),
   lambda.factor = ifelse(nobs < (1 + 2 * bscols * nvars), 0.01, 1e-04),
   lambda = NULL, alpha = 0.5, nlambda = 100, thresh = 1e-04,
-  maxit = 1000, dfmax = 2 * nvars + 1, verbose = TRUE)
+  fdev = 1e-05, maxit = 1000, dfmax = 2 * nvars + 1, verbose = 1)
 }
 \arguments{
 \item{x}{input matrix of dimension \code{n x p}, where \code{n} is the number
 of subjects and p is number of X variables. Each row is an observation
-vector. Can be a high-dimensional (n < p) matrix. Can be a user defined design matrix of main effects
-only (without intercept) if \code{expand=FALSE}}
+vector. Can be a high-dimensional (n < p) matrix. Can be a user defined
+design matrix of main effects only (without intercept) if
+\code{expand=FALSE}}
 
 \item{y}{response variable. For \code{family="gaussian"} should be a 1 column
 matrix or numeric vector. For \code{family="binomial"}, should be a 1
@@ -36,18 +37,19 @@ See references for details. Default: \code{"gglasso"}.}
 \item{family}{response type. See \code{y} for details. Currently only
 \code{family = "gaussian"} is implemented. Default: \code{"gaussian"}.}
 
-\item{center.x}{should the columns of \code{x} (after basis expansion) be centered (logical).
-Default: \code{TRUE}.}
+\item{center.x}{should the columns of \code{x} (after basis expansion) be
+centered (logical). Default: \code{TRUE}.}
 
-\item{center.e}{should exposure variable \code{e} be centered. Default: \code{TRUE}.}
+\item{center.e}{should exposure variable \code{e} be centered. Default:
+\code{TRUE}.}
 
 \item{expand}{should \code{basis} be applied to every column of \code{x}
 (logical). Set to \code{FALSE} if you want a user defined main effects
 design matrix. If \code{FALSE} the \code{group} membership argument must
 also be supplied. Default: \code{TRUE}.}
 
-\item{group}{a vector of consecutive integers, starting from 1, describing the grouping of the
-coefficients. Only required when \code{expand=FALSE}.}
+\item{group}{a vector of consecutive integers, starting from 1, describing
+the grouping of the coefficients. Only required when \code{expand=FALSE}.}
 
 \item{weights}{observation weights. Default is 1 for each observation.
 Currently NOT IMPLEMENTED.}
@@ -95,74 +97,97 @@ function after all coefficient updates is less than \code{thresh}. Default:
 \code{1e-04}.}
 
 \item{maxit}{maximum number of outer-loop iterations allowed at fixed lambda
-value. If models do not converge, consider increasing \code{maxit}. Default: 1000.}
+value. If models do not converge, consider increasing \code{maxit}.
+Default: 1000.}
 
 \item{dfmax}{limit the maximum number of variables in the model. Useful for
 very large \code{q} (the total number of predictors in the design matrix -
 including interactions), if a partial path is desired. Default: \code{2 * p
 + 1} where p is the number of columns in \code{x}.}
 
-\item{verbose}{display progress (logical). Default: \code{TRUE}.}
+\item{verbose}{display progress. Can be either 0,1 or 2. 0 will not display
+any progress, 2 will display very detailed progress and 1 is somewhere in
+between. Default: 1.}
 }
 \value{
-an object with S3 class "sail", \code{"*"}, where \code{"*"} is "lspath" or
-  "logitreg". Results are provided for converged values of lambda only.
-  \describe{\item{call}{the call that produced this object}
-  \item{a0}{intercept sequence of length \code{nlambda}} \item{beta}{a (# main effects after basis expansion
-  x \code{nlambda}) matrix of main effects coefficients, stored
-  in sparse column format \code{("dgCMatrix")}} \item{alpha}{a (# interaction effects after basis expansion x
-  \code{nlambda}) matrix of interaction effects coefficients,
-  stored in sparse column format \code{("dgCMatrix")}} \item{gamma}{A \code{p x
+an object with S3 class "sail", \code{"*"}, where \code{"*"} is
+  "lspath" or "logitreg". Results are provided for converged values of lambda
+  only. \describe{\item{call}{the call that produced this object}
+  \item{a0}{intercept sequence of length \code{nlambda}} \item{beta}{a (#
+  main effects after basis expansion x \code{nlambda}) matrix of main effects
+  coefficients, stored in sparse column format \code{("dgCMatrix")}}
+  \item{alpha}{a (# interaction effects after basis expansion x
+  \code{nlambda}) matrix of interaction effects coefficients, stored in
+  sparse column format \code{("dgCMatrix")}} \item{gamma}{A \code{p x
   \code{nlambda}} matrix of (\eqn{\gamma}) coefficients, stored in sparse
   column format \code{("dgCMatrix")}} \item{bE}{exposure effect estimates of
-  length \code{nlambda}}
-  \item{active}{list of length \code{nlambda} containing character vector of selected variables}
-  \item{lambda}{the actual sequence of lambda values used}
-  \item{lambda2}{value for the mixing tuning parameter \eqn{0<\alpha<1}}
-  \item{dfbeta}{the number of nonzero main effect coefficients for each value of lambda}
-  \item{dfalpha}{the number of nonzero interaction coefficients for each value of lambda}
-  \item{dfenviron}{the number of nonzero exposure (\code{e}) coefficients for each value of lambda}
-  \item{dev.ratio}{the fraction of (null) deviance explained (for "lspath", this is the R-square). The deviance calculations incorporate weights if present in the model. The deviance is defined to be 2*(loglike_sat - loglike), where loglike_sat is the log-likelihood for the saturated model (a model with a free parameter per observation). Hence dev.ratio=1-dev/nulldev.}
-  \item{converged}{vector of logicals of length \code{nlambda} indicating if the algorithm converged}
-  \item{nlambda}{number of converged lambdas}
-  \item{design}{design matrix (X, E, X:E), of dimension \code{n x (2*ncols*p+1)} if \code{expand=TRUE}. This is used in
-  the \code{predict} method.}
-  \item{nobs}{number of observations}
-  \item{nvars}{number of main effect variables}
-  \item{vnames}{character of variable names for main effects (without expansion)}
-  \item{ncols}{an integer of basis for each column of x if \code{expand=TRUE}, or an integer vector of basis for each variable if \code{expand=FALSE}}
+  length \code{nlambda}} \item{active}{list of length \code{nlambda}
+  containing character vector of selected variables} \item{lambda}{the actual
+  sequence of lambda values used} \item{lambda2}{value for the mixing tuning
+  parameter \eqn{0<\alpha<1}} \item{dfbeta}{the number of nonzero main effect
+  coefficients for each value of lambda} \item{dfalpha}{the number of nonzero
+  interaction coefficients for each value of lambda} \item{dfenviron}{the
+  number of nonzero exposure (\code{e}) coefficients for each value of
+  lambda} \item{dev.ratio}{the fraction of (null) deviance explained (for
+  "lspath", this is the R-square). The deviance calculations incorporate
+  weights if present in the model. The deviance is defined to be
+  2*(loglike_sat - loglike), where loglike_sat is the log-likelihood for the
+  saturated model (a model with a free parameter per observation). Hence
+  dev.ratio=1-dev/nulldev.} \item{converged}{vector of logicals of length
+  \code{nlambda} indicating if the algorithm converged} \item{nlambda}{number
+  of converged lambdas} \item{design}{design matrix (X, E, X:E), of dimension
+  \code{n x (2*ncols*p+1)} if \code{expand=TRUE}. This is used in the
+  \code{predict} method.} \item{nobs}{number of observations}
+  \item{nvars}{number of main effect variables} \item{vnames}{character of
+  variable names for main effects (without expansion)} \item{ncols}{an
+  integer of basis for each column of x if \code{expand=TRUE}, or an integer
+  vector of basis for each variable if \code{expand=FALSE}}
   \item{center.x}{were the columns of x (after expansion) centered?}
-  \item{center.e}{was \code{e} centered?}
-  \item{basis}{user defined basis expansion function}
-  \item{expand}{was the basis function applied to each column of x?}
-  \item{group}{a vector of consecutive integers describing the grouping of the coefficients. Only if expand=FALSE}
-  \item{interaction.names}{character vector of names of interaction variables}
-  \item{main.effect.names}{character vector of names of main effect variables (with expansion)}
-  }
+  \item{center.e}{was \code{e} centered?} \item{basis}{user defined basis
+  expansion function} \item{expand}{was the basis function applied to each
+  column of x?} \item{group}{a vector of consecutive integers describing the
+  grouping of the coefficients. Only if expand=FALSE}
+  \item{interaction.names}{character vector of names of interaction
+  variables} \item{main.effect.names}{character vector of names of main
+  effect variables (with expansion)} }
 }
 \description{
-Function to fit the Sparse Additive Interaction Model with strong heredity
-  for a sequence of tuning parameters. This is a penalized regression method
-  that ensures the interaction term is non-zero only if its corresponding
-  main-effects are non-zero. This model only considers the interactions
-  between a single exposure (E) variable and a high-dimensional matrix (X).
-  Additve (non-linear) main effects and interactions can be specified by the user.
-  This can also be seen as a varying-coefficient model.
+Function to fit the Sparse Additive Interaction Model with
+  strong heredity for a sequence of tuning parameters. This is a penalized
+  regression method that ensures the interaction term is non-zero only if its
+  corresponding main-effects are non-zero. This model only considers the
+  interactions between a single exposure (E) variable and a high-dimensional
+  matrix (X). Additve (non-linear) main effects and interactions can be
+  specified by the user. This can also be seen as a varying-coefficient
+  model.
 }
 \details{
-The objective function for \code{family="gaussian"} is \deqn{RSS/2n + \lambda(1-\alpha)(w_e|\beta_e|+ \sum w_j
-  ||\beta_j||_2) + \lambda\alpha(\sum w_{je} |\gamma_j|)} where \code{RSS} is the residual sum of squares and \code{n} is the number of
-  observations. See Bhatnagar et al. (2018+) for details.
+The objective function for \code{family="gaussian"} is \deqn{RSS/2n
+  + \lambda(1-\alpha)(w_e|\beta_e|+ \sum w_j ||\beta_j||_2) +
+  \lambda\alpha(\sum w_{je} |\gamma_j|)} where \code{RSS} is the residual sum
+  of squares and \code{n} is the number of observations. See Bhatnagar et al.
+  (2018+) for details.
 
-  It is highly recommended to specify \code{center.x = TRUE} and \code{center.e = TRUE} for both convergence and interpretation reasons.
-  If centered, the final estimates can be interpreted as the effect of the predictor on the response while holding all
-  other predictors at their mean value. For computing speed reasons, if models are not converging or running slow, consider increasing
-  \code{thresh}, decreasing \code{nlambda}, or increasing \code{lambda.factor} before increasing \code{maxit}.
+  It is highly recommended to specify \code{center.x = TRUE} and
+  \code{center.e = TRUE} for both convergence and interpretation reasons. If
+  centered, the final estimates can be interpreted as the effect of the
+  predictor on the response while holding all other predictors at their mean
+  value. For computing speed reasons, if models are not converging or running
+  slow, consider increasing \code{thresh}, decreasing \code{nlambda}, or
+  increasing \code{lambda.factor} before increasing \code{maxit}. Then try
+  increasins the value of \code{alpha}. Values of above \code{alpha=0.5} are
+  more likely to converge.
 
-  By default, \code{sail} uses the group lasso penalty on the basis expansions of \code{x}. To use the group MCP
-  and group SCAD penalties (see Breheny and Huang 2015), the \code{grpreg} must be installed.
+  By default, \code{sail} uses the group lasso penalty on the basis
+  expansions of \code{x}. To use the group MCP and group SCAD penalties (see
+  Breheny and Huang 2015), the \code{grpreg} package must be installed.
 }
 \examples{
+f.basis <- function(i) splines::bs(i, degree = 3)
+data("sailsim")
+fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
+            basis = f.basis, lambda.factor = 0.001,
+            dfmax = 2) # stop the solution path early
 \dontrun{
 if(interactive()){
  #EXAMPLE1
@@ -171,17 +196,19 @@ if(interactive()){
 
 }
 \references{
-Jerome Friedman, Trevor Hastie, Robert Tibshirani (2010). Regularization Paths for Generalized
-Linear Models via Coordinate Descent. Journal of Statistical Software,
-33(1), 1-22. \url{http://www.jstatsoft.org/v33/i01/}.
+Jerome Friedman, Trevor Hastie, Robert Tibshirani (2010).
+  Regularization Paths for Generalized Linear Models via Coordinate Descent.
+  Journal of Statistical Software, 33(1), 1-22.
+  \url{http://www.jstatsoft.org/v33/i01/}.
 
 Breheny P and Huang J (2015). Group descent algorithms for
   nonconvex penalized linear and logistic regression models with grouped
   predictors. Statistics and Computing, 25: 173-187.
 
-Yang Y, Zou H (2015). A fast unified algorithm for solving group-lasso
-  penalize learning problems. Statistics and Computing. Nov
-  1;25(6):1129-41. \url{http://www.math.mcgill.ca/yyang/resources/papers/STCO_gglasso.pdf}
+Yang Y, Zou H (2015). A fast unified algorithm for solving
+  group-lasso penalize learning problems. Statistics and Computing. Nov
+  1;25(6):1129-41.
+  \url{http://www.math.mcgill.ca/yyang/resources/papers/STCO_gglasso.pdf}
 
 Bhatnagar SR, Yang Y, Greenwood CMT. Sparse additive interaction
   models with the strong heredity property (2018+). Preprint.

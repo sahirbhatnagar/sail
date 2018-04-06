@@ -81,7 +81,9 @@
 #'   very large \code{q} (the total number of predictors in the design matrix -
 #'   including interactions), if a partial path is desired. Default: \code{2 * p
 #'   + 1} where p is the number of columns in \code{x}.
-#' @param verbose display progress (logical). Default: \code{TRUE}.
+#' @param verbose display progress. Can be either 0,1 or 2. 0 will not display
+#'   any progress, 2 will display very detailed progress and 1 is somewhere in
+#'   between. Default: 1.
 #' @return an object with S3 class "sail", \code{"*"}, where \code{"*"} is
 #'   "lspath" or "logitreg". Results are provided for converged values of lambda
 #'   only. \describe{\item{call}{the call that produced this object}
@@ -134,13 +136,20 @@
 #'   predictor on the response while holding all other predictors at their mean
 #'   value. For computing speed reasons, if models are not converging or running
 #'   slow, consider increasing \code{thresh}, decreasing \code{nlambda}, or
-#'   increasing \code{lambda.factor} before increasing \code{maxit}.
+#'   increasing \code{lambda.factor} before increasing \code{maxit}. Then try
+#'   increasins the value of \code{alpha}. Values of above \code{alpha=0.5} are
+#'   more likely to converge.
 #'
 #'   By default, \code{sail} uses the group lasso penalty on the basis
 #'   expansions of \code{x}. To use the group MCP and group SCAD penalties (see
 #'   Breheny and Huang 2015), the \code{grpreg} package must be installed.
 #'
 #' @examples
+#' f.basis <- function(i) splines::bs(i, degree = 3)
+#' data("sailsim")
+#' fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
+#'             basis = f.basis, lambda.factor = 0.001,
+#'             dfmax = 2) # stop the solution path early
 #' \dontrun{
 #' if(interactive()){
 #'  #EXAMPLE1
@@ -182,9 +191,10 @@ sail <- function(x, y, e,
                  alpha = 0.5,
                  nlambda = 100,
                  thresh = 1e-4,
+                 fdev = 1e-5,
                  maxit = 1000,
                  dfmax = 2 * nvars + 1,
-                 verbose = TRUE) {
+                 verbose = 1) {
 
   # browser()
 
@@ -294,6 +304,8 @@ sail <- function(x, y, e,
   wje <- vp[(nvars + 2):length(vp)] # adaptive lasso weights for interactions
 
   thresh <- as.double(thresh)
+  fdev <- as.double(fdev)
+
 
   if (!expand) {
     # this is for the user defined design matrix
@@ -328,6 +340,7 @@ sail <- function(x, y, e,
       weights = weights,
       nlambda = nlam,
       thresh = thresh,
+      fdev = fdev,
       maxit = maxit,
       verbose = verbose,
       alpha = alpha,

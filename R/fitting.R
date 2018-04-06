@@ -12,6 +12,7 @@ lspath <- function(x,
                    weights, # observation weights currently not being used
                    nlambda,
                    thresh,
+                   fdev,
                    maxit,
                    verbose,
                    alpha,
@@ -51,7 +52,7 @@ lspath <- function(x,
   # this is used for the predict function
   design <- expansion$design
 
-  nulldev <- as.numeric(crossprod(y))
+  nulldev <- as.numeric(crossprod(y-mean(y)))
 
   # Initialize -------------------------------------------------------------
   # the initial values here dont matter, since at Lambda_max everything is 0
@@ -156,7 +157,7 @@ lspath <- function(x,
   for (LAMBDA in lambdas) {
     lambdaIndex <- which(LAMBDA == lambdas)
 
-    if (verbose) {
+    if (verbose>=1) {
       message(sprintf("Index: %g, lambda: %0.4f", lambdaIndex, LAMBDA))
     }
 
@@ -238,6 +239,7 @@ lspath <- function(x,
                 x = x_tilde_2[[j]],
                 y = R,
                 # eps = 1e-12,
+                maxit = 100000,
                 group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
                 pf = wj[j],
                 lambda = LAMBDA * (1 - alpha),
@@ -379,12 +381,11 @@ lspath <- function(x,
       # criterion <- l2norm(Theta_next - Theta_init)
       converged[lambdaIndex] <- criterion < thresh
       converged[lambdaIndex] <- if (is.na(converged[lambdaIndex])) FALSE else converged[lambdaIndex]
-      # if (verbose) {
-      #   message(sprintf(
-      #     "Iteration: %f, Converged: %f, Crossprod: %f", m, converged[lambdaIndex],
-      #     criterion
-      #   ))
-      # }
+      if (verbose>=2) {
+        message(sprintf(
+          "Iteration: %f, Criterion: %f", m, criterion
+        ))
+      }
 
       b0 <- b0_next
       betaE <- betaE_next
@@ -428,19 +429,18 @@ lspath <- function(x,
     # dfmax
     if (sum(outPrint[lambdaIndex, c("dfBeta", "dfAlpha", "dfEnviron")]) > ne) break
 
-
-
-
     # dev.off()
     # par(mfrow=c(3,1), mai = c(0.2,0.2,0.2,0.2))
     # matplot(t(betaMat), type = "l")
     # matplot(t(gammaMat), type = "l")
     # matplot(t(alphaMat), type = "l")
-
+# browser()
     # devianceDiff <- outPrint[lambdaIndex,"deviance"] - outPrint[lambdaIndex-1,"deviance"]
-    # if (length(devianceDiff)!=0 && !is.na(devianceDiff) && devRatio>1e-3) {
-    # if (devianceDiff < 1e-50 | outPrint[LAMBDA,"percentDev"] > 0.999) break }
-    # if (outPrint[LAMBDA,"percentDev"] > 0.999) break }
+    devianceDiff <- (outPrint[lambdaIndex,"percentDev"] - outPrint[lambdaIndex-1,"percentDev"]) /
+      outPrint[lambdaIndex-1,"percentDev"]
+    if (length(devianceDiff)!=0 && !is.na(devianceDiff) && devRatio>1e-3) {
+    if (devianceDiff < fdev | outPrint[lambdaIndex,"percentDev"] > 0.999) break }
+    # if (outPrint[LAMBDA,"percentDev"] > 0.999) break #}
   }
 
   beta_final <- as(betaMat, "dgCMatrix")

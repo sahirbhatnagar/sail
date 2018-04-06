@@ -5,8 +5,8 @@
 \title{Gaussian Response fitting function with warm starts}
 \usage{
 lspath(x, y, e, basis, center.x, center.e, expand, group, group.penalty,
-  weights, nlambda, thresh, maxit, verbose, alpha, nobs, nvars, vp, we, wj, wje,
-  flmin, vnames, ne, ulam)
+  weights, nlambda, thresh, fdev, maxit, verbose, alpha, nobs, nvars, vp, we,
+  wj, wje, flmin, vnames, ne, ulam)
 }
 \description{
 Gaussian Response fitting function with warm starts
