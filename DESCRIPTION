@@ -17,9 +17,12 @@ Imports:
     splines,
     glmnet, 
     gglasso,
-    truncnorm
+    foreach,
+    Matrix
 Suggests:
-    grpreg
+    grpreg,
+    truncnorm,
+    doMC
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true

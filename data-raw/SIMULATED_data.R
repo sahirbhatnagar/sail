@@ -155,7 +155,7 @@ gendataPaper <- function(n, p, corr = 0,
   ))
 }
 
-set.seed(123)
+set.seed(123456)
 DT <- make_gendata_Paper_not_simulator(n = 100, p = 200, corr = 0.0,
                                        betaE = 2, SNR = 2,
                                        parameterIndex = 1)

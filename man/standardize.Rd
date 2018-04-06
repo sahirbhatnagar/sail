@@ -4,7 +4,7 @@
 \alias{standardize}
 \title{Standardize Data}
 \usage{
-standardize(x, y, center = TRUE, normalize = FALSE)
+standardize(x, center = TRUE, normalize = FALSE)
 }
 \arguments{
 \item{x}{Design matrix of dimension \code{n x q}, where \code{n} is the
@@ -14,8 +14,6 @@ well, with column names corresponding to the names of the main effects
 (e.g. \code{x1, x2, E}) and their interactions (e.g. \code{x1:E, x2:E}).
 All columns should be scaled to have mean 0 and variance 1; this is done
 internally by the \code{\link{sail}} function.}
-
-\item{y}{response variable (matrix form) of dimension \code{n x 1}}
 
 \item{normalize}{Should \code{x} be scaled to have unit variance. Default is
 \code{TRUE}}
