@@ -17,11 +17,11 @@ Imports:
     splines,
     glmnet, 
     gglasso,
-    foreach,
     Matrix
 Suggests:
     grpreg,
     truncnorm,
+    foreach,
     doMC
 License: What license is it under?
 Encoding: UTF-8

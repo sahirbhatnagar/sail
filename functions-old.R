@@ -35,6 +35,7 @@
 #' @seealso \code{\link{sail}}, \code{\link[glmnet]{cv.glmnet}}
 #'
 #' @examples
+#' \dontrun{
 #' # number of observations
 #' n <- 100
 #'
@@ -56,7 +57,7 @@
 #' # response
 #' Y <- X %*% rbinom(ncol(X), 1, 0.2) + 3*rnorm(n)
 #'
-#' uni_fun(X, Y)
+#' uni_fun(X, Y)}
 uni_fun <- function(x, y, type = c("ridge", "univariate"),
                     variables, include.intercept = FALSE) {
   type <- match.arg(type)
@@ -916,8 +917,6 @@ xtilde_mod <- function( # interaction.names, data.main.effects, beta.main.effect
 #'   into \code{n} columns
 #' @param x is numeric vector to be repeated
 #' @param n how many times \code{x} needs to be repeated
-#' @rdname eclust-internal
-
 repcol <- function(x, n) {
   s <- NCOL(x)
   matrix(x[, rep(1:s, each = n)], nrow = NROW(x), ncol = NCOL(x) * n)
@@ -927,14 +926,10 @@ repcol <- function(x, n) {
 #' @description \code{mysd} is to calculate standard deviation but with divisor of n
 #'   and not n-1
 #' @param i a vector of numerics
-#' @rdname eclust-internal
-
 mysd <- function(i) sqrt(crossprod(i - mean(i)) / length(i))
 
 #' @description \code{check_col_0} is to check how many columns are 0
 #' @param M is a matrix
-#' @rdname eclust-internal
-
 check_col_0 <- function(M) {
   M[, colSums(abs(M)) != 0, drop = F]
 }
@@ -945,139 +940,6 @@ check_col_0 <- function(M) {
 
 
 
-#' @description \code{nonzero} is to determine which coefficients are non-zero
-#' @param beta vector or 1 column matrix of regression coefficients
-#' @rdname eclust-internal
-#' @export
-nonzero <- function(beta, bystep = FALSE) {
-  ### bystep = FALSE means which variables were ever nonzero
-  ### bystep = TRUE means which variables are nonzero for each step
-  beta <- as.matrix(beta)
-  nr <- nrow(beta)
-  if (nr == 1) {
-    if (bystep) {
-      apply(beta, 2, function(x) if (abs(x) > 0) {
-          1
-        } else {
-          NULL
-        })
-    } else {
-      if (any(abs(beta) > 0)) {
-        1
-      } else {
-        NULL
-      }
-    }
-  }
-  else {
-    beta <- abs(beta) > 0
-    which <- seq(nr)
-    ones <- rep(1, ncol(beta))
-    nz <- as.vector((beta %*% ones) > 0)
-    which <- which[nz]
-    if (bystep) {
-      if (length(which) > 0) {
-        beta <- as.matrix(beta[which, , drop = FALSE])
-        nzel <- function(x, which) if (any(x)) {
-            which[x]
-          } else {
-            NULL
-          }
-        which <- apply(beta, 2, nzel, which)
-        if (!is.list(which)) {
-          which <- data.frame(which)
-        }
-        which
-      }
-      else {
-        dn <- dimnames(beta)[[2]]
-        which <- vector("list", length(dn))
-        names(which) <- dn
-        which
-      }
-    }
-    else {
-      which
-    }
-  }
-}
-
-
-
-
-
-#' Compute cross validation error
-#'
-#' @description functions used to calculate cross validation error and used by
-#'   the \code{\link{cv.sail}} function
-#'
-#' @param outlist list of cross validated fitted models. List is of length equal
-#'   to \code{nfolds} argument in \code{\link{cv.sail}} function
-#' @param foldid numeric vector indicating which fold each observation belongs
-#'   to
-#' @param nlambda.beta number of tuning paramters for the main effect
-#' @param nlambda.gamma number of tuning parameters for the interaction effects
-#' @param nlambda total number of tuning parameter pairs. This includes those
-#'   pairs of tuning parameters that didn't converge in the CV folds.
-#' @param outlist list containing results from cv.sail function. each element of
-#'   the list is a run of sail_multiple_faster for each CV fold
-#' @inheritParams uni_fun
-#' @rdname cv.lspath
-#' @seealso \code{\link{cv.sail}}
-#' @details The output of the \code{cv.lspath} function only returns values for those tuning
-#'   paramters that DID converge
-cv.lspath <- function(outlist, lambda, x, y, e, weights,
-                      foldid, type.measure, grouped, keep = FALSE) {
-  typenames <- c(
-    deviance = "Mean-Squared Error", mse = "Mean-Squared Error",
-    mae = "Mean Absolute Error"
-  )
-  if (type.measure == "default") {
-    type.measure <- "mse"
-  }
-  if (!match(type.measure, c("mse", "mae", "deviance"), FALSE)) {
-    warning("Only 'mse', 'deviance' or 'mae'  available for Gaussian models; 'mse' used")
-    type.measure <- "mse"
-  }
-
-  mlami <- max(sapply(outlist, function(obj) min(obj$lambda)))
-  which_lam <- lambda >= mlami
-  predmat <- matrix(NA, length(y), length(lambda))
-  nfolds <- max(foldid)
-  nlams <- double(nfolds)
-  for (i in seq(nfolds)) {
-    which <- foldid == i
-    fitobj <- outlist[[i]]
-    # fitobj$offset = FALSE
-    preds <- predict(fitobj, newx = x[which, , drop = FALSE], newe = e[which], s = lambda[which_lam])
-    nlami <- sum(which_lam)
-    predmat[which, seq(nlami)] <- preds
-    nlams[i] <- nlami
-  }
-  N <- length(y) - apply(is.na(predmat), 2, sum)
-  cvraw <- switch(type.measure, mse = (y - predmat)^2, deviance = (y - predmat)^2, mae = abs(y - predmat))
-  if ((length(y) / nfolds < 3) && grouped) {
-    warning("Option grouped=FALSE enforced in cv.sail, since < 3 observations per fold",
-      call. = FALSE
-    )
-    grouped <- FALSE
-  }
-  if (grouped) {
-    cvob <- cvcompute(cvraw, weights, foldid, nlams)
-    cvraw <- cvob$cvraw
-    weights <- cvob$weights
-    N <- cvob$N
-  }
-  cvm <- apply(cvraw, 2, stats::weighted.mean, w = weights, na.rm = TRUE)
-  cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, stats::weighted.mean,
-    w = weights, na.rm = TRUE
-  ) / (N - 1))
-  out <- list(cvm = cvm, cvsd = cvsd, name = typenames[type.measure])
-  if (keep) {
-    out$fit.preval <- predmat
-  }
-  out
-}
 
 
 
@@ -1087,7 +949,14 @@ cv.lspath <- function(outlist, lambda, x, y, e, weights,
 
 
 
-#' @describeIn cv.lspath Function that returns the tuning paramter corresponding
+
+
+
+
+
+
+
+#' @description Function that returns the tuning paramter corresponding
 #'   to the minimum cross validated error and cross validated error within 1
 #'   standard error of the minimum
 #' @param type should be one of "beta" or "gamma"
@@ -1119,29 +988,9 @@ getmin_type <- function(lambda, cvm, cvsd, type) {
 
 
 
-#' @describeIn cv.lspath Interpolation function.
-lambda.interp <- function(lambda, s) {
-  if (length(lambda) == 1) {
-    nums <- length(s)
-    left <- rep(1, nums)
-    right <- left
-    sfrac <- rep(1, nums)
-  } else {
-    s[s > max(lambda)] <- max(lambda)
-    s[s < min(lambda)] <- min(lambda)
-    k <- length(lambda)
-    sfrac <- (lambda[1] - s) / (lambda[1] - lambda[k])
-    lambda <- (lambda[1] - lambda) / (lambda[1] - lambda[k])
-    coord <- stats::approx(lambda, seq(lambda), sfrac)$y
-    left <- floor(coord)
-    right <- ceiling(coord)
-    sfrac <- (sfrac - lambda[right]) / (lambda[left] - lambda[right])
-    sfrac[left == right] <- 1
-  }
-  list(left = left, right = right, frac = sfrac)
-}
 
-#' @describeIn cv.lspath Interpolation function.
+
+#' @description Interpolation function.
 lamfix <- function(lam) {
   llam <- log(lam)
   lam[1] <- exp(2 * llam[2] - llam[3])
@@ -1204,15 +1053,12 @@ update_weights <- function(betas,
   return(weights)
 }
 
-#' @rdname eclust-internal
 isEmpty <- function(x) {
   return(length(x) == 0)
 }
 
 
 #' @description \code{checkargs.xy} function to check inputs of sail function
-#'
-#' @rdname eclust-internal
 checkargs.xy <- function(x, y) {
   if (missing(x)) stop("x is missing")
   if (is.null(x) || !is.matrix(x)) stop("x must be a matrix")
@@ -1228,7 +1074,6 @@ checkargs.xy <- function(x, y) {
 }
 
 
-#' @rdname eclust-internal
 checkargs.misc <- function(sigma = NULL, alpha = NULL, k = NULL,
                            gridrange = NULL, gridpts = NULL, griddepth = NULL,
                            mult = NULL, ntimes = NULL,
@@ -1263,7 +1108,6 @@ checkargs.misc <- function(sigma = NULL, alpha = NULL, k = NULL,
   if (!is.null(tol.kkt) && tol.kkt <= 0) stop("tol.kkt must be > 0")
 }
 
-#' @rdname eclust-internal
 tabular <- function(df, ...) {
   stopifnot(is.data.frame(df))
 
@@ -1283,15 +1127,7 @@ tabular <- function(df, ...) {
 }
 
 
-#' @rdname eclust-internal
-error.bars <- function(x, upper, lower, width = 0.02, ...) {
-  xlim <- range(x)
-  barw <- diff(xlim) * width
-  segments(x, upper, x, lower, ...)
-  segments(x - barw, upper, x + barw, upper, ...)
-  segments(x - barw, lower, x + barw, lower, ...)
-  range(upper, lower)
-}
+
 
 
 
@@ -1537,7 +1373,95 @@ bic <- function(eta, sigma2, beta, eigenvalues, x, y, nt, c, df_lambda) {
   -2 * crossprod(y - x %*% betas.and.alphas) + c * df_lambda
 }
 
+#' Plot the cross-validation curve produced by cv.sail
+#'
+#' @description Plots the cross-validation curve, and upper and lower standard
+#'   deviation curves, as a function of the \eqn{\lambda_\beta} and
+#'   \eqn{\lambda_\gamma} values used. Using \code{ggplot2} facet plots, each
+#'   facet represents a unique value for \eqn{\lambda_\gamma}, and the x-axis is
+#'   the sequence of corresponding \eqn{\lambda_\beta}
+#' @param x fitted \code{cv.sail} object
+#' @details A plot is produced, and nothing is returned. A colored vertical line
+#'   is drawn at the pair of tuning parameters that leads to the minimum CV
+#'   error and another is drawn at the 1 standard error rule pair of tuning
+#'   parameters
+#' @seealso \code{\link{sail}} and \code{\link{cv.sail}}
+#' @author
+#' Sahir Bhatnagar
+#'
+#' Maintainer: Sahir Bhatnagar \email{sahir.bhatnagar@@mail.mcgill.ca}
+#' @import data.table
+#' @export
 
+plot.cv.sail_old <- function(x) {
+  pacman::p_load(ggplot2)
+  pacman::p_load(data.table)
+  pacman::p_load(latex2exp)
+
+  # x = cvfit
+  # ====
+
+  # browser()
+  cvobj <- x
+
+  d <- data.frame(cvobj$df,
+                  lambda.min.beta = cvobj$lambda.min.beta,
+                  lambda.1se.beta = cvobj$lambda.1se.beta,
+                  row.names = rownames(cvobj$df)
+  )
+
+
+  # needed to get colored lines
+  d2 <- data.table::melt(d[which(rownames(d) %in% c(cvobj$lambda.min.name, cvobj$lambda.1se.name)), , drop = F],
+                         measure.vars = c("lambda.min.beta", "lambda.1se.beta")
+  )
+
+  # d2 <- as.data.table(d2)
+  d2 <- transform(d2, variable = gsub(".beta", "", variable))
+
+  appender <- function(string) latex2exp::TeX(paste("$\\log(\\lambda_{\\gamma}) = $", string))
+
+  p <- ggplot2::ggplot(
+    d,
+    ggplot2::aes(log(lambda.beta),
+                 ymin = lower,
+                 ymax = upper
+    )
+  )
+
+  l <- ggplot2::ggplot_build(p)
+  p + ggplot2::geom_errorbar(color = "grey", width = 0.5) +
+    ggplot2::geom_point(aes(x = log(lambda.beta), y = mse), colour = "red") +
+    # theme_bw() +
+    # ylim(c(min(d$lower) - 10 , max(d$upper) + 500)) +
+    ggplot2::facet_wrap(~log.gamma,
+                        scales = "fixed",
+                        # switch = "x",
+                        labeller = ggplot2::as_labeller(appender, default = ggplot2::label_parsed)
+    ) +
+    ggplot2::theme(
+      strip.background = ggplot2::element_blank(),
+      strip.text.x = ggplot2::element_text(size = ggplot2::rel(1.3)),
+      legend.position = "bottom"
+    ) +
+    ggplot2::xlab(TeX("$\\log(\\lambda_{\\beta})$")) +
+    ggplot2::geom_vline(
+      data = d2[(d2$lambda.beta == d2$value & d2$variable == "lambda.1se"), ],
+      aes(xintercept = log(value), colour = variable), size = 0.7, linetype = 1
+    ) +
+    geom_vline(
+      data = d2[(d2$lambda.beta == d2$value & d2$variable == "lambda.min"), ],
+      aes(xintercept = log(value), colour = variable), size = 0.7, linetype = 1
+    ) +
+    ggplot2::scale_color_discrete(name = "") +
+    ggplot2::geom_text(aes(label = nz.main, x = log(lambda.beta), y = Inf, vjust = 1)) +
+    ggplot2::geom_text(aes(
+      label = nz.interaction, x = log(lambda.beta), y = Inf,
+      vjust = 2
+    )) +
+    ggplot2::ylab(c("5 fold CV MSE")) #+
+  # coord_cartesian(ylim = c(l$panel$ranges[[1]]$y.range[1], l$panel$ranges[[1]]$y.range[2]*1.1))
+}
 
 # expan2 <- function(expr, xname = "x") {
 #   sexpr <- substitute(expr)
@@ -1603,11 +1527,6 @@ bic <- function(eta, sigma2, beta, eigenvalues, x, y, nt, c, df_lambda) {
 # splines::bs(rnorm(20), df = 5)
 # expan(expr = splines::bs(y, intercept = TRUE), xname = "y")
 
-
-
-
-#' Not in convenience function
-"%ni%" <- Negate("%in%")
 
 
 
