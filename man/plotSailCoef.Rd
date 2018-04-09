@@ -2,7 +2,11 @@
 % Please edit documentation in R/plot.R
 \name{plotSailCoef}
 \alias{plotSailCoef}
-\title{Plot the coefficient plot produced by sail}
+\title{R Source code file for plotting functions
+Author: Sahir Bhatnagar
+Created: 2016
+Updated: April 6, 2018
+Plot the coefficient plot produced by sail}
 \usage{
 plotSailCoef(coefs, lambda, group, df, dev, vnames, environ, alpha = 1,
   legend.loc, label = FALSE, log.l = TRUE, norm = FALSE, ...)

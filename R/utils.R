@@ -103,26 +103,30 @@ nonzero <- function(beta, bystep = FALSE) {
 
 
 
+#' @description \code{check_col_0} is to check how many columns are 0 and is
+#'   used in the fitting functions \code{lspath}
+#' @param M is a matrix
+#' @rdname sail-internal
+check_col_0 <- function(M) {
+  M[, colSums(abs(M)) != 0, drop = F]
+}
 
 
-
-#' Likelihood function
+#' Objective function
 #'
 #' @description calculates likelihood function. Used to assess convergence of
 #'   fitting algorithm. This corresponds to the Q(theta) function in the paper
 #'
-#' @param beta p x 1 matrix of main effect estimates
-#' @param gamma p*(p-1)/2 x 1 matrix of gamma estimates
-#' @param weights adaptive weights calculated by \code{ridge_weights} function
-#'   with rownames corresponding to column names of x
-#' @param lambda.beta a single tuning parameter for main effects
-#' @param lambda.gamma a single tuning parameter for gammas
-#' @param main.effect.names character vector of main effects names
-#' @param interaction.names character vector of interaction names. must be
-#'   separated by a colon (e.g. \code{x1:E})
-#' @return value of likelihood function
-#' @note you dont use the intercept in the calculation of the Q function
-#' because its not being penalized
+#' @param R residual
+#' @param nobs number of observations
+#' @inheritParams sail
+#' @param we penalty factor for exposure variable
+#' @param wj penalty factor for main effects
+#' @param wje penalty factor for interactions
+#' @param betaE estimate of exposure effect
+#' @param theta_list estimates of main effects
+#' @param gamma estimates of gamma parameter
+#' @return value of the objective function
 Q_theta <- function(R, nobs, lambda, alpha,
                     we, wj, wje,
                     betaE, theta_list, gamma) {
@@ -140,22 +144,14 @@ Q_theta <- function(R, nobs, lambda, alpha,
 #' Standardize Data
 #'
 #' @description Function that standardizes the data before running the fitting
-#'   algorithm. This is necessary in all penalization methods so that the effect
-#'   of a given penalty is the same for each predictor. This is used in the
-#'   \code{\link{sail}} function
-#' @param intercept Should \code{x} and \code{y} be centered. Default is
-#'   \code{TRUE}
+#'   algorithm. This is used in the \code{\link{sail}} function
+#' @param intercept Should \code{x} be centered. Default is \code{TRUE}
 #' @param normalize Should \code{x} be scaled to have unit variance. Default is
-#'   \code{TRUE}
-#' @return list of length 5:
-#' \describe{
-#'   \item{x}{centered and normalized \code{x} matrix}
-#'   \item{y}{centered \code{y} numeric vector}
-#'   \item{bx}{numeric vector of column means of \code{x} matrix}
-#'   \item{by}{mean of \code{y}}
-#'   \item{sx}{standard deviations (using a divisor of \code{n}
-#'   observations) of columns of \code{x} matrix}
-#' }
+#'   \code{FALSE}
+#' @return list of length 3: \describe{ \item{x}{centered and possibly
+#'   normalized \code{x} matrix} \item{bx}{numeric vector of column means of
+#'   \code{x} matrix} \item{sx}{standard deviations (using a divisor of
+#'   \code{n} observations) of columns of \code{x} matrix} }
 standardize <- function(x, center = TRUE, normalize = FALSE) {
   x <- as.matrix(x)
   # y <- as.numeric(y)
@@ -180,16 +176,19 @@ standardize <- function(x, center = TRUE, normalize = FALSE) {
 
   return(list(
     x = x,
-    # y = y,
-    bx = bx, by = by, sx = sx
+    # y = y, by = by,
+    bx = bx, sx = sx
   ))
 }
 
 
 
 
-
-
+#' @title Sail design matrix
+#' @description Create design matrix used in \code{\link{sail}} function
+#' @inheritParams sail
+#' @param nvars number of variables
+#' @param vnames variable names
 design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, center.e) {
   if (center.e) {
     e <- drop(standardize(e, center = TRUE, normalize = FALSE)$x)

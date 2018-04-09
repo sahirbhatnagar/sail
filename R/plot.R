@@ -1,20 +1,9 @@
-#' @export
-plot.cv.sail <- function(x, sign.lambda = 1, ...) {
-  cvobj <- x
-  xlab <- "log(Lambda)"
-  if (sign.lambda < 0) xlab <- paste("-", xlab, sep = "")
-  plot.args <- list(x = sign.lambda * log(cvobj$lambda), y = cvobj$cvm, ylim = range(cvobj$cvup, cvobj$cvlo), xlab = xlab, ylab = cvobj$name, type = "n")
-  new.args <- list(...)
-  if (length(new.args)) plot.args[names(new.args)] <- new.args
-  do.call("plot", plot.args)
-  error.bars(sign.lambda * log(cvobj$lambda), cvobj$cvup, cvobj$cvlo, width = 0.01, col = "darkgrey")
-  points(sign.lambda * log(cvobj$lambda), cvobj$cvm, pch = 20, col = "red")
-  axis(side = 3, at = sign.lambda * log(cvobj$lambda), labels = paste(cvobj$nz), tick = FALSE, line = 0)
-  abline(v = sign.lambda * log(cvobj$lambda.min), lty = 3)
-  abline(v = sign.lambda * log(cvobj$lambda.1se), lty = 3)
-  invisible()
-}
-
+######################################
+#' R Source code file for plotting functions
+#' Author: Sahir Bhatnagar
+#' Created: 2016
+#' Updated: April 6, 2018
+#####################################
 
 
 #' Plot the coefficient plot produced by sail
@@ -154,10 +143,32 @@ plotSailCoef <- function(coefs, lambda, group, df, dev, vnames, environ,
 
 
 
-#' Plot Main Effects from sail object
-#' @param object sail object
+#' @title Plot Estimated Component Smooth Functions for Main Effects
+#' @description Takes a fitted sail object produced by \code{sail()} or
+#'   \code{cv.sail()$sail.fit} and plots the component smooth function for a
+#'   pre-specified variable at a given value of lambda and on the scale of the
+#'   linear predictor.
+#' @param object PARAM_DESCRIPTION
+#' @param x PARAM_DESCRIPTION
+#' @param xvar PARAM_DESCRIPTION
+#' @param s PARAM_DESCRIPTION
+#' @param f.truth PARAM_DESCRIPTION
+#' @param col PARAM_DESCRIPTION, Default: c("#D55E00", "#009E73")
+#' @param legend.position PARAM_DESCRIPTION, Default: 'bottomleft'
+#' @param ... PARAM_DESCRIPTION
+#' @return OUTPUT_DESCRIPTION
+#' @details DETAILS
+#' @examples
+#' \dontrun{
+#' if(interactive()){
+#'  #EXAMPLE1
+#'  }
+#' }
+#' @seealso \code{\link[graphics]{rug}}
+#' @rdname plotMain
 #' @export
-plotMain <- function(object, xvar, s, f.truth, col = c("#D55E00", "#009E73"), legend.position = "bottomleft", ...) {
+#' @importFrom graphics rug
+plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"), legend.position = "bottomleft", ...) {
 
   # browser()
   ind <- object$group == which(object$vnames == xvar)
@@ -165,11 +176,15 @@ plotMain <- function(object, xvar, s, f.truth, col = c("#D55E00", "#009E73"), le
   a0 <- allCoefs[1, ]
   betas <- as.matrix(allCoefs[object$main.effect.names[ind], , drop = FALSE])
   design.mat <- object$design[, object$main.effect.names[ind], drop = FALSE]
-  originalX <- object$x[, unique(object$group[ind])]
+  originalX <- x[, unique(object$group[ind])]
 
   f.hat <- drop(a0 + design.mat %*% betas)
   # f.hat <- drop(design.mat %*% betas)
-  ylims <- if (!missing(f.truth)) range(f.truth, f.hat) else range(f.hat)
+  if (!missing(f.truth)) {
+    seqs <- seq(range(originalX)[1],range(originalX)[2], length.out = 100)
+    f.truth.eval <- f.truth(seqs)
+    ylims <- range(f.truth.eval, f.hat)
+  } else { ylims <- range(f.hat) }
 
   plot.args <- list(
     x = originalX[order(originalX)],
@@ -202,7 +217,7 @@ plotMain <- function(object, xvar, s, f.truth, col = c("#D55E00", "#009E73"), le
   lines(originalX[order(originalX)], f.hat[order(originalX)], col = col[1], lwd = 3)
   graphics::rug(originalX, side = 1)
   if (!missing(f.truth)) {
-    lines(originalX[order(originalX)], f.truth[order(originalX)], col = col[2], lwd = 3)
+    lines(seqs[order(seqs)], f.truth.eval[order(seqs)], col = col[2], lwd = 3)
   }
   if (!missing(f.truth)) {
     legend(legend.position,
@@ -234,7 +249,7 @@ plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, truthonly = F
   design.mat.main <- object$design[, object$main.effect.names[ind], drop = FALSE]
   design.mat.int <- object$design[, object$interaction.names[ind], drop = FALSE]
   originalE <- object$design[, "E", drop = FALSE] # this is the centered E
-  originalX <- object$x[, unique(object$group[ind])]
+  originalX <- x[, unique(object$group[ind])]
 
   # f.hat <- drop(a0 + design.mat %*% betas)
   # f.hat <- drop(originalE %*% betaE + design.mat.main %*% betas + design.mat.int %*% alphas)

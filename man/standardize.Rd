@@ -8,25 +8,17 @@ standardize(x, center = TRUE, normalize = FALSE)
 }
 \arguments{
 \item{normalize}{Should \code{x} be scaled to have unit variance. Default is
-\code{TRUE}}
+\code{FALSE}}
 
-\item{intercept}{Should \code{x} and \code{y} be centered. Default is
-\code{TRUE}}
+\item{intercept}{Should \code{x} be centered. Default is \code{TRUE}}
 }
 \value{
-list of length 5:
-\describe{
-  \item{x}{centered and normalized \code{x} matrix}
-  \item{y}{centered \code{y} numeric vector}
-  \item{bx}{numeric vector of column means of \code{x} matrix}
-  \item{by}{mean of \code{y}}
-  \item{sx}{standard deviations (using a divisor of \code{n}
-  observations) of columns of \code{x} matrix}
-}
+list of length 3: \describe{ \item{x}{centered and possibly
+  normalized \code{x} matrix} \item{bx}{numeric vector of column means of
+  \code{x} matrix} \item{sx}{standard deviations (using a divisor of
+  \code{n} observations) of columns of \code{x} matrix} }
 }
 \description{
 Function that standardizes the data before running the fitting
-  algorithm. This is necessary in all penalization methods so that the effect
-  of a given penalty is the same for each predictor. This is used in the
-  \code{\link{sail}} function
+  algorithm. This is used in the \code{\link{sail}} function
 }

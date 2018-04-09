@@ -1,5 +1,14 @@
+######################################
+#' R Source code file for fitting functions
+#' this is where most of the work is being done
+#' not exported
+#' Author: Sahir Bhatnagar
+#' Created: 2016
+#' Updated: April 6, 2018
+#####################################
+
+
 #' Gaussian Response fitting function with warm starts
-#'
 lspath <- function(x,
                    y,
                    e,

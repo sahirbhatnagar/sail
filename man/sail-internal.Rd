@@ -10,6 +10,7 @@
 \alias{cbbPalette}
 \alias{error.bars}
 \alias{nonzero}
+\alias{check_col_0}
 \title{Internal sail functions}
 \format{An object of class \code{character} of length 8.}
 \usage{
@@ -26,9 +27,13 @@ cbbPalette
 error.bars(x, upper, lower, width = 0.02, ...)
 
 nonzero(beta, bystep = FALSE)
+
+check_col_0(M)
 }
 \arguments{
 \item{beta}{vector or 1 column matrix of regression coefficients}
+
+\item{M}{is a matrix}
 }
 \description{
 Internal sail helper functions
@@ -38,6 +43,9 @@ Internal sail helper functions
 \code{cbbPalette} gives a Color Blind Palette
 
 \code{nonzero} is to determine which coefficients are non-zero
+
+\code{check_col_0} is to check how many columns are 0 and is
+  used in the fitting functions \code{lspath}
 }
 \details{
 These functions are not intended for use by users.

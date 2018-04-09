@@ -9,7 +9,7 @@ createfolds(y, k = 10, list = FALSE, returnTrain = FALSE)
 \arguments{
 \item{y}{vector of response}
 
-\item{an}{integer for the number of folds.}
+\item{k}{integer for the number of folds.}
 }
 \value{
 A vector of CV fold ID's for each observation in \code{y}

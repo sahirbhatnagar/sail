@@ -2,35 +2,47 @@
 % Please edit documentation in R/utils.R
 \name{Q_theta}
 \alias{Q_theta}
-\title{Likelihood function}
+\title{Objective function}
 \usage{
 Q_theta(R, nobs, lambda, alpha, we, wj, wje, betaE, theta_list, gamma)
 }
 \arguments{
-\item{gamma}{p*(p-1)/2 x 1 matrix of gamma estimates}
+\item{R}{residual}
 
-\item{beta}{p x 1 matrix of main effect estimates}
+\item{nobs}{number of observations}
 
-\item{weights}{adaptive weights calculated by \code{ridge_weights} function
-with rownames corresponding to column names of x}
+\item{lambda}{a user supplied lambda sequence. Typically, by leaving this
+option unspecified users can have the program compute its own lambda
+sequence based on \code{nlambda} and \code{lambda.factor}. Supplying a
+value of lambda overrides this. It is better to supply a decreasing
+sequence of lambda values than a single (small) value, if not, the program
+will sort user-defined lambda sequence in decreasing order automatically.
+Default: \code{NULL}.}
 
-\item{lambda.beta}{a single tuning parameter for main effects}
+\item{alpha}{the mixing tuning parameter, with \eqn{0<\alpha<1}. It controls
+the penalization strength between the main effects and the interactions.
+The penalty is defined as \deqn{\lambda(1-\alpha)(w_e|\beta_e|+ \sum w_j
+||\beta_j||_2) + \lambda\alpha(\sum w_{je} |\gamma_j|)}Larger values of
+\code{alpha} will favor selection of main effects over interactions.
+Smaller values of \code{alpha} will allow more interactions to enter the
+final model. Default: \code{0.5}}
 
-\item{lambda.gamma}{a single tuning parameter for gammas}
+\item{we}{penalty factor for exposure variable}
 
-\item{main.effect.names}{character vector of main effects names}
+\item{wj}{penalty factor for main effects}
 
-\item{interaction.names}{character vector of interaction names. must be
-separated by a colon (e.g. \code{x1:E})}
+\item{wje}{penalty factor for interactions}
+
+\item{betaE}{estimate of exposure effect}
+
+\item{theta_list}{estimates of main effects}
+
+\item{gamma}{estimates of gamma parameter}
 }
 \value{
-value of likelihood function
+value of the objective function
 }
 \description{
 calculates likelihood function. Used to assess convergence of
   fitting algorithm. This corresponds to the Q(theta) function in the paper
-}
-\note{
-you dont use the intercept in the calculation of the Q function
-because its not being penalized
 }

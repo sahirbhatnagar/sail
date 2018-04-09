@@ -251,7 +251,7 @@ cv.sail <- function(x, y, e, ...,
 #' @description \code{createfolds} splits the data into \code{k} groups. Taken
 #'   from the \code{caret} package (see references for details)
 #' @param y vector of response
-#' @param an integer for the number of folds.
+#' @param k integer for the number of folds.
 #' @return A vector of CV fold ID's for each observation in \code{y}
 #' @details For numeric y, the sample is split into groups sections based on
 #'   percentiles and sampling is done within these subgroups
@@ -320,12 +320,18 @@ createfolds <- function(y, k = 10, list = FALSE, returnTrain = FALSE) {
 #'   to \code{nfolds} argument in \code{\link{cv.sail}} function
 #' @param foldid numeric vector indicating which fold each observation belongs
 #'   to
+#' @param mat matrix of predictions
+#' @param nlams number of lambdas fit
+#' @param cvm mean cv error
+#' @param cvsd sd of cv error
+#' @param s numeric value of lambda
 #' @inheritParams sail
+#' @inheritParams cv.sail
 #' @rdname cv.lspath
 #' @seealso \code{\link{cv.sail}}
 #' @details The output of the \code{cv.lspath} function only returns values for
-#'   those tuning paramters that DID converge
-#' @details Many have been taken verbatim from the \code{glmnet} package.
+#'   those tuning paramters that converged. \code{cvcompute, getmin,
+#'   lambda.interp} are taken verbatim from the \code{glmnet} package
 #' @references Jerome Friedman, Trevor Hastie, Robert Tibshirani (2010).
 #'   Regularization Paths for Generalized Linear Models via Coordinate Descent.
 #'   Journal of Statistical Software, 33(1), 1-22.
@@ -384,7 +390,6 @@ cv.lspath <- function(outlist, lambda, x, y, e, weights,
 }
 
 #' @describeIn cv.lspath Computations for crossvalidation error
-#' @note taken verbatim from glmnet
 cvcompute <- function(mat, weights, foldid, nlams) {
   ### Computes the weighted mean and SD within folds, and hence the se of the mean
   wisum <- tapply(weights, foldid, sum)
@@ -403,7 +408,6 @@ cvcompute <- function(mat, weights, foldid, nlams) {
 }
 
 #' @describeIn cv.lspath get lambda.min and lambda.1se
-#' @note taken verbatim from glmnet
 getmin <- function(lambda, cvm, cvsd) {
   cvmin <- min(cvm, na.rm = TRUE)
   idmin <- cvm <= cvmin
@@ -416,8 +420,7 @@ getmin <- function(lambda, cvm, cvsd) {
 }
 
 #' @describeIn cv.lspath Interpolation function.
-#' @note taken verbatim from glmnet
-lambda.interp=function(lambda,s){
+lambda.interp <- function(lambda,s){
   ### lambda is the index sequence that is produced by the model
   ### s is the new vector at which evaluations are required.
   ### the value is a vector of left and right indices, and a vector of fractions.

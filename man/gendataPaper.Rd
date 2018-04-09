@@ -9,41 +9,53 @@ gendataPaper(n, p, corr = 0, E = truncnorm::rtruncnorm(n, a = -1, b = 1),
   nonlinear = TRUE, interactions = TRUE)
 }
 \arguments{
-\item{n}{PARAM_DESCRIPTION}
+\item{n}{number of observations}
 
-\item{p}{PARAM_DESCRIPTION}
+\item{p}{number of main effect variables (X)}
 
-\item{corr}{PARAM_DESCRIPTION, Default: 0}
+\item{corr}{correlation between predictors}
 
-\item{E}{PARAM_DESCRIPTION, Default: truncnorm::rtruncnorm(n, a = -1, b = 1)}
+\item{E}{simulated environment vector of length \code{n}. Can be continuous
+or integer valued. Factors must be converted to numeric. Default:
+\code{truncnorm::rtruncnorm(n, a = -1, b = 1)}}
 
-\item{betaE}{PARAM_DESCRIPTION, Default: 2}
+\item{betaE}{exposure effect size}
 
-\item{SNR}{PARAM_DESCRIPTION, Default: 2}
+\item{SNR}{signal to noise ratio}
 
-\item{hierarchy}{PARAM_DESCRIPTION, Default: c("strong", "weak", "none")}
+\item{hierarchy}{type of hierarchy. Can be one of \code{c("strong", "weak", "none")}. Default: "strong"}
 
-\item{nonlinear}{PARAM_DESCRIPTION, Default: TRUE}
+\item{nonlinear}{simulate non-linear terms (logical). Default: TRUE}
 
-\item{interactions}{PARAM_DESCRIPTION, Default: TRUE}
+\item{interactions}{simulate interaction (logical). Default: TRUE}
 }
 \value{
-OUTPUT_DESCRIPTION
+A list with the following elements: \describe{ \item{x}{matrix of
+  dimension \code{nxp} of simulated main effects} \item{y}{simulated response
+  vector of length \code{n}} \item{e}{simulated exposure vector of length
+  \code{n}} \item{Y.star}{linear predictor vector of length \code{n}}
+  \item{f1}{the function \code{f1} evaluated at \code{x_1} (\code{f1(X1)})}
+  \item{f2}{the function \code{f1} evaluated at \code{x_1} (\code{f1(X1)})}
+  \item{f3}{the function \code{f1} evaluated at \code{x_1} (\code{f1(X1)})}
+  \item{f4}{the function \code{f1} evaluated at \code{x_1} (\code{f1(X1)})}
+  \item{betaE}{the value for \eqn{\beta_E}} \item{f1.f}{the function
+  \code{f1}} \item{f2.f}{the function \code{f2}} \item{f3.f}{the function
+  \code{f3}} \item{f4.f}{the function \code{f4}} \item{X1}{an \code{n} length
+  vector of the first predictor} \item{X2}{an \code{n} length vector of the
+  second predictor} \item{X3}{an \code{n} length vector of the third
+  predictor} \item{X4}{an \code{n} length vector of the fourth predictor}
+  \item{scenario}{a character representing the simulation scenario identifier
+  as described in Bhatnagar et al. (2018+)} }
 }
 \description{
-FUNCTION_DESCRIPTION
+generates the different simulation scenarios. This function is
+  not intended to be called directly by users. See \code{\link{gendata}}
 }
 \details{
-DETAILS
-}
-\examples{
-\dontrun{
-if(interactive()){
- #EXAMPLE1
- }
-}
+Requires installation of \code{truncnorm} package. Not meant to be
+  called directly by user. Use \code{\link{gendata}}.
 }
 \seealso{
-\code{\link[truncnorm]{truncnorm}}
- \code{\link[stats]{rnorm}},\code{\link[stats]{cor}}
+\code{\link[stats]{rnorm}},\code{\link[stats]{cor}},
+  \code{\link{gendata}}
 }

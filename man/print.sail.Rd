@@ -2,10 +2,45 @@
 % Please edit documentation in R/methods.R
 \name{print.sail}
 \alias{print.sail}
-\title{Print Method for sail function}
+\title{Print Method for \code{sail} object}
 \usage{
 \method{print}{sail}(x, digits = max(3, getOption("digits") - 3), ...)
 }
+\arguments{
+\item{x}{fitted \code{sail} object}
+
+\item{digits}{significant digits in printout. Default: \code{max(3,
+getOption("digits") - 3)}}
+
+\item{...}{additional print arguments}
+}
+\value{
+OUTPUT_DESCRIPTION
+}
 \description{
-print method for sail function
+Print a summary of the \code{sail} path at each step along the
+  path.
+}
+\details{
+The call that produced the object \code{x} is printed, followed by a
+  five-column matrix with columns \code{df_main}, \code{df_interaction},
+  \code{df_environment}, \code{\%Dev} and \code{Lambda}. The \code{df_}
+  columns are the corresponding number of nonzero coefficients for main
+  effects, interactions and exposure, respectively. \code{\%dev} is the
+  percent deviance explained (relative to the null deviance). For
+  \code{type="gaussian"} this is the r-squared.
+}
+\examples{
+\dontrun{
+if(interactive()){
+data("sailsim")
+f.basis <- function(i) splines::bs(i, degree = 3)
+fit <- sail(x = sailsim$x[,1:10,drop=F], y = sailsim$y, e = sailsim$e,
+            basis = f.basis)
+fit
+ }
+}
+}
+\seealso{
+\code{\link{sail}}, \code{\link{cv.sail}}
 }

@@ -928,11 +928,7 @@ repcol <- function(x, n) {
 #' @param i a vector of numerics
 mysd <- function(i) sqrt(crossprod(i - mean(i)) / length(i))
 
-#' @description \code{check_col_0} is to check how many columns are 0
-#' @param M is a matrix
-check_col_0 <- function(M) {
-  M[, colSums(abs(M)) != 0, drop = F]
-}
+
 
 
 

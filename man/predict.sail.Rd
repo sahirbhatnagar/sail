@@ -8,25 +8,70 @@
 \method{predict}{sail}(object, newx, newe, s = NULL, type = c("link",
   "response", "coefficients", "nonzero", "class"), ...)
 
-\method{coef}{sail}(object, s = NULL, exact = FALSE, ...)
+\method{coef}{sail}(object, s = NULL, ...)
 }
 \arguments{
-\item{object}{Fitted sail model object}
+\item{object}{Fitted \code{sail} model object}
 
-\item{s}{index of tuning parameter. Must be a character and an element of
-"s1","s2",...."s100", where "s100" is the index of the last pair of tuning
-parameters. Default is \code{NULL}}
+\item{newx}{matrix of new values for \code{x} at which predictions are to be
+made. Do not include the intercept (this function takes care of that). Must
+be a matrix. This argument is not used for
+\code{type=c("coefficients","nonzero")}. This matrix will be passed to
+\code{\link{design_sail}} to create the design matrix necessary for
+predictions. This matrix must have the same number of columns originally
+supplied to the \code{sail} fitting function.}
 
-\item{type}{Type of prediction required. Type "link" gives the fitted values.
-Type "response" for "gaussian" type "response" is equivalent to type
-"link". Type "coefficients" computes the coefficients at the requested
-values for s. Type "nonzero" returns a list of the indices of the nonzero
-coefficients for each value of s.}
+\item{newe}{vector of new values for the exposure variable \code{e}. This is
+passed to the \code{design_sail} function.}
+
+\item{s}{Value(s) of the penalty parameter \code{lambda} at which predictions
+are required. Default is the entire sequence used to create the model.}
+
+\item{type}{Type of prediction required. Type \code{"link"} gives the linear
+predictors for \code{"binomial"} (not implemented yet); for
+\code{"gaussian"} models it gives the fitted values. Type \code{"response"}
+gives the fitted probabilities for \code{"binomial"} (not implemented yet),
+for \code{"gaussian"} type \code{"response"} is equivalent to type
+\code{"link"}. Type \code{"coefficients"} computes the coefficients at the
+requested values for \code{s}.  Note that for \code{"binomial"} models,
+results are returned only for the class corresponding to the second level
+of the factor response (not implemented yet). Type \code{"class"} applies
+only to \code{"binomial"} models, and produces the class label
+corresponding to the maximum probability (not implemented yet). Type
+\code{"nonzero"} returns a list of the the nonzero coefficients for each
+value of \code{s}. Default: "link"}
+
+\item{...}{currently ignored}
+}
+\value{
+The object returned depends on type.
 }
 \description{
-this function only works for tuning parameter values defined by
-  the sail_multiple_faster function. The interpolation feature is not working
-  yet
+Similar to other predict methods, this functions predicts fitted
+  values, logits, coefficients and more from a fitted \code{sail} object.
+}
+\details{
+R Source code file for predict, coef, plot and print methods for the sail package
+Author: Sahir Bhatnagar
+Created: 2016
+Updated: April 6, 2018
 
-Get coefficients from a "sail" object
+\code{s} is the new vector at which predictions are requested. If
+  \code{s} is not in the lambda sequence used for fitting the model, the
+  predict function will use linear interpolation to make predictions. The new
+  values are interpolated using a fraction of predicted values from both left
+  and right lambda indices. \code{coef(...)} is equivalent to
+  \code{predict(sail.object, type="coefficients",...)}
+}
+\examples{
+data("sailsim")
+f.basis <- function(i) splines::bs(i, degree = 3)
+fit <- sail(x = sailsim$x[,1:10,drop=F], y = sailsim$y, e = sailsim$e,
+            basis = f.basis)
+predict(fit) # predicted response for whole solution path
+predict(fit, s = 0.45) # predicted response for a single lambda value
+predict(fit, s = c(2.15, 0.32, 0.40), type="nonzero") # nonzero coefficients
+}
+\seealso{
+\code{\link{predict.cv.sail}}
 }

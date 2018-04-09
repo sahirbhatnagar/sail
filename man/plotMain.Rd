@@ -2,14 +2,47 @@
 % Please edit documentation in R/plot.R
 \name{plotMain}
 \alias{plotMain}
-\title{Plot Main Effects from sail object}
+\title{Plot Estimated Component Smooth Functions for Main Effects}
 \usage{
-plotMain(object, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
+plotMain(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
   legend.position = "bottomleft", ...)
 }
 \arguments{
-\item{object}{sail object}
+\item{object}{PARAM_DESCRIPTION}
+
+\item{x}{PARAM_DESCRIPTION}
+
+\item{xvar}{PARAM_DESCRIPTION}
+
+\item{s}{PARAM_DESCRIPTION}
+
+\item{f.truth}{PARAM_DESCRIPTION}
+
+\item{col}{PARAM_DESCRIPTION, Default: c("#D55E00", "#009E73")}
+
+\item{legend.position}{PARAM_DESCRIPTION, Default: 'bottomleft'}
+
+\item{...}{PARAM_DESCRIPTION}
+}
+\value{
+OUTPUT_DESCRIPTION
 }
 \description{
-Plot Main Effects from sail object
+Takes a fitted sail object produced by \code{sail()} or
+  \code{cv.sail()$sail.fit} and plots the component smooth function for a
+  pre-specified variable at a given value of lambda and on the scale of the
+  linear predictor.
+}
+\details{
+DETAILS
+}
+\examples{
+\dontrun{
+if(interactive()){
+ #EXAMPLE1
+ }
+}
+}
+\seealso{
+\code{\link[graphics]{rug}}
 }

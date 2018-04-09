@@ -46,6 +46,37 @@ Currently NOT IMPLEMENTED.}
 
 \item{foldid}{numeric vector indicating which fold each observation belongs
 to}
+
+\item{type.measure}{loss to use for cross-validation. Currently only 3
+options are implemented. The default is \code{type.measure="deviance"},
+which uses squared-error for gaussian models (and is equivalent to
+\code{type.measure="mse"}) there). \code{type.measure="mae"} (mean absolute
+error) can also be used which measures the absolute deviation from the
+fitted mean to the response (\eqn{|y-\hat{y}|}).}
+
+\item{grouped}{This is an experimental argument, with default \code{TRUE},
+and can be ignored by most users. This refers to computing \code{nfolds}
+separate statistics, and then using their mean and estimated standard error
+to describe the CV curve. If \code{grouped=FALSE}, an error matrix is built
+up at the observation level from the predictions from the \code{nfold}
+fits, and then summarized (does not apply to \code{type.measure="auc"}).
+Default: TRUE.}
+
+\item{keep}{If \code{keep=TRUE}, a \emph{prevalidated} array is returned
+containing fitted values for each observation and each value of
+\code{lambda}. This means these fits are computed with this observation and
+the rest of its fold omitted. The \code{folid} vector is also returned.
+Default: FALSE}
+
+\item{mat}{matrix of predictions}
+
+\item{nlams}{number of lambdas fit}
+
+\item{cvm}{mean cv error}
+
+\item{cvsd}{sd of cv error}
+
+\item{s}{numeric value of lambda}
 }
 \description{
 functions used to calculate cross validation error and used by
@@ -53,9 +84,8 @@ functions used to calculate cross validation error and used by
 }
 \details{
 The output of the \code{cv.lspath} function only returns values for
-  those tuning paramters that DID converge
-
-Many have been taken verbatim from the \code{glmnet} package.
+  those tuning paramters that converged. \code{cvcompute, getmin,
+  lambda.interp} are taken verbatim from the \code{glmnet} package
 }
 \section{Functions}{
 \itemize{
@@ -66,13 +96,6 @@ Many have been taken verbatim from the \code{glmnet} package.
 \item \code{lambda.interp}: Interpolation function.
 }}
 
-\note{
-taken verbatim from glmnet
-
-taken verbatim from glmnet
-
-taken verbatim from glmnet
-}
 \references{
 Jerome Friedman, Trevor Hastie, Robert Tibshirani (2010).
   Regularization Paths for Generalized Linear Models via Coordinate Descent.
