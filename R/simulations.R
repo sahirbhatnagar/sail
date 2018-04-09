@@ -64,7 +64,7 @@ gendataPaper <- function(n, p, corr = 0,
 
   # see "Variable Selection in NonParametric Addditive Model" Huang Horowitz and Wei
   f1 <- function(t) 5 * t
-  f2 <- function(t) 4.5 * (2 * t - 1)^2
+  f2 <- function(t) 3 * (2 * t - 1)^2
   f3 <- function(t) 4 * sin(2 * pi * t) / (2 - sin(2 * pi * t))
   f4 <- function(t) 6 * (0.1 * sin(2 * pi * t) + 0.2 * cos(2 * pi * t) +
                            0.3 * sin(2 * pi * t)^2 + 0.4 * cos(2 * pi * t)^3 +
@@ -195,7 +195,7 @@ gendataPaper <- function(n, p, corr = 0,
 #'
 #'   The functions are from the paper by Lin and Zhang (2006):
 #'   \describe{\item{f1}{f1 <- function(t) 5 * t} \item{f2}{  f2 <- function(t)
-#'   4.5 * (2 * t - 1)^2} \item{f3}{  f3 <- function(t) 4 * sin(2 * pi * t) / (2
+#'   3 * (2 * t - 1)^2} \item{f3}{  f3 <- function(t) 4 * sin(2 * pi * t) / (2
 #'   - sin(2 * pi * t))} \item{f4}{  f4 <- function(t) 6 * (0.1 * sin(2 * pi *
 #'   t) + 0.2 * cos(2 * pi * t) + 0.3 * sin(2 * pi * t)^2 + 0.4 * cos(2 * pi *
 #'   t)^3 + 0.5 * sin(2 * pi * t)^3)}}
@@ -219,11 +219,7 @@ gendataPaper <- function(n, p, corr = 0,
 #'   p}, but the covariates of the nonzero and zero components are independent.
 #'
 #' @examples
-#' \dontrun{
-#' if(interactive()){
-#'  DT <- gendata(n = 75, p = 100, betaE = 2, SNR = 1, parameterIndex = 1)
-#'  }
-#' }
+#' DT <- gendata(n = 75, p = 100, betaE = 2, SNR = 1, parameterIndex = 1)
 #' @rdname gendata
 #' @references Lin, Y., & Zhang, H. H. (2006). Component selection and smoothing
 #'   in multivariate nonparametric regression. The Annals of Statistics, 34(5),

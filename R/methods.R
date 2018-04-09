@@ -118,8 +118,9 @@ predict.sail <- function(object, newx, newe, s = NULL,
 #' @inheritParams predict.sail
 #' @rdname predict.sail
 #' @export
-coef.sail <- function(object, s = NULL, ...)
+coef.sail <- function(object, s = NULL, ...) {
   predict(object, s = s, type = "coefficients", ...)
+}
 
 
 

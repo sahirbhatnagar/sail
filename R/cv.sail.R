@@ -101,8 +101,8 @@
 #' coef(cvfit, s = "lambda.min")
 #' # solution at lambda.1se
 #' coef(cvfit, s = "lambda.1se")
-#' # non-zero coefficients
-#' coef(cvfit, s = "lambda.min")[nonzero(coef(cvfit, s = "lambda.min")),,drop=FALSE]
+#' # non-zero coefficients at lambda.min
+#' predict(cvfit, s = "lambda.min", type = "nonzero")
 #'
 #' # predicted response
 #' predict(cvfit, s = "lambda.min")

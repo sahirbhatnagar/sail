@@ -75,7 +75,8 @@ gendataPaper <- function(n, p, corr = 0,
 
   # see "Variable Selection in NonParametric Addditive Model" Huang Horowitz and Wei
   f1 <- function(t) 5 * t
-  f2 <- function(t) 4.5 * (2 * t - 1)^2
+  f2 <- function(t) 3 * (2 * t - 1)^2
+  # f2 <- function(t) 3 * (t ^ 3 + 1.5 * (t - 0.5) ^ 2)
   f3 <- function(t) 4 * sin(2 * pi * t) / (2 - sin(2 * pi * t))
   f4 <- function(t) 6 * (0.1 * sin(2 * pi * t) + 0.2 * cos(2 * pi * t) +
                            0.3 * sin(2 * pi * t)^2 + 0.4 * cos(2 * pi * t)^3 +
@@ -155,10 +156,11 @@ gendataPaper <- function(n, p, corr = 0,
   ))
 }
 
-set.seed(123456)
-DT <- make_gendata_Paper_not_simulator(n = 100, p = 200, corr = 0.0,
+set.seed(12346)
+DT <- make_gendata_Paper_not_simulator(n = 100, p = 20, corr = 0,
                                        betaE = 2, SNR = 2,
                                        parameterIndex = 1)
 
-sailsim <- list(x = DT$x, y = DT$y, e = DT$e)
+sailsim <- list(x = DT$x, y = DT$y, e = DT$e,
+                f1 = DT$f1.f, f2 = DT$f2.f, f3 = DT$f3.f, f4 = DT$f4.f)
 devtools::use_data(sailsim, overwrite = TRUE)

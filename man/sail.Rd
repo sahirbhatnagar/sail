@@ -96,6 +96,9 @@ coordinate-descent loop continues until the change in the objective
 function after all coefficient updates is less than \code{thresh}. Default:
 \code{1e-04}.}
 
+\item{fdev}{minimum fractional change in deviance for stopping path. Default:
+\code{1e-5}.}
+
 \item{maxit}{maximum number of outer-loop iterations allowed at fixed lambda
 value. If models do not converge, consider increasing \code{maxit}.
 Default: 1000.}
@@ -185,8 +188,10 @@ The objective function for \code{family="gaussian"} is \deqn{RSS/2n
 \examples{
 f.basis <- function(i) splines::bs(i, degree = 3)
 data("sailsim")
-fit <- sail(x = sailsim$x[,1:20], y = sailsim$y, e = sailsim$e,
-            basis = f.basis, nlambda = 10)
+# we specify dfmax to early stop the solution path to
+# limit the execution time of the example
+fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
+            basis = f.basis, nlambda = 100, dfmax = 10)
 
 # estimated coefficients at each value of lambda
 coef(fit)

@@ -4,7 +4,7 @@
 \alias{plotInter}
 \title{Plot Interaction Effects from sail object}
 \usage{
-plotInter(object, xvar, s, f.truth, simulation = TRUE, truthonly = FALSE,
+plotInter(object, x, xvar, s, f.truth, simulation = TRUE, truthonly = FALSE,
   npoints = 30, col = c("#56B4E9", "#D55E00"), title_z,
   legend.position = "bottomleft", ...)
 }

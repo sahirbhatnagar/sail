@@ -3,9 +3,11 @@
 \name{plotSailCoef}
 \alias{plotSailCoef}
 \title{R Source code file for plotting functions
+plotSailCoef is called by plot.sail and is not exported
+plotMain and plotInter are exported
 Author: Sahir Bhatnagar
 Created: 2016
-Updated: April 6, 2018
+Updated: April 9, 2018
 Plot the coefficient plot produced by sail}
 \usage{
 plotSailCoef(coefs, lambda, group, df, dev, vnames, environ, alpha = 1,

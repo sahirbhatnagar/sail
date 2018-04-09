@@ -1,8 +1,10 @@
 ######################################
 #' R Source code file for plotting functions
+#' plotSailCoef is called by plot.sail and is not exported
+#' plotMain and plotInter are exported
 #' Author: Sahir Bhatnagar
 #' Created: 2016
-#' Updated: April 6, 2018
+#' Updated: April 9, 2018
 #####################################
 
 
@@ -147,30 +149,73 @@ plotSailCoef <- function(coefs, lambda, group, df, dev, vnames, environ,
 #' @description Takes a fitted sail object produced by \code{sail()} or
 #'   \code{cv.sail()$sail.fit} and plots the component smooth function for a
 #'   pre-specified variable at a given value of lambda and on the scale of the
-#'   linear predictor.
-#' @param object PARAM_DESCRIPTION
-#' @param x PARAM_DESCRIPTION
-#' @param xvar PARAM_DESCRIPTION
-#' @param s PARAM_DESCRIPTION
-#' @param f.truth PARAM_DESCRIPTION
-#' @param col PARAM_DESCRIPTION, Default: c("#D55E00", "#009E73")
-#' @param legend.position PARAM_DESCRIPTION, Default: 'bottomleft'
-#' @param ... PARAM_DESCRIPTION
-#' @return OUTPUT_DESCRIPTION
-#' @details DETAILS
+#'   linear predictor. Currently only implemented for \code{type="gaussian"}
+#' @param object a fitted \code{sail} object as produced by \code{sail()} or
+#'   \code{cv.sail()$sail.fit}
+#' @param x original data supplied to the original call to \code{\link{sail}}
+#' @param xvar a character corresponding to the predictor to be plotted. Only
+#'   one variable name should be supplied, if more than one is supplied, only
+#'   the first element will be plotted. This variable name must be in
+#'   \code{colnames(x)}.
+#' @param s a single value of the penalty parameter \code{lambda} at which
+#'   coefficients will be extracted via the \code{coef} method for objects of
+#'   class \code{"sail"}. If more than one is supplied, only the first one will
+#'   be used.
+#' @param f.truth true function. Only used for simulation purposes when the
+#'   truth is known. The function takes as a input a numeric vector
+#'   corresponding the \code{xvar} column in \code{x} of length \code{nrow(x)}.
+#'   A second line will be plotted for the truth and a legend is added to the
+#'   plot.
+#' @param col color of the line. The first element corresponds to the color used
+#'   for the estimated function and the second element is for the true function
+#'   (if \code{f.truth} is specified). Default: c("#D55E00", "#009E73")
+#' @param legend.position position of the legend. Only used when \code{f.truth}
+#'   is specified. Default: 'bottomleft'. Can be a single keyword from the list
+#'   "bottomright", "bottom", "bottomleft", "left", "topleft", "top",
+#'   "topright", "right" and "center". This places the legend on the inside of
+#'   the plot frame at the given location. Partial argument matching is used.
+#' @param rug adds a rug representation (1-d plot) of the data to the plot, logical. Default: TRUE.
+#' @param ... other graphical paramters passed to \code{plot}.
+#' @return A plot is produced and nothing is returned
+#' @details The linear predictor \eqn{\beta_0 + basis(xvar) * \beta_xvar} is
+#'   plotted against \code{xvar}, where \code{basis} is the expansion provided
+#'   in the original call to \code{sail}.
 #' @examples
 #' \dontrun{
 #' if(interactive()){
-#'  #EXAMPLE1
+#' # Parallel
+#' library(doMC)
+#' registerDoMC(cores = 4)
+#' data("sailsim")
+#' f.basis <- function(i) splines::bs(i, degree = 5)
+#' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
+#'                  basis = f.basis, nfolds = 10, parallel = TRUE)
+#' # plot cv-error curve
+#' plot(cvfit)
+#' # non-zero estimated coefficients at lambda.min
+#' predict(cvfit, type = "nonzero", s="lambda.min")
+#' # plot main effect for X4 with a line for the truth also
+#' plotMain(cvfit$sail.fit, x = sailsim$x, xvar = "X4",
+#'          s = cvfit$lambda.min, f.truth = sailsim$f4)
 #'  }
 #' }
-#' @seealso \code{\link[graphics]{rug}}
+#' @seealso \code{\link{coef.sail}} \code{\link{predict.sail}}, \code{\link[graphics]{rug}}
 #' @rdname plotMain
 #' @export
-#' @importFrom graphics rug
-plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"), legend.position = "bottomleft", ...) {
+plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
+                     legend.position = "bottomleft", rug = TRUE, ...) {
 
   # browser()
+  if (length(xvar) > 1) {
+    xvar <- xvar[[1]]
+    warning("More than 1 xvar provided. Only first element will be plotted.")
+  }
+
+  if (length(s) > 1) {
+    s <- s[[1]]
+    warning("More than 1 s value provided. Only first element will be used for the estimated coefficients.")
+  }
+
   ind <- object$group == which(object$vnames == xvar)
   allCoefs <- coef(object, s = s)
   a0 <- allCoefs[1, ]
@@ -178,8 +223,8 @@ plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
   design.mat <- object$design[, object$main.effect.names[ind], drop = FALSE]
   originalX <- x[, unique(object$group[ind])]
 
-  f.hat <- drop(a0 + design.mat %*% betas)
-  # f.hat <- drop(design.mat %*% betas)
+  # f.hat <- drop(a0 + design.mat %*% betas)
+  f.hat <- drop(design.mat %*% betas)
   if (!missing(f.truth)) {
     seqs <- seq(range(originalX)[1],range(originalX)[2], length.out = 100)
     f.truth.eval <- f.truth(seqs)
@@ -215,7 +260,7 @@ plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
   do.call("plot", plot.args)
   abline(h = 0, lwd = 1, col = "gray")
   lines(originalX[order(originalX)], f.hat[order(originalX)], col = col[1], lwd = 3)
-  graphics::rug(originalX, side = 1)
+  if (rug) graphics::rug(originalX, side = 1)
   if (!missing(f.truth)) {
     lines(seqs[order(seqs)], f.truth.eval[order(seqs)], col = col[2], lwd = 3)
   }
@@ -231,12 +276,22 @@ plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
 
 #' Plot Interaction Effects from sail object
 #' @param object sail object
+#'
 #' @export
-plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, truthonly = FALSE,
+plotInter <- function(object, x, xvar, s, f.truth, simulation = TRUE, truthonly = FALSE,
                       npoints = 30, col = c("#56B4E9", "#D55E00"), title_z,
                       legend.position = "bottomleft", ...) {
 
-  # browser()
+  browser()
+  if (length(xvar) > 1) {
+    xvar <- xvar[[1]]
+    warning("More than 1 xvar provided. Only first element will be plotted.")
+  }
+
+  if (length(s) > 1) {
+    s <- s[[1]]
+    warning("More than 1 s value provided. Only first element will be used for the estimated coefficients.")
+  }
 
   ind <- object$group == which(object$vnames == xvar)
   allCoefs <- coef(object, s = s)
@@ -264,12 +319,12 @@ plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, truthonly = F
   if (simulation) {
     f.est <- function(X, E) {
       # E * as.vector(betaE) + standardize(splines::bs(X, df = object$df, degree = object$degree))$x %*% betas +
-      (E * sail::standardize(splines::bs(X, df = object$df, degree = object$degree))$x) %*% alphas
+      (E * standardize(splines::bs(X, df = object$df, degree = object$degree))$x) %*% alphas
     }
   } else {
     f.est <- function(X, E) {
-      E * as.vector(betaE) + sail::standardize(splines::bs(X, df = object$df, degree = object$degree))$x %*% betas +
-        (E * sail::standardize(splines::bs(X, df = object$df, degree = object$degree))$x) %*% alphas
+      E * as.vector(betaE) + standardize(splines::bs(X, df = object$df, degree = object$degree))$x %*% betas +
+        (E * standardize(splines::bs(X, df = object$df, degree = object$degree))$x) %*% alphas
     }
   }
 
