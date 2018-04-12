@@ -4,13 +4,84 @@
 \alias{plotInter}
 \title{Plot Interaction Effects from sail object}
 \usage{
-plotInter(object, x, xvar, s, f.truth, simulation = TRUE, truthonly = FALSE,
-  npoints = 30, col = c("#56B4E9", "#D55E00"), title_z,
-  legend.position = "bottomleft", ...)
+plotInter(object, x, xvar, s, f.truth, interation.only = TRUE,
+  truthonly = FALSE, npoints = 30, col = c("#56B4E9", "#D55E00"),
+  title_z = "", ...)
 }
 \arguments{
-\item{object}{sail object}
+\item{object}{a fitted \code{sail} object as produced by \code{sail()} or
+\code{cv.sail()$sail.fit}}
+
+\item{x}{original data supplied to the original call to \code{\link{sail}}}
+
+\item{xvar}{a character corresponding to the predictor to be plotted. Only
+one variable name should be supplied, if more than one is supplied, only
+the first element will be plotted. This variable name must be in
+\code{colnames(x)}.}
+
+\item{s}{a single value of the penalty parameter \code{lambda} at which
+coefficients will be extracted via the \code{coef} method for objects of
+class \code{"sail"}. If more than one is supplied, only the first one will
+be used.}
+
+\item{f.truth}{true function. Only used for simulation purposes when the
+truth is known. The function takes as a input two numeric vectors e.g.
+\code{f(x,e)} corresponding the \code{xvar} column in \code{x} of length
+\code{nrow(x)} and the exposure variable contained in the \code{sail
+object}. A second \code{persp} will be plotted for the truth}
+
+\item{interation.only}{if \code{TRUE} only the interaction part is used to
+calculate the linear predictor, i.e., \eqn{linear predictor = E * f(X) *
+interaction_effects}. If \code{FALSE}, then \eqn{linear predictor = E *
+\beta_E + f(X) * interaction_effects + E * f(X) * interaction_effects}.
+Default: TRUE}
+
+\item{truthonly}{only plot the truth. \code{f.truth} must be specified if
+this argument is set to \code{TRUE}. Default: FALSE}
+
+\item{npoints}{number of points in the grid to calculate the perspective
+plot. Default: 30}
+
+\item{col}{color of the line. The first element corresponds to the color used
+for the estimated function and the second element is for the true function
+(if \code{f.truth} is specified). Default: c("#D55E00", "#009E73")}
+
+\item{title_z}{title for the plot, Default: ''}
+
+\item{...}{currently ignored}
+}
+\value{
+A plot is produced and nothing is returned
 }
 \description{
-Plot Interaction Effects from sail object
+Takes a fitted sail object produced by \code{sail()} or
+  \code{cv.sail()$sail.fit} and plots a \code{\link[graphics]{persp}} for a
+  pre-specified variable at a given value of lambda and on the scale of the
+  linear predictor. Currently only implemented for \code{type="gaussian"}
+}
+\examples{
+\dontrun{
+if(interactive()){
+# Parallel
+library(doMC)
+registerDoMC(cores = 4)
+data("sailsim")
+f.basis <- function(i) splines::bs(i, degree = 5)
+cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
+                 basis = f.basis, nfolds = 10, parallel = TRUE)
+# plot cv-error curve
+plot(cvfit)
+# non-zero estimated coefficients at lambda.min
+predict(cvfit, type = "nonzero", s="lambda.min")
+# plot interaction effect for X4 and the true interaction effect also
+plotInter(cvfit$sail.fit, x = sailsim$x, xvar = "X3",
+          f.truth = sailsim$f4.inter,
+          s = cvfit$lambda.min,
+          title_z = "Estimated")
+ }
+}
+}
+\seealso{
+\code{\link[graphics]{persp}} \code{\link{coef.sail}}
+  \code{\link{predict.sail}}, \code{\link[graphics]{rug}}
 }

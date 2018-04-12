@@ -35,7 +35,7 @@ The call that produced the object \code{x} is printed, followed by a
 if(interactive()){
 data("sailsim")
 f.basis <- function(i) splines::bs(i, degree = 3)
-fit <- sail(x = sailsim$x[,1:10,drop=F], y = sailsim$y, e = sailsim$e,
+fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
             basis = f.basis)
 fit
  }

@@ -9,6 +9,7 @@
 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(truncnorm)
+pacman::p_load(usethis)
 
 make_gendata_Paper_not_simulator <- function(n, p, corr, betaE, SNR, lambda.type, parameterIndex) {
 
@@ -46,10 +47,6 @@ gendataPaper <- function(n, p, corr = 0,
                          E = truncnorm::rtruncnorm(n, a = -1, b = 1),
                          betaE = 2, SNR = 2, hierarchy = c("strong", "weak", "none"),
                          nonlinear = TRUE, interactions = TRUE) {
-  # this is modified from "VARIABLE SELECTION IN NONPARAMETRIC ADDITIVE MODEL" huang et al, Ann Stat.
-  # n = 200
-  # p = 10
-  # corr = 1
 
   hierarchy <- match.arg(hierarchy)
 
@@ -73,14 +70,25 @@ gendataPaper <- function(n, p, corr = 0,
 
   colnames(Xall) <- paste0("X", seq_len(p))
 
-  # see "Variable Selection in NonParametric Addditive Model" Huang Horowitz and Wei
-  f1 <- function(t) 5 * t
-  f2 <- function(t) 3 * (2 * t - 1)^2
-  # f2 <- function(t) 3 * (t ^ 3 + 1.5 * (t - 0.5) ^ 2)
-  f3 <- function(t) 4 * sin(2 * pi * t) / (2 - sin(2 * pi * t))
-  f4 <- function(t) 6 * (0.1 * sin(2 * pi * t) + 0.2 * cos(2 * pi * t) +
-                           0.3 * sin(2 * pi * t)^2 + 0.4 * cos(2 * pi * t)^3 +
-                           0.5 * sin(2 * pi * t)^3)
+  if (nonlinear) {
+
+    f1 <- function(x) 5 * x
+    f2 <- function(x) 3 * (2 * x - 1)^2
+    f3 <- function(x) 4 * sin(2 * pi * x) / (2 - sin(2 * pi * x))
+    f4 <- function(x) 6 * (0.1 * sin(2 * pi * x) + 0.2 * cos(2 * pi * x) +
+                             0.3 * sin(2 * pi * x)^2 + 0.4 * cos(2 * pi * x)^3 +
+                             0.5 * sin(2 * pi * x)^3)
+    f3.inter = function(x, e) e * f3(x)
+    f4.inter = function(x, e) e * f4(x)
+
+  } else {
+    f1 <- function(x) -1.5 * (x - 2)
+    f2 <- function(x)  1 * (x + 1) +
+    f3 <- function(x)  1.5 * x
+    f4 <- function(x)  -2 * x
+    f3.inter <- function(x, e) e * f3(x)
+    f4.inter <- function(x, e) -1.5 * e * f4(x)
+  }
 
   # error
   error <- stats::rnorm(n)
@@ -95,14 +103,13 @@ gendataPaper <- function(n, p, corr = 0,
     #   2 * E * X3 +
     #   2.5 * E * X4
 
-    Y.star <- -1.5 * (X1 - 2) +
-      1 * (X2 + 1) +
-      1.5 * (X3) -
-      2 * X4 +
+    Y.star <- f1(X1) +
+      f2(X2) +
+      f3(X3) +
+      f4(X4) +
       betaE * E +
-      E * X3 -
-      1.5 * E * X4
-
+      f3.inter(X3,E) +
+      f4.inter(X4,E)
 
     scenario <- "2"
   } else {
@@ -152,6 +159,7 @@ gendataPaper <- function(n, p, corr = 0,
     x = Xall, y = Y, e = E, Y.star = Y.star, f1 = f1(X1),
     f2 = f2(X2), f3 = f3(X3), f4 = f4(X4), betaE = betaE,
     f1.f = f1, f2.f = f2, f3.f = f3, f4.f = f4,
+    f3.inter = f3.inter, f4.inter = f4.inter,
     X1 = X1, X2 = X2, X3 = X3, X4 = X4, scenario = scenario
   ))
 }
@@ -162,5 +170,7 @@ DT <- make_gendata_Paper_not_simulator(n = 100, p = 20, corr = 0,
                                        parameterIndex = 1)
 
 sailsim <- list(x = DT$x, y = DT$y, e = DT$e,
-                f1 = DT$f1.f, f2 = DT$f2.f, f3 = DT$f3.f, f4 = DT$f4.f)
-devtools::use_data(sailsim, overwrite = TRUE)
+                f1 = DT$f1.f, f2 = DT$f2.f, f3 = DT$f3.f, f4 = DT$f4.f,
+                f3.inter = DT$f3.inter, f4.inter = DT$f4.inter)
+usethis::use_data(sailsim, overwrite = TRUE)
+# save(sailsim, file = "data/sailsim.RData")

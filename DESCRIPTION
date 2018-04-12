@@ -1,6 +1,6 @@
 Package: sail
-Title: Strong Additive Interaction Learning
-Version: 0.0.0.9000
+Title: Sparse Additive Interaction Learning
+Version: 0.1.0
 Authors@R: c(
   person("Sahir", "Bhatnagar", email = "sahir.bhatnagar@gmail.com",
   role = c("aut", "cre"), comment = "http://sahirbhatnagar.com/"),
@@ -12,18 +12,19 @@ Authors@R: c(
 Description: What the package does (one paragraph).
 Depends: R (>= 3.4.0)
 Imports:
-    methods,
-    stats,
-    splines,
     glmnet, 
     gglasso,
-    Matrix
-Suggests:
+    methods
+Suggests: 
     grpreg,
     truncnorm,
     foreach,
-    doMC
-License: What license is it under?
+    doMC,
+    testthat,
+    covr
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+BugReports: https://github.com/sahirbhatnagar/sail/issues
+URL: https://github.com/sahirbhatnagar/sail
 RoxygenNote: 6.0.1

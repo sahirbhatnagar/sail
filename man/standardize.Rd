@@ -7,10 +7,12 @@
 standardize(x, center = TRUE, normalize = FALSE)
 }
 \arguments{
+\item{x}{data to be standardized}
+
+\item{center}{Should \code{x} be centered. Default is \code{TRUE}}
+
 \item{normalize}{Should \code{x} be scaled to have unit variance. Default is
 \code{FALSE}}
-
-\item{intercept}{Should \code{x} be centered. Default is \code{TRUE}}
 }
 \value{
 list of length 3: \describe{ \item{x}{centered and possibly

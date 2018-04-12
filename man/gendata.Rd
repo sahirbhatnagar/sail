@@ -66,10 +66,10 @@ We evaluate the performance of our method on three of its defining
 
   The functions are from the paper by Lin and Zhang (2006):
   \describe{\item{f1}{f1 <- function(t) 5 * t} \item{f2}{  f2 <- function(t)
-  3 * (2 * t - 1)^2} \item{f3}{  f3 <- function(t) 4 * sin(2 * pi * t) / (2
-  - sin(2 * pi * t))} \item{f4}{  f4 <- function(t) 6 * (0.1 * sin(2 * pi *
-  t) + 0.2 * cos(2 * pi * t) + 0.3 * sin(2 * pi * t)^2 + 0.4 * cos(2 * pi *
-  t)^3 + 0.5 * sin(2 * pi * t)^3)}}
+  3 * (2 * t - 1)^2} \item{f3}{  f3 <- function(t) 4 * sin(2 * pi * t) / (2 -
+  sin(2 * pi * t))} \item{f4}{  f4 <- function(t) 6 * (0.1 * sin(2 * pi * t)
+  + 0.2 * cos(2 * pi * t) + 0.3 * sin(2 * pi * t)^2 + 0.4 * cos(2 * pi * t)^3
+  + 0.5 * sin(2 * pi * t)^3)}}
 
 
   The response is generated as \deqn{Y = Y* + k*error} where Y* is the linear
@@ -90,7 +90,7 @@ We evaluate the performance of our method on three of its defining
   p}, but the covariates of the nonzero and zero components are independent.
 }
 \examples{
-DT <- gendata(n = 75, p = 100, betaE = 2, SNR = 1, parameterIndex = 1)
+DT <- gendata(n = 75, p = 100, corr = 0, betaE = 2, SNR = 1, parameterIndex = 1)
 }
 \references{
 Lin, Y., & Zhang, H. H. (2006). Component selection and smoothing

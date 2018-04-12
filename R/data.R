@@ -15,6 +15,8 @@
 #'   Dementia status. 0: Non-demented, 1: Demented} }
 #' @source \url{https://github.com/stnava/RMI/tree/master/tomfletcher}
 #' @source \url{http://www.oasis-brains.org/}
+#' @examples
+#' oasis
 "oasis"
 
 
@@ -43,4 +45,6 @@
 #'   additive models (2010). Annals of statistics. Aug 1;38(4):2282.
 #' @references Bhatnagar SR, Yang Y, Greenwood CMT. Sparse additive interaction
 #'   models with the strong heredity property (2018+). Preprint.
+#' @examples
+#' sailsim
 "sailsim"

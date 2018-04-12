@@ -1,16 +1,13 @@
 ######################################
-#' R Source code file for plotting functions
-#' plotSailCoef is called by plot.sail and is not exported
-#' plotMain and plotInter are exported
-#' Author: Sahir Bhatnagar
-#' Created: 2016
-#' Updated: April 9, 2018
+# R Source code file for plotting functions
+# plotSailCoef is called by plot.sail and is not exported
+# plotMain and plotInter are exported
+# Author: Sahir Bhatnagar
+# Created: 2016
+# Updated: April 9, 2018
 #####################################
 
-
-#' Plot the coefficient plot produced by sail
-#'
-#' @description Plot the coefficient plot produced by sail
+#' @importFrom grDevices hcl
 plotSailCoef <- function(coefs, lambda, group, df, dev, vnames, environ,
                          alpha = 1, legend.loc, label = FALSE, log.l = TRUE,
                          norm = FALSE, ...) {
@@ -177,7 +174,7 @@ plotSailCoef <- function(coefs, lambda, group, df, dev, vnames, environ,
 #' @param rug adds a rug representation (1-d plot) of the data to the plot, logical. Default: TRUE.
 #' @param ... other graphical paramters passed to \code{plot}.
 #' @return A plot is produced and nothing is returned
-#' @details The linear predictor \eqn{\beta_0 + basis(xvar) * \beta_xvar} is
+#' @details The linear predictor \eqn{basis(xvar) * \beta_xvar} is
 #'   plotted against \code{xvar}, where \code{basis} is the expansion provided
 #'   in the original call to \code{sail}.
 #' @examples
@@ -201,6 +198,8 @@ plotSailCoef <- function(coefs, lambda, group, df, dev, vnames, environ,
 #' }
 #' @seealso \code{\link{coef.sail}} \code{\link{predict.sail}}, \code{\link[graphics]{rug}}
 #' @rdname plotMain
+#' @importFrom graphics abline axis legend lines mtext par plot.default segments text
+#' @importFrom stats coef
 #' @export
 plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
                      legend.position = "bottomleft", rug = TRUE, ...) {
@@ -226,10 +225,12 @@ plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
   # f.hat <- drop(a0 + design.mat %*% betas)
   f.hat <- drop(design.mat %*% betas)
   if (!missing(f.truth)) {
-    seqs <- seq(range(originalX)[1],range(originalX)[2], length.out = 100)
+    seqs <- seq(range(originalX)[1], range(originalX)[2], length.out = 100)
     f.truth.eval <- f.truth(seqs)
     ylims <- range(f.truth.eval, f.hat)
-  } else { ylims <- range(f.hat) }
+  } else {
+    ylims <- range(f.hat)
+  }
 
   plot.args <- list(
     x = originalX[order(originalX)],
@@ -274,15 +275,61 @@ plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
 
 
 
-#' Plot Interaction Effects from sail object
-#' @param object sail object
-#'
+#' @title Plot Interaction Effects from sail object
+#' @description Takes a fitted sail object produced by \code{sail()} or
+#'   \code{cv.sail()$sail.fit} and plots a \code{\link[graphics]{persp}} for a
+#'   pre-specified variable at a given value of lambda and on the scale of the
+#'   linear predictor. Currently only implemented for \code{type="gaussian"}
+#' @inheritParams plotMain
+#' @param f.truth true function. Only used for simulation purposes when the
+#'   truth is known. The function takes as a input two numeric vectors e.g.
+#'   \code{f(x,e)} corresponding the \code{xvar} column in \code{x} of length
+#'   \code{nrow(x)} and the exposure variable contained in the \code{sail
+#'   object}. A second \code{persp} will be plotted for the truth
+#' @param interation.only if \code{TRUE} only the interaction part is used to
+#'   calculate the linear predictor, i.e., \eqn{linear predictor = E * f(X) *
+#'   interaction_effects}. If \code{FALSE}, then \eqn{linear predictor = E *
+#'   \beta_E + f(X) * interaction_effects + E * f(X) * interaction_effects}.
+#'   Default: TRUE
+#' @param truthonly only plot the truth. \code{f.truth} must be specified if
+#'   this argument is set to \code{TRUE}. Default: FALSE
+#' @param npoints number of points in the grid to calculate the perspective
+#'   plot. Default: 30
+#' @param title_z title for the plot, Default: ''
+#' @param ... currently ignored
+#' @return A plot is produced and nothing is returned
+#' @examples
+#' \dontrun{
+#' if(interactive()){
+#' # Parallel
+#' library(doMC)
+#' registerDoMC(cores = 4)
+#' data("sailsim")
+#' f.basis <- function(i) splines::bs(i, degree = 5)
+#' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
+#'                  basis = f.basis, nfolds = 10, parallel = TRUE)
+#' # plot cv-error curve
+#' plot(cvfit)
+#' # non-zero estimated coefficients at lambda.min
+#' predict(cvfit, type = "nonzero", s="lambda.min")
+#' # plot interaction effect for X4 and the true interaction effect also
+#' plotInter(cvfit$sail.fit, x = sailsim$x, xvar = "X3",
+#'           f.truth = sailsim$f4.inter,
+#'           s = cvfit$lambda.min,
+#'           title_z = "Estimated")
+#'  }
+#' }
+#' @seealso \code{\link[graphics]{persp}} \code{\link{coef.sail}}
+#'   \code{\link{predict.sail}}, \code{\link[graphics]{rug}}
+#' @rdname plotInter
+#' @importFrom graphics abline axis legend lines mtext par plot.default segments text
+#' @importFrom stats coef
 #' @export
-plotInter <- function(object, x, xvar, s, f.truth, simulation = TRUE, truthonly = FALSE,
-                      npoints = 30, col = c("#56B4E9", "#D55E00"), title_z,
-                      legend.position = "bottomleft", ...) {
+plotInter <- function(object, x, xvar, s, f.truth, interation.only = TRUE, truthonly = FALSE,
+                      npoints = 30, col = c("#56B4E9", "#D55E00"), title_z = "",
+                      ...) {
 
-  browser()
+  # browser()
   if (length(xvar) > 1) {
     xvar <- xvar[[1]]
     warning("More than 1 xvar provided. Only first element will be plotted.")
@@ -316,15 +363,17 @@ plotInter <- function(object, x, xvar, s, f.truth, simulation = TRUE, truthonly 
   e <- seq(range(originalE)[1], range(originalE)[2], length.out = npoints)
 
   # show interaction effect only for simulation
-  if (simulation) {
+  if (interation.only) {
     f.est <- function(X, E) {
       # E * as.vector(betaE) + standardize(splines::bs(X, df = object$df, degree = object$degree))$x %*% betas +
-      (E * standardize(splines::bs(X, df = object$df, degree = object$degree))$x) %*% alphas
+      (drop(standardize(E, center = object$center.e)$x) * standardize(object$basis(X), center = object$center.e)$x) %*% alphas
+      # (E * standardize(object$basis(X), center = FALSE)$x) %*% alphas
     }
   } else {
     f.est <- function(X, E) {
-      E * as.vector(betaE) + standardize(splines::bs(X, df = object$df, degree = object$degree))$x %*% betas +
-        (E * standardize(splines::bs(X, df = object$df, degree = object$degree))$x) %*% alphas
+      standardize(E, center = object$center.e)$x * as.vector(betaE) +
+        standardize(object$basis(X), center = object$center.e)$x %*% betas +
+        (drop(standardize(E, center = object$center.e)$x) * standardize(object$basis(X), center = object$center.e)$x) %*% alphas
     }
   }
 
@@ -380,7 +429,7 @@ plotInter <- function(object, x, xvar, s, f.truth, simulation = TRUE, truthonly 
       ltheta = 120, expand = 0.5,
       r = 2, shade = 0.3, axes = TRUE, scale = TRUE, box = T,
       nticks = 5,
-      zlim = z_range,
+      # zlim = z_range,
       cex.lab = 3,
       cex.main = 3,
       # ticktype="detailed",

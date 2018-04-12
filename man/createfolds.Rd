@@ -10,6 +10,12 @@ createfolds(y, k = 10, list = FALSE, returnTrain = FALSE)
 \item{y}{vector of response}
 
 \item{k}{integer for the number of folds.}
+
+\item{list}{logical - should the results be in a list (TRUE) or a matrix}
+
+\item{returnTrain}{a logical. When true, the values returned are the sample
+positions corresponding to the data used during training. This argument
+only works in conjunction with \code{list = TRUE}}
 }
 \value{
 A vector of CV fold ID's for each observation in \code{y}

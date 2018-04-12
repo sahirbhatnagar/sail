@@ -1,14 +1,13 @@
 ######################################
-#' R Source code file for fitting functions
-#' this is where most of the work is being done
-#' not exported
-#' Author: Sahir Bhatnagar
-#' Created: 2016
-#' Updated: April 6, 2018
+# R Source code file for fitting functions
+# this is where most of the work is being done
+# not exported
+# Author: Sahir Bhatnagar
+# Created: 2016
+# Updated: April 6, 2018
 #####################################
 
 
-#' Gaussian Response fitting function with warm starts
 lspath <- function(x,
                    y,
                    e,
@@ -61,7 +60,7 @@ lspath <- function(x,
   # this is used for the predict function
   design <- expansion$design
 
-  nulldev <- as.numeric(crossprod(y-mean(y)))
+  nulldev <- as.numeric(crossprod(y - mean(y)))
 
   # Initialize -------------------------------------------------------------
   # the initial values here dont matter, since at Lambda_max everything is 0
@@ -166,7 +165,7 @@ lspath <- function(x,
   for (LAMBDA in lambdas) {
     lambdaIndex <- which(LAMBDA == lambdas)
 
-    if (verbose>=1) {
+    if (verbose >= 1) {
       message(sprintf("Index: %g, lambda: %0.4f", lambdaIndex, LAMBDA))
     }
 
@@ -390,7 +389,7 @@ lspath <- function(x,
       # criterion <- l2norm(Theta_next - Theta_init)
       converged[lambdaIndex] <- criterion < thresh
       converged[lambdaIndex] <- if (is.na(converged[lambdaIndex])) FALSE else converged[lambdaIndex]
-      if (verbose>=2) {
+      if (verbose >= 2) {
         message(sprintf(
           "Iteration: %f, Criterion: %f", m, criterion
         ))
@@ -443,18 +442,19 @@ lspath <- function(x,
     # matplot(t(betaMat), type = "l")
     # matplot(t(gammaMat), type = "l")
     # matplot(t(alphaMat), type = "l")
-# browser()
+    # browser()
     # devianceDiff <- outPrint[lambdaIndex,"deviance"] - outPrint[lambdaIndex-1,"deviance"]
-    devianceDiff <- (outPrint[lambdaIndex,"percentDev"] - outPrint[lambdaIndex-1,"percentDev"]) /
-      outPrint[lambdaIndex-1,"percentDev"]
-    if (length(devianceDiff)!=0 && !is.na(devianceDiff) && devRatio>1e-3) {
-    if (devianceDiff < fdev | outPrint[lambdaIndex,"percentDev"] > 0.999) break }
+    devianceDiff <- (outPrint[lambdaIndex, "percentDev"] - outPrint[lambdaIndex - 1, "percentDev"]) /
+      outPrint[lambdaIndex - 1, "percentDev"]
+    if (length(devianceDiff) != 0 && !is.na(devianceDiff) && devRatio > 1e-3) {
+      if (devianceDiff < fdev | outPrint[lambdaIndex, "percentDev"] > 0.999) break
+    }
     # if (outPrint[LAMBDA,"percentDev"] > 0.999) break #}
   }
 
-  beta_final <- as(betaMat, "dgCMatrix")
-  alpha_final <- as(alphaMat, "dgCMatrix")
-  gamma_final <- as(gammaMat, "dgCMatrix") # used for KKT check
+  beta_final <- methods::as(betaMat, "dgCMatrix")
+  alpha_final <- methods::as(alphaMat, "dgCMatrix")
+  gamma_final <- methods::as(gammaMat, "dgCMatrix") # used for KKT check
 
 
   # browser()

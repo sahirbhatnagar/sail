@@ -37,7 +37,8 @@ gendataPaper <- function(n, p, corr = 0,
 
   if (!requireNamespace("truncnorm", quietly = TRUE)) {
     stop("Package \"truncnorm\" needed for this function to simulate data. Please install it.",
-         call. = FALSE)
+      call. = FALSE
+    )
   }
 
   hierarchy <- match.arg(hierarchy)
@@ -67,8 +68,8 @@ gendataPaper <- function(n, p, corr = 0,
   f2 <- function(t) 3 * (2 * t - 1)^2
   f3 <- function(t) 4 * sin(2 * pi * t) / (2 - sin(2 * pi * t))
   f4 <- function(t) 6 * (0.1 * sin(2 * pi * t) + 0.2 * cos(2 * pi * t) +
-                           0.3 * sin(2 * pi * t)^2 + 0.4 * cos(2 * pi * t)^3 +
-                           0.5 * sin(2 * pi * t)^3)
+      0.3 * sin(2 * pi * t)^2 + 0.4 * cos(2 * pi * t)^3 +
+      0.5 * sin(2 * pi * t)^3)
 
   # error
   error <- stats::rnorm(n)
@@ -195,10 +196,10 @@ gendataPaper <- function(n, p, corr = 0,
 #'
 #'   The functions are from the paper by Lin and Zhang (2006):
 #'   \describe{\item{f1}{f1 <- function(t) 5 * t} \item{f2}{  f2 <- function(t)
-#'   3 * (2 * t - 1)^2} \item{f3}{  f3 <- function(t) 4 * sin(2 * pi * t) / (2
-#'   - sin(2 * pi * t))} \item{f4}{  f4 <- function(t) 6 * (0.1 * sin(2 * pi *
-#'   t) + 0.2 * cos(2 * pi * t) + 0.3 * sin(2 * pi * t)^2 + 0.4 * cos(2 * pi *
-#'   t)^3 + 0.5 * sin(2 * pi * t)^3)}}
+#'   3 * (2 * t - 1)^2} \item{f3}{  f3 <- function(t) 4 * sin(2 * pi * t) / (2 -
+#'   sin(2 * pi * t))} \item{f4}{  f4 <- function(t) 6 * (0.1 * sin(2 * pi * t)
+#'   + 0.2 * cos(2 * pi * t) + 0.3 * sin(2 * pi * t)^2 + 0.4 * cos(2 * pi * t)^3
+#'   + 0.5 * sin(2 * pi * t)^3)}}
 #'
 #'
 #'   The response is generated as \deqn{Y = Y* + k*error} where Y* is the linear
@@ -219,7 +220,7 @@ gendataPaper <- function(n, p, corr = 0,
 #'   p}, but the covariates of the nonzero and zero components are independent.
 #'
 #' @examples
-#' DT <- gendata(n = 75, p = 100, betaE = 2, SNR = 1, parameterIndex = 1)
+#' DT <- gendata(n = 75, p = 100, corr = 0, betaE = 2, SNR = 1, parameterIndex = 1)
 #' @rdname gendata
 #' @references Lin, Y., & Zhang, H. H. (2006). Component selection and smoothing
 #'   in multivariate nonparametric regression. The Annals of Statistics, 34(5),
@@ -231,38 +232,49 @@ gendataPaper <- function(n, p, corr = 0,
 #' @export
 gendata <- function(n, p, corr, E = truncnorm::rtruncnorm(n, a = -1, b = 1),
                     betaE, SNR, parameterIndex) {
-
   if (!requireNamespace("truncnorm", quietly = TRUE)) {
     stop("Package \"truncnorm\" needed for this function to simulate data. Please install it.",
-         call. = FALSE)
+      call. = FALSE
+    )
   }
 
   main <- paste0("X", seq_len(p))
-  vnames <- c(main, "E", paste0(main,":E"))
+  vnames <- c(main, "E", paste0(main, ":E"))
 
   if (parameterIndex == 1) { # 1a
-    hierarchy = "strong" ; nonlinear = TRUE ; interactions = TRUE
-    causal <- c("X1","X2","X3","X4","E","X3:E","X4:E")
+    hierarchy <- "strong"
+    nonlinear <- TRUE
+    interactions <- TRUE
+    causal <- c("X1", "X2", "X3", "X4", "E", "X3:E", "X4:E")
   } else if (parameterIndex == 2) { # 1b
-    hierarchy = "weak" ; nonlinear = TRUE ; interactions = TRUE
-    causal <- c("X1","X2","E","X3:E","X4:E")
+    hierarchy <- "weak"
+    nonlinear <- TRUE
+    interactions <- TRUE
+    causal <- c("X1", "X2", "E", "X3:E", "X4:E")
   } else if (parameterIndex == 3) { # 1c
-    hierarchy = "none" ; nonlinear = TRUE ; interactions = TRUE
-    causal <- c("X3:E","X4:E")
+    hierarchy <- "none"
+    nonlinear <- TRUE
+    interactions <- TRUE
+    causal <- c("X3:E", "X4:E")
   } else if (parameterIndex == 4) { # 2
-    hierarchy = "strong"; nonlinear = FALSE; interactions = TRUE
-    causal <- c("X1","X2","X3","X4","E","X3:E","X4:E")
+    hierarchy <- "strong"
+    nonlinear <- FALSE
+    interactions <- TRUE
+    causal <- c("X1", "X2", "X3", "X4", "E", "X3:E", "X4:E")
   } else if (parameterIndex == 5) { # 3
-    hierarchy = "strong" ; nonlinear = TRUE ; interactions = FALSE
-    causal <- c("X1","X2","X3","X4","E")
+    hierarchy <- "strong"
+    nonlinear <- TRUE
+    interactions <- FALSE
+    causal <- c("X1", "X2", "X3", "X4", "E")
   }
 
   not_causal <- setdiff(vnames, causal)
 
-  DT <- gendataPaper(n = n, p = p, corr = corr,
-                     E = truncnorm::rtruncnorm(n, a = -1, b = 1),
-                     betaE = betaE, SNR = SNR,
-                     hierarchy = hierarchy, nonlinear = nonlinear, interactions = interactions)
+  DT <- gendataPaper(
+    n = n, p = p, corr = corr,
+    E = truncnorm::rtruncnorm(n, a = -1, b = 1),
+    betaE = betaE, SNR = SNR,
+    hierarchy = hierarchy, nonlinear = nonlinear, interactions = interactions
+  )
   return(DT)
-
 }

@@ -26,6 +26,9 @@ The code used to simulate the data is available at
   (2-sin(2pi*t)}\item{}{f4(t)=6(0.1sin(2pi*t) + 0.2cos(2pi*t) +
   0.3sin(2pi*t)^2 + 0.4cos(2pi*t)^3 + 0.5sin(2pi*t)^3)}}
 }
+\examples{
+sailsim
+}
 \references{
 Lin, Y., & Zhang, H. H. (2006). Component selection and smoothing
   in multivariate nonparametric regression. The Annals of Statistics, 34(5),

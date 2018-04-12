@@ -43,10 +43,9 @@
 #'   and right lambda indices. \code{coef(...)} is equivalent to
 #'   \code{predict(sail.object, type="coefficients",...)}
 #' @examples
-#' data("sailsim")
 #' f.basis <- function(i) splines::bs(i, degree = 3)
-#' fit <- sail(x = sailsim$x[,1:10,drop=F], y = sailsim$y, e = sailsim$e,
-#'             basis = f.basis)
+#' fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
+#'             basis = f.basis, dfmax = 10)
 #' predict(fit) # predicted response for whole solution path
 #' predict(fit, s = 0.45) # predicted response for a single lambda value
 #' predict(fit, s = c(2.15, 0.32, 0.40), type="nonzero") # nonzero coefficients
@@ -58,12 +57,11 @@ predict.sail <- function(object, newx, newe, s = NULL,
                            "link", "response", "coefficients",
                            "nonzero", "class"
                          ), ...) {
-
   type <- match.arg(type)
 
   if (missing(newx)) {
     if (!match(type, c("coefficients", "nonzero"), FALSE)) {
-      newx <- object$design
+      newx <- object$design # this would already have gone through the standardize function
     }
   } else if (!missing(newx) & missing(newe)) {
     stop("newe is missing. please supply the vector of the environment variable.")
@@ -99,11 +97,11 @@ predict.sail <- function(object, newx, newe, s = NULL,
 
   if (type == "nonzero") {
     nbeta.mat <- as.matrix(nbeta)
-    if (length(s) == 1){
-      return(nbeta.mat[nonzero(nbeta.mat, bystep = TRUE)[[1]],,drop=FALSE])
+    if (length(s) == 1) {
+      return(nbeta.mat[nonzero(nbeta.mat, bystep = TRUE)[[1]], , drop = FALSE])
     } else {
       nzs <- nonzero(nbeta.mat, bystep = TRUE)
-      return(lapply(seq_along(nzs), function(i) nbeta.mat[nzs[[i]],i,drop=FALSE]))
+      return(lapply(seq_along(nzs), function(i) nbeta.mat[nzs[[i]], i, drop = FALSE]))
     }
   }
 
@@ -119,7 +117,7 @@ predict.sail <- function(object, newx, newe, s = NULL,
 #' @rdname predict.sail
 #' @export
 coef.sail <- function(object, s = NULL, ...) {
-  predict(object, s = s, type = "coefficients", ...)
+  stats::predict(object, s = s, type = "coefficients", ...)
 }
 
 
@@ -166,7 +164,7 @@ predict.cv.sail <- function(object, newx, newe, s = c("lambda.1se", "lambda.min"
   else {
     stop("Invalid form for s")
   }
-  predict(object$sail.fit, newx, newe, s = lambda, ...)
+  stats::predict(object$sail.fit, newx, newe, s = lambda, ...)
 }
 
 
@@ -184,7 +182,7 @@ coef.cv.sail <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
   else {
     stop("Invalid form for s")
   }
-  coef(object$sail.fit, s = lambda, ...)
+  stats::coef(object$sail.fit, s = lambda, ...)
 }
 
 
@@ -208,7 +206,7 @@ coef.cv.sail <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
 #' if(interactive()){
 #' data("sailsim")
 #' f.basis <- function(i) splines::bs(i, degree = 3)
-#' fit <- sail(x = sailsim$x[,1:10,drop=F], y = sailsim$y, e = sailsim$e,
+#' fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
 #'             basis = f.basis)
 #' fit
 #'  }
@@ -256,7 +254,7 @@ print.sail <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 #' @seealso \code{\link{sail}}, \code{\link{cv.sail}}
 #' @export
 plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
-  op <- par(no.readonly = TRUE)
+  op <- graphics::par(no.readonly = TRUE)
 
   type <- match.arg(type)
 
@@ -269,7 +267,7 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
 
 
   if (type == "main") {
-    par(mar = 0.1 + c(4, 5, 2.5, 1))
+    graphics::par(mar = 0.1 + c(4, 5, 2.5, 1))
     plotSailCoef(
       coefs = x$beta,
       environ = x$bE,
@@ -284,7 +282,7 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
   }
 
   if (type == "interaction") {
-    par(mar = 0.1 + c(4, 5, 2.5, 1))
+    graphics::par(mar = 0.1 + c(4, 5, 2.5, 1))
     plotSailCoef(
       coefs = x$alpha,
       lambda = x$lambda,
@@ -299,7 +297,7 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
 
 
   if (type == "both") {
-    op <- par(
+    op <- graphics::par(
       mfrow = c(2, 1),
       mar = 0.1 + c(4.2, 4.0, 1, 1),
       oma = c(0, 1, 1, 0),
@@ -332,10 +330,10 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
       ...
     )
 
-    par(op)
+    graphics::par(op)
   }
 
-  par(op)
+  graphics::par(op)
 }
 
 
@@ -371,15 +369,17 @@ plot.cv.sail <- function(x, sign.lambda = 1, ...) {
   cvobj <- x
   xlab <- "log(Lambda)"
   if (sign.lambda < 0) xlab <- paste("-", xlab, sep = "")
-  plot.args <- list(x = sign.lambda * log(cvobj$lambda), y = cvobj$cvm,
-                    ylim = range(cvobj$cvup, cvobj$cvlo), xlab = xlab, ylab = cvobj$name, type = "n")
+  plot.args <- list(
+    x = sign.lambda * log(cvobj$lambda), y = cvobj$cvm,
+    ylim = range(cvobj$cvup, cvobj$cvlo), xlab = xlab, ylab = cvobj$name, type = "n"
+  )
   new.args <- list(...)
   if (length(new.args)) plot.args[names(new.args)] <- new.args
   do.call("plot", plot.args)
   error.bars(sign.lambda * log(cvobj$lambda), cvobj$cvup, cvobj$cvlo, width = 0.01, col = "darkgrey")
-  points(sign.lambda * log(cvobj$lambda), cvobj$cvm, pch = 20, col = "red")
-  axis(side = 3, at = sign.lambda * log(cvobj$lambda), labels = paste(cvobj$nz), tick = FALSE, line = 0)
-  abline(v = sign.lambda * log(cvobj$lambda.min), lty = 3)
-  abline(v = sign.lambda * log(cvobj$lambda.1se), lty = 3)
+  graphics::points(sign.lambda * log(cvobj$lambda), cvobj$cvm, pch = 20, col = "red")
+  graphics::axis(side = 3, at = sign.lambda * log(cvobj$lambda), labels = paste(cvobj$nz), tick = FALSE, line = 0)
+  graphics::abline(v = sign.lambda * log(cvobj$lambda.min), lty = 3)
+  graphics::abline(v = sign.lambda * log(cvobj$lambda.1se), lty = 3)
   invisible()
 }

@@ -123,10 +123,10 @@ cv.sail <- function(x, y, e, ...,
                     lambda = NULL,
                     type.measure = c("mse", "deviance", "class", "auc", "mae"),
                     nfolds = 10, foldid, grouped = TRUE, keep = FALSE, parallel = FALSE) {
-
   if (!requireNamespace("foreach", quietly = TRUE)) {
     stop("Package \"foreach\" needed for this function to work in parallel. Please install it.",
-         call. = FALSE)
+      call. = FALSE
+    )
   }
 
   if (missing(type.measure)) type.measure <- "default" else type.measure <- match.arg(type.measure)
@@ -252,6 +252,10 @@ cv.sail <- function(x, y, e, ...,
 #'   from the \code{caret} package (see references for details)
 #' @param y vector of response
 #' @param k integer for the number of folds.
+#' @param list logical - should the results be in a list (TRUE) or a matrix
+#' @param returnTrain a logical. When true, the values returned are the sample
+#'   positions corresponding to the data used during training. This argument
+#'   only works in conjunction with \code{list = TRUE}
 #' @return A vector of CV fold ID's for each observation in \code{y}
 #' @details For numeric y, the sample is split into groups sections based on
 #'   percentiles and sampling is done within these subgroups
@@ -287,7 +291,7 @@ createfolds <- function(y, k = 10, list = FALSE, returnTrain = FALSE) {
       }
       else {
         foldVector[which(y == names(numInClass)[i])] <- sample(1:k,
-                                                               size = numInClass[i]
+          size = numInClass[i]
         )
       }
     }
@@ -298,7 +302,7 @@ createfolds <- function(y, k = 10, list = FALSE, returnTrain = FALSE) {
   if (list) {
     out <- split(seq(along = y), foldVector)
     names(out) <- paste("Fold", gsub(" ", "0", format(seq(along = out))),
-                        sep = ""
+      sep = ""
     )
     if (returnTrain) {
       out <- lapply(out, function(data, y) y[-data], y = seq(along = y))
@@ -327,6 +331,7 @@ createfolds <- function(y, k = 10, list = FALSE, returnTrain = FALSE) {
 #' @param s numeric value of lambda
 #' @inheritParams sail
 #' @inheritParams cv.sail
+#' @importFrom stats predict
 #' @rdname cv.lspath
 #' @seealso \code{\link{cv.sail}}
 #' @details The output of the \code{cv.lspath} function only returns values for
@@ -368,7 +373,7 @@ cv.lspath <- function(outlist, lambda, x, y, e, weights,
   cvraw <- switch(type.measure, mse = (y - predmat)^2, deviance = (y - predmat)^2, mae = abs(y - predmat))
   if ((length(y) / nfolds < 3) && grouped) {
     warning("Option grouped=FALSE enforced in cv.sail, since < 3 observations per fold",
-            call. = FALSE
+      call. = FALSE
     )
     grouped <- FALSE
   }
@@ -380,7 +385,7 @@ cv.lspath <- function(outlist, lambda, x, y, e, weights,
   }
   cvm <- apply(cvraw, 2, stats::weighted.mean, w = weights, na.rm = TRUE)
   cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, stats::weighted.mean,
-                     w = weights, na.rm = TRUE
+    w = weights, na.rm = TRUE
   ) / (N - 1))
   out <- list(cvm = cvm, cvsd = cvsd, name = typenames[type.measure])
   if (keep) {
@@ -420,7 +425,8 @@ getmin <- function(lambda, cvm, cvsd) {
 }
 
 #' @describeIn cv.lspath Interpolation function.
-lambda.interp <- function(lambda,s){
+#' @importFrom stats approx
+lambda.interp <- function(lambda, s) {
   ### lambda is the index sequence that is produced by the model
   ### s is the new vector at which evaluations are required.
   ### the value is a vector of left and right indices, and a vector of fractions.
@@ -428,27 +434,24 @@ lambda.interp <- function(lambda,s){
   ### Note: lambda decreases. you take:
   ### sfrac*left+(1-sfrac*right)
 
-  if(length(lambda)==1){# degenerate case of only one lambda
-    nums=length(s)
-    left=rep(1,nums)
-    right=left
-    sfrac=rep(1,nums)
+  if (length(lambda) == 1) { # degenerate case of only one lambda
+    nums <- length(s)
+    left <- rep(1, nums)
+    right <- left
+    sfrac <- rep(1, nums)
   }
-  else{
-    s[s > max(lambda)] = max(lambda)
-    s[s < min(lambda)] = min(lambda)
-    k=length(lambda)
-    sfrac <- (lambda[1]-s)/(lambda[1] - lambda[k])
-    lambda <- (lambda[1] - lambda)/(lambda[1] - lambda[k])
+  else {
+    s[s > max(lambda)] <- max(lambda)
+    s[s < min(lambda)] <- min(lambda)
+    k <- length(lambda)
+    sfrac <- (lambda[1] - s) / (lambda[1] - lambda[k])
+    lambda <- (lambda[1] - lambda) / (lambda[1] - lambda[k])
     coord <- approx(lambda, seq(lambda), sfrac)$y
     left <- floor(coord)
     right <- ceiling(coord)
-    sfrac=(sfrac-lambda[right])/(lambda[left] - lambda[right])
-    sfrac[left==right]=1
-    sfrac[abs(lambda[left]-lambda[right])<.Machine$double.eps]=1
-
+    sfrac <- (sfrac - lambda[right]) / (lambda[left] - lambda[right])
+    sfrac[left == right] <- 1
+    sfrac[abs(lambda[left] - lambda[right]) < .Machine$double.eps] <- 1
   }
-  list(left=left,right=right,frac=sfrac)
+  list(left = left, right = right, frac = sfrac)
 }
-
-

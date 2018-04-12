@@ -15,6 +15,8 @@
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(magrittr)
 pacman::p_load(dplyr)
+pacman::p_load(usethis)
+
 
 clinical <- read.csv("https://raw.githubusercontent.com/stnava/RMI/master/tomfletcher/oasis_longitudinal.csv")
 hippo <- read.csv("https://raw.githubusercontent.com/stnava/RMI/master/tomfletcher/oasis_longitudinal_hippocampus.csv")
@@ -50,7 +52,8 @@ E <- (visit1 %>% dplyr::pull(Group) %>% as.numeric())  - 1
 E2 <- (visit2 %>% dplyr::pull(Group) %>% as.numeric())  - 1
 
 oasis <- list(x = X, y = Y, e = E)
-devtools::use_data(oasis, overwrite = TRUE)
+usethis::use_data(oasis, overwrite = TRUE)
+# devtools::use_data(oasis, overwrite = TRUE)
 # Function to plot raw longitudinal data (assumes two groups)
 # long.plot <- function(data, yname, idname, agename, groupname, ylab = yname, main = "",
 #                       pch = 19, cex.main = 1.5, cex.lab = 1.25, cex.axis = 1.25, alpha = 0.5){

@@ -4,11 +4,8 @@
 \name{sail-internal}
 \alias{sail-internal}
 \alias{SoftThreshold}
-\alias{\%ni\%}
 \alias{l2norm}
-\alias{\%dopar\%}
 \alias{cbbPalette}
-\alias{error.bars}
 \alias{nonzero}
 \alias{check_col_0}
 \title{Internal sail functions}
@@ -16,29 +13,28 @@
 \usage{
 SoftThreshold(x, lambda)
 
-... \%ni\% NA
-
 l2norm(x)
 
-obj \%dopar\% ex
-
 cbbPalette
-
-error.bars(x, upper, lower, width = 0.02, ...)
 
 nonzero(beta, bystep = FALSE)
 
 check_col_0(M)
 }
 \arguments{
+\item{x}{numeric value of a coefficient}
+
+\item{lambda}{tuning parameter value}
+
 \item{beta}{vector or 1 column matrix of regression coefficients}
+
+\item{bystep}{\code{bystep = FALSE} means which variables were ever nonzero.
+\code{bystep = TRUE} means which variables are nonzero for each step}
 
 \item{M}{is a matrix}
 }
 \description{
 Internal sail helper functions
-
-\code{\%ni\%} is the opposite of \code{\%in\%}
 
 \code{cbbPalette} gives a Color Blind Palette
 

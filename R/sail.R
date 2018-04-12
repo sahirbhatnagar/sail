@@ -95,7 +95,7 @@
 #'   \item{alpha}{a (# interaction effects after basis expansion x
 #'   \code{nlambda}) matrix of interaction effects coefficients, stored in
 #'   sparse column format \code{("dgCMatrix")}} \item{gamma}{A \code{p x
-#'   \code{nlambda}} matrix of (\eqn{\gamma}) coefficients, stored in sparse
+#'   nlambda} matrix of (\eqn{\gamma}) coefficients, stored in sparse
 #'   column format \code{("dgCMatrix")}} \item{bE}{exposure effect estimates of
 #'   length \code{nlambda}} \item{active}{list of length \code{nlambda}
 #'   containing character vector of selected variables} \item{lambda}{the actual
@@ -145,10 +145,8 @@
 #'   By default, \code{sail} uses the group lasso penalty on the basis
 #'   expansions of \code{x}. To use the group MCP and group SCAD penalties (see
 #'   Breheny and Huang 2015), the \code{grpreg} package must be installed.
-#'
 #' @examples
 #' f.basis <- function(i) splines::bs(i, degree = 3)
-#' data("sailsim")
 #' # we specify dfmax to early stop the solution path to
 #' # limit the execution time of the example
 #' fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
@@ -235,7 +233,8 @@ sail <- function(x, y, e,
   if (group.penalty %in% c("grMCP", "grSCAD")) {
     if (!requireNamespace("grpreg", quietly = TRUE)) {
       stop("Package \"grpreg\" needed for this function to work. Please install it.",
-           call. = FALSE)
+        call. = FALSE
+      )
     }
   }
 
@@ -378,6 +377,3 @@ sail <- function(x, y, e,
   class(fit) <- c(class(fit), "sail")
   fit
 }
-
-
-

@@ -53,7 +53,7 @@ Takes a fitted sail object produced by \code{sail()} or
   linear predictor. Currently only implemented for \code{type="gaussian"}
 }
 \details{
-The linear predictor \eqn{\beta_0 + basis(xvar) * \beta_xvar} is
+The linear predictor \eqn{basis(xvar) * \beta_xvar} is
   plotted against \code{xvar}, where \code{basis} is the expansion provided
   in the original call to \code{sail}.
 }

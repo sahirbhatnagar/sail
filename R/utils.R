@@ -9,14 +9,15 @@ NULL
 
 
 #' @rdname sail-internal
+#' @param x numeric value of a coefficient
+#' @param lambda tuning parameter value
 SoftThreshold <- function(x, lambda) {
   # note: this works also if lam is a matrix of the same size as x.
   sign(x) * (abs(x) - lambda) * (abs(x) > lambda)
 }
 
 
-#' @description \code{\%ni\%} is the opposite of \code{\%in\%}
-#' @rdname sail-internal
+
 "%ni%" <- Negate("%in%")
 
 
@@ -25,7 +26,6 @@ l2norm <- function(x) sqrt(sum(x^2))
 
 
 
-#' @rdname sail-internal
 `%dopar%` <- foreach::`%dopar%`
 
 
@@ -35,7 +35,7 @@ l2norm <- function(x) sqrt(sum(x^2))
 cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 
-#' @rdname sail-internal
+
 error.bars <- function(x, upper, lower, width = 0.02, ...) {
   xlim <- range(x)
   barw <- diff(xlim) * width
@@ -47,6 +47,8 @@ error.bars <- function(x, upper, lower, width = 0.02, ...) {
 
 #' @description \code{nonzero} is to determine which coefficients are non-zero
 #' @param beta vector or 1 column matrix of regression coefficients
+#' @param bystep \code{bystep = FALSE} means which variables were ever nonzero.
+#'   \code{bystep = TRUE} means which variables are nonzero for each step
 #' @rdname sail-internal
 nonzero <- function(beta, bystep = FALSE) {
   ### bystep = FALSE means which variables were ever nonzero
@@ -56,10 +58,10 @@ nonzero <- function(beta, bystep = FALSE) {
   if (nr == 1) {
     if (bystep) {
       apply(beta, 2, function(x) if (abs(x) > 0) {
-        1
-      } else {
-        NULL
-      })
+          1
+        } else {
+          NULL
+        })
     } else {
       if (any(abs(beta) > 0)) {
         1
@@ -78,10 +80,10 @@ nonzero <- function(beta, bystep = FALSE) {
       if (length(which) > 0) {
         beta <- as.matrix(beta[which, , drop = FALSE])
         nzel <- function(x, which) if (any(x)) {
-          which[x]
-        } else {
-          NULL
-        }
+            which[x]
+          } else {
+            NULL
+          }
         which <- apply(beta, 2, nzel, which)
         if (!is.list(which)) {
           which <- data.frame(which)
@@ -145,7 +147,8 @@ Q_theta <- function(R, nobs, lambda, alpha,
 #'
 #' @description Function that standardizes the data before running the fitting
 #'   algorithm. This is used in the \code{\link{sail}} function
-#' @param intercept Should \code{x} be centered. Default is \code{TRUE}
+#' @param x data to be standardized
+#' @param center Should \code{x} be centered. Default is \code{TRUE}
 #' @param normalize Should \code{x} be scaled to have unit variance. Default is
 #'   \code{FALSE}
 #' @return list of length 3: \describe{ \item{x}{centered and possibly
@@ -198,8 +201,8 @@ design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, cen
     # Dont Expand X's if expand=FALSE. use user supplied design matrix
     if (center.x) {
       Phi_j_list <- lapply(split(seq(group), group), function(j) standardize(x[, j, drop = FALSE],
-                                                                             center = TRUE
-      )$x)
+          center = TRUE
+        )$x)
     } else {
       Phi_j_list <- lapply(split(seq(group), group), function(j) x[, j, drop = FALSE])
     }
@@ -220,8 +223,8 @@ design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, cen
       Phi_j_list <- lapply(
         seq_len(nvars),
         function(j) standardize(basis(x[, j, drop = FALSE]),
-                                center = TRUE
-        )$x
+            center = TRUE
+          )$x
       )
     } else {
       Phi_j_list <- lapply(

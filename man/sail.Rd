@@ -122,7 +122,7 @@ an object with S3 class "sail", \code{"*"}, where \code{"*"} is
   \item{alpha}{a (# interaction effects after basis expansion x
   \code{nlambda}) matrix of interaction effects coefficients, stored in
   sparse column format \code{("dgCMatrix")}} \item{gamma}{A \code{p x
-  \code{nlambda}} matrix of (\eqn{\gamma}) coefficients, stored in sparse
+  nlambda} matrix of (\eqn{\gamma}) coefficients, stored in sparse
   column format \code{("dgCMatrix")}} \item{bE}{exposure effect estimates of
   length \code{nlambda}} \item{active}{list of length \code{nlambda}
   containing character vector of selected variables} \item{lambda}{the actual
@@ -187,7 +187,6 @@ The objective function for \code{family="gaussian"} is \deqn{RSS/2n
 }
 \examples{
 f.basis <- function(i) splines::bs(i, degree = 3)
-data("sailsim")
 # we specify dfmax to early stop the solution path to
 # limit the execution time of the example
 fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,

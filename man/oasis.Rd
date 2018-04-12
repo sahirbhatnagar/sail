@@ -26,4 +26,7 @@ A dataset containing a small subset of the OASIS Brain Data project. Noise
 variables have been added to increase the number of predictors and show the
 utility of the sail package.
 }
+\examples{
+oasis
+}
 \keyword{datasets}
