@@ -21,7 +21,8 @@ Suggests:
     foreach,
     doMC,
     testthat,
-    covr
+    covr,
+    vdiffr
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

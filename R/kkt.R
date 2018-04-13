@@ -1,3 +1,4 @@
+# nocov start
 # rm(list = ls())
 # source("R/sim-data.R")
 # l2norm <- function(x) sqrt(sum(x^2))
@@ -240,3 +241,4 @@ KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
   cat("% of violations for bTheta", ctr / length(lambda), "\n")
   return(ctr / length(lambda))
 }
+# nocov end

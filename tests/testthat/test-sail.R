@@ -20,6 +20,13 @@ test_that("no error in fitting sail for both simulated and real data", {
   expect_is(fit_sim, "sail")
   expect_is(fit_oasis, "sail")
 
+  expect_equivalent(class(coef(fit_sim)), "dgCMatrix")
+  expect_equal(dim(coef(fit_sim))[[1]], dim(fit_sim$design)[[2]] + 1)
+  expect_equal(dim(coef(fit_sim))[[2]], sum(fit_sim$converged))
+
+  disp_solution_path <- function() plot(fit_sim)
+  vdiffr::expect_doppelganger("sail solution path", disp_solution_path)
+
 })
 
 
@@ -62,3 +69,8 @@ test_that("no error in fitting sail with user defined design", {
 
 
 })
+
+
+
+
+

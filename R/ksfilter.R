@@ -4,7 +4,7 @@
 # return: a vector containing K^G.
 
 k.filter <- function(x, y, N = NULL, nslices = NULL, slicing.scheme = NULL, response.type = "continuous",
-                     method = "fused") {
+                     method = "fused") { # nocov start
   method <- match.arg(arg = method, choices = c("fused", "single"))
   response.type <- match.arg(arg = response.type, choices = c(
     "continuous", "discrete",
@@ -114,4 +114,4 @@ fused.k.filter <- function(x, y, N = NULL, nslices = NULL) {
     k.stat = ks.stat.max, k.stat.single = ks.stat.single, N = N, nslices = nslices,
     k.rank = k.rank
   )
-}
+} # nocov end

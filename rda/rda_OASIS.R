@@ -40,11 +40,11 @@ system.time(cvfit <- cv.sail(x = oasis$x, y = oasis$y, e = oasis$e,
 
 data("oasis")
 f.basis <- function(i) splines::bs(i, degree = 3)
-Xm <- model.matrix(~0+bs(Age, 3)+Educ+M.F+bs(MMSE,3)+bs(eTIV,3)+bs(nWBV,3)+bs(ASF,3)+
+Xm <- model.matrix(~0+bs(Age, 3)+EDUC+bs(MMSE,3)+bs(eTIV,3)+bs(nWBV,3)+bs(ASF,3)+
                      bs(noise1, 3) + bs(noise2, 3)+ bs(noise3, 3)+ bs(noise4, 3)+ bs(noise5, 3)+
                      bs(noise6, 3) + bs(noise7, 3)+ bs(noise8, 3)+ bs(noise9, 3)+ bs(noise10, 3)+
                      bs(noise11, 3) + bs(noise12, 3)+ bs(noise13, 3)+ bs(noise14, 3),
-                   data = as.data.frame(oasis2$x))
+                   data = as.data.frame(oasis$x))
 head(Xm)
 system.time(fit <- sail(x = oasis$x, y = oasis$y, e = oasis$e,
                         basis = f.basis,
