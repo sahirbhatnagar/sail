@@ -1,0 +1,187 @@
+---
+title: "Introduction to the sail package"
+author: "Sahir Rai Bhatnagar"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    #code_folding: hide
+    fig_retina: null
+vignette: >
+  %\VignetteIndexEntry{Introduction to the sail package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+
+`sail` is a package that fits a linear model with non-linear interactions via penalized maximum likelihood. The regularization
+path is computed at a grid of values for the regularization parameter $\lambda$ and a fixed value of the second regularization parameter $\alpha$. The method enforces the strong heredity property, i.e., an interaction is selected only if its corresponding main effects are also included. The interactions are limited to a single exposure variable, i.e., $y \sim e + x_1 + x_2 + e*x_1 + e*x_2 + \epsilon$. Furthermore, this package allows a user-defined basis expansion on the $x$ variables to allow for non-linear effects. The default is bsplines (e.g. `splines::bs(x, 5)`). It currently only fits linear models (binomial models are due in the next release). 
+
+## Model
+
+Let $Y=(Y_1, \ldots, Y_n) \in \mathbb{R}^n$ be a continuous outcome variable, \mbox{$X_E=(E_1, \ldots, E_n) \in \mathbb{R}^n$} a binary or continuous environment vector, \mbox{$\bX = (X_{1}, \ldots, X_{p}) \in \mathbb{R}^{n\times p}$} a matrix of predictors, and $\varepsilon = (\varepsilon_1, \ldots, \varepsilon_n) \in \mathbb{R}^n$ a vector of i.i.d random variables with mean 0. Furthermore let $f_j: \mathbb{R} \rightarrow \mathbb{R}$ be a smoothing method for variable $X_j$ by a projection on to a set of basis functions:
+\begin{equation}
+f_j(X_j) = \sum_{\ell = 1}^{m_j} \psi_{j\ell}(X_j) \beta_{j\ell} \label{eq:smooth}
+\end{equation}
+Here, the $\left\lbrace \psi_{j\ell} \right\rbrace_1^{m_j}$ are a family of basis functions in $X_j$~\citep{hastie2015statistical}. Let $\boldsymbol{\Psi}_j$ be the $n \times m_j$ matrix of evaluations of the $\psi_{j\ell}$ and \mbox{$\boldsymbol{\theta}_j = (\beta_{j1}, \ldots, \beta_{jm_j}) \in \mathbb{R}^{m_j}$} for $j = 1, \ldots, p$, i.e., $\boldsymbol{\theta}_j$ is a $m_j$-dimensional column vector of basis coefficients for the $j$th main effect. In this article we consider an additive interaction regression model of the form 
+\begin{align}
+Y  & =  \beta_0 \cdot \boldsymbol{1} + \sum_{j=1}^p \boldsymbol{\Psi}_j \boldsymbol{\theta}_j + \beta_E X_E + \sum_{j=1}^p (X_E \circ \boldsymbol{\Psi}_j) \boldsymbol{\alpha}_{j}  + \varepsilon  \label{eq:linpred}
+\end{align}
+where $\beta_0$ is the intercept, $\beta_E$ is the coefficient for the environment variable, $\boldsymbol{\alpha}_j = (\alpha_{j1}, \ldots, \alpha_{jm_j})\in \mathbb{R}^{m_j}$ are the basis coefficients for the $j$th interaction term and $(X_E \circ \boldsymbol{\Psi}_j)$ is the $n \times m_j$ matrix formed by the component-wise multiplication of the column vector $X_E$ by each column of $\boldsymbol{\Psi}_j$. To enforce the strong heredity property, we reparametrize the coefficients for the interaction terms in~\eqref{eq:linpred} as $\boldsymbol{\alpha}_{j} = \gamma_{j}  \beta_E \boldsymbol{\theta}_j$:
+\begin{align}
+Y  & =  \beta_0 \cdot \boldsymbol{1} + \sum_{j=1}^p \boldsymbol{\Psi}_j \boldsymbol{\theta}_j + \beta_E X_E + \sum_{j=1}^p \gamma_{j}  \beta_E (X_E \circ \boldsymbol{\Psi}_j) \boldsymbol{\theta}_j + \varepsilon   \label{eq:linpred2}
+\end{align}
+For a continuous response, we use the squared-error loss:
+\begin{equation}
+\mathcal{L}(Y;\boldsymbol{\theta}) = \frac{1}{2n}\lVert Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \boldsymbol{\Psi}_j \boldsymbol{\theta}_j - \beta_E X_E - \sum_{j=1}^p \gamma_{j}  \beta_E (X_E \circ \boldsymbol{\Psi}_j) \boldsymbol{\theta}_j \rVert_2^2
+\end{equation}
+where $\boldsymbol{\theta} \equiv (\beta_0, \beta_E,\boldsymbol{\theta}_1, \ldots, \boldsymbol{\theta}_p, \gamma_1, \ldots, \gamma_p)$. 
+
+We consider the following penalized least squares criterion for this problem:
+\begin{equation}
+\arg\min_{\boldsymbol{\theta} }  \mathcal{L}(Y;\boldsymbol{\theta}) + \lambda (1-\alpha)  \left( w_E |\beta_E| + \sum_{j=1}^{p} w_j \lVert\boldsymbol{\theta}_j \rVert_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} |\gamma_{j}| \label{eq:lassolikelihood3}
+\end{equation} 
+where $\lambda >0$ and $\alpha \in (0,1)$ are tuning parameters and $w_E, w_j, w_{jE}$ are adaptive weights for $j=1, \ldots, p$. These weights serve as a way of allowing parameters to be penalized differently.
+
+## Installation
+
+The package can be installed from [GitHub](https://github.com/sahirbhatnagar/sail) via
+
+
+```{r, eval=FALSE}
+install.packages("pacman")
+pacman::p_load_gh('sahirbhatnagar/sail')
+```
+
+
+
+## Quick Start
+
+We give a quick overview of the main functions and go into details in other vignettes. We will use the simulated data which ships with the package and can be loaded via:
+
+```{r}
+library(sail)
+data("sailsim")
+names(sailsim)
+```
+
+We first define a basis expansion. In this example we use cubic bsplines with degree 5.
+
+```{r}
+library(splines)
+f.basis <- function(x) splines::bs(x, degree = 5)
+```
+
+Next we fit the model using the most basic call to `sail`
+
+```{r}
+fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis,
+            verbose = 0)
+```
+
+`fit` is an object of class `sail` that contains all the relevant information of the fitted model including the estimated coefficients at each value of $\lambda$ (by default the program chooses its own decreasing sequence of 100 $\lambda$ values). There are `print`, `plot`, `coef` and `predict` methods of objects of class `sail`. The `print` method outputs the following:
+
+```{r}
+fit
+```
+
+The entire solution path can be plotted via the `plot` method for objects of class `sail`:
+
+```{r}
+plot(fit)
+```
+
+
+The estimated coefficients at each value of lambda is given by (matrix partially printed here for brevity)
+
+```{r}
+coef(fit)[1:5,1:5]
+```
+
+
+
+The predicted response at each value of lambda:
+
+```{r}
+predict(fit)[1:5,1:5]
+```
+
+
+The predicted response at a specific value of lambda can be specified by the `s` argument:
+
+```{r}
+predict(fit, s = 1.5)
+```
+
+
+You can specify more than one value for `s`:
+
+```{r}
+predict(fit, s = c(1.5, 0.2))[1:10,]
+```
+
+
+## Cross-Validation
+
+`cv.sail` is the main function to do cross-validation along with `plot`, `predict`, and `coef` methods for objects of class `cv.sail`. We run it in parallel:
+
+```{r}
+library(doMC)
+registerDoMC(cores = 8)
+cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis,
+            verbose = 0, nfolds = 10, parallel = TRUE)
+```
+
+
+```{r}
+plot(cvfit)
+```
+
+Estimated coefficients at `lambda.1se` and `lambda.min`:
+
+```{r}
+cbind(coef(cvfit, s="lambda.1se"), # lambda.1se is the default
+coef(cvfit, s = "lambda.min"))
+```
+
+
+Estimated non-zero coefficients at `lambda.1se`:
+```{r}
+predict(cvfit, type = "nonzero")
+```
+
+
+## Visualizing the Effect of the Non-linear Terms
+
+bsplines are difficult to interpret. We provide a plotting function to visualize the effect of the non-linear function on the response.
+
+### Main Effects
+
+Since we are using simulated data, we also plot the true curve:
+
+```{r}
+plotMain(cvfit$sail.fit, x = sailsim$x, xvar = "X3",
+         legend.position = "topright",
+         s = cvfit$lambda.min, f.truth = sailsim$f3)
+```
+
+
+### Interaction Effects
+
+Again, since we are using simulated data, we also plot the true interaction:
+
+```{r}
+plotInter(cvfit$sail.fit, x = sailsim$x, xvar = "X4",
+          f.truth = sailsim$f4.inter,
+          s = cvfit$lambda.min,
+          title_z = "Estimated")
+```
+

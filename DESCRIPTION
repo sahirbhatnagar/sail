@@ -22,10 +22,13 @@ Suggests:
     doMC,
     testthat,
     covr,
-    vdiffr
+    vdiffr,
+    knitr,
+    rmarkdown
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 BugReports: https://github.com/sahirbhatnagar/sail/issues
 URL: https://github.com/sahirbhatnagar/sail
 RoxygenNote: 6.0.1
+VignetteBuilder: knitr
