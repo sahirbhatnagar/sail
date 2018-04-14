@@ -1,12 +1,9 @@
-library(sail)
-library(splines)
-
 set.seed(1234) # we set the seed so that the cv error curves remain identical when testing (randomness is introduced due to CV folds)
 data("sailsim")
 
 f.basis <- function(i) splines::bs(i, degree = 5)
 
-context("Test plotting for main effects and interactions")
+context("effect plot")
 
 test_that("plot for main effects and interaction effects", {
 

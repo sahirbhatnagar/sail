@@ -1,8 +1,6 @@
-library(sail)
-library(splines)
 library(doMC)
-registerDoMC(cores = 3)
-expect_matrix <- function(x) expect_identical(class(x), "matrix")
+doMC::registerDoMC(cores = 2)
+expect_matrix <- function(x) testthat::expect_identical(class(x), "matrix")
 set.seed(1234) # we set the seed so that the cv error curves remain identical when testing (randomness is introduced due to CV folds)
 
 context("cv.sail model fit, parallel, predict, plot with both packaged datasets")
@@ -22,7 +20,7 @@ cvfit_oasis <- try(cv.sail(x = oasis$x, y = oasis$y, e = oasis$e, basis = f.basi
 cvfit_parallel <- try(cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
                               dfmax = 5,
                               basis = f.basis, nfolds = 3, parallel = TRUE),
-                      silent = TRUE)
+                      silent = FALSE)
 
 new_x <- replicate(20, rnorm(50))
 new_e <- rnorm(50, sd = 0.5)
@@ -35,15 +33,6 @@ test_that("no error in fitting cv.sail and parallel version for both simulated a
   expect_is(cvfit_sim, "cv.sail")
   expect_is(cvfit_oasis, "cv.sail")
   expect_is(cvfit_parallel, "cv.sail")
-
-})
-
-
-
-test_that("check plots for cv curve", {
-
-  disp_cv_curve <- function() plot(cvfit_sim)
-  vdiffr::expect_doppelganger("cv.sail cv curve", disp_cv_curve)
 
 })
 
@@ -72,5 +61,16 @@ test_that("no error in predict for cv.sail", {
 
   expect_equivalent(class(coef(cvfit_sim)), "dgCMatrix")
   expect_equal(dim(coef(cvfit_sim))[[1]], dim(cvfit_sim$sail.fit$design)[[2]] + 1)
+
+})
+
+
+
+context("cv plot")
+
+test_that("check plots for cv curve", {
+
+  disp_cv_curve <- function() plot(cvfit_sim)
+  vdiffr::expect_doppelganger("cv.sail cv curve", disp_cv_curve)
 
 })

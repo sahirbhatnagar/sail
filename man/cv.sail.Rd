@@ -113,6 +113,12 @@ The skeleton of this function and the documentation were taken straight
   from the \code{glmnet} package. See references for details.
 }
 \examples{
+# Parallel
+library(doMC)
+registerDoMC(cores = 2)
+cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
+                 df = 5,
+                 parallel = TRUE, nlambda = 100, nfolds = 3)
 \dontrun{
 if(interactive()){
 f.basis <- function(i) splines::bs(i, degree = 5)
