@@ -1,5 +1,7 @@
 # sail: Strong Additive Interaction Learning
 
+[![Travis build status](https://travis-ci.org/sahirbhatnagar/sail.svg?branch=master)](https://travis-ci.org/sahirbhatnagar/sail)   [![Coverage status](https://codecov.io/gh/sahirbhatnagar/sail/branch/master/graph/badge.svg)](https://codecov.io/github/sahirbhatnagar/sail?branch=master)
+
 `R` software package to fit additive interaction models with the strong heredity property. Our algorithm fits the following objective function:
 
 <a href="https://www.codecogs.com/eqnedit.php?latex=\arg\min_{\boldsymbol{\Theta}&space;}&space;\mathcal{L}(Y;\boldsymbol{\beta})&space;&plus;&space;\lambda_\beta&space;\left(&space;w_E&space;|\beta_E|&space;&plus;&space;\sum_{j=1}^{p}&space;w_j&space;||\theta_j||_2&space;\right)&space;&plus;&space;\lambda_\gamma&space;\sum_{j=1}^{p}&space;w_{jE}&space;|\gamma_{j}|" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\arg\min_{\boldsymbol{\Theta}&space;}&space;\mathcal{L}(Y;\boldsymbol{\beta})&space;&plus;&space;\lambda_\beta&space;\left(&space;w_E&space;|\beta_E|&space;&plus;&space;\sum_{j=1}^{p}&space;w_j&space;||\theta_j||_2&space;\right)&space;&plus;&space;\lambda_\gamma&space;\sum_{j=1}^{p}&space;w_{jE}&space;|\gamma_{j}|" title="\arg\min_{\boldsymbol{\Theta} } \mathcal{L}(Y;\boldsymbol{\beta}) + \lambda_\beta \left( w_E |\beta_E| + \sum_{j=1}^{p} w_j ||\theta_j||_2 \right) + \lambda_\gamma \sum_{j=1}^{p} w_{jE} |\gamma_{j}|" /></a>
@@ -14,9 +16,9 @@ and
 
 Here, the <a href="https://www.codecogs.com/eqnedit.php?latex=\left\lbrace&space;\psi_{j\ell}&space;\right\rbrace_1^{p_j}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\left\lbrace&space;\psi_{j\ell}&space;\right\rbrace_1^{p_j}" title="\left\lbrace \psi_{j\ell} \right\rbrace_1^{p_j}" /></a> are a family of basis functions in <a href="https://www.codecogs.com/eqnedit.php?latex=X_j" target="_blank"><img src="https://latex.codecogs.com/gif.latex?X_j" title="X_j" /></a>. Let <a href="https://www.codecogs.com/eqnedit.php?latex=\boldsymbol{\Psi_j}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\boldsymbol{\Psi_j}" title="\boldsymbol{\Psi_j}" /></a> be the <a href="https://www.codecogs.com/eqnedit.php?latex=n&space;\times&space;p_j" target="_blank"><img src="https://latex.codecogs.com/gif.latex?n&space;\times&space;p_j" title="n \times p_j" /></a> matrix of evaluations of the <a href="https://www.codecogs.com/eqnedit.php?latex=\psi_{j\ell}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\psi_{j\ell}" title="\psi_{j\ell}" /></a> and <a href="https://www.codecogs.com/eqnedit.php?latex=\theta_j&space;=&space;(\beta_{j1},&space;\ldots,&space;\beta_{jp_j})&space;\in&space;\mathbb{R}^{p_j}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\theta_j&space;=&space;(\beta_{j1},&space;\ldots,&space;\beta_{jp_j})&space;\in&space;\mathbb{R}^{p_j}" title="\theta_j = (\beta_{j1}, \ldots, \beta_{jp_j}) \in \mathbb{R}^{p_j}" /></a> for <a href="https://www.codecogs.com/eqnedit.php?latex=j=&space;1,&space;\ldots,&space;p" target="_blank"><img src="https://latex.codecogs.com/gif.latex?j=&space;1,&space;\ldots,&space;p" title="j= 1, \ldots, p" /></a>, i.e., <a href="https://www.codecogs.com/eqnedit.php?latex=\theta_j" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\theta_j" title="\theta_j" /></a> is a <a href="https://www.codecogs.com/eqnedit.php?latex=p_j" target="_blank"><img src="https://latex.codecogs.com/gif.latex?p_j" title="p_j" /></a>-dimensional vector of basis coefficients for the <a href="https://www.codecogs.com/eqnedit.php?latex=j" target="_blank"><img src="https://latex.codecogs.com/gif.latex?j" title="j" /></a>th main effect. 
 
-The following figure shows some results based on simulated data:
+<!--The following figure shows some results based on simulated data:
 
-![](gendata_inter_X1.png)
+![](gendata_inter_X1.png)-->
 
 
 ## Installation

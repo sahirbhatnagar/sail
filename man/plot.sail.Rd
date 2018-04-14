@@ -2,10 +2,44 @@
 % Please edit documentation in R/methods.R
 \name{plot.sail}
 \alias{plot.sail}
-\title{Plot Method for sail function}
+\title{Plot Method for \code{sail} object}
 \usage{
 \method{plot}{sail}(x, type = c("both", "main", "interaction"), ...)
 }
+\arguments{
+\item{x}{fitted \code{sail} object}
+
+\item{type}{which type of predictors should be plotted. \code{type="both"}
+will plot the solution path for main effects and interactions,
+\code{type="main"} will only plot solution path of main effects (this also
+includes the exposure variable) and \code{type="interaction"} will only
+plot solution path for interaction effects Default: c("both", "main",
+"interaction"). Default: \code{type="both"}.}
+
+\item{...}{other graphical paramters passed to \code{plot}}
+}
+\value{
+A plot is produced and nothing is returned
+}
 \description{
-plot method for sail function
+Produces a coefficient profile plot of the coefficient paths for
+  a fitted \code{sail} object. Both main effects and interactions (if
+  present) are plotted.
+}
+\details{
+A coefficient profile plot is produced
+}
+\examples{
+\dontrun{
+if(interactive()){
+data("sailsim")
+f.basis <- function(i) splines::bs(i, degree = 3)
+fit <- sail(x = sailsim$x[,1:10,drop=F], y = sailsim$y, e = sailsim$e,
+            basis = f.basis)
+plot(fit)
+ }
+}
+}
+\seealso{
+\code{\link{sail}}, \code{\link{cv.sail}}
 }

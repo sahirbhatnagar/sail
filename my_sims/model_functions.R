@@ -136,7 +136,8 @@ make_gendata_Paper_not_simulator <- function(n, p, corr, betaE, SNR, lambda.type
 
   DT <- gendataPaper(n = n, p = p, SNR = SNR, betaE = betaE,
                      hierarchy = hierarchy, nonlinear = nonlinear, interactions = interactions,
-                     corr = corr, E = truncnorm::rtruncnorm(n, a = -1, b = 1))
+                     corr = corr)
+                     # , E = truncnorm::rtruncnorm(n, a = -1, b = 1))
 
   return(DT)
   # # used for glmnet and lasso backtracking

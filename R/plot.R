@@ -1,170 +1,13 @@
-#' Plot the cross-validation curve produced by cv.sail
-#'
-#' @description Plots the cross-validation curve, and upper and lower standard
-#'   deviation curves, as a function of the \eqn{\lambda_\beta} and
-#'   \eqn{\lambda_\gamma} values used. Using \code{ggplot2} facet plots, each
-#'   facet represents a unique value for \eqn{\lambda_\gamma}, and the x-axis is
-#'   the sequence of corresponding \eqn{\lambda_\beta}
-#' @param x fitted \code{cv.sail} object
-#' @details A plot is produced, and nothing is returned. A colored vertical line
-#'   is drawn at the pair of tuning parameters that leads to the minimum CV
-#'   error and another is drawn at the 1 standard error rule pair of tuning
-#'   parameters
-#' @seealso \code{\link{sail}} and \code{\link{cv.sail}}
-#' @author
-#' Sahir Bhatnagar
-#'
-#' Maintainer: Sahir Bhatnagar \email{sahir.bhatnagar@@mail.mcgill.ca}
-#' @import data.table
-#' @export
+######################################
+# R Source code file for plotting functions
+# plotSailCoef is called by plot.sail and is not exported
+# plotMain and plotInter are exported
+# Author: Sahir Bhatnagar
+# Created: 2016
+# Updated: April 9, 2018
+#####################################
 
-plot.cv.sail_old <- function(x) {
-  pacman::p_load(ggplot2)
-  pacman::p_load(data.table)
-  pacman::p_load(latex2exp)
-
-  # x = cvfit
-  # ====
-
-  # browser()
-  cvobj <- x
-
-  d <- data.frame(cvobj$df,
-    lambda.min.beta = cvobj$lambda.min.beta,
-    lambda.1se.beta = cvobj$lambda.1se.beta,
-    row.names = rownames(cvobj$df)
-  )
-
-
-  # needed to get colored lines
-  d2 <- data.table::melt(d[which(rownames(d) %in% c(cvobj$lambda.min.name, cvobj$lambda.1se.name)), , drop = F],
-    measure.vars = c("lambda.min.beta", "lambda.1se.beta")
-  )
-
-  # d2 <- as.data.table(d2)
-  d2 <- transform(d2, variable = gsub(".beta", "", variable))
-
-  appender <- function(string) latex2exp::TeX(paste("$\\log(\\lambda_{\\gamma}) = $", string))
-
-  p <- ggplot2::ggplot(
-    d,
-    ggplot2::aes(log(lambda.beta),
-      ymin = lower,
-      ymax = upper
-    )
-  )
-
-  l <- ggplot2::ggplot_build(p)
-  p + ggplot2::geom_errorbar(color = "grey", width = 0.5) +
-    ggplot2::geom_point(aes(x = log(lambda.beta), y = mse), colour = "red") +
-    # theme_bw() +
-    # ylim(c(min(d$lower) - 10 , max(d$upper) + 500)) +
-    ggplot2::facet_wrap(~log.gamma,
-      scales = "fixed",
-      # switch = "x",
-      labeller = ggplot2::as_labeller(appender, default = ggplot2::label_parsed)
-    ) +
-    ggplot2::theme(
-      strip.background = ggplot2::element_blank(),
-      strip.text.x = ggplot2::element_text(size = ggplot2::rel(1.3)),
-      legend.position = "bottom"
-    ) +
-    ggplot2::xlab(TeX("$\\log(\\lambda_{\\beta})$")) +
-    ggplot2::geom_vline(
-      data = d2[(d2$lambda.beta == d2$value & d2$variable == "lambda.1se"), ],
-      aes(xintercept = log(value), colour = variable), size = 0.7, linetype = 1
-    ) +
-    geom_vline(
-      data = d2[(d2$lambda.beta == d2$value & d2$variable == "lambda.min"), ],
-      aes(xintercept = log(value), colour = variable), size = 0.7, linetype = 1
-    ) +
-    ggplot2::scale_color_discrete(name = "") +
-    ggplot2::geom_text(aes(label = nz.main, x = log(lambda.beta), y = Inf, vjust = 1)) +
-    ggplot2::geom_text(aes(
-      label = nz.interaction, x = log(lambda.beta), y = Inf,
-      vjust = 2
-    )) +
-    ggplot2::ylab(c("5 fold CV MSE")) #+
-  # coord_cartesian(ylim = c(l$panel$ranges[[1]]$y.range[1], l$panel$ranges[[1]]$y.range[2]*1.1))
-}
-
-
-#' @export
-plot.cv.sail <- function(x, sign.lambda = 1, ...) {
-  cvobj <- x
-  xlab <- "log(Lambda)"
-  if (sign.lambda < 0) xlab <- paste("-", xlab, sep = "")
-  plot.args <- list(x = sign.lambda * log(cvobj$lambda), y = cvobj$cvm, ylim = range(cvobj$cvup, cvobj$cvlo), xlab = xlab, ylab = cvobj$name, type = "n")
-  new.args <- list(...)
-  if (length(new.args)) plot.args[names(new.args)] <- new.args
-  do.call("plot", plot.args)
-  error.bars(sign.lambda * log(cvobj$lambda), cvobj$cvup, cvobj$cvlo, width = 0.01, col = "darkgrey")
-  points(sign.lambda * log(cvobj$lambda), cvobj$cvm, pch = 20, col = "red")
-  axis(side = 3, at = sign.lambda * log(cvobj$lambda), labels = paste(cvobj$nz), tick = FALSE, line = 0)
-  abline(v = sign.lambda * log(cvobj$lambda.min), lty = 3)
-  abline(v = sign.lambda * log(cvobj$lambda.1se), lty = 3)
-  invisible()
-}
-
-
-
-
-# plotCoefSail <- function(beta, norm, lambda, df, dev, label = FALSE,
-#                          xvar = c("norm", "lambda", "dev"),
-#                          xlab = iname, ylab = "Coefficients", ...) {
-#   which = nonzero(beta)
-#   nwhich = length(which)
-#   switch(nwhich + 1, `0` = {
-#     warning("No plot produced since all coefficients zero")
-#     return()
-#   }, `1` = warning("1 or less nonzero coefficients; glmnet plot is not meaningful"))
-#   beta = as.matrix(beta[which, , drop = FALSE])
-#   xvar = match.arg(xvar)
-#   switch(xvar, norm = {
-#     index = if (missing(norm)) apply(abs(beta), 2, sum) else norm
-#     iname = "L1 Norm"
-#     approx.f = 1
-#   }, lambda = {
-#     index = log(lambda)
-#     iname = "Log Lambda"
-#     approx.f = 0
-#   }, dev = {
-#     index = dev
-#     iname = "Fraction Deviance Explained"
-#     approx.f = 1
-#   })
-#   dotlist = list(...)
-#   type = dotlist$type
-#   if (is.null(type))
-#     matplot(index, t(beta), lty = 1, xlab = xlab, ylab = ylab,
-#             type = "l", ...)
-#   else matplot(index, t(beta), lty = 1, xlab = xlab, ylab = ylab,
-#                ...)
-#   atdf = pretty(index)
-#   prettydf = approx(x = index, y = df, xout = atdf, rule = 2,
-#                     method = "constant", f = approx.f)$y
-#   axis(3, at = atdf, labels = prettydf, tcl = NA)
-#   if (label) {
-#     nnz = length(which)
-#     xpos = max(index)
-#     pos = 4
-#     if (xvar == "lambda") {
-#       xpos = min(index)
-#       pos = 2
-#     }
-#     xpos = rep(xpos, nnz)
-#     ypos = beta[, ncol(beta)]
-#     text(xpos, ypos, paste(which), cex = 0.5, pos = pos)
-#   }
-# }
-
-# myplotgrp(fit, log.l = T, ylab = "main")
-
-#' Plot the coefficient plot produced by sail
-#'
-#' @description Plot the coefficient plot produced by sail
-#' @export
-
+#' @importFrom grDevices hcl
 plotSailCoef <- function(coefs, lambda, group, df, dev, vnames, environ,
                          alpha = 1, legend.loc, label = FALSE, log.l = TRUE,
                          norm = FALSE, ...) {
@@ -299,22 +142,95 @@ plotSailCoef <- function(coefs, lambda, group, df, dev, vnames, environ,
 
 
 
-#' Plot Main Effects from sail object
-#' @param object sail object
+#' @title Plot Estimated Component Smooth Functions for Main Effects
+#' @description Takes a fitted sail object produced by \code{sail()} or
+#'   \code{cv.sail()$sail.fit} and plots the component smooth function for a
+#'   pre-specified variable at a given value of lambda and on the scale of the
+#'   linear predictor. Currently only implemented for \code{type="gaussian"}
+#' @param object a fitted \code{sail} object as produced by \code{sail()} or
+#'   \code{cv.sail()$sail.fit}
+#' @param x original data supplied to the original call to \code{\link{sail}}
+#' @param xvar a character corresponding to the predictor to be plotted. Only
+#'   one variable name should be supplied, if more than one is supplied, only
+#'   the first element will be plotted. This variable name must be in
+#'   \code{colnames(x)}.
+#' @param s a single value of the penalty parameter \code{lambda} at which
+#'   coefficients will be extracted via the \code{coef} method for objects of
+#'   class \code{"sail"}. If more than one is supplied, only the first one will
+#'   be used.
+#' @param f.truth true function. Only used for simulation purposes when the
+#'   truth is known. The function takes as a input a numeric vector
+#'   corresponding the \code{xvar} column in \code{x} of length \code{nrow(x)}.
+#'   A second line will be plotted for the truth and a legend is added to the
+#'   plot.
+#' @param col color of the line. The first element corresponds to the color used
+#'   for the estimated function and the second element is for the true function
+#'   (if \code{f.truth} is specified). Default: c("#D55E00", "#009E73")
+#' @param legend.position position of the legend. Only used when \code{f.truth}
+#'   is specified. Default: 'bottomleft'. Can be a single keyword from the list
+#'   "bottomright", "bottom", "bottomleft", "left", "topleft", "top",
+#'   "topright", "right" and "center". This places the legend on the inside of
+#'   the plot frame at the given location. Partial argument matching is used.
+#' @param rug adds a rug representation (1-d plot) of the data to the plot, logical. Default: TRUE.
+#' @param ... other graphical paramters passed to \code{plot}.
+#' @return A plot is produced and nothing is returned
+#' @details The linear predictor \eqn{basis(xvar) * \beta_xvar} is
+#'   plotted against \code{xvar}, where \code{basis} is the expansion provided
+#'   in the original call to \code{sail}.
+#' @examples
+#' \dontrun{
+#' if(interactive()){
+#' # Parallel
+#' library(doMC)
+#' registerDoMC(cores = 4)
+#' data("sailsim")
+#' f.basis <- function(i) splines::bs(i, degree = 5)
+#' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
+#'                  basis = f.basis, nfolds = 10, parallel = TRUE)
+#' # plot cv-error curve
+#' plot(cvfit)
+#' # non-zero estimated coefficients at lambda.min
+#' predict(cvfit, type = "nonzero", s="lambda.min")
+#' # plot main effect for X4 with a line for the truth also
+#' plotMain(cvfit$sail.fit, x = sailsim$x, xvar = "X4",
+#'          s = cvfit$lambda.min, f.truth = sailsim$f4)
+#'  }
+#' }
+#' @seealso \code{\link{coef.sail}} \code{\link{predict.sail}}, \code{\link[graphics]{rug}}
+#' @rdname plotMain
+#' @importFrom graphics abline axis legend lines mtext par plot.default segments text
+#' @importFrom stats coef
 #' @export
-plotMain <- function(object, xvar, s, f.truth, col = c("#D55E00", "#009E73"), legend.position = "bottomleft", ...) {
+plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
+                     legend.position = "bottomleft", rug = TRUE, ...) {
 
   # browser()
+  if (length(xvar) > 1) {
+    xvar <- xvar[[1]]
+    warning("More than 1 xvar provided. Only first element will be plotted.")
+  }
+
+  if (length(s) > 1) {
+    s <- s[[1]]
+    warning("More than 1 s value provided. Only first element will be used for the estimated coefficients.")
+  }
+
   ind <- object$group == which(object$vnames == xvar)
   allCoefs <- coef(object, s = s)
   a0 <- allCoefs[1, ]
   betas <- as.matrix(allCoefs[object$main.effect.names[ind], , drop = FALSE])
   design.mat <- object$design[, object$main.effect.names[ind], drop = FALSE]
-  originalX <- object$x[, unique(object$group[ind])]
+  originalX <- x[, unique(object$group[ind])]
 
-  f.hat <- drop(a0 + design.mat %*% betas)
-  # f.hat <- drop(design.mat %*% betas)
-  ylims <- if (!missing(f.truth)) range(f.truth, f.hat) else range(f.hat)
+  # f.hat <- drop(a0 + design.mat %*% betas)
+  f.hat <- drop(design.mat %*% betas)
+  if (!missing(f.truth)) {
+    seqs <- seq(range(originalX)[1], range(originalX)[2], length.out = 100)
+    f.truth.eval <- f.truth(seqs)
+    ylims <- range(f.truth.eval, f.hat)
+  } else {
+    ylims <- range(f.hat)
+  }
 
   plot.args <- list(
     x = originalX[order(originalX)],
@@ -345,9 +261,9 @@ plotMain <- function(object, xvar, s, f.truth, col = c("#D55E00", "#009E73"), le
   do.call("plot", plot.args)
   abline(h = 0, lwd = 1, col = "gray")
   lines(originalX[order(originalX)], f.hat[order(originalX)], col = col[1], lwd = 3)
-  rug(originalX, side = 1)
+  if (rug) graphics::rug(originalX, side = 1)
   if (!missing(f.truth)) {
-    lines(originalX[order(originalX)], f.truth[order(originalX)], col = col[2], lwd = 3)
+    lines(seqs[order(seqs)], f.truth.eval[order(seqs)], col = col[2], lwd = 3)
   }
   if (!missing(f.truth)) {
     legend(legend.position,
@@ -359,14 +275,70 @@ plotMain <- function(object, xvar, s, f.truth, col = c("#D55E00", "#009E73"), le
 
 
 
-#' Plot Interaction Effects from sail object
-#' @param object sail object
+#' @title Plot Interaction Effects from sail object
+#' @description Takes a fitted sail object produced by \code{sail()} or
+#'   \code{cv.sail()$sail.fit} and plots a \code{\link[graphics]{persp}} for a
+#'   pre-specified variable at a given value of lambda and on the scale of the
+#'   linear predictor. Currently only implemented for \code{type="gaussian"}
+#' @inheritParams plotMain
+#' @param f.truth true function. Only used for simulation purposes when the
+#'   truth is known. The function takes as a input two numeric vectors e.g.
+#'   \code{f(x,e)} corresponding the \code{xvar} column in \code{x} of length
+#'   \code{nrow(x)} and the exposure variable contained in the \code{sail
+#'   object}. A second \code{persp} will be plotted for the truth
+#' @param interation.only if \code{TRUE} only the interaction part is used to
+#'   calculate the linear predictor, i.e., \eqn{linear predictor = E * f(X) *
+#'   interaction_effects}. If \code{FALSE}, then \eqn{linear predictor = E *
+#'   \beta_E + f(X) * interaction_effects + E * f(X) * interaction_effects}.
+#'   Default: TRUE
+#' @param truthonly only plot the truth. \code{f.truth} must be specified if
+#'   this argument is set to \code{TRUE}. Default: FALSE
+#' @param npoints number of points in the grid to calculate the perspective
+#'   plot. Default: 30
+#' @param title_z title for the plot, Default: ''
+#' @param ... currently ignored
+#' @return A plot is produced and nothing is returned
+#' @examples
+#' \dontrun{
+#' if(interactive()){
+#' # Parallel
+#' library(doMC)
+#' registerDoMC(cores = 4)
+#' data("sailsim")
+#' f.basis <- function(i) splines::bs(i, degree = 5)
+#' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
+#'                  basis = f.basis, nfolds = 10, parallel = TRUE)
+#' # plot cv-error curve
+#' plot(cvfit)
+#' # non-zero estimated coefficients at lambda.min
+#' predict(cvfit, type = "nonzero", s="lambda.min")
+#' # plot interaction effect for X4 and the true interaction effect also
+#' plotInter(cvfit$sail.fit, x = sailsim$x, xvar = "X3",
+#'           f.truth = sailsim$f4.inter,
+#'           s = cvfit$lambda.min,
+#'           title_z = "Estimated")
+#'  }
+#' }
+#' @seealso \code{\link[graphics]{persp}} \code{\link{coef.sail}}
+#'   \code{\link{predict.sail}}, \code{\link[graphics]{rug}}
+#' @rdname plotInter
+#' @importFrom graphics abline axis legend lines mtext par plot.default segments text
+#' @importFrom stats coef
 #' @export
-plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, truthonly = FALSE,
-                      npoints = 30, col = c("#56B4E9", "#D55E00"), title_z,
-                      legend.position = "bottomleft", ...) {
+plotInter <- function(object, x, xvar, s, f.truth, interation.only = TRUE, truthonly = FALSE,
+                      npoints = 30, col = c("#56B4E9", "#D55E00"), title_z = "",
+                      ...) {
 
   # browser()
+  if (length(xvar) > 1) {
+    xvar <- xvar[[1]]
+    warning("More than 1 xvar provided. Only first element will be plotted.")
+  }
+
+  if (length(s) > 1) {
+    s <- s[[1]]
+    warning("More than 1 s value provided. Only first element will be used for the estimated coefficients.")
+  }
 
   ind <- object$group == which(object$vnames == xvar)
   allCoefs <- coef(object, s = s)
@@ -379,7 +351,7 @@ plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, truthonly = F
   design.mat.main <- object$design[, object$main.effect.names[ind], drop = FALSE]
   design.mat.int <- object$design[, object$interaction.names[ind], drop = FALSE]
   originalE <- object$design[, "E", drop = FALSE] # this is the centered E
-  originalX <- object$x[, unique(object$group[ind])]
+  originalX <- x[, unique(object$group[ind])]
 
   # f.hat <- drop(a0 + design.mat %*% betas)
   # f.hat <- drop(originalE %*% betaE + design.mat.main %*% betas + design.mat.int %*% alphas)
@@ -391,15 +363,17 @@ plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, truthonly = F
   e <- seq(range(originalE)[1], range(originalE)[2], length.out = npoints)
 
   # show interaction effect only for simulation
-  if (simulation) {
+  if (interation.only) {
     f.est <- function(X, E) {
       # E * as.vector(betaE) + standardize(splines::bs(X, df = object$df, degree = object$degree))$x %*% betas +
-      (E * standardize(splines::bs(X, df = object$df, degree = object$degree))$x) %*% alphas
+      (drop(standardize(E, center = object$center.e)$x) * standardize(object$basis(X), center = object$center.e)$x) %*% alphas
+      # (E * standardize(object$basis(X), center = FALSE)$x) %*% alphas
     }
   } else {
     f.est <- function(X, E) {
-      E * as.vector(betaE) + standardize(splines::bs(X, df = object$df, degree = object$degree))$x %*% betas +
-        (E * standardize(splines::bs(X, df = object$df, degree = object$degree))$x) %*% alphas
+      standardize(E, center = object$center.e)$x * as.vector(betaE) +
+        standardize(object$basis(X), center = object$center.e)$x %*% betas +
+        (drop(standardize(E, center = object$center.e)$x) * standardize(object$basis(X), center = object$center.e)$x) %*% alphas
     }
   }
 
@@ -419,7 +393,7 @@ plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, truthonly = F
   if (truthonly) {
     par(mfrow = c(1, 1), tcl = -0.5, family = "serif", omi = c(0.2, 0.2, 0, 0))
     par(mai = c(0., 0.2, 0.4, 0.))
-    persp(x, e, z.truth,
+    graphics::persp(x, e, z.truth,
       zlim = z_range,
       theta = 30, phi = 30,
       ltheta = 120, expand = 0.5,
@@ -436,7 +410,7 @@ plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, truthonly = F
   } else if (!missing(f.truth)) {
     par(mfrow = c(1, 2), tcl = -0.5, family = "serif", omi = c(0.2, 0.2, 0, 0))
     par(mai = c(0., 0.8, 0.6, 0.))
-    persp(x, e, z.truth,
+    graphics::persp(x, e, z.truth,
       zlim = z_range,
       theta = 30, phi = 30,
       ltheta = 120, expand = 0.5,
@@ -450,12 +424,12 @@ plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, truthonly = F
       ylab = "X_E",
       zlab = "Y", main = "Truth"
     )
-    persp(x, e, z.est,
+    graphics::persp(x, e, z.est,
       theta = 30, phi = 30,
       ltheta = 120, expand = 0.5,
       r = 2, shade = 0.3, axes = TRUE, scale = TRUE, box = T,
       nticks = 5,
-      zlim = z_range,
+      # zlim = z_range,
       cex.lab = 3,
       cex.main = 3,
       # ticktype="detailed",
@@ -467,7 +441,7 @@ plotInter <- function(object, xvar, s, f.truth, simulation = TRUE, truthonly = F
   } else {
     par(mfrow = c(1, 1), tcl = -0.5, family = "serif", omi = c(0.2, 0.2, 0, 0))
     par(mai = c(0., 0.2, 0.4, 0.))
-    persp(x, e, z.est,
+    graphics::persp(x, e, z.est,
       cex.lab = 3,
       cex.main = 3,
       theta = 30, phi = 30,
