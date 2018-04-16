@@ -1,0 +1,94 @@
+url: http://sahirbhatnagar.com/sail
+
+template:
+  params:
+    bootswatch: cosmo
+
+authors:
+  Sahir Bhatnagar:
+    href: http://sahirbhatnagar.com
+  Yi Yang:
+    href: http://www.math.mcgill.ca/yyang/
+  Celia Greenwood:
+    href: https://www.mcgill.ca/statisticalgenetics/
+
+development:
+  mode: unreleased
+
+reference:
+  - title: Model Fitting
+    desc: >
+      Main functions for fitting the sail model
+    contents:
+    - sail
+    - cv.sail
+
+  - title: Methods for objects of class sail and cv.sail
+    desc: >
+      Method functions to extract relevant information from fitted objects
+    contents:
+    - predict.sail
+    - predict.cv.sail
+    - print.sail
+    - coef.sail
+    - coef.cv.sail
+    - plot.sail
+    - plot.cv.sail
+
+
+  - title: Datasets
+    desc: >
+      Two datasets that ship with the package to illustrate usage
+    contents:
+    - sailsim
+    - oasis
+
+
+  - title: Marginal Plots
+    desc: >
+      Visualize the relationship between the response and main effects or interactions
+    contents:
+    - plotMain
+    - plotInter
+
+
+  - title: Simulate Data
+    desc: >
+      Reproduce the simulated data from the sail paper
+    contents:
+    - gendata
+    - gendataPaper
+
+  - title: Internal Utility Functions
+    desc: >
+      Functions not really meant for the user
+    contents:
+    - Q_theta
+    - createfolds
+    - cv.lspath
+    - design_sail
+    - SoftThreshold
+    - l2norm
+    - cbbPalette
+    - nonzero
+    - check_col_0
+    - standardize
+
+navbar:
+  type: default
+  left:
+    - text: Home
+      href: index.html
+    - text: Vignettes
+      menu:
+      - text: Introduction to sail
+        href: articles/introduction-to-sail.html
+      - text: User defined design matrix
+        href: articles/user-defined-design.html
+    - text: Functions and data
+      href: reference/index.html
+    - text: News
+      href: news/index.html
+  twitter:
+     icon: fa-lg fa-twitter
+     href: http://twitter.com/syfi_24

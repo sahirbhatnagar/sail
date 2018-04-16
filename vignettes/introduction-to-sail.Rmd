@@ -93,7 +93,9 @@ fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis,
 fit
 ```
 
-The entire solution path can be plotted via the `plot` method for objects of class `sail`:
+When `expand = TRUE` (i.e. the user did not provide their own design matrix), the `df_main` and `df_interaction` columns correspond to the number of non-zero predictors present in the model before basis expansion. This **does not** correspond to the number of non-zero coefficients in the model, but rather the number of unique variables. In this example we expanded each column of $\mathbf{X}$ to five columns. If  `df_main=4`, `df_interaction=2` and `df_environment=1`, then the total number of non-zero coefficients would be $5 \times (4+2) + 1$.  
+
+The entire solution path can be plotted via the `plot` method for objects of class `sail`. The y-axis is the value of the coefficient and the x-axis is the $\log(\lambda)$. Each line represents a coefficient in the model, and each color represents a variable (i.e. in this example a given variable will have 5 lines when it is non-zero). The numbers at the top of the plot represent the number of non-zero variables in the model: top panel (`df_main` + `df_environment`), bottom panel (`df_interaction`). The black line is the coefficient path for the environment variable.  
 
 ```{r}
 plot(fit)
@@ -118,14 +120,14 @@ predict(fit)[1:5,1:5]
 The predicted response at a specific value of lambda can be specified by the `s` argument:
 
 ```{r}
-predict(fit, s = 1.5)
+predict(fit, s = 0.8)
 ```
 
 
 You can specify more than one value for `s`:
 
 ```{r}
-predict(fit, s = c(1.5, 0.2))[1:10,]
+predict(fit, s = c(0.8, 0.2))
 ```
 
 
@@ -140,12 +142,22 @@ cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis,
             verbose = 0, nfolds = 10, parallel = TRUE)
 ```
 
+We plot the cross-validated error curve which has the mean-squared error on the y-axis and $\log(\lambda)$ on the x-axis. It includes the cross-validation curve (red dotted line), and upper and lower standard deviation curves along the $\lambda$ sequence (error bars). Two selected $\lambda$'s are indicated by the vertical dotted lines (see below). The numbers at the top of the plot represent the total number of non-zero variables at that value of $\lambda$ (`df_main` + `df_environment` + `df_interaction`):
+
 
 ```{r}
 plot(cvfit)
 ```
 
-Estimated coefficients at `lambda.1se` and `lambda.min`:
+`lambda.min` is the value of $\lambda$ that gives minimum mean cross-validated error. The other $\lambda$ saved is `lambda.1se`,
+which gives the most regularized model such that error is within one standard error of the minimum. We can view the selected $\lambda$'s and the corresponding coefficients:
+
+```{r}
+cvfit[["lambda.min"]]
+cvfit[["lambda.1se"]]
+```
+
+The estimated coefficients at `lambda.1se` and `lambda.min`:
 
 ```{r}
 cbind(coef(cvfit, s="lambda.1se"), # lambda.1se is the default
@@ -184,4 +196,72 @@ plotInter(cvfit$sail.fit, x = sailsim$x, xvar = "X4",
           s = cvfit$lambda.min,
           title_z = "Estimated")
 ```
+
+
+
+## Linear Interactions
+
+The `basis` argument in the `sail` function is very flexible in that it allows you to apply **any** basis expansion to the columns of $\mathbf{X}$. Of course, there might be situations where you do not expect any non-linear main effects or interactions to be present in your data. You can still use the `sail` method to search for **linear** main effects and interactions. This can be accomplished by specifying an identity map:
+
+```{r}
+f.identity <- function(i) i
+```
+
+We then pass this function to `basis` argument in `cv.sail`:
+
+```{r}
+cvfit_linear <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
+                        basis = f.identity, nfolds = 10, parallel = TRUE)
+```
+
+
+Next we plot the cross-validated curve:
+
+```{r}
+plot(cvfit_linear)
+```
+
+And extract the model at `lambda.min`:
+
+```{r}
+coef(cvfit_linear, s = "lambda.min")
+```
+
+
+## Applying a different penalty to each predictor
+
+Recall that we consider the following penalized least squares criterion for this problem:
+
+\begin{equation}
+\arg\min_{\boldsymbol{\theta} }  \mathcal{L}(Y;\boldsymbol{\theta}) + \lambda (1-\alpha)  \left( w_E |\beta_E| + \sum_{j=1}^{p} w_j \lVert\boldsymbol{\theta}_j \rVert_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} |\gamma_{j}| 
+\end{equation} 
+
+The weights $w_E, w_j, w_{jE}$ are by default set to 1 as specified by the `penalty.factor` argument. This argument allows users to apply separate penalty factors to each coefficient.  In particular, any variable with `penalty.factor` equal to zero is not penalized at all. This feature can be applied mainly for two reasons:  
+
+1. Prior knowledge about the importance of certain variables is known. Larger weights will penalize the variable more, while smaller weights will penalize the variable less  
+2. Allows users to apply the Adaptive `sail`, similar to the [Adaptive Lasso](http://users.stat.umn.edu/~zouxx019/Papers/adalasso.pdf)  
+
+In the following example, we want the environment variable to always be included so we set the first element of `p.fac` to zero. We also want to apply less of a penalty to the main effects for $X_2, X_3, X_4$:
+
+```{r}
+# the weights correspond to E, X1, X2, X3, ... X_p, X1:E, X2:E, ... X_p:E
+p.fac <- c(0, 1, 0.4, 0.6, 0.7, rep(1, 2*ncol(sailsim$x) - 4))
+```
+
+
+```{r}
+fit_pf <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis,
+               penalty.factor = p.fac)
+```
+
+
+```{r}
+plot(fit_pf)
+```
+
+
+We see from the plot above that the black line (corresponding to the $E$ variable with `penalty.factor` equal to zero) is always included in the model. 
+
+
+
 

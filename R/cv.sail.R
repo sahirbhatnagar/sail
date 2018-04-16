@@ -108,7 +108,7 @@
 #' predict(cvfit, s = "lambda.min")
 #' predict(cvfit, s = "lambda.1se")
 #' # predict response at any value for lambda
-#' predict(cvfit, s = 2.1)
+#' predict(cvfit, s = 0.457)
 #'
 #' # predict response for new data set
 #' newx <- sailsim$x * 1.10
