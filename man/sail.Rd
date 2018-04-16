@@ -10,7 +10,7 @@ sail(x, y, e, basis = function(i) splines::bs(i, df = 5),
   weights, penalty.factor = rep(1, 1 + 2 * nvars),
   lambda.factor = ifelse(nobs < (1 + 2 * bscols * nvars), 0.01, 1e-04),
   lambda = NULL, alpha = 0.5, nlambda = 100, thresh = 1e-04,
-  fdev = 1e-05, maxit = 1000, dfmax = 2 * nvars + 1, verbose = 1)
+  fdev = 1e-05, maxit = 1000, dfmax = 2 * nvars + 1, verbose = 0)
 }
 \arguments{
 \item{x}{input matrix of dimension \code{n x p}, where \code{n} is the number
@@ -199,7 +199,7 @@ coef(fit)
 predict(fit)
 
 #predicted response at a specific value of lambda
-predict(fit, s = 1.5)
+predict(fit, s = 0.5)
 \dontrun{
 if(interactive()){
 # plot solution path for main effects and interactions

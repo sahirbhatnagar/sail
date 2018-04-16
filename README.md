@@ -1,31 +1,80 @@
-# sail: Strong Additive Interaction Learning
+# sail: Sparse Additive Interaction Learning
 
-[![Travis build status](https://travis-ci.org/sahirbhatnagar/sail.svg?branch=master)](https://travis-ci.org/sahirbhatnagar/sail)   [![Coverage status](https://codecov.io/gh/sahirbhatnagar/sail/branch/master/graph/badge.svg)](https://codecov.io/github/sahirbhatnagar/sail?branch=master)
+[![Travis build status](https://travis-ci.org/sahirbhatnagar/sail.svg?branch=master)](https://travis-ci.org/sahirbhatnagar/sail)   [![Coverage status](https://codecov.io/gh/sahirbhatnagar/sail/branch/master/graph/badge.svg)](https://codecov.io/github/sahirbhatnagar/sail?branch=master)   [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/sail)](https://cran.r-project.org/package=sail)
 
-`R` software package to fit additive interaction models with the strong heredity property. Our algorithm fits the following objective function:
+`R` software package to fit sparse additive interaction models with the strong heredity property. Interactions are limited to a single exposure or environment variable. The following figure (based on simulated data) gives an idea of the situation our method is trying to capture:
 
-<a href="https://www.codecogs.com/eqnedit.php?latex=\arg\min_{\boldsymbol{\Theta}&space;}&space;\mathcal{L}(Y;\boldsymbol{\beta})&space;&plus;&space;\lambda_\beta&space;\left(&space;w_E&space;|\beta_E|&space;&plus;&space;\sum_{j=1}^{p}&space;w_j&space;||\theta_j||_2&space;\right)&space;&plus;&space;\lambda_\gamma&space;\sum_{j=1}^{p}&space;w_{jE}&space;|\gamma_{j}|" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\arg\min_{\boldsymbol{\Theta}&space;}&space;\mathcal{L}(Y;\boldsymbol{\beta})&space;&plus;&space;\lambda_\beta&space;\left(&space;w_E&space;|\beta_E|&space;&plus;&space;\sum_{j=1}^{p}&space;w_j&space;||\theta_j||_2&space;\right)&space;&plus;&space;\lambda_\gamma&space;\sum_{j=1}^{p}&space;w_{jE}&space;|\gamma_{j}|" title="\arg\min_{\boldsymbol{\Theta} } \mathcal{L}(Y;\boldsymbol{\beta}) + \lambda_\beta \left( w_E |\beta_E| + \sum_{j=1}^{p} w_j ||\theta_j||_2 \right) + \lambda_\gamma \sum_{j=1}^{p} w_{jE} |\gamma_{j}|" /></a>
+![](man/figures/nonlinear-motivation.png)
 
-where
-
-<a href="https://www.codecogs.com/eqnedit.php?latex=\mathcal{L}(Y;\boldsymbol{\beta})&space;=&space;\frac{1}{2}&space;||Y&space;-&space;\beta_0&space;\cdot&space;\boldsymbol{1}&space;&plus;&space;\sum_{j=1}^p&space;\boldsymbol{\Psi}_j&space;\theta_j&space;&plus;&space;\beta_E&space;X_E&space;&plus;&space;\sum_{j=1}^p&space;\gamma_{j}&space;\beta_E&space;X_E&space;\boldsymbol{\Psi}_j&space;\theta_j||_2^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\mathcal{L}(Y;\boldsymbol{\beta})&space;=&space;\frac{1}{2}&space;||Y&space;-&space;\beta_0&space;\cdot&space;\boldsymbol{1}&space;&plus;&space;\sum_{j=1}^p&space;\boldsymbol{\Psi}_j&space;\theta_j&space;&plus;&space;\beta_E&space;X_E&space;&plus;&space;\sum_{j=1}^p&space;\gamma_{j}&space;\beta_E&space;X_E&space;\boldsymbol{\Psi}_j&space;\theta_j||_2^2" title="\mathcal{L}(Y;\boldsymbol{\beta}) = \frac{1}{2} ||Y - \beta_0 \cdot \boldsymbol{1} + \sum_{j=1}^p \boldsymbol{\Psi}_j \theta_j + \beta_E X_E + \sum_{j=1}^p \gamma_{j} \beta_E X_E \boldsymbol{\Psi}_j \theta_j||_2^2" /></a>
-
-and
-
-<a href="https://www.codecogs.com/eqnedit.php?latex=f_j(X_j)&space;=&space;\sum_{\ell&space;=&space;1}^{p_j}&space;\psi_{j\ell}(X_j)&space;\beta_{j\ell}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?f_j(X_j)&space;=&space;\sum_{\ell&space;=&space;1}^{p_j}&space;\psi_{j\ell}(X_j)&space;\beta_{j\ell}" title="f_j(X_j) = \sum_{\ell = 1}^{p_j} \psi_{j\ell}(X_j) \beta_{j\ell}" /></a>
-
-Here, the <a href="https://www.codecogs.com/eqnedit.php?latex=\left\lbrace&space;\psi_{j\ell}&space;\right\rbrace_1^{p_j}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\left\lbrace&space;\psi_{j\ell}&space;\right\rbrace_1^{p_j}" title="\left\lbrace \psi_{j\ell} \right\rbrace_1^{p_j}" /></a> are a family of basis functions in <a href="https://www.codecogs.com/eqnedit.php?latex=X_j" target="_blank"><img src="https://latex.codecogs.com/gif.latex?X_j" title="X_j" /></a>. Let <a href="https://www.codecogs.com/eqnedit.php?latex=\boldsymbol{\Psi_j}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\boldsymbol{\Psi_j}" title="\boldsymbol{\Psi_j}" /></a> be the <a href="https://www.codecogs.com/eqnedit.php?latex=n&space;\times&space;p_j" target="_blank"><img src="https://latex.codecogs.com/gif.latex?n&space;\times&space;p_j" title="n \times p_j" /></a> matrix of evaluations of the <a href="https://www.codecogs.com/eqnedit.php?latex=\psi_{j\ell}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\psi_{j\ell}" title="\psi_{j\ell}" /></a> and <a href="https://www.codecogs.com/eqnedit.php?latex=\theta_j&space;=&space;(\beta_{j1},&space;\ldots,&space;\beta_{jp_j})&space;\in&space;\mathbb{R}^{p_j}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\theta_j&space;=&space;(\beta_{j1},&space;\ldots,&space;\beta_{jp_j})&space;\in&space;\mathbb{R}^{p_j}" title="\theta_j = (\beta_{j1}, \ldots, \beta_{jp_j}) \in \mathbb{R}^{p_j}" /></a> for <a href="https://www.codecogs.com/eqnedit.php?latex=j=&space;1,&space;\ldots,&space;p" target="_blank"><img src="https://latex.codecogs.com/gif.latex?j=&space;1,&space;\ldots,&space;p" title="j= 1, \ldots, p" /></a>, i.e., <a href="https://www.codecogs.com/eqnedit.php?latex=\theta_j" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\theta_j" title="\theta_j" /></a> is a <a href="https://www.codecogs.com/eqnedit.php?latex=p_j" target="_blank"><img src="https://latex.codecogs.com/gif.latex?p_j" title="p_j" /></a>-dimensional vector of basis coefficients for the <a href="https://www.codecogs.com/eqnedit.php?latex=j" target="_blank"><img src="https://latex.codecogs.com/gif.latex?j" title="j" /></a>th main effect. 
-
-<!--The following figure shows some results based on simulated data:
-
-![](gendata_inter_X1.png)-->
+The x-axis is a predictor, the y-axis is the response and each line represents an exposure status. In this example, we see that the effect of the DNA methylation (at one CpG site) on obesity is linear for controls (unexposed: E=0) and non-linear for individuals with a gestational diabetes-affected pregnancy (exposed: E=1). 
 
 
 ## Installation
 
-**Note: this package is under active development**
+You can install the development version of `sail` from [GitHub](https://github.com/sahirbhatnagar/sail) with:
 
-```{R}
+```R
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load_gh('sahirbhatnagar/sail')
+pacman::p_install_gh("sahirbhatnagar/sail")
 ```
+
+## Vignette
+
+See the [online vignette](http://sahirbhatnagar.com/sail/) for example usage of the functions.
+
+
+## Model Input
+
+This method requires four inputs (let _n_ be the number of observations and _p_ the number of **X** variables):  
+1. **X**: _n_ x _p_ matrix of covariates. Can be high-dimensional, i.e., p >> n. Can also be continuous, categorical or a combination of both.  
+2. **Y**: a continuous response of length _n_  
+3. **E**: an exposure variable of length _n_. Can be continous or categorical.    
+4. A basis expansion function **f(X_j)** to be applied to each column of **X**, for example 
+
+```R
+f.basis <- function(x) splines::bs(x, degree = 5)
+```
+
+## Model Output
+
+The `sail` method will search for all main effects and interactions between **E** and **f(X_j)** that are associated with the response **Y**, in a multivariable regression model. It will perform simultaneous variable selection and estimation of model parameters, and return a sparse model (i.e. many parameters with coefficient 0). 
+
+
+## Model
+
+See the [Introduction to the sail package]() vignette for details on the model. 
+
+
+## Credit
+
+We make use of the following packages:
+
+* [`glmnet`](https://cran.r-project.org/package=glmnet) for lasso regression  
+* [`gglasso`](https://cran.r-project.org/package=gglasso) for group lasso regression  
+
+
+## Related Work
+
+* [`glinternet`](https://cran.r-project.org/package=glinternet)  
+* [`hierNet`](https://cran.r-project.org/package=hierNet)  
+* [`FAMILY`](https://cran.r-project.org/package=FAMILY)  
+* [`LassoBacktracking`](https://cran.r-project.org/package=LassoBacktracking)    
+
+
+
+## Contact
+
+* Issues: <https://github.com/sahirbhatnagar/sail/issues>
+* Pull Requests: <https://github.com/sahirbhatnagar/sail/>
+* e-mail: <sahir.bhatnagar@gmail.com>
+
+
+## Latest news
+
+You can see the most recent changes to the package in the [NEWS.md file](https://github.com/sahirbhatnagar/sail/blob/master/NEWS.md)
+
+
+## Code of Conduct
+
+Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md).
+By participating in this project you agree to abide by its terms.

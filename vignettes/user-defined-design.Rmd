@@ -1,0 +1,113 @@
+---
+title: "Supplying a User Defined Design Matrix"
+author: "Sahir Rai Bhatnagar"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    #code_folding: hide
+    fig_retina: null
+vignette: >
+  %\VignetteIndexEntry{Supplying a User Defined Design Matrix}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+A limitation of the `sail` method is that the same basis expansion function $f(\cdot)$ is applied to all columns of the predictor matrix $\mathbf{X}$. Being able to automatically select linear vs. nonlinear components was not a focus of our paper, but is an active area of reserch for main effects only e.g. [ref1](https://cran.r-project.org/package=gamsel
+) and [ref2](https://github.com/asadharis/HierBasis).   
+
+However, if the user has some prior knowledge on possible effect relationships, then they can supply their own design matrix. This can be useful for example, when one has a combination of categorical (e.g. gender, race) and continuous variables, but would only like to apply $f(\cdot)$ on the continuous variables. We provide an example below to illustrate this functionality.  
+
+
+## User-defined design matrix
+
+We use the simulated dataset `sailsim` provided in our package. We first add a categorical variable `race` to the data:
+
+```{r}
+set.seed(1234)
+library(sail)
+x_df <- as.data.frame(sailsim$x)
+x_df$race <- factor(sample(1:5, nrow(x_df), replace = TRUE))
+table(x_df$race)
+```
+
+We then use the `model.matrix` function to create the design matrix. Note that the intercept should not be included, as this is added internally in the `sail` function. This is why we add 0 to the formula. Notice also the flexibility we can have by including different basis expansions to each predictor:
+
+```{r}
+library(splines)
+x <- stats::model.matrix(~ 0 +  bs(X1, degree = 5) + bs(X2, degree = 3) + ns(X3, df = 8) + 
+                           bs(X4, degree = 6) + X5 + poly(X6,2) + race, data = x_df)
+head(x)
+```
+
+One benefit of using `stats::model.matrix` is that it returns the group membership as an attribute:
+
+```{r}
+attr(x, "assign")
+```
+
+The group membership must be supplied to the `sail` function. This information is needed for the group lasso penalty, which will select the whole group as zero or non-zero.
+
+## Fit the `sail` model
+
+We need to set the argument `expand = FALSE` and provide the group membership. The first element of the group membership corresponds to the first column of `x`, the second element to the second column of `x`, and so on. 
+
+```{r}
+fit_design <- sail(x = x, y = sailsim$y, e = sailsim$e, 
+                   expand = FALSE,
+                   group = attr(x, "assign"), verbose = 0)
+```
+
+We can plot the solution path for both main effects and interactions using the `plot` method for objects of class `sail`:
+
+```{r}
+plot(fit_design)
+```
+
+In this instance, since we provided a user-defined design matrix and `expand = FALSE`, the numbers at the top of the plot represent the total number of non-zero coefficients. 
+
+
+## Find the optimal value for lambda
+
+We can use cross-validation to find the optimal value of lambda:
+
+```{r}
+library(doMC)
+registerDoMC(cores = 2)
+cvfit_design <- cv.sail(x = x, y = sailsim$y, e = sailsim$e, 
+                        expand = FALSE,
+                        group = attr(x, "assign"), verbose = 0,
+                        nfolds = 10, parallel = TRUE)
+```
+
+We can plot the cross-validated mean squared error as a function of lambda:
+
+```{r}
+plot(cvfit_design)
+```
+
+The estimated coefficients at `lambda.1se` and `lambda.min` are:
+
+```{r}
+cbind(coef(cvfit_design, s="lambda.1se"), # lambda.1se is the default
+coef(cvfit_design, s = "lambda.min"))
+```
+
+
+The estimated non-zero coefficients at `lambda.1se`:
+
+```{r}
+predict(cvfit_design, type = "nonzero")
+```
+
+

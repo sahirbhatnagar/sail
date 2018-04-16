@@ -159,7 +159,7 @@
 #' predict(fit)
 #'
 #' #predicted response at a specific value of lambda
-#' predict(fit, s = 1.5)
+#' predict(fit, s = 0.5)
 #' \dontrun{
 #' if(interactive()){
 #' # plot solution path for main effects and interactions
@@ -208,7 +208,7 @@ sail <- function(x, y, e,
                  fdev = 1e-5,
                  maxit = 1000,
                  dfmax = 2 * nvars + 1,
-                 verbose = 1) {
+                 verbose = 0) {
 
   # browser()
 
