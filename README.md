@@ -20,7 +20,7 @@ pacman::p_install_gh("sahirbhatnagar/sail")
 
 ## Vignette
 
-See the [online vignette](http://sahirbhatnagar.com/sail/) for example usage of the functions.
+See the [online vignette](http://sahirbhatnagar.com/sail/) for details about the `sail` model and example usage of the functions.
 
 
 ## Model Input
@@ -39,10 +39,6 @@ f.basis <- function(x) splines::bs(x, degree = 5)
 
 The `sail` method will search for all main effects and interactions between **E** and **f(X_j)** that are associated with the response **Y**, in a multivariable regression model. It will perform simultaneous variable selection and estimation of model parameters, and return a sparse model (i.e. many parameters with coefficient 0). 
 
-
-## Model
-
-See the [Introduction to the sail package]() vignette for details on the model. 
 
 
 ## Credit
