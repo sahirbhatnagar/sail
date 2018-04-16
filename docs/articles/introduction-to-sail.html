@@ -15,7 +15,7 @@
 <!-- mathjax --><script src="https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
+<![endif]--><!-- docsearch --><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css">
 </head>
 <body>
     <div class="container template-article">
@@ -68,7 +68,13 @@
   </a>
 </li>
       </ul>
+<form class="navbar-form navbar-right" role="search">
+        <div class="form-group">
+          <input type="search" class="form-control" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off">
 </div>
+      </form>
+      
+    </div>
 <!--/.nav-collapse -->
   </div>
 <!--/.container -->
@@ -82,7 +88,7 @@
       <h1>Introduction to the sail package</h1>
                         <h4 class="author">Sahir Rai Bhatnagar</h4>
             
-            <h4 class="date">2018-04-15</h4>
+            <h4 class="date">2018-04-16</h4>
       
       <small>Source: <a href="https://github.com/sahirbhatnagar/sail/blob/master/vignettes/introduction-to-sail.Rmd"><code>vignettes/introduction-to-sail.Rmd</code></a></small>
       <div class="hidden name"><code>introduction-to-sail.Rmd</code></div>
@@ -138,7 +144,7 @@ pacman<span class="op">::</span><span class="kw"><a href="http://www.rdocumentat
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(splines)
 f.basis &lt;-<span class="st"> </span><span class="cf">function</span>(x) splines<span class="op">::</span><span class="kw"><a href="http://www.rdocumentation.org/packages/splines/topics/bs">bs</a></span>(x, <span class="dt">degree =</span> <span class="dv">5</span>)</code></pre></div>
 <p>Next we fit the model using the most basic call to <code>sail</code></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/sail.html">sail</a></span>(<span class="dt">x =</span> sailsim<span class="op">$</span>x, <span class="dt">y =</span> sailsim<span class="op">$</span>y, <span class="dt">e =</span> sailsim<span class="op">$</span>e, <span class="dt">basis =</span> f.basis,
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/sail/topics/sail">sail</a></span>(<span class="dt">x =</span> sailsim<span class="op">$</span>x, <span class="dt">y =</span> sailsim<span class="op">$</span>y, <span class="dt">e =</span> sailsim<span class="op">$</span>e, <span class="dt">basis =</span> f.basis,
             <span class="dt">verbose =</span> <span class="dv">0</span>)</code></pre></div>
 <p><code>fit</code> is an object of class <code>sail</code> that contains all the relevant information of the fitted model including the estimated coefficients at each value of <span class="math inline">\(\lambda\)</span> (by default the program chooses its own decreasing sequence of 100 <span class="math inline">\(\lambda\)</span> values). There are <code>print</code>, <code>plot</code>, <code>coef</code> and <code>predict</code> methods of objects of class <code>sail</code>. The <code>print</code> method outputs the following:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit
@@ -483,263 +489,258 @@ f.basis &lt;-<span class="st"> </span><span class="cf">function</span>(x) spline
 <span class="co">#&gt; Loading required package: iterators</span>
 <span class="co">#&gt; Loading required package: parallel</span>
 <span class="kw"><a href="http://www.rdocumentation.org/packages/doMC/topics/registerDoMC">registerDoMC</a></span>(<span class="dt">cores =</span> <span class="dv">2</span>)
-cvfit &lt;-<span class="st"> </span><span class="kw"><a href="../reference/cv.sail.html">cv.sail</a></span>(<span class="dt">x =</span> sailsim<span class="op">$</span>x, <span class="dt">y =</span> sailsim<span class="op">$</span>y, <span class="dt">e =</span> sailsim<span class="op">$</span>e, <span class="dt">basis =</span> f.basis,
+cvfit &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/sail/topics/cv.sail">cv.sail</a></span>(<span class="dt">x =</span> sailsim<span class="op">$</span>x, <span class="dt">y =</span> sailsim<span class="op">$</span>y, <span class="dt">e =</span> sailsim<span class="op">$</span>e, <span class="dt">basis =</span> f.basis,
             <span class="dt">verbose =</span> <span class="dv">0</span>, <span class="dt">nfolds =</span> <span class="dv">10</span>, <span class="dt">parallel =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <p>We plot the cross-validated error curve which has the mean-squared error on the y-axis and <span class="math inline">\(\log(\lambda)\)</span> on the x-axis. It includes the cross-validation curve (red dotted line), and upper and lower standard deviation curves along the <span class="math inline">\(\lambda\)</span> sequence (error bars). Two selected <span class="math inline">\(\lambda\)</span>’s are indicated by the vertical dotted lines (see below). The numbers at the top of the plot represent the total number of non-zero variables at that value of <span class="math inline">\(\lambda\)</span> (<code>df_main</code> + <code>df_environment</code> + <code>df_interaction</code>):</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(cvfit)</code></pre></div>
 <p><img src="introduction-to-sail_files/figure-html/unnamed-chunk-12-1.png" width="700"></p>
 <p><code>lambda.min</code> is the value of <span class="math inline">\(\lambda\)</span> that gives minimum mean cross-validated error. The other <span class="math inline">\(\lambda\)</span> saved is <code>lambda.1se</code>, which gives the most regularized model such that error is within one standard error of the minimum. We can view the selected <span class="math inline">\(\lambda\)</span>’s and the corresponding coefficients:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cvfit[[<span class="st">"lambda.min"</span>]]
-<span class="co">#&gt; [1] 0.1919144</span>
+<span class="co">#&gt; [1] 0.4644574</span>
 cvfit[[<span class="st">"lambda.1se"</span>]]
-<span class="co">#&gt; [1] 0.5097415</span></code></pre></div>
+<span class="co">#&gt; [1] 0.5860788</span></code></pre></div>
 <p>The estimated coefficients at <code>lambda.1se</code> and <code>lambda.min</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cbind</span>(<span class="kw">coef</span>(cvfit, <span class="dt">s=</span><span class="st">"lambda.1se"</span>), <span class="co"># lambda.1se is the default</span>
 <span class="kw">coef</span>(cvfit, <span class="dt">s =</span> <span class="st">"lambda.min"</span>))
 <span class="co">#&gt; 202 x 2 sparse Matrix of class "dgCMatrix"</span>
-<span class="co">#&gt;                         1             1</span>
-<span class="co">#&gt; (Intercept)  5.524692e+00   5.393931114</span>
-<span class="co">#&gt; X1_1        -5.535020e-01  -0.822220730</span>
-<span class="co">#&gt; X1_2         4.296505e-02   1.398918455</span>
-<span class="co">#&gt; X1_3         2.335016e-01   1.273167303</span>
-<span class="co">#&gt; X1_4         5.285136e-01   1.238901919</span>
-<span class="co">#&gt; X1_5         1.458328e+00   2.988908642</span>
-<span class="co">#&gt; X2_1         .              0.131584670</span>
-<span class="co">#&gt; X2_2         .             -3.032948729</span>
-<span class="co">#&gt; X2_3         .             -2.662164812</span>
-<span class="co">#&gt; X2_4         .             -0.297786022</span>
-<span class="co">#&gt; X2_5         .             -1.706795571</span>
-<span class="co">#&gt; X3_1         2.909152e+00   5.071159593</span>
-<span class="co">#&gt; X3_2         1.420194e+00   3.529153250</span>
-<span class="co">#&gt; X3_3        -1.017524e+00  -1.036358490</span>
-<span class="co">#&gt; X3_4        -2.050315e+00  -2.402735424</span>
-<span class="co">#&gt; X3_5        -1.223299e+00  -0.914129140</span>
-<span class="co">#&gt; X4_1         4.183501e+00   6.931652423</span>
-<span class="co">#&gt; X4_2        -2.637339e+00  -2.255139394</span>
-<span class="co">#&gt; X4_3        -6.105220e+00  -9.100252546</span>
-<span class="co">#&gt; X4_4        -3.315902e+00  -3.354749246</span>
-<span class="co">#&gt; X4_5        -6.511128e-01  -0.827429642</span>
-<span class="co">#&gt; X5_1         .              .          </span>
-<span class="co">#&gt; X5_2         .              .          </span>
-<span class="co">#&gt; X5_3         .              .          </span>
-<span class="co">#&gt; X5_4         .              .          </span>
-<span class="co">#&gt; X5_5         .              .          </span>
-<span class="co">#&gt; X6_1         .              .          </span>
-<span class="co">#&gt; X6_2         .              .          </span>
-<span class="co">#&gt; X6_3         .              .          </span>
-<span class="co">#&gt; X6_4         .              .          </span>
-<span class="co">#&gt; X6_5         .              .          </span>
-<span class="co">#&gt; X7_1         .              .          </span>
-<span class="co">#&gt; X7_2         .              .          </span>
-<span class="co">#&gt; X7_3         .              .          </span>
-<span class="co">#&gt; X7_4         .              .          </span>
-<span class="co">#&gt; X7_5         .              .          </span>
-<span class="co">#&gt; X8_1         1.468052e-01   1.041269779</span>
-<span class="co">#&gt; X8_2         9.877758e-02   0.945535230</span>
-<span class="co">#&gt; X8_3         1.522655e-02   0.372651807</span>
-<span class="co">#&gt; X8_4        -9.507427e-02  -0.461758478</span>
-<span class="co">#&gt; X8_5        -2.051683e-01  -1.206441228</span>
-<span class="co">#&gt; X9_1         .              .          </span>
-<span class="co">#&gt; X9_2         .              .          </span>
-<span class="co">#&gt; X9_3         .              .          </span>
-<span class="co">#&gt; X9_4         .              .          </span>
-<span class="co">#&gt; X9_5         .              .          </span>
-<span class="co">#&gt; X10_1        .              .          </span>
-<span class="co">#&gt; X10_2        .              .          </span>
-<span class="co">#&gt; X10_3        .              .          </span>
-<span class="co">#&gt; X10_4        .              .          </span>
-<span class="co">#&gt; X10_5        .              .          </span>
-<span class="co">#&gt; X11_1        2.194283e-03   0.388512930</span>
-<span class="co">#&gt; X11_2        5.884922e-04  -0.022040750</span>
-<span class="co">#&gt; X11_3       -1.060758e-03  -0.151779956</span>
-<span class="co">#&gt; X11_4       -3.266061e-03  -1.294662723</span>
-<span class="co">#&gt; X11_5       -3.466141e-03  -1.560570934</span>
-<span class="co">#&gt; X12_1        .              .          </span>
-<span class="co">#&gt; X12_2        .              .          </span>
-<span class="co">#&gt; X12_3        .              .          </span>
-<span class="co">#&gt; X12_4        .              .          </span>
-<span class="co">#&gt; X12_5        .              .          </span>
-<span class="co">#&gt; X13_1        .              .          </span>
-<span class="co">#&gt; X13_2        .              .          </span>
-<span class="co">#&gt; X13_3        .              .          </span>
-<span class="co">#&gt; X13_4        .              .          </span>
-<span class="co">#&gt; X13_5        .              .          </span>
-<span class="co">#&gt; X14_1        .              .          </span>
-<span class="co">#&gt; X14_2        .              .          </span>
-<span class="co">#&gt; X14_3        .              .          </span>
-<span class="co">#&gt; X14_4        .              .          </span>
-<span class="co">#&gt; X14_5        .              .          </span>
-<span class="co">#&gt; X15_1        .              .          </span>
-<span class="co">#&gt; X15_2        .              .          </span>
-<span class="co">#&gt; X15_3        .              .          </span>
-<span class="co">#&gt; X15_4        .              .          </span>
-<span class="co">#&gt; X15_5        .              .          </span>
-<span class="co">#&gt; X16_1        .              .          </span>
-<span class="co">#&gt; X16_2        .              .          </span>
-<span class="co">#&gt; X16_3        .              .          </span>
-<span class="co">#&gt; X16_4        .              .          </span>
-<span class="co">#&gt; X16_5        .              .          </span>
-<span class="co">#&gt; X17_1        .              .          </span>
-<span class="co">#&gt; X17_2        .              .          </span>
-<span class="co">#&gt; X17_3        .              .          </span>
-<span class="co">#&gt; X17_4        .              .          </span>
-<span class="co">#&gt; X17_5        .              .          </span>
-<span class="co">#&gt; X18_1        .              .          </span>
-<span class="co">#&gt; X18_2        .              .          </span>
-<span class="co">#&gt; X18_3        .              .          </span>
-<span class="co">#&gt; X18_4        .              .          </span>
-<span class="co">#&gt; X18_5        .              .          </span>
-<span class="co">#&gt; X19_1        .              .          </span>
-<span class="co">#&gt; X19_2        .              .          </span>
-<span class="co">#&gt; X19_3        .              .          </span>
-<span class="co">#&gt; X19_4        .              .          </span>
-<span class="co">#&gt; X19_5        .              .          </span>
-<span class="co">#&gt; X20_1        .              0.962992457</span>
-<span class="co">#&gt; X20_2        .             -0.211677340</span>
-<span class="co">#&gt; X20_3        .             -1.447385488</span>
-<span class="co">#&gt; X20_4        .             -1.462929815</span>
-<span class="co">#&gt; X20_5        .              0.956589883</span>
-<span class="co">#&gt; E            1.926923e+00   2.435966886</span>
-<span class="co">#&gt; X1_1:E       .             -0.033853053</span>
-<span class="co">#&gt; X1_2:E       .              0.057597260</span>
-<span class="co">#&gt; X1_3:E       .              0.052419744</span>
-<span class="co">#&gt; X1_4:E       .              0.051008946</span>
-<span class="co">#&gt; X1_5:E       .              0.123061460</span>
-<span class="co">#&gt; X2_1:E       .              0.455648582</span>
-<span class="co">#&gt; X2_2:E       .            -10.502429995</span>
-<span class="co">#&gt; X2_3:E       .             -9.218487378</span>
-<span class="co">#&gt; X2_4:E       .             -1.031167069</span>
-<span class="co">#&gt; X2_5:E       .             -5.910255203</span>
-<span class="co">#&gt; X3_1:E       8.665690e-01   2.354222494</span>
-<span class="co">#&gt; X3_2:E       4.230430e-01   1.638365312</span>
-<span class="co">#&gt; X3_3:E      -3.030969e-01  -0.481116483</span>
-<span class="co">#&gt; X3_4:E      -6.107414e-01  -1.115439907</span>
-<span class="co">#&gt; X3_5:E      -3.643923e-01  -0.424373034</span>
-<span class="co">#&gt; X4_1:E       8.078422e+00  11.458113806</span>
-<span class="co">#&gt; X4_2:E      -5.092753e+00  -3.727775464</span>
-<span class="co">#&gt; X4_3:E      -1.178930e+01 -15.042838702</span>
-<span class="co">#&gt; X4_4:E      -6.403072e+00  -5.545445199</span>
-<span class="co">#&gt; X4_5:E      -1.257311e+00  -1.367752223</span>
-<span class="co">#&gt; X5_1:E       .              .          </span>
-<span class="co">#&gt; X5_2:E       .              .          </span>
-<span class="co">#&gt; X5_3:E       .              .          </span>
-<span class="co">#&gt; X5_4:E       .              .          </span>
-<span class="co">#&gt; X5_5:E       .              .          </span>
-<span class="co">#&gt; X6_1:E       .              .          </span>
-<span class="co">#&gt; X6_2:E       .              .          </span>
-<span class="co">#&gt; X6_3:E       .              .          </span>
-<span class="co">#&gt; X6_4:E       .              .          </span>
-<span class="co">#&gt; X6_5:E       .              .          </span>
-<span class="co">#&gt; X7_1:E       .              .          </span>
-<span class="co">#&gt; X7_2:E       .              .          </span>
-<span class="co">#&gt; X7_3:E       .              .          </span>
-<span class="co">#&gt; X7_4:E       .              .          </span>
-<span class="co">#&gt; X7_5:E       .              .          </span>
-<span class="co">#&gt; X8_1:E       .              1.122704862</span>
-<span class="co">#&gt; X8_2:E       .              1.019483156</span>
-<span class="co">#&gt; X8_3:E       .              0.401795965</span>
-<span class="co">#&gt; X8_4:E       .             -0.497871444</span>
-<span class="co">#&gt; X8_5:E       .             -1.300793953</span>
-<span class="co">#&gt; X9_1:E       .              .          </span>
-<span class="co">#&gt; X9_2:E       .              .          </span>
-<span class="co">#&gt; X9_3:E       .              .          </span>
-<span class="co">#&gt; X9_4:E       .              .          </span>
-<span class="co">#&gt; X9_5:E       .              .          </span>
-<span class="co">#&gt; X10_1:E      .              .          </span>
-<span class="co">#&gt; X10_2:E      .              .          </span>
-<span class="co">#&gt; X10_3:E      .              .          </span>
-<span class="co">#&gt; X10_4:E      .              .          </span>
-<span class="co">#&gt; X10_5:E      .              .          </span>
-<span class="co">#&gt; X11_1:E      .              0.138707094</span>
-<span class="co">#&gt; X11_2:E      .             -0.007869001</span>
-<span class="co">#&gt; X11_3:E      .             -0.054188561</span>
-<span class="co">#&gt; X11_4:E      .             -0.462221177</span>
-<span class="co">#&gt; X11_5:E      .             -0.557155869</span>
-<span class="co">#&gt; X12_1:E      .              .          </span>
-<span class="co">#&gt; X12_2:E      .              .          </span>
-<span class="co">#&gt; X12_3:E      .              .          </span>
-<span class="co">#&gt; X12_4:E      .              .          </span>
-<span class="co">#&gt; X12_5:E      .              .          </span>
-<span class="co">#&gt; X13_1:E      .              .          </span>
-<span class="co">#&gt; X13_2:E      .              .          </span>
-<span class="co">#&gt; X13_3:E      .              .          </span>
-<span class="co">#&gt; X13_4:E      .              .          </span>
-<span class="co">#&gt; X13_5:E      .              .          </span>
-<span class="co">#&gt; X14_1:E      .              .          </span>
-<span class="co">#&gt; X14_2:E      .              .          </span>
-<span class="co">#&gt; X14_3:E      .              .          </span>
-<span class="co">#&gt; X14_4:E      .              .          </span>
-<span class="co">#&gt; X14_5:E      .              .          </span>
-<span class="co">#&gt; X15_1:E      .              .          </span>
-<span class="co">#&gt; X15_2:E      .              .          </span>
-<span class="co">#&gt; X15_3:E      .              .          </span>
-<span class="co">#&gt; X15_4:E      .              .          </span>
-<span class="co">#&gt; X15_5:E      .              .          </span>
-<span class="co">#&gt; X16_1:E      .              .          </span>
-<span class="co">#&gt; X16_2:E      .              .          </span>
-<span class="co">#&gt; X16_3:E      .              .          </span>
-<span class="co">#&gt; X16_4:E      .              .          </span>
-<span class="co">#&gt; X16_5:E      .              .          </span>
-<span class="co">#&gt; X17_1:E      .              .          </span>
-<span class="co">#&gt; X17_2:E      .              .          </span>
-<span class="co">#&gt; X17_3:E      .              .          </span>
-<span class="co">#&gt; X17_4:E      .              .          </span>
-<span class="co">#&gt; X17_5:E      .              .          </span>
-<span class="co">#&gt; X18_1:E      .              .          </span>
-<span class="co">#&gt; X18_2:E      .              .          </span>
-<span class="co">#&gt; X18_3:E      .              .          </span>
-<span class="co">#&gt; X18_4:E      .              .          </span>
-<span class="co">#&gt; X18_5:E      .              .          </span>
-<span class="co">#&gt; X19_1:E      .              .          </span>
-<span class="co">#&gt; X19_2:E      .              .          </span>
-<span class="co">#&gt; X19_3:E      .              .          </span>
-<span class="co">#&gt; X19_4:E      .              .          </span>
-<span class="co">#&gt; X19_5:E      .              .          </span>
-<span class="co">#&gt; X20_1:E      .              .          </span>
-<span class="co">#&gt; X20_2:E      .              .          </span>
-<span class="co">#&gt; X20_3:E      .              .          </span>
-<span class="co">#&gt; X20_4:E      .              .          </span>
-<span class="co">#&gt; X20_5:E      .              .</span></code></pre></div>
+<span class="co">#&gt;                         1            1</span>
+<span class="co">#&gt; (Intercept)   5.520188417   5.52646590</span>
+<span class="co">#&gt; X1_1         -0.409909756  -0.63675750</span>
+<span class="co">#&gt; X1_2         -0.018085195   0.10362939</span>
+<span class="co">#&gt; X1_3          0.129245488   0.30988658</span>
+<span class="co">#&gt; X1_4          0.383381741   0.61104984</span>
+<span class="co">#&gt; X1_5          1.095623519   1.68090142</span>
+<span class="co">#&gt; X2_1          .             .         </span>
+<span class="co">#&gt; X2_2          .             .         </span>
+<span class="co">#&gt; X2_3          .             .         </span>
+<span class="co">#&gt; X2_4          .             .         </span>
+<span class="co">#&gt; X2_5          .             .         </span>
+<span class="co">#&gt; X3_1          2.334279351   3.20877746</span>
+<span class="co">#&gt; X3_2          1.171378334   1.58326319</span>
+<span class="co">#&gt; X3_3         -0.825295317  -1.09342788</span>
+<span class="co">#&gt; X3_4         -1.780723540  -2.18774697</span>
+<span class="co">#&gt; X3_5         -1.123351657  -1.24231852</span>
+<span class="co">#&gt; X4_1          3.971504220   4.33926025</span>
+<span class="co">#&gt; X4_2         -2.407625122  -2.78460787</span>
+<span class="co">#&gt; X4_3         -5.601311464  -6.44028691</span>
+<span class="co">#&gt; X4_4         -3.171401270  -3.39579807</span>
+<span class="co">#&gt; X4_5         -0.608453995  -0.69947095</span>
+<span class="co">#&gt; X5_1          .             .         </span>
+<span class="co">#&gt; X5_2          .             .         </span>
+<span class="co">#&gt; X5_3          .             .         </span>
+<span class="co">#&gt; X5_4          .             .         </span>
+<span class="co">#&gt; X5_5          .             .         </span>
+<span class="co">#&gt; X6_1          .             .         </span>
+<span class="co">#&gt; X6_2          .             .         </span>
+<span class="co">#&gt; X6_3          .             .         </span>
+<span class="co">#&gt; X6_4          .             .         </span>
+<span class="co">#&gt; X6_5          .             .         </span>
+<span class="co">#&gt; X7_1          .             .         </span>
+<span class="co">#&gt; X7_2          .             .         </span>
+<span class="co">#&gt; X7_3          .             .         </span>
+<span class="co">#&gt; X7_4          .             .         </span>
+<span class="co">#&gt; X7_5          .             .         </span>
+<span class="co">#&gt; X8_1          0.004702772   0.23307290</span>
+<span class="co">#&gt; X8_2          0.003074305   0.15826624</span>
+<span class="co">#&gt; X8_3          0.000399080   0.02620244</span>
+<span class="co">#&gt; X8_4         -0.003095814  -0.14951563</span>
+<span class="co">#&gt; X8_5         -0.006600996  -0.32565315</span>
+<span class="co">#&gt; X9_1          .             .         </span>
+<span class="co">#&gt; X9_2          .             .         </span>
+<span class="co">#&gt; X9_3          .             .         </span>
+<span class="co">#&gt; X9_4          .             .         </span>
+<span class="co">#&gt; X9_5          .             .         </span>
+<span class="co">#&gt; X10_1         .             .         </span>
+<span class="co">#&gt; X10_2         .             .         </span>
+<span class="co">#&gt; X10_3         .             .         </span>
+<span class="co">#&gt; X10_4         .             .         </span>
+<span class="co">#&gt; X10_5         .             .         </span>
+<span class="co">#&gt; X11_1         .             0.09121678</span>
+<span class="co">#&gt; X11_2         .             0.02282260</span>
+<span class="co">#&gt; X11_3         .            -0.04565435</span>
+<span class="co">#&gt; X11_4         .            -0.14123601</span>
+<span class="co">#&gt; X11_5         .            -0.14896576</span>
+<span class="co">#&gt; X12_1         .             .         </span>
+<span class="co">#&gt; X12_2         .             .         </span>
+<span class="co">#&gt; X12_3         .             .         </span>
+<span class="co">#&gt; X12_4         .             .         </span>
+<span class="co">#&gt; X12_5         .             .         </span>
+<span class="co">#&gt; X13_1         .             .         </span>
+<span class="co">#&gt; X13_2         .             .         </span>
+<span class="co">#&gt; X13_3         .             .         </span>
+<span class="co">#&gt; X13_4         .             .         </span>
+<span class="co">#&gt; X13_5         .             .         </span>
+<span class="co">#&gt; X14_1         .             .         </span>
+<span class="co">#&gt; X14_2         .             .         </span>
+<span class="co">#&gt; X14_3         .             .         </span>
+<span class="co">#&gt; X14_4         .             .         </span>
+<span class="co">#&gt; X14_5         .             .         </span>
+<span class="co">#&gt; X15_1         .             .         </span>
+<span class="co">#&gt; X15_2         .             .         </span>
+<span class="co">#&gt; X15_3         .             .         </span>
+<span class="co">#&gt; X15_4         .             .         </span>
+<span class="co">#&gt; X15_5         .             .         </span>
+<span class="co">#&gt; X16_1         .             .         </span>
+<span class="co">#&gt; X16_2         .             .         </span>
+<span class="co">#&gt; X16_3         .             .         </span>
+<span class="co">#&gt; X16_4         .             .         </span>
+<span class="co">#&gt; X16_5         .             .         </span>
+<span class="co">#&gt; X17_1         .             .         </span>
+<span class="co">#&gt; X17_2         .             .         </span>
+<span class="co">#&gt; X17_3         .             .         </span>
+<span class="co">#&gt; X17_4         .             .         </span>
+<span class="co">#&gt; X17_5         .             .         </span>
+<span class="co">#&gt; X18_1         .             .         </span>
+<span class="co">#&gt; X18_2         .             .         </span>
+<span class="co">#&gt; X18_3         .             .         </span>
+<span class="co">#&gt; X18_4         .             .         </span>
+<span class="co">#&gt; X18_5         .             .         </span>
+<span class="co">#&gt; X19_1         .             .         </span>
+<span class="co">#&gt; X19_2         .             .         </span>
+<span class="co">#&gt; X19_3         .             .         </span>
+<span class="co">#&gt; X19_4         .             .         </span>
+<span class="co">#&gt; X19_5         .             .         </span>
+<span class="co">#&gt; X20_1         .             .         </span>
+<span class="co">#&gt; X20_2         .             .         </span>
+<span class="co">#&gt; X20_3         .             .         </span>
+<span class="co">#&gt; X20_4         .             .         </span>
+<span class="co">#&gt; X20_5         .             .         </span>
+<span class="co">#&gt; E             1.891193899   1.94432246</span>
+<span class="co">#&gt; X1_1:E        .             .         </span>
+<span class="co">#&gt; X1_2:E        .             .         </span>
+<span class="co">#&gt; X1_3:E        .             .         </span>
+<span class="co">#&gt; X1_4:E        .             .         </span>
+<span class="co">#&gt; X1_5:E        .             .         </span>
+<span class="co">#&gt; X2_1:E        .             .         </span>
+<span class="co">#&gt; X2_2:E        .             .         </span>
+<span class="co">#&gt; X2_3:E        .             .         </span>
+<span class="co">#&gt; X2_4:E        .             .         </span>
+<span class="co">#&gt; X2_5:E        .             .         </span>
+<span class="co">#&gt; X3_1:E        0.231848443   1.09738045</span>
+<span class="co">#&gt; X3_2:E        0.116345219   0.54146543</span>
+<span class="co">#&gt; X3_3:E       -0.081971095  -0.37394503</span>
+<span class="co">#&gt; X3_4:E       -0.176867426  -0.74819485</span>
+<span class="co">#&gt; X3_5:E       -0.111575049  -0.42486464</span>
+<span class="co">#&gt; X4_1:E        8.130938918   8.09816365</span>
+<span class="co">#&gt; X4_2:E       -4.929178398  -5.19678678</span>
+<span class="co">#&gt; X4_3:E      -11.467675434 -12.01921396</span>
+<span class="co">#&gt; X4_4:E       -6.492872369  -6.33742319</span>
+<span class="co">#&gt; X4_5:E       -1.245699865  -1.30539076</span>
+<span class="co">#&gt; X5_1:E        .             .         </span>
+<span class="co">#&gt; X5_2:E        .             .         </span>
+<span class="co">#&gt; X5_3:E        .             .         </span>
+<span class="co">#&gt; X5_4:E        .             .         </span>
+<span class="co">#&gt; X5_5:E        .             .         </span>
+<span class="co">#&gt; X6_1:E        .             .         </span>
+<span class="co">#&gt; X6_2:E        .             .         </span>
+<span class="co">#&gt; X6_3:E        .             .         </span>
+<span class="co">#&gt; X6_4:E        .             .         </span>
+<span class="co">#&gt; X6_5:E        .             .         </span>
+<span class="co">#&gt; X7_1:E        .             .         </span>
+<span class="co">#&gt; X7_2:E        .             .         </span>
+<span class="co">#&gt; X7_3:E        .             .         </span>
+<span class="co">#&gt; X7_4:E        .             .         </span>
+<span class="co">#&gt; X7_5:E        .             .         </span>
+<span class="co">#&gt; X8_1:E        .             .         </span>
+<span class="co">#&gt; X8_2:E        .             .         </span>
+<span class="co">#&gt; X8_3:E        .             .         </span>
+<span class="co">#&gt; X8_4:E        .             .         </span>
+<span class="co">#&gt; X8_5:E        .             .         </span>
+<span class="co">#&gt; X9_1:E        .             .         </span>
+<span class="co">#&gt; X9_2:E        .             .         </span>
+<span class="co">#&gt; X9_3:E        .             .         </span>
+<span class="co">#&gt; X9_4:E        .             .         </span>
+<span class="co">#&gt; X9_5:E        .             .         </span>
+<span class="co">#&gt; X10_1:E       .             .         </span>
+<span class="co">#&gt; X10_2:E       .             .         </span>
+<span class="co">#&gt; X10_3:E       .             .         </span>
+<span class="co">#&gt; X10_4:E       .             .         </span>
+<span class="co">#&gt; X10_5:E       .             .         </span>
+<span class="co">#&gt; X11_1:E       .             .         </span>
+<span class="co">#&gt; X11_2:E       .             .         </span>
+<span class="co">#&gt; X11_3:E       .             .         </span>
+<span class="co">#&gt; X11_4:E       .             .         </span>
+<span class="co">#&gt; X11_5:E       .             .         </span>
+<span class="co">#&gt; X12_1:E       .             .         </span>
+<span class="co">#&gt; X12_2:E       .             .         </span>
+<span class="co">#&gt; X12_3:E       .             .         </span>
+<span class="co">#&gt; X12_4:E       .             .         </span>
+<span class="co">#&gt; X12_5:E       .             .         </span>
+<span class="co">#&gt; X13_1:E       .             .         </span>
+<span class="co">#&gt; X13_2:E       .             .         </span>
+<span class="co">#&gt; X13_3:E       .             .         </span>
+<span class="co">#&gt; X13_4:E       .             .         </span>
+<span class="co">#&gt; X13_5:E       .             .         </span>
+<span class="co">#&gt; X14_1:E       .             .         </span>
+<span class="co">#&gt; X14_2:E       .             .         </span>
+<span class="co">#&gt; X14_3:E       .             .         </span>
+<span class="co">#&gt; X14_4:E       .             .         </span>
+<span class="co">#&gt; X14_5:E       .             .         </span>
+<span class="co">#&gt; X15_1:E       .             .         </span>
+<span class="co">#&gt; X15_2:E       .             .         </span>
+<span class="co">#&gt; X15_3:E       .             .         </span>
+<span class="co">#&gt; X15_4:E       .             .         </span>
+<span class="co">#&gt; X15_5:E       .             .         </span>
+<span class="co">#&gt; X16_1:E       .             .         </span>
+<span class="co">#&gt; X16_2:E       .             .         </span>
+<span class="co">#&gt; X16_3:E       .             .         </span>
+<span class="co">#&gt; X16_4:E       .             .         </span>
+<span class="co">#&gt; X16_5:E       .             .         </span>
+<span class="co">#&gt; X17_1:E       .             .         </span>
+<span class="co">#&gt; X17_2:E       .             .         </span>
+<span class="co">#&gt; X17_3:E       .             .         </span>
+<span class="co">#&gt; X17_4:E       .             .         </span>
+<span class="co">#&gt; X17_5:E       .             .         </span>
+<span class="co">#&gt; X18_1:E       .             .         </span>
+<span class="co">#&gt; X18_2:E       .             .         </span>
+<span class="co">#&gt; X18_3:E       .             .         </span>
+<span class="co">#&gt; X18_4:E       .             .         </span>
+<span class="co">#&gt; X18_5:E       .             .         </span>
+<span class="co">#&gt; X19_1:E       .             .         </span>
+<span class="co">#&gt; X19_2:E       .             .         </span>
+<span class="co">#&gt; X19_3:E       .             .         </span>
+<span class="co">#&gt; X19_4:E       .             .         </span>
+<span class="co">#&gt; X19_5:E       .             .         </span>
+<span class="co">#&gt; X20_1:E       .             .         </span>
+<span class="co">#&gt; X20_2:E       .             .         </span>
+<span class="co">#&gt; X20_3:E       .             .         </span>
+<span class="co">#&gt; X20_4:E       .             .         </span>
+<span class="co">#&gt; X20_5:E       .             .</span></code></pre></div>
 <p>Estimated non-zero coefficients at <code>lambda.1se</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">predict</span>(cvfit, <span class="dt">type =</span> <span class="st">"nonzero"</span>)
 <span class="co">#&gt;                         1</span>
-<span class="co">#&gt; (Intercept)  5.524692e+00</span>
-<span class="co">#&gt; X1_1        -5.535020e-01</span>
-<span class="co">#&gt; X1_2         4.296505e-02</span>
-<span class="co">#&gt; X1_3         2.335016e-01</span>
-<span class="co">#&gt; X1_4         5.285136e-01</span>
-<span class="co">#&gt; X1_5         1.458328e+00</span>
-<span class="co">#&gt; X3_1         2.909152e+00</span>
-<span class="co">#&gt; X3_2         1.420194e+00</span>
-<span class="co">#&gt; X3_3        -1.017524e+00</span>
-<span class="co">#&gt; X3_4        -2.050315e+00</span>
-<span class="co">#&gt; X3_5        -1.223299e+00</span>
-<span class="co">#&gt; X4_1         4.183501e+00</span>
-<span class="co">#&gt; X4_2        -2.637339e+00</span>
-<span class="co">#&gt; X4_3        -6.105220e+00</span>
-<span class="co">#&gt; X4_4        -3.315902e+00</span>
-<span class="co">#&gt; X4_5        -6.511128e-01</span>
-<span class="co">#&gt; X8_1         1.468052e-01</span>
-<span class="co">#&gt; X8_2         9.877758e-02</span>
-<span class="co">#&gt; X8_3         1.522655e-02</span>
-<span class="co">#&gt; X8_4        -9.507427e-02</span>
-<span class="co">#&gt; X8_5        -2.051683e-01</span>
-<span class="co">#&gt; X11_1        2.194283e-03</span>
-<span class="co">#&gt; X11_2        5.884922e-04</span>
-<span class="co">#&gt; X11_3       -1.060758e-03</span>
-<span class="co">#&gt; X11_4       -3.266061e-03</span>
-<span class="co">#&gt; X11_5       -3.466141e-03</span>
-<span class="co">#&gt; E            1.926923e+00</span>
-<span class="co">#&gt; X3_1:E       8.665690e-01</span>
-<span class="co">#&gt; X3_2:E       4.230430e-01</span>
-<span class="co">#&gt; X3_3:E      -3.030969e-01</span>
-<span class="co">#&gt; X3_4:E      -6.107414e-01</span>
-<span class="co">#&gt; X3_5:E      -3.643923e-01</span>
-<span class="co">#&gt; X4_1:E       8.078422e+00</span>
-<span class="co">#&gt; X4_2:E      -5.092753e+00</span>
-<span class="co">#&gt; X4_3:E      -1.178930e+01</span>
-<span class="co">#&gt; X4_4:E      -6.403072e+00</span>
-<span class="co">#&gt; X4_5:E      -1.257311e+00</span></code></pre></div>
+<span class="co">#&gt; (Intercept)   5.520188417</span>
+<span class="co">#&gt; X1_1         -0.409909756</span>
+<span class="co">#&gt; X1_2         -0.018085195</span>
+<span class="co">#&gt; X1_3          0.129245488</span>
+<span class="co">#&gt; X1_4          0.383381741</span>
+<span class="co">#&gt; X1_5          1.095623519</span>
+<span class="co">#&gt; X3_1          2.334279351</span>
+<span class="co">#&gt; X3_2          1.171378334</span>
+<span class="co">#&gt; X3_3         -0.825295317</span>
+<span class="co">#&gt; X3_4         -1.780723540</span>
+<span class="co">#&gt; X3_5         -1.123351657</span>
+<span class="co">#&gt; X4_1          3.971504220</span>
+<span class="co">#&gt; X4_2         -2.407625122</span>
+<span class="co">#&gt; X4_3         -5.601311464</span>
+<span class="co">#&gt; X4_4         -3.171401270</span>
+<span class="co">#&gt; X4_5         -0.608453995</span>
+<span class="co">#&gt; X8_1          0.004702772</span>
+<span class="co">#&gt; X8_2          0.003074305</span>
+<span class="co">#&gt; X8_3          0.000399080</span>
+<span class="co">#&gt; X8_4         -0.003095814</span>
+<span class="co">#&gt; X8_5         -0.006600996</span>
+<span class="co">#&gt; E             1.891193899</span>
+<span class="co">#&gt; X3_1:E        0.231848443</span>
+<span class="co">#&gt; X3_2:E        0.116345219</span>
+<span class="co">#&gt; X3_3:E       -0.081971095</span>
+<span class="co">#&gt; X3_4:E       -0.176867426</span>
+<span class="co">#&gt; X3_5:E       -0.111575049</span>
+<span class="co">#&gt; X4_1:E        8.130938918</span>
+<span class="co">#&gt; X4_2:E       -4.929178398</span>
+<span class="co">#&gt; X4_3:E      -11.467675434</span>
+<span class="co">#&gt; X4_4:E       -6.492872369</span>
+<span class="co">#&gt; X4_5:E       -1.245699865</span></code></pre></div>
 </div>
 <div id="visualizing-the-effect-of-the-non-linear-terms" class="section level2">
 <h2 class="hasAnchor">
@@ -749,7 +750,7 @@ cvfit[[<span class="st">"lambda.1se"</span>]]
 <h3 class="hasAnchor">
 <a href="#main-effects" class="anchor"></a>Main Effects</h3>
 <p>Since we are using simulated data, we also plot the true curve:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plotMain.html">plotMain</a></span>(cvfit<span class="op">$</span>sail.fit, <span class="dt">x =</span> sailsim<span class="op">$</span>x, <span class="dt">xvar =</span> <span class="st">"X3"</span>,
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="http://www.rdocumentation.org/packages/sail/topics/plotMain">plotMain</a></span>(cvfit<span class="op">$</span>sail.fit, <span class="dt">x =</span> sailsim<span class="op">$</span>x, <span class="dt">xvar =</span> <span class="st">"X3"</span>,
          <span class="dt">legend.position =</span> <span class="st">"topright"</span>,
          <span class="dt">s =</span> cvfit<span class="op">$</span>lambda.min, <span class="dt">f.truth =</span> sailsim<span class="op">$</span>f3)</code></pre></div>
 <p><img src="introduction-to-sail_files/figure-html/unnamed-chunk-16-1.png" width="700"></p>
@@ -758,7 +759,7 @@ cvfit[[<span class="st">"lambda.1se"</span>]]
 <h3 class="hasAnchor">
 <a href="#interaction-effects" class="anchor"></a>Interaction Effects</h3>
 <p>Again, since we are using simulated data, we also plot the true interaction:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/plotInter.html">plotInter</a></span>(cvfit<span class="op">$</span>sail.fit, <span class="dt">x =</span> sailsim<span class="op">$</span>x, <span class="dt">xvar =</span> <span class="st">"X4"</span>,
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="http://www.rdocumentation.org/packages/sail/topics/plotInter">plotInter</a></span>(cvfit<span class="op">$</span>sail.fit, <span class="dt">x =</span> sailsim<span class="op">$</span>x, <span class="dt">xvar =</span> <span class="st">"X4"</span>,
           <span class="dt">f.truth =</span> sailsim<span class="op">$</span>f4.inter,
           <span class="dt">s =</span> cvfit<span class="op">$</span>lambda.min,
           <span class="dt">title_z =</span> <span class="st">"Estimated"</span>)</code></pre></div>
@@ -771,124 +772,56 @@ cvfit[[<span class="st">"lambda.1se"</span>]]
 <p>The <code>basis</code> argument in the <code>sail</code> function is very flexible in that it allows you to apply <strong>any</strong> basis expansion to the columns of <span class="math inline">\(\mathbf{X}\)</span>. Of course, there might be situations where you do not expect any non-linear main effects or interactions to be present in your data. You can still use the <code>sail</code> method to search for <strong>linear</strong> main effects and interactions. This can be accomplished by specifying an identity map:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">f.identity &lt;-<span class="st"> </span><span class="cf">function</span>(i) i</code></pre></div>
 <p>We then pass this function to <code>basis</code> argument in <code>cv.sail</code>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cvfit_linear &lt;-<span class="st"> </span><span class="kw"><a href="../reference/cv.sail.html">cv.sail</a></span>(<span class="dt">x =</span> sailsim<span class="op">$</span>x, <span class="dt">y =</span> sailsim<span class="op">$</span>y, <span class="dt">e =</span> sailsim<span class="op">$</span>e,
-                        <span class="dt">basis =</span> f.identity, <span class="dt">nfolds =</span> <span class="dv">10</span>, <span class="dt">parallel =</span> <span class="ot">TRUE</span>)
-<span class="co">#&gt; Index: 1, lambda: 1.4184</span>
-<span class="co">#&gt; Index: 2, lambda: 1.2924</span>
-<span class="co">#&gt; Index: 3, lambda: 1.1776</span>
-<span class="co">#&gt; Index: 4, lambda: 1.0730</span>
-<span class="co">#&gt; Index: 5, lambda: 0.9776</span>
-<span class="co">#&gt; Index: 6, lambda: 0.8908</span>
-<span class="co">#&gt; Index: 7, lambda: 0.8117</span>
-<span class="co">#&gt; Index: 8, lambda: 0.7395</span>
-<span class="co">#&gt; Index: 9, lambda: 0.6738</span>
-<span class="co">#&gt; Index: 10, lambda: 0.6140</span>
-<span class="co">#&gt; Index: 11, lambda: 0.5594</span>
-<span class="co">#&gt; Index: 12, lambda: 0.5097</span>
-<span class="co">#&gt; Index: 13, lambda: 0.4645</span>
-<span class="co">#&gt; Index: 14, lambda: 0.4232</span>
-<span class="co">#&gt; Index: 15, lambda: 0.3856</span>
-<span class="co">#&gt; Index: 16, lambda: 0.3513</span>
-<span class="co">#&gt; Index: 17, lambda: 0.3201</span>
-<span class="co">#&gt; Index: 18, lambda: 0.2917</span>
-<span class="co">#&gt; Index: 19, lambda: 0.2658</span>
-<span class="co">#&gt; Index: 20, lambda: 0.2422</span>
-<span class="co">#&gt; Index: 21, lambda: 0.2207</span>
-<span class="co">#&gt; Index: 22, lambda: 0.2011</span>
-<span class="co">#&gt; Index: 23, lambda: 0.1832</span>
-<span class="co">#&gt; Index: 24, lambda: 0.1669</span>
-<span class="co">#&gt; Index: 25, lambda: 0.1521</span>
-<span class="co">#&gt; Index: 26, lambda: 0.1386</span>
-<span class="co">#&gt; Index: 27, lambda: 0.1263</span>
-<span class="co">#&gt; Index: 28, lambda: 0.1150</span>
-<span class="co">#&gt; Index: 29, lambda: 0.1048</span>
-<span class="co">#&gt; Index: 30, lambda: 0.0955</span>
-<span class="co">#&gt; Index: 31, lambda: 0.0870</span>
-<span class="co">#&gt; Index: 32, lambda: 0.0793</span>
-<span class="co">#&gt; Index: 33, lambda: 0.0723</span>
-<span class="co">#&gt; Index: 34, lambda: 0.0658</span>
-<span class="co">#&gt; Index: 35, lambda: 0.0600</span>
-<span class="co">#&gt; Index: 36, lambda: 0.0547</span>
-<span class="co">#&gt; Index: 37, lambda: 0.0498</span>
-<span class="co">#&gt; Index: 38, lambda: 0.0454</span>
-<span class="co">#&gt; Index: 39, lambda: 0.0413</span>
-<span class="co">#&gt; Index: 40, lambda: 0.0377</span>
-<span class="co">#&gt; Index: 41, lambda: 0.0343</span>
-<span class="co">#&gt; Index: 42, lambda: 0.0313</span>
-<span class="co">#&gt; Index: 43, lambda: 0.0285</span>
-<span class="co">#&gt; Index: 44, lambda: 0.0260</span>
-<span class="co">#&gt; Index: 45, lambda: 0.0237</span>
-<span class="co">#&gt; Index: 46, lambda: 0.0216</span>
-<span class="co">#&gt; Index: 47, lambda: 0.0196</span>
-<span class="co">#&gt; Index: 48, lambda: 0.0179</span>
-<span class="co">#&gt; Index: 49, lambda: 0.0163</span>
-<span class="co">#&gt; Index: 50, lambda: 0.0149</span>
-<span class="co">#&gt; Index: 51, lambda: 0.0135</span>
-<span class="co">#&gt; Index: 52, lambda: 0.0123</span>
-<span class="co">#&gt; Index: 53, lambda: 0.0112</span>
-<span class="co">#&gt; Index: 54, lambda: 0.0102</span>
-<span class="co">#&gt; Index: 55, lambda: 0.0093</span>
-<span class="co">#&gt; Index: 56, lambda: 0.0085</span>
-<span class="co">#&gt; Index: 57, lambda: 0.0077</span>
-<span class="co">#&gt; Index: 58, lambda: 0.0071</span>
-<span class="co">#&gt; Index: 59, lambda: 0.0064</span>
-<span class="co">#&gt; Index: 60, lambda: 0.0059</span>
-<span class="co">#&gt; Index: 61, lambda: 0.0053</span>
-<span class="co">#&gt; Index: 62, lambda: 0.0049</span>
-<span class="co">#&gt; Index: 63, lambda: 0.0044</span>
-<span class="co">#&gt; Index: 64, lambda: 0.0040</span>
-<span class="co">#&gt; Index: 65, lambda: 0.0037</span>
-<span class="co">#&gt; Index: 66, lambda: 0.0034</span>
-<span class="co">#&gt; Index: 67, lambda: 0.0031</span>
-<span class="co">#&gt; Index: 68, lambda: 0.0028</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cvfit_linear &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/sail/topics/cv.sail">cv.sail</a></span>(<span class="dt">x =</span> sailsim<span class="op">$</span>x, <span class="dt">y =</span> sailsim<span class="op">$</span>y, <span class="dt">e =</span> sailsim<span class="op">$</span>e,
+                        <span class="dt">basis =</span> f.identity, <span class="dt">nfolds =</span> <span class="dv">10</span>, <span class="dt">parallel =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <p>Next we plot the cross-validated curve:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(cvfit_linear)</code></pre></div>
 <p><img src="introduction-to-sail_files/figure-html/unnamed-chunk-20-1.png" width="700"></p>
 <p>And extract the model at <code>lambda.min</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">coef</span>(cvfit_linear, <span class="dt">s =</span> <span class="st">"lambda.min"</span>)
 <span class="co">#&gt; 42 x 1 sparse Matrix of class "dgCMatrix"</span>
-<span class="co">#&gt;                       1</span>
-<span class="co">#&gt; (Intercept)   5.5349388</span>
-<span class="co">#&gt; X1_1          2.1098433</span>
-<span class="co">#&gt; X2_1          .        </span>
-<span class="co">#&gt; X3_1         -3.7113805</span>
-<span class="co">#&gt; X4_1         -6.0928298</span>
-<span class="co">#&gt; X5_1          .        </span>
-<span class="co">#&gt; X6_1          .        </span>
-<span class="co">#&gt; X7_1          .        </span>
-<span class="co">#&gt; X8_1         -0.6603712</span>
-<span class="co">#&gt; X9_1          .        </span>
-<span class="co">#&gt; X10_1         .        </span>
-<span class="co">#&gt; X11_1        -2.6138900</span>
-<span class="co">#&gt; X12_1         .        </span>
-<span class="co">#&gt; X13_1         .        </span>
-<span class="co">#&gt; X14_1        -1.1628492</span>
-<span class="co">#&gt; X15_1         .        </span>
-<span class="co">#&gt; X16_1         2.5387775</span>
-<span class="co">#&gt; X17_1         .        </span>
-<span class="co">#&gt; X18_1         .        </span>
-<span class="co">#&gt; X19_1         .        </span>
-<span class="co">#&gt; X20_1         .        </span>
-<span class="co">#&gt; E             2.0874458</span>
-<span class="co">#&gt; X1_1:E       -1.0586744</span>
-<span class="co">#&gt; X2_1:E        .        </span>
-<span class="co">#&gt; X3_1:E       -1.5035178</span>
-<span class="co">#&gt; X4_1:E      -10.8144229</span>
-<span class="co">#&gt; X5_1:E        .        </span>
-<span class="co">#&gt; X6_1:E        .        </span>
-<span class="co">#&gt; X7_1:E        .        </span>
-<span class="co">#&gt; X8_1:E        .        </span>
-<span class="co">#&gt; X9_1:E        .        </span>
-<span class="co">#&gt; X10_1:E       .        </span>
-<span class="co">#&gt; X11_1:E      -1.8596248</span>
-<span class="co">#&gt; X12_1:E       .        </span>
-<span class="co">#&gt; X13_1:E       .        </span>
-<span class="co">#&gt; X14_1:E       .        </span>
-<span class="co">#&gt; X15_1:E       .        </span>
-<span class="co">#&gt; X16_1:E       5.2961920</span>
-<span class="co">#&gt; X17_1:E       .        </span>
-<span class="co">#&gt; X18_1:E       .        </span>
-<span class="co">#&gt; X19_1:E       .        </span>
+<span class="co">#&gt;                        1</span>
+<span class="co">#&gt; (Intercept)   5.53205576</span>
+<span class="co">#&gt; X1_1          2.24440555</span>
+<span class="co">#&gt; X2_1         -0.09664129</span>
+<span class="co">#&gt; X3_1         -3.89630997</span>
+<span class="co">#&gt; X4_1         -6.25371688</span>
+<span class="co">#&gt; X5_1          .         </span>
+<span class="co">#&gt; X6_1          .         </span>
+<span class="co">#&gt; X7_1          .         </span>
+<span class="co">#&gt; X8_1         -0.78488320</span>
+<span class="co">#&gt; X9_1          .         </span>
+<span class="co">#&gt; X10_1         .         </span>
+<span class="co">#&gt; X11_1        -2.68597857</span>
+<span class="co">#&gt; X12_1         .         </span>
+<span class="co">#&gt; X13_1         .         </span>
+<span class="co">#&gt; X14_1        -1.32096487</span>
+<span class="co">#&gt; X15_1         .         </span>
+<span class="co">#&gt; X16_1         2.62877688</span>
+<span class="co">#&gt; X17_1         .         </span>
+<span class="co">#&gt; X18_1         .         </span>
+<span class="co">#&gt; X19_1         .         </span>
+<span class="co">#&gt; X20_1         .         </span>
+<span class="co">#&gt; E             2.11434390</span>
+<span class="co">#&gt; X1_1:E       -1.40014872</span>
+<span class="co">#&gt; X2_1:E        .         </span>
+<span class="co">#&gt; X3_1:E       -1.66174547</span>
+<span class="co">#&gt; X4_1:E      -10.95143605</span>
+<span class="co">#&gt; X5_1:E        .         </span>
+<span class="co">#&gt; X6_1:E        .         </span>
+<span class="co">#&gt; X7_1:E        .         </span>
+<span class="co">#&gt; X8_1:E        .         </span>
+<span class="co">#&gt; X9_1:E        .         </span>
+<span class="co">#&gt; X10_1:E       .         </span>
+<span class="co">#&gt; X11_1:E      -1.96913159</span>
+<span class="co">#&gt; X12_1:E       .         </span>
+<span class="co">#&gt; X13_1:E       .         </span>
+<span class="co">#&gt; X14_1:E       .         </span>
+<span class="co">#&gt; X15_1:E       .         </span>
+<span class="co">#&gt; X16_1:E       5.50987923</span>
+<span class="co">#&gt; X17_1:E       .         </span>
+<span class="co">#&gt; X18_1:E       .         </span>
+<span class="co">#&gt; X19_1:E       .         </span>
 <span class="co">#&gt; X20_1:E       .</span></code></pre></div>
 </div>
 <div id="applying-a-different-penalty-to-each-predictor" class="section level2">
@@ -908,108 +841,8 @@ cvfit[[<span class="st">"lambda.1se"</span>]]
 <p>In the following example, we want the environment variable to always be included so we set the first element of <code>p.fac</code> to zero. We also want to apply less of a penalty to the main effects for <span class="math inline">\(X_2, X_3, X_4\)</span>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># the weights correspond to E, X1, X2, X3, ... X_p, X1:E, X2:E, ... X_p:E</span>
 p.fac &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="fl">0.4</span>, <span class="fl">0.6</span>, <span class="fl">0.7</span>, <span class="kw">rep</span>(<span class="dv">1</span>, <span class="dv">2</span><span class="op">*</span><span class="kw">ncol</span>(sailsim<span class="op">$</span>x) <span class="op">-</span><span class="st"> </span><span class="dv">4</span>))</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_pf &lt;-<span class="st"> </span><span class="kw"><a href="../reference/sail.html">sail</a></span>(<span class="dt">x =</span> sailsim<span class="op">$</span>x, <span class="dt">y =</span> sailsim<span class="op">$</span>y, <span class="dt">e =</span> sailsim<span class="op">$</span>e, <span class="dt">basis =</span> f.basis,
-               <span class="dt">penalty.factor =</span> p.fac)
-<span class="co">#&gt; Index: 1, lambda: 1.9739</span>
-<span class="co">#&gt; Index: 2, lambda: 1.8842</span>
-<span class="co">#&gt; Index: 3, lambda: 1.7985</span>
-<span class="co">#&gt; Index: 4, lambda: 1.7168</span>
-<span class="co">#&gt; Index: 5, lambda: 1.6387</span>
-<span class="co">#&gt; Index: 6, lambda: 1.5643</span>
-<span class="co">#&gt; Index: 7, lambda: 1.4932</span>
-<span class="co">#&gt; Index: 8, lambda: 1.4253</span>
-<span class="co">#&gt; Index: 9, lambda: 1.3605</span>
-<span class="co">#&gt; Index: 10, lambda: 1.2987</span>
-<span class="co">#&gt; Index: 11, lambda: 1.2396</span>
-<span class="co">#&gt; Index: 12, lambda: 1.1833</span>
-<span class="co">#&gt; Index: 13, lambda: 1.1295</span>
-<span class="co">#&gt; Index: 14, lambda: 1.0782</span>
-<span class="co">#&gt; Index: 15, lambda: 1.0292</span>
-<span class="co">#&gt; Index: 16, lambda: 0.9824</span>
-<span class="co">#&gt; Index: 17, lambda: 0.9377</span>
-<span class="co">#&gt; Index: 18, lambda: 0.8951</span>
-<span class="co">#&gt; Index: 19, lambda: 0.8544</span>
-<span class="co">#&gt; Index: 20, lambda: 0.8156</span>
-<span class="co">#&gt; Index: 21, lambda: 0.7785</span>
-<span class="co">#&gt; Index: 22, lambda: 0.7431</span>
-<span class="co">#&gt; Index: 23, lambda: 0.7094</span>
-<span class="co">#&gt; Index: 24, lambda: 0.6771</span>
-<span class="co">#&gt; Index: 25, lambda: 0.6464</span>
-<span class="co">#&gt; Index: 26, lambda: 0.6170</span>
-<span class="co">#&gt; Index: 27, lambda: 0.5889</span>
-<span class="co">#&gt; Index: 28, lambda: 0.5622</span>
-<span class="co">#&gt; Index: 29, lambda: 0.5366</span>
-<span class="co">#&gt; Index: 30, lambda: 0.5122</span>
-<span class="co">#&gt; Index: 31, lambda: 0.4889</span>
-<span class="co">#&gt; Index: 32, lambda: 0.4667</span>
-<span class="co">#&gt; Index: 33, lambda: 0.4455</span>
-<span class="co">#&gt; Index: 34, lambda: 0.4253</span>
-<span class="co">#&gt; Index: 35, lambda: 0.4059</span>
-<span class="co">#&gt; Index: 36, lambda: 0.3875</span>
-<span class="co">#&gt; Index: 37, lambda: 0.3699</span>
-<span class="co">#&gt; Index: 38, lambda: 0.3531</span>
-<span class="co">#&gt; Index: 39, lambda: 0.3370</span>
-<span class="co">#&gt; Index: 40, lambda: 0.3217</span>
-<span class="co">#&gt; Index: 41, lambda: 0.3071</span>
-<span class="co">#&gt; Index: 42, lambda: 0.2931</span>
-<span class="co">#&gt; Index: 43, lambda: 0.2798</span>
-<span class="co">#&gt; Index: 44, lambda: 0.2671</span>
-<span class="co">#&gt; Index: 45, lambda: 0.2549</span>
-<span class="co">#&gt; Index: 46, lambda: 0.2433</span>
-<span class="co">#&gt; Index: 47, lambda: 0.2323</span>
-<span class="co">#&gt; Index: 48, lambda: 0.2217</span>
-<span class="co">#&gt; Index: 49, lambda: 0.2117</span>
-<span class="co">#&gt; Index: 50, lambda: 0.2020</span>
-<span class="co">#&gt; Index: 51, lambda: 0.1928</span>
-<span class="co">#&gt; Index: 52, lambda: 0.1841</span>
-<span class="co">#&gt; Index: 53, lambda: 0.1757</span>
-<span class="co">#&gt; Index: 54, lambda: 0.1677</span>
-<span class="co">#&gt; Index: 55, lambda: 0.1601</span>
-<span class="co">#&gt; Index: 56, lambda: 0.1528</span>
-<span class="co">#&gt; Index: 57, lambda: 0.1459</span>
-<span class="co">#&gt; Index: 58, lambda: 0.1393</span>
-<span class="co">#&gt; Index: 59, lambda: 0.1329</span>
-<span class="co">#&gt; Index: 60, lambda: 0.1269</span>
-<span class="co">#&gt; Index: 61, lambda: 0.1211</span>
-<span class="co">#&gt; Index: 62, lambda: 0.1156</span>
-<span class="co">#&gt; Index: 63, lambda: 0.1104</span>
-<span class="co">#&gt; Index: 64, lambda: 0.1053</span>
-<span class="co">#&gt; Index: 65, lambda: 0.1006</span>
-<span class="co">#&gt; Index: 66, lambda: 0.0960</span>
-<span class="co">#&gt; Index: 67, lambda: 0.0916</span>
-<span class="co">#&gt; Index: 68, lambda: 0.0875</span>
-<span class="co">#&gt; Index: 69, lambda: 0.0835</span>
-<span class="co">#&gt; Index: 70, lambda: 0.0797</span>
-<span class="co">#&gt; Index: 71, lambda: 0.0761</span>
-<span class="co">#&gt; Index: 72, lambda: 0.0726</span>
-<span class="co">#&gt; Index: 73, lambda: 0.0693</span>
-<span class="co">#&gt; Index: 74, lambda: 0.0662</span>
-<span class="co">#&gt; Index: 75, lambda: 0.0631</span>
-<span class="co">#&gt; Index: 76, lambda: 0.0603</span>
-<span class="co">#&gt; Index: 77, lambda: 0.0575</span>
-<span class="co">#&gt; Index: 78, lambda: 0.0549</span>
-<span class="co">#&gt; Index: 79, lambda: 0.0524</span>
-<span class="co">#&gt; Index: 80, lambda: 0.0500</span>
-<span class="co">#&gt; Index: 81, lambda: 0.0478</span>
-<span class="co">#&gt; Index: 82, lambda: 0.0456</span>
-<span class="co">#&gt; Index: 83, lambda: 0.0435</span>
-<span class="co">#&gt; Index: 84, lambda: 0.0415</span>
-<span class="co">#&gt; Index: 85, lambda: 0.0397</span>
-<span class="co">#&gt; Index: 86, lambda: 0.0379</span>
-<span class="co">#&gt; Index: 87, lambda: 0.0361</span>
-<span class="co">#&gt; Index: 88, lambda: 0.0345</span>
-<span class="co">#&gt; Index: 89, lambda: 0.0329</span>
-<span class="co">#&gt; Index: 90, lambda: 0.0314</span>
-<span class="co">#&gt; Index: 91, lambda: 0.0300</span>
-<span class="co">#&gt; Index: 92, lambda: 0.0286</span>
-<span class="co">#&gt; Index: 93, lambda: 0.0273</span>
-<span class="co">#&gt; Index: 94, lambda: 0.0261</span>
-<span class="co">#&gt; Index: 95, lambda: 0.0249</span>
-<span class="co">#&gt; Index: 96, lambda: 0.0238</span>
-<span class="co">#&gt; Index: 97, lambda: 0.0227</span>
-<span class="co">#&gt; Index: 98, lambda: 0.0217</span>
-<span class="co">#&gt; Index: 99, lambda: 0.0207</span>
-<span class="co">#&gt; Index: 100, lambda: 0.0197</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_pf &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/sail/topics/sail">sail</a></span>(<span class="dt">x =</span> sailsim<span class="op">$</span>x, <span class="dt">y =</span> sailsim<span class="op">$</span>y, <span class="dt">e =</span> sailsim<span class="op">$</span>e, <span class="dt">basis =</span> f.basis,
+               <span class="dt">penalty.factor =</span> p.fac)</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(fit_pf)</code></pre></div>
 <p><img src="introduction-to-sail_files/figure-html/unnamed-chunk-24-1.png" width="700"></p>
 <p>We see from the plot above that the black line (corresponding to the <span class="math inline">\(E\)</span> variable with <code>penalty.factor</code> equal to zero) is always included in the model.</p>
@@ -1047,6 +880,14 @@ p.fac &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0
 </div>
 
   
-
-  </body>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.js"></script><script>
+  docsearch({
+    
+    apiKey: 'f8a14d62b00c65f3af4a90aa62a286b8',
+    indexName: 'sail',
+    inputSelector: 'input#search-input.form-control',
+    debug: false // Set debug to true if you want to inspect the dropdown
+  });
+</script>
+</body>
 </html>

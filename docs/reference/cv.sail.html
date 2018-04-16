@@ -43,6 +43,9 @@
 
 
 
+<!-- docsearch -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+
   </head>
 
   <body>
@@ -99,6 +102,12 @@
 </li>
       </ul>
       
+      <form class="navbar-form navbar-right" role="search">
+        <div class="form-group">
+          <input type="search" class="form-control" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off">
+        </div>
+      </form>
+      
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
 </div><!--/.navbar -->
@@ -147,7 +156,7 @@ must be converted to numeric.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>other arguments that can be passed to <code><a href='sail.html'>sail</a></code></p></td>
+      <td><p>other arguments that can be passed to <code>sail</code></p></td>
     </tr>
     <tr>
       <th>weights</th>
@@ -157,7 +166,7 @@ Currently NOT IMPLEMENTED.</p></td>
     <tr>
       <th>lambda</th>
       <td><p>Optional user-supplied lambda sequence; default is NULL, and
-<code><a href='sail.html'>sail</a></code> chooses its own sequence</p></td>
+<code>sail</code> chooses its own sequence</p></td>
     </tr>
     <tr>
       <th>type.measure</th>
@@ -235,7 +244,7 @@ the example below for details. Default: FALSE</p></td>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The function runs <code><a href='sail.html'>sail</a></code> <code>nfolds</code>+1 times; the
+    <p>The function runs <code>sail</code> <code>nfolds</code>+1 times; the
   first to get the <code>lambda</code> sequence, and then the remainder to compute
   the fit with each of the folds omitted. Note that a new lambda sequence is
   computed for each of the folds and then we use the <code>predict</code> method to
@@ -267,7 +276,7 @@ the example below for details. Default: FALSE</p></td>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='http://www.rdocumentation.org/packages/splines/topics/bs'>bs</a></code> <code><a href='sail.html'>sail</a></code></p></div>
+    <div class='dont-index'><p><code><a href='http://www.rdocumentation.org/packages/splines/topics/bs'>bs</a></code> <code>sail</code></p></div>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
@@ -304,7 +313,7 @@ the example below for details. Default: FALSE</p></td>
 <span class='no'>newx</span> <span class='kw'>&lt;-</span> <span class='no'>sailsim</span>$<span class='no'>x</span> * <span class='fl'>1.10</span>
 <span class='no'>newe</span> <span class='kw'>&lt;-</span> <span class='no'>sailsim</span>$<span class='no'>e</span> * <span class='fl'>2</span>
 <span class='fu'>predict</span>(<span class='no'>cvfit</span>, <span class='kw'>newx</span> <span class='kw'>=</span> <span class='no'>newx</span>, <span class='kw'>newe</span> <span class='kw'>=</span> <span class='no'>newe</span>, <span class='kw'>s</span> <span class='kw'>=</span> <span class='st'>"lambda.min"</span>)
- }</div><div class='img'><img src='cv.sail-1.png' alt='' width='700' height='433' /></div><div class='img'><img src='cv.sail-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt;                  1
+ }</div><div class='output co'>#&gt; <span class='message'>Loading required package: foreach</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: iterators</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: parallel</span></div><div class='img'><img src='cv.sail-1.png' alt='' width='700' height='433' /></div><div class='img'><img src='cv.sail-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt;                  1
 #&gt;   [1,]  5.80416763
 #&gt;   [2,]  0.08181593
 #&gt;   [3,]  7.32372799
@@ -440,6 +449,17 @@ the example below for details. Default: FALSE</p></td>
    </div>
 
   
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.js"></script>
+<script>
+  docsearch({
+    
+    apiKey: 'f8a14d62b00c65f3af4a90aa62a286b8',
+    indexName: 'sail',
+    inputSelector: 'input#search-input.form-control',
+    debug: false // Set debug to true if you want to inspect the dropdown
+  });
+</script>
+
 
   </body>
 </html>

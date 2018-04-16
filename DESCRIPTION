@@ -9,7 +9,10 @@ Authors@R: c(
   person("Celia", "Greenwood", email = "celia.greenwood@mcgill.ca",
   role = c("aut"), comment = "https://www.mcgill.ca/statisticalgenetics/")
   )
-Description: What the package does (one paragraph).
+Description: Sparse Additive Interaction Learning with the strong heredity property, i.e., 
+    an interaction is selected only if its corresponding main effects are also included. 
+    Fits a linear model with non-linear interactions via penalized maximum likelihood. 
+    Interactions are limited to a single exposure or environment variable. 
 Depends: R (>= 3.4.0)
 Imports:
     glmnet, 
