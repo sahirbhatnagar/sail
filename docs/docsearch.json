@@ -1,11 +1,11 @@
 {
-  "index_name": "valr",
+  "index_name": "sail",
   "start_urls": [
-    "http://valr.hesselberthlab.org"
+    "http://sahirbhatnagar.com/sail"
   ],
   "stop_urls": ["index.html", "authors.html", "/LICENSE", "/news/"],
   "sitemap_urls": [
-    "http://valr.hesselberthlab.org/sitemap.xml"
+    "http://sahirbhatnagar.com/sail/sitemap.xml"
   ],
   "selectors": {
     "lvl0": ".contents h1",

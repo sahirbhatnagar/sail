@@ -3,6 +3,9 @@ url: http://sahirbhatnagar.com/sail
 template:
   params:
     bootswatch: cosmo
+    docsearch:
+      api_key: f8a14d62b00c65f3af4a90aa62a286b8
+      index_name: sail
 
 authors:
   Sahir Bhatnagar:
