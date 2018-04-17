@@ -212,6 +212,7 @@ f.identity <- function(i) i
 We then pass this function to `basis` argument in `cv.sail`:
 
 ```{r}
+set.seed(123456) # for reproducibility
 cvfit_linear <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
                         basis = f.identity, nfolds = 10, parallel = TRUE)
 ```

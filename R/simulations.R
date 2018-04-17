@@ -6,6 +6,8 @@
 #'   "none")}. Default: "strong"
 #' @param nonlinear simulate non-linear terms (logical). Default: TRUE
 #' @param interactions simulate interaction (logical). Default: TRUE
+#' @param causal character vector of causal variable names
+#' @param not_causal character vector of noise variables
 #' @return A list with the following elements: \describe{ \item{x}{matrix of
 #'   dimension \code{nxp} of simulated main effects} \item{y}{simulated response
 #'   vector of length \code{n}} \item{e}{simulated exposure vector of length
