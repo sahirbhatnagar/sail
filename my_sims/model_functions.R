@@ -57,25 +57,28 @@ make_easy_sail_model <- function(n, p, df, SNR, betaE) {
 
 make_gendata_Paper <- function(n, p, corr, betaE, SNR, lambda.type, parameterIndex) {
 
-  main <- paste0("X", seq_len(p))
-  vnames <- c(main, "E", paste0(main,":E"))
+  DT <- sail::gendata(n = n, p = p, corr = corr, betaE = betaE, SNR = SNR, parameterIndex = parameterIndex)
 
-  if (parameterIndex == 1) { # 1a
-    hierarchy = "strong" ; nonlinear = TRUE ; interactions = TRUE
-    causal <- c("X1","X2","X3","X4","E","X3:E","X4:E")
-  } else if (parameterIndex == 2) { # 1b
-    hierarchy = "weak" ; nonlinear = TRUE ; interactions = TRUE
-    causal <- c("X1","X2","E","X3:E","X4:E")
-  } else if (parameterIndex == 3) { # 1c
-    hierarchy = "none" ; nonlinear = TRUE ; interactions = TRUE
-    causal <- c("X3:E","X4:E")
-  } else if (parameterIndex == 4) { # 2
-    hierarchy = "strong"; nonlinear = FALSE; interactions = TRUE
-    causal <- c("X1","X2","X3","X4","E","X3:E","X4:E")
-  } else if (parameterIndex == 5) { # 3
-    hierarchy = "strong" ; nonlinear = TRUE ; interactions = FALSE
-    causal <- c("X1","X2","X3","X4","E")
-  }
+
+  # main <- paste0("X", seq_len(p))
+  # vnames <- c(main, "E", paste0(main,":E"))
+  #
+  # if (parameterIndex == 1) { # 1a
+  #   hierarchy = "strong" ; nonlinear = TRUE ; interactions = TRUE
+  #   causal <- c("X1","X2","X3","X4","E","X3:E","X4:E")
+  # } else if (parameterIndex == 2) { # 1b
+  #   hierarchy = "weak" ; nonlinear = TRUE ; interactions = TRUE
+  #   causal <- c("X1","X2","E","X3:E","X4:E")
+  # } else if (parameterIndex == 3) { # 1c
+  #   hierarchy = "none" ; nonlinear = TRUE ; interactions = TRUE
+  #   causal <- c("X3:E","X4:E")
+  # } else if (parameterIndex == 4) { # 2
+  #   hierarchy = "strong"; nonlinear = FALSE; interactions = TRUE
+  #   causal <- c("X1","X2","X3","X4","E","X3:E","X4:E")
+  # } else if (parameterIndex == 5) { # 3
+  #   hierarchy = "strong" ; nonlinear = TRUE ; interactions = FALSE
+  #   causal <- c("X1","X2","X3","X4","E")
+  # }
 
   not_causal <- setdiff(vnames, causal)
 
