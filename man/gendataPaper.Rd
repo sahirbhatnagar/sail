@@ -29,6 +29,10 @@ or integer valued. Factors must be converted to numeric. Default:
 \item{nonlinear}{simulate non-linear terms (logical). Default: TRUE}
 
 \item{interactions}{simulate interaction (logical). Default: TRUE}
+
+\item{causal}{character vector of causal variable names}
+
+\item{not_causal}{character vector of noise variables}
 }
 \value{
 A list with the following elements: \describe{ \item{x}{matrix of
