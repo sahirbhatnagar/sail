@@ -54,59 +54,67 @@ make_easy_sail_model <- function(n, p, df, SNR, betaE) {
 }
 
 
-
 make_gendata_Paper <- function(n, p, corr, betaE, SNR, lambda.type, parameterIndex) {
 
-  DT <- sail::gendata(n = n, p = p, corr = corr, betaE = betaE, SNR = SNR, parameterIndex = parameterIndex)
-
-
-  # main <- paste0("X", seq_len(p))
-  # vnames <- c(main, "E", paste0(main,":E"))
-  #
-  # if (parameterIndex == 1) { # 1a
-  #   hierarchy = "strong" ; nonlinear = TRUE ; interactions = TRUE
-  #   causal <- c("X1","X2","X3","X4","E","X3:E","X4:E")
-  # } else if (parameterIndex == 2) { # 1b
-  #   hierarchy = "weak" ; nonlinear = TRUE ; interactions = TRUE
-  #   causal <- c("X1","X2","E","X3:E","X4:E")
-  # } else if (parameterIndex == 3) { # 1c
-  #   hierarchy = "none" ; nonlinear = TRUE ; interactions = TRUE
-  #   causal <- c("X3:E","X4:E")
-  # } else if (parameterIndex == 4) { # 2
-  #   hierarchy = "strong"; nonlinear = FALSE; interactions = TRUE
-  #   causal <- c("X1","X2","X3","X4","E","X3:E","X4:E")
-  # } else if (parameterIndex == 5) { # 3
-  #   hierarchy = "strong" ; nonlinear = TRUE ; interactions = FALSE
-  #   causal <- c("X1","X2","X3","X4","E")
-  # }
-
-  not_causal <- setdiff(vnames, causal)
-
-  DT <- gendataPaper(n = n, p = p, SNR = SNR, betaE = betaE,
-                     hierarchy = hierarchy, nonlinear = nonlinear, interactions = interactions,
-                     corr = corr, E = truncnorm::rtruncnorm(n, a = -1, b = 1))
-
+  main <- paste0("X", seq_len(p))
+  vnames <- c(main, "E", paste0(main,":E"))
   # used for glmnet and lasso backtracking
-  X_linear_design <- design_sail(x = DT$x, e = DT$e, nvars = p,
-                                 vnames = paste0("X",1:p), degree = 1,
-                                 center.x = FALSE, basis.intercept = FALSE)$design
+  # f.identity <- function(i) i
 
   new_model(name = "gendata_Paper",
-            label = sprintf("n = %s, p = %s, corr = %s, betaE = %s, SNR = %s, hierarchy = %s,
-                            nonlinear = %s, interactions = %s, scenario = %s",
-                            n, p, corr, betaE, SNR, hierarchy,
-                            nonlinear, interactions, parameterIndex),
-            params = list(n = n, p = p, corr = corr, betaE = betaE, SNR = SNR, lambda.type = lambda.type,
-                          hierarchy = hierarchy, nonlinear = nonlinear, vnames = vnames,
-                          interactions = interactions, causal = causal, X_linear_design = X_linear_design,
-                          not_causal = not_causal, x = DT$x, e = DT$e, Y.star = DT$Y.star, EX = cbind(E=DT$e, DT$x)),
-            simulate = function(n, Y.star, nsim) {
-              error <- MASS::mvrnorm(nsim, mu = rep(0, n), Sigma = diag(n))
-              # Y.star <- as.numeric(design %*% true_beta)
-              k <- sqrt(stats::var(Y.star) / (SNR * apply(error, 1, var)))
-              error2 <- sweep(t(error), 2, k, FUN = "*")
-              y <- Y.star + error2
-              return(split(y, col(y))) # make each col its own list element
+            label = sprintf("n = %s, p = %s, corr = %s, betaE = %s, SNR = %s, index = %s, lambda = %s",
+                            n, p, corr, betaE, SNR, parameterIndex, lambda.type),
+            params = list(n = n, p = p, corr = corr, betaE = betaE, SNR = SNR,
+                          lambda.type = lambda.type, parameterIndex = parameterIndex),
+            simulate = function(n, p, corr, betaE, SNR, parameterIndex, lambda.type, nsim) {
+              models <- list()
+              for(i in seq(nsim)) {
+                # test and training set
+                DT <- sail::gendata(n = n, p = p, corr = corr, betaE = betaE,
+                                    SNR = SNR, parameterIndex = parameterIndex)
+
+                trainIndex <- drop(caret::createDataPartition(DT$y, p = 0.5, list = FALSE, times = 1))
+                testIndex <- setdiff(seq_along(DT$y), trainIndex)
+
+                xtrain <- DT$x[trainIndex,,drop=FALSE]
+                xtest <- DT$x[testIndex,,drop=FALSE]
+
+                etrain <- DT$e[trainIndex]
+                etest <- DT$e[testIndex]
+
+                ytrain <- DT$y[trainIndex]
+                ytest <- DT$y[testIndex]
+
+                main <- colnames(DT$x)
+                vnames <- c(main, "E", paste0(main,":E"))
+                vnames_lasso <- c("E", main) # needs to be in this order for glinternet
+
+                # X_linear_design <- sail::design_sail(x = DT$x, e = DT$e, expand = TRUE, basis = function(i) i,
+                #                                      nvars = ncol(DT$x),
+                #                                      vnames = colnames(DT$x),
+                #                                      center.x = FALSE, center.e = FALSE)$design
+
+                # as is done in pliable lasso, only feed (X,E) to glmnet
+                X_main <- cbind(E = etrain, xtrain)
+
+                # test set
+                # DT_test <- sail::gendata(n = n, p = p, corr = corr, betaE = betaE,
+                #                          SNR = SNR, parameterIndex = parameterIndex)
+
+                # X_main_test <- sail::design_sail(x = DT_test$x, e = DT_test$e, expand = TRUE, basis = function(i) i,
+                #                                           nvars = ncol(DT_test$x),
+                #                                           vnames = colnames(DT_test$x),
+                #                                           center.x = FALSE, center.e = FALSE)$design
+                X_main_test <- cbind(E = etest, xtest)
+
+                # models[[i]] <- list(xtrain = DT$x, etrain = DT$e, ytrain = DT$y, xtrain_lasso = X_main,
+                #                     xtest = DT_test$x, etest = DT_test$e, ytest = DT_test$y, xtest_lasso = X_main_test,
+                #                     causal = DT$causal, not_causal = DT$not_causal, vnames = vnames, vnames_lasso = vnames_lasso)
+                models[[i]] <- list(xtrain = xtrain, etrain = etrain, ytrain = ytrain, xtrain_lasso = X_main,
+                                    xtest = xtest, etest = etest, ytest = ytest, xtest_lasso = X_main_test,
+                                    causal = DT$causal, not_causal = DT$not_causal, vnames = vnames, vnames_lasso = vnames_lasso)
+              }
+              return(models)
             })
 
 }

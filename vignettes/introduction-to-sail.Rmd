@@ -132,16 +132,23 @@ predict(fit, s = c(0.8, 0.2))
 ```
 
 
+You can also extract a list of active variables (i.e. variables with a non-zero estimated coefficient) for each value of lambda:
+
+```{r}
+fit[["active"]]
+```
+
+
 ## Cross-Validation
 
 `cv.sail` is the main function to do cross-validation along with `plot`, `predict`, and `coef` methods for objects of class `cv.sail`. We run it in parallel:
 
 ```{r}
-set.seed(32) # to reproduce results (randomness due to CV folds)
+set.seed(432) # to reproduce results (randomness due to CV folds)
 library(doMC)
-registerDoMC(cores = 2)
+registerDoMC(cores = 2) 
 cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis,
-                 nfolds = 10, parallel = TRUE)
+                 nfolds = 5, parallel = TRUE)
 ```
 
 We plot the cross-validated error curve which has the mean-squared error on the y-axis and $\log(\lambda)$ on the x-axis. It includes the cross-validation curve (red dotted line), and upper and lower standard deviation curves along the $\lambda$ sequence (error bars). Two selected $\lambda$'s are indicated by the vertical dotted lines (see below). The numbers at the top of the plot represent the total number of non-zero variables at that value of $\lambda$ (`df_main` + `df_environment` + `df_interaction`):
@@ -192,7 +199,7 @@ plotMain(cvfit$sail.fit, x = sailsim$x, xvar = "X3",
 
 Again, since we are using simulated data, we also plot the true interaction:
 
-```{r}
+```{r, fig.height=7, fig.width=8}
 plotInter(cvfit$sail.fit, x = sailsim$x, xvar = "X4",
           f.truth = sailsim$f4.inter,
           s = cvfit$lambda.min,
@@ -212,9 +219,8 @@ f.identity <- function(i) i
 We then pass this function to `basis` argument in `cv.sail`:
 
 ```{r}
-set.seed(123456) # for reproducibility
 cvfit_linear <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-                        basis = f.identity, nfolds = 10, parallel = TRUE)
+                        basis = f.identity, nfolds = 5, parallel = TRUE)
 ```
 
 

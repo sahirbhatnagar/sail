@@ -5,10 +5,10 @@ sqrerr <- new_metric("sqrerr", "squared error",
                        colMeans(as.matrix(out$beta - model$true_beta)^2)
                      })
 
-mse <- new_metric("mse", "MSE",
+mse <- new_metric("mse", "Test Set MSE",
                    metric = function(model, out) {
                      # as.numeric(sqrt(crossprod(out$y - out$yhat)))
-                     as.numeric(crossprod(out$y - out$yhat) / model$n)
+                     as.numeric(crossprod(out$ytest - out$yhat_test) / (length(out$ytest)))
                    })
 
 
@@ -19,12 +19,12 @@ cvmse <- new_metric("cvmse", "10-Fold CV MSE",
 
 tpr <- new_metric("tpr", "True Positive Rate",
                   metric = function(model, out) {
-                    length(intersect(out$active, model$causal))/length(model$causal)
+                    length(intersect(out$active, out$causal))/length(out$causal)
                   })
 
 r2 <- new_metric("r2", "R squared",
                  metric = function(model, out) {
-                   cor(out$y,as.vector(out$yhat))^2
+                   cor(out$ytest,as.vector(out$yhat))^2
                  })
 
 "%ni%" <- Negate("%in%")
@@ -32,14 +32,14 @@ r2 <- new_metric("r2", "R squared",
 fpr <- new_metric("fpr", "False Positive Rate",
                   metric = function(model, out){
                     active <- out$active
-                    FPR <- sum(active %ni% model$causal) / length(model$not_causal)
+                    FPR <- sum(active %ni% out$causal) / length(out$not_causal)
                     FPR
                   })
 
 correct_sparsity <- new_metric("cs", "Correct Sparsity",
                                metric = function(model, out){
-                                 correct_nonzeros <- sum(out$active %in% model$causal)
-                                 correct_zeros <- length(setdiff(model$not_causal,out$active))
+                                 correct_nonzeros <- sum(out$active %in% out$causal)
+                                 correct_zeros <- length(setdiff(out$not_causal,out$active))
                                  #correct sparsity
                                  (1 / length(model$vnames)) * (correct_nonzeros + correct_zeros)
 
