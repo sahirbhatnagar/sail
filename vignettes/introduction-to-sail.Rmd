@@ -10,8 +10,10 @@ output:
     fig_retina: null
 vignette: >
   %\VignetteIndexEntry{Introduction to the sail package}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include = FALSE}
@@ -83,8 +85,7 @@ f.basis <- function(x) splines::bs(x, degree = 5)
 Next we fit the model using the most basic call to `sail`
 
 ```{r}
-fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis,
-            verbose = 0)
+fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis)
 ```
 
 `fit` is an object of class `sail` that contains all the relevant information of the fitted model including the estimated coefficients at each value of $\lambda$ (by default the program chooses its own decreasing sequence of 100 $\lambda$ values). There are `print`, `plot`, `coef` and `predict` methods of objects of class `sail`. The `print` method outputs the following:
@@ -105,7 +106,7 @@ plot(fit)
 The estimated coefficients at each value of lambda is given by (matrix partially printed here for brevity)
 
 ```{r}
-coef(fit)[1:5,1:5]
+coef(fit)[1:6,50:55]
 ```
 
 
@@ -113,7 +114,7 @@ coef(fit)[1:5,1:5]
 The predicted response at each value of lambda:
 
 ```{r}
-predict(fit)[1:5,1:5]
+predict(fit)[1:5,50:55]
 ```
 
 
@@ -131,15 +132,23 @@ predict(fit, s = c(0.8, 0.2))
 ```
 
 
+You can also extract a list of active variables (i.e. variables with a non-zero estimated coefficient) for each value of lambda:
+
+```{r}
+fit[["active"]]
+```
+
+
 ## Cross-Validation
 
 `cv.sail` is the main function to do cross-validation along with `plot`, `predict`, and `coef` methods for objects of class `cv.sail`. We run it in parallel:
 
 ```{r}
+set.seed(432) # to reproduce results (randomness due to CV folds)
 library(doMC)
-registerDoMC(cores = 2)
+registerDoMC(cores = 2) 
 cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis,
-            verbose = 0, nfolds = 10, parallel = TRUE)
+                 nfolds = 5, parallel = TRUE)
 ```
 
 We plot the cross-validated error curve which has the mean-squared error on the y-axis and $\log(\lambda)$ on the x-axis. It includes the cross-validation curve (red dotted line), and upper and lower standard deviation curves along the $\lambda$ sequence (error bars). Two selected $\lambda$'s are indicated by the vertical dotted lines (see below). The numbers at the top of the plot represent the total number of non-zero variables at that value of $\lambda$ (`df_main` + `df_environment` + `df_interaction`):
@@ -190,7 +199,7 @@ plotMain(cvfit$sail.fit, x = sailsim$x, xvar = "X3",
 
 Again, since we are using simulated data, we also plot the true interaction:
 
-```{r}
+```{r, fig.height=7, fig.width=8}
 plotInter(cvfit$sail.fit, x = sailsim$x, xvar = "X4",
           f.truth = sailsim$f4.inter,
           s = cvfit$lambda.min,
@@ -211,7 +220,7 @@ We then pass this function to `basis` argument in `cv.sail`:
 
 ```{r}
 cvfit_linear <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-                        basis = f.identity, nfolds = 10, parallel = TRUE)
+                        basis = f.identity, nfolds = 5, parallel = TRUE)
 ```
 
 

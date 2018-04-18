@@ -6,7 +6,7 @@
 \usage{
 gendataPaper(n, p, corr = 0, E = truncnorm::rtruncnorm(n, a = -1, b = 1),
   betaE = 2, SNR = 2, hierarchy = c("strong", "weak", "none"),
-  nonlinear = TRUE, interactions = TRUE)
+  nonlinear = TRUE, interactions = TRUE, causal, not_causal)
 }
 \arguments{
 \item{n}{number of observations}
@@ -23,11 +23,16 @@ or integer valued. Factors must be converted to numeric. Default:
 
 \item{SNR}{signal to noise ratio}
 
-\item{hierarchy}{type of hierarchy. Can be one of \code{c("strong", "weak", "none")}. Default: "strong"}
+\item{hierarchy}{type of hierarchy. Can be one of \code{c("strong", "weak",
+"none")}. Default: "strong"}
 
 \item{nonlinear}{simulate non-linear terms (logical). Default: TRUE}
 
 \item{interactions}{simulate interaction (logical). Default: TRUE}
+
+\item{causal}{character vector of causal variable names}
+
+\item{not_causal}{character vector of noise variables}
 }
 \value{
 A list with the following elements: \describe{ \item{x}{matrix of
@@ -45,7 +50,9 @@ A list with the following elements: \describe{ \item{x}{matrix of
   second predictor} \item{X3}{an \code{n} length vector of the third
   predictor} \item{X4}{an \code{n} length vector of the fourth predictor}
   \item{scenario}{a character representing the simulation scenario identifier
-  as described in Bhatnagar et al. (2018+)} }
+  as described in Bhatnagar et al. (2018+)} \item{causal}{character vector of
+  causal variable names}\item{not_causal}{character vector of noise
+  variables} }
 }
 \description{
 generates the different simulation scenarios. This function is

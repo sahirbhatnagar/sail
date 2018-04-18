@@ -16,7 +16,7 @@ authors:
     href: https://www.mcgill.ca/statisticalgenetics/
 
 development:
-  mode: unreleased
+  mode: auto
 
 reference:
   - title: Model Fitting

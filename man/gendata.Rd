@@ -41,7 +41,9 @@ A list with the following elements: \describe{ \item{x}{matrix of
   second predictor} \item{X3}{an \code{n} length vector of the third
   predictor} \item{X4}{an \code{n} length vector of the fourth predictor}
   \item{scenario}{a character representing the simulation scenario identifier
-  as described in Bhatnagar et al. (2018+)} }
+  as described in Bhatnagar et al. (2018+)}\item{causal}{character vector of
+  causal variable names}\item{not_causal}{character vector of noise
+  variables} }
 }
 \description{
 Function that generates data of the different simulation studies

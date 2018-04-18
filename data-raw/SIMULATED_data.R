@@ -83,7 +83,7 @@ gendataPaper <- function(n, p, corr = 0,
 
   } else {
     f1 <- function(x) -1.5 * (x - 2)
-    f2 <- function(x)  1 * (x + 1) +
+    f2 <- function(x)  1 * (x + 1)
     f3 <- function(x)  1.5 * x
     f4 <- function(x)  -2 * x
     f3.inter <- function(x, e) e * f3(x)
@@ -166,7 +166,7 @@ gendataPaper <- function(n, p, corr = 0,
 
 set.seed(12346)
 DT <- make_gendata_Paper_not_simulator(n = 100, p = 20, corr = 0,
-                                       betaE = 2, SNR = 2,
+                                       betaE = 2, SNR = 3,
                                        parameterIndex = 1)
 
 sailsim <- list(x = DT$x, y = DT$y, e = DT$e,
