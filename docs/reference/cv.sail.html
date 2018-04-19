@@ -61,7 +61,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">sail</a>
-        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.1.0</span>
+        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.0.0.9000</span>
       </span>
     </div>
 
@@ -156,7 +156,7 @@ must be converted to numeric.</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>other arguments that can be passed to <code>sail</code></p></td>
+      <td><p>other arguments that can be passed to <code><a href='sail.html'>sail</a></code></p></td>
     </tr>
     <tr>
       <th>weights</th>
@@ -166,7 +166,7 @@ Currently NOT IMPLEMENTED.</p></td>
     <tr>
       <th>lambda</th>
       <td><p>Optional user-supplied lambda sequence; default is NULL, and
-<code>sail</code> chooses its own sequence</p></td>
+<code><a href='sail.html'>sail</a></code> chooses its own sequence</p></td>
     </tr>
     <tr>
       <th>type.measure</th>
@@ -244,7 +244,7 @@ the example below for details. Default: FALSE</p></td>
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>The function runs <code>sail</code> <code>nfolds</code>+1 times; the
+    <p>The function runs <code><a href='sail.html'>sail</a></code> <code>nfolds</code>+1 times; the
   first to get the <code>lambda</code> sequence, and then the remainder to compute
   the fit with each of the folds omitted. Note that a new lambda sequence is
   computed for each of the folds and then we use the <code>predict</code> method to
@@ -276,7 +276,7 @@ the example below for details. Default: FALSE</p></td>
     
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <div class='dont-index'><p><code><a href='http://www.rdocumentation.org/packages/splines/topics/bs'>bs</a></code> <code>sail</code></p></div>
+    <div class='dont-index'><p><code><a href='http://www.rdocumentation.org/packages/splines/topics/bs'>bs</a></code> <code><a href='sail.html'>sail</a></code></p></div>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
@@ -313,107 +313,107 @@ the example below for details. Default: FALSE</p></td>
 <span class='no'>newx</span> <span class='kw'>&lt;-</span> <span class='no'>sailsim</span>$<span class='no'>x</span> * <span class='fl'>1.10</span>
 <span class='no'>newe</span> <span class='kw'>&lt;-</span> <span class='no'>sailsim</span>$<span class='no'>e</span> * <span class='fl'>2</span>
 <span class='fu'>predict</span>(<span class='no'>cvfit</span>, <span class='kw'>newx</span> <span class='kw'>=</span> <span class='no'>newx</span>, <span class='kw'>newe</span> <span class='kw'>=</span> <span class='no'>newe</span>, <span class='kw'>s</span> <span class='kw'>=</span> <span class='st'>"lambda.min"</span>)
- }</div><div class='output co'>#&gt; <span class='message'>Loading required package: foreach</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: iterators</span></div><div class='output co'>#&gt; <span class='message'>Loading required package: parallel</span></div><div class='img'><img src='cv.sail-1.png' alt='' width='700' height='433' /></div><div class='img'><img src='cv.sail-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt;                  1
-#&gt;   [1,]  5.80416763
-#&gt;   [2,]  0.08181593
-#&gt;   [3,]  7.32372799
-#&gt;   [4,] 21.39363235
-#&gt;   [5,]  4.08704166
-#&gt;   [6,]  2.17156560
-#&gt;   [7,] 17.05039554
-#&gt;   [8,]  5.60831797
-#&gt;   [9,]  6.73929721
-#&gt;  [10,]  4.47488512
-#&gt;  [11,]  3.20972337
-#&gt;  [12,] 13.08120066
-#&gt;  [13,] 13.61149147
-#&gt;  [14,]  6.84957164
-#&gt;  [15,] 18.73142095
-#&gt;  [16,]  3.10149723
-#&gt;  [17,] -4.27474624
-#&gt;  [18,]  6.98928674
-#&gt;  [19,]  3.89990249
-#&gt;  [20,]  2.10817143
-#&gt;  [21,] 10.05543820
-#&gt;  [22,]  3.02285841
-#&gt;  [23,]  2.09299398
-#&gt;  [24,]  9.23925345
-#&gt;  [25,] -1.77796746
-#&gt;  [26,] 10.10934290
-#&gt;  [27,]  6.53795163
-#&gt;  [28,] -3.56186101
-#&gt;  [29,] 18.43569745
-#&gt;  [30,] -3.15817861
-#&gt;  [31,]  6.33404452
-#&gt;  [32,]  7.56775235
-#&gt;  [33,]  5.72672691
-#&gt;  [34,]  6.19530769
-#&gt;  [35,] 24.19583644
-#&gt;  [36,] -2.13694268
-#&gt;  [37,]  5.93751485
-#&gt;  [38,]  2.53061688
-#&gt;  [39,]  4.25648195
-#&gt;  [40,]  4.76744501
-#&gt;  [41,]  2.08945480
-#&gt;  [42,]  0.50517250
-#&gt;  [43,]  6.32177322
-#&gt;  [44,] 22.17644025
-#&gt;  [45,]  7.30976919
-#&gt;  [46,]  3.21254318
-#&gt;  [47,]  3.00841889
-#&gt;  [48,] 24.26931950
-#&gt;  [49,]  1.53048214
-#&gt;  [50,] 10.84019763
-#&gt;  [51,]  3.55586706
-#&gt;  [52,]  2.23817296
-#&gt;  [53,]  8.11891997
-#&gt;  [54,]  7.59886559
-#&gt;  [55,]  2.32416546
-#&gt;  [56,] -1.29971547
-#&gt;  [57,]  5.19416193
-#&gt;  [58,] 10.38260099
-#&gt;  [59,] 10.44889682
-#&gt;  [60,]  2.18881640
-#&gt;  [61,] -2.10000744
-#&gt;  [62,]  0.14476717
-#&gt;  [63,]  9.51644087
-#&gt;  [64,]  0.64170310
-#&gt;  [65,]  3.23326756
-#&gt;  [66,]  2.35742353
-#&gt;  [67,]  5.43778803
-#&gt;  [68,]  5.15636512
-#&gt;  [69,] 10.31367505
-#&gt;  [70,]  6.96459149
-#&gt;  [71,]  4.34681893
-#&gt;  [72,]  1.78280282
-#&gt;  [73,]  6.04108029
-#&gt;  [74,] -2.33749852
-#&gt;  [75,]  4.08710043
-#&gt;  [76,]  0.37241929
-#&gt;  [77,]  1.85702558
-#&gt;  [78,] 19.67209328
-#&gt;  [79,]  5.48673482
-#&gt;  [80,]  1.21575107
-#&gt;  [81,]  3.90331921
-#&gt;  [82,]  2.70746226
-#&gt;  [83,]  5.08337929
-#&gt;  [84,]  2.99263738
-#&gt;  [85,]  6.12542855
-#&gt;  [86,]  1.40662078
-#&gt;  [87,]  3.05119655
-#&gt;  [88,] -0.62316686
-#&gt;  [89,]  2.27823137
-#&gt;  [90,]  6.75979544
-#&gt;  [91,]  9.41024416
-#&gt;  [92,] 12.87741091
-#&gt;  [93,]  6.34359216
-#&gt;  [94,]  3.73681617
-#&gt;  [95,]  7.14268643
-#&gt;  [96,]  2.90379764
-#&gt;  [97,] 10.26263507
-#&gt;  [98,]  8.37613412
-#&gt;  [99,]  5.65460247
-#&gt; [100,]  3.24338641</div></pre>
+ }</div><div class='img'><img src='cv.sail-1.png' alt='' width='700' height='433' /></div><div class='img'><img src='cv.sail-2.png' alt='' width='700' height='433' /></div><div class='output co'>#&gt;                 1
+#&gt;   [1,]  5.3065646
+#&gt;   [2,]  1.0804191
+#&gt;   [3,]  5.4984727
+#&gt;   [4,] 20.6095641
+#&gt;   [5,]  3.2945835
+#&gt;   [6,]  1.3678408
+#&gt;   [7,] 18.1744817
+#&gt;   [8,]  5.9709248
+#&gt;   [9,]  7.3491183
+#&gt;  [10,]  4.7772939
+#&gt;  [11,]  2.7897300
+#&gt;  [12,] 13.6071026
+#&gt;  [13,] 14.4179099
+#&gt;  [14,]  6.0820515
+#&gt;  [15,] 19.1573434
+#&gt;  [16,]  2.8117810
+#&gt;  [17,] -4.4800964
+#&gt;  [18,]  5.8707341
+#&gt;  [19,]  3.5383481
+#&gt;  [20,]  1.5352662
+#&gt;  [21,]  9.9017222
+#&gt;  [22,]  2.3836054
+#&gt;  [23,]  1.5038095
+#&gt;  [24,]  9.2674026
+#&gt;  [25,] -1.1377534
+#&gt;  [26,] 10.1452333
+#&gt;  [27,]  6.4215922
+#&gt;  [28,] -5.2770576
+#&gt;  [29,] 19.1313821
+#&gt;  [30,] -1.6664875
+#&gt;  [31,]  6.1261649
+#&gt;  [32,]  7.5279827
+#&gt;  [33,]  5.8207940
+#&gt;  [34,]  5.0202522
+#&gt;  [35,] 23.1949775
+#&gt;  [36,] -2.7814843
+#&gt;  [37,]  5.5203342
+#&gt;  [38,]  2.4425143
+#&gt;  [39,]  3.9318804
+#&gt;  [40,]  4.7330616
+#&gt;  [41,]  2.8429633
+#&gt;  [42,]  0.2950921
+#&gt;  [43,]  6.3008359
+#&gt;  [44,] 23.5019386
+#&gt;  [45,]  5.7965968
+#&gt;  [46,]  3.2876290
+#&gt;  [47,]  2.3203953
+#&gt;  [48,] 23.9291223
+#&gt;  [49,]  1.2875167
+#&gt;  [50,] 11.4031605
+#&gt;  [51,]  3.3925970
+#&gt;  [52,]  1.3888015
+#&gt;  [53,]  9.4739013
+#&gt;  [54,]  8.2232486
+#&gt;  [55,]  1.5883256
+#&gt;  [56,] -0.7922827
+#&gt;  [57,]  5.0571675
+#&gt;  [58,] 11.2502270
+#&gt;  [59,] 10.6069961
+#&gt;  [60,]  1.0914711
+#&gt;  [61,] -0.6052388
+#&gt;  [62,] -0.1849495
+#&gt;  [63,]  9.3609412
+#&gt;  [64,]  0.6750617
+#&gt;  [65,]  3.0986991
+#&gt;  [66,]  2.2690285
+#&gt;  [67,]  5.1474873
+#&gt;  [68,]  5.5029911
+#&gt;  [69,] 11.6345389
+#&gt;  [70,]  7.0965418
+#&gt;  [71,]  4.4398305
+#&gt;  [72,]  1.8726343
+#&gt;  [73,]  5.9565875
+#&gt;  [74,] -1.0731197
+#&gt;  [75,]  4.3808519
+#&gt;  [76,]  0.7945035
+#&gt;  [77,]  2.3240037
+#&gt;  [78,] 19.9531450
+#&gt;  [79,]  5.7760322
+#&gt;  [80,]  0.3677776
+#&gt;  [81,]  3.5612413
+#&gt;  [82,]  1.3229312
+#&gt;  [83,]  4.5929384
+#&gt;  [84,]  3.0847184
+#&gt;  [85,]  5.5961238
+#&gt;  [86,]  1.2284338
+#&gt;  [87,]  3.6199305
+#&gt;  [88,] -0.9416860
+#&gt;  [89,]  2.7959115
+#&gt;  [90,]  6.5637179
+#&gt;  [91,] 10.3871236
+#&gt;  [92,] 11.6407027
+#&gt;  [93,]  5.9487851
+#&gt;  [94,]  4.0529905
+#&gt;  [95,]  6.1884433
+#&gt;  [96,]  2.6320696
+#&gt;  [97,] 10.5605976
+#&gt;  [98,]  9.1942353
+#&gt;  [99,]  5.1563533
+#&gt; [100,]  3.5938995</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

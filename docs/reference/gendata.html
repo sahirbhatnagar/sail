@@ -44,6 +44,9 @@
 
 
 
+<!-- docsearch -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.css" />
+
   </head>
 
   <body>
@@ -59,7 +62,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">sail</a>
-        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.1.0</span>
+        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.0.0.9000</span>
       </span>
     </div>
 
@@ -99,6 +102,12 @@
   </a>
 </li>
       </ul>
+      
+      <form class="navbar-form navbar-right" role="search">
+        <div class="form-group">
+          <input type="search" class="form-control" id="search-input" placeholder="Search..." aria-label="Search for..." autocomplete="off">
+        </div>
+      </form>
       
     </div><!--/.nav-collapse -->
   </div><!--/.container -->
@@ -178,7 +187,9 @@ information.</p></td>
   second predictor</p></dd> <dt>X3</dt><dd><p>an <code>n</code> length vector of the third
   predictor</p></dd> <dt>X4</dt><dd><p>an <code>n</code> length vector of the fourth predictor</p></dd>
   <dt>scenario</dt><dd><p>a character representing the simulation scenario identifier
-  as described in Bhatnagar et al. (2018+)</p></dd> </dl>
+  as described in Bhatnagar et al. (2018+)</p></dd><dt>causal</dt><dd><p>character vector of
+  causal variable names</p></dd><dt>not_causal</dt><dd><p>character vector of noise
+  variables</p></dd> </dl>
 
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
@@ -263,6 +274,17 @@ information.</p></td>
    </div>
 
   
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/docsearch.js@2/dist/cdn/docsearch.min.js"></script>
+<script>
+  docsearch({
+    
+    apiKey: 'f8a14d62b00c65f3af4a90aa62a286b8',
+    indexName: 'sail',
+    inputSelector: 'input#search-input.form-control',
+    debug: false // Set debug to true if you want to inspect the dropdown
+  });
+</script>
+
 
   </body>
 </html>

@@ -12,11 +12,10 @@ data-nogit
 .Rhistory
 .RData
 *.pdf
+my_sims/files/
 files/
-my_sims/
 goals2.png
 goals.png
 goals3.png
 mcgillsims/
 log/
-inst/doc

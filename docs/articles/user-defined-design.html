@@ -29,7 +29,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">sail</a>
-        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.1.0</span>
+        <span class="label label-danger" data-toggle="tooltip" data-placement="bottom" title="Unreleased package">0.0.0.9000</span>
       </span>
     </div>
 
@@ -88,7 +88,7 @@
       <h1>Supplying a User Defined Design Matrix</h1>
                         <h4 class="author">Sahir Rai Bhatnagar</h4>
             
-            <h4 class="date">2018-04-16</h4>
+            <h4 class="date">2018-04-18</h4>
       
       <small>Source: <a href="https://github.com/sahirbhatnagar/sail/blob/master/vignettes/user-defined-design.Rmd"><code>vignettes/user-defined-design.Rmd</code></a></small>
       <div class="hidden name"><code>user-defined-design.Rmd</code></div>
@@ -181,7 +181,7 @@ x &lt;-<span class="st"> </span>stats<span class="op">::</span><span class="kw">
 <h2 class="hasAnchor">
 <a href="#fit-the-sail-model" class="anchor"></a>Fit the <code>sail</code> model</h2>
 <p>We need to set the argument <code>expand = FALSE</code> and provide the group membership. The first element of the group membership corresponds to the first column of <code>x</code>, the second element to the second column of <code>x</code>, and so on.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_design &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/sail/topics/sail">sail</a></span>(<span class="dt">x =</span> x, <span class="dt">y =</span> sailsim<span class="op">$</span>y, <span class="dt">e =</span> sailsim<span class="op">$</span>e, 
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fit_design &lt;-<span class="st"> </span><span class="kw"><a href="../reference/sail.html">sail</a></span>(<span class="dt">x =</span> x, <span class="dt">y =</span> sailsim<span class="op">$</span>y, <span class="dt">e =</span> sailsim<span class="op">$</span>e, 
                    <span class="dt">expand =</span> <span class="ot">FALSE</span>,
                    <span class="dt">group =</span> <span class="kw">attr</span>(x, <span class="st">"assign"</span>), <span class="dt">verbose =</span> <span class="dv">0</span>)</code></pre></div>
 <p>We can plot the solution path for both main effects and interactions using the <code>plot</code> method for objects of class <code>sail</code>:</p>
@@ -198,7 +198,7 @@ x &lt;-<span class="st"> </span>stats<span class="op">::</span><span class="kw">
 <span class="co">#&gt; Loading required package: iterators</span>
 <span class="co">#&gt; Loading required package: parallel</span>
 <span class="kw"><a href="http://www.rdocumentation.org/packages/doMC/topics/registerDoMC">registerDoMC</a></span>(<span class="dt">cores =</span> <span class="dv">2</span>)
-cvfit_design &lt;-<span class="st"> </span><span class="kw"><a href="http://www.rdocumentation.org/packages/sail/topics/cv.sail">cv.sail</a></span>(<span class="dt">x =</span> x, <span class="dt">y =</span> sailsim<span class="op">$</span>y, <span class="dt">e =</span> sailsim<span class="op">$</span>e, 
+cvfit_design &lt;-<span class="st"> </span><span class="kw"><a href="../reference/cv.sail.html">cv.sail</a></span>(<span class="dt">x =</span> x, <span class="dt">y =</span> sailsim<span class="op">$</span>y, <span class="dt">e =</span> sailsim<span class="op">$</span>e, 
                         <span class="dt">expand =</span> <span class="ot">FALSE</span>,
                         <span class="dt">group =</span> <span class="kw">attr</span>(x, <span class="st">"assign"</span>), <span class="dt">verbose =</span> <span class="dv">0</span>,
                         <span class="dt">nfolds =</span> <span class="dv">10</span>, <span class="dt">parallel =</span> <span class="ot">TRUE</span>)</code></pre></div>
@@ -209,112 +209,112 @@ cvfit_design &lt;-<span class="st"> </span><span class="kw"><a href="http://www.
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cbind</span>(<span class="kw">coef</span>(cvfit_design, <span class="dt">s=</span><span class="st">"lambda.1se"</span>), <span class="co"># lambda.1se is the default</span>
 <span class="kw">coef</span>(cvfit_design, <span class="dt">s =</span> <span class="st">"lambda.min"</span>))
 <span class="co">#&gt; 62 x 2 sparse Matrix of class "dgCMatrix"</span>
-<span class="co">#&gt;                                  1            1</span>
-<span class="co">#&gt; (Intercept)            5.512775625   5.52905304</span>
-<span class="co">#&gt; bs(X1, degree = 5)1   -0.188049955  -0.48068451</span>
-<span class="co">#&gt; bs(X1, degree = 5)2   -0.004952704   1.93527570</span>
-<span class="co">#&gt; bs(X1, degree = 5)3    0.066036357   1.48510471</span>
-<span class="co">#&gt; bs(X1, degree = 5)4    0.181551956   1.07948821</span>
-<span class="co">#&gt; bs(X1, degree = 5)5    0.510802420   2.74647170</span>
-<span class="co">#&gt; bs(X2, degree = 3)1    .            -1.45519287</span>
-<span class="co">#&gt; bs(X2, degree = 3)2    .            -2.12654050</span>
-<span class="co">#&gt; bs(X2, degree = 3)3    .            -1.59464428</span>
-<span class="co">#&gt; ns(X3, df = 8)1        1.980364713   4.84380820</span>
-<span class="co">#&gt; ns(X3, df = 8)2        1.918059611   2.94882152</span>
-<span class="co">#&gt; ns(X3, df = 8)3        0.717319414   1.17949067</span>
-<span class="co">#&gt; ns(X3, df = 8)4       -1.048630940  -0.44986567</span>
-<span class="co">#&gt; ns(X3, df = 8)5       -1.643694475  -1.15396265</span>
-<span class="co">#&gt; ns(X3, df = 8)6       -1.287381735  -1.37682187</span>
-<span class="co">#&gt; ns(X3, df = 8)7        0.322200093  -0.02003347</span>
-<span class="co">#&gt; ns(X3, df = 8)8       -0.892065831  -1.67717634</span>
-<span class="co">#&gt; bs(X4, degree = 6)1    4.084523670   7.60952363</span>
-<span class="co">#&gt; bs(X4, degree = 6)2   -0.177473933   2.46806777</span>
-<span class="co">#&gt; bs(X4, degree = 6)3   -4.140595275  -8.10583518</span>
-<span class="co">#&gt; bs(X4, degree = 6)4   -4.321382441  -8.19446290</span>
-<span class="co">#&gt; bs(X4, degree = 6)5   -1.940285238  -1.02778029</span>
-<span class="co">#&gt; bs(X4, degree = 6)6   -0.387314767  -0.41754176</span>
-<span class="co">#&gt; X5                     .             .         </span>
-<span class="co">#&gt; poly(X6, 2)1           .             .         </span>
-<span class="co">#&gt; poly(X6, 2)2           .             .         </span>
-<span class="co">#&gt; race1                  0.326543001   0.85835437</span>
-<span class="co">#&gt; race2                 -0.204877512  -0.26991733</span>
-<span class="co">#&gt; race3                  0.273547764   0.01025098</span>
-<span class="co">#&gt; race4                 -0.138374297  -0.15924945</span>
-<span class="co">#&gt; race5                 -0.256838956  -0.43943858</span>
-<span class="co">#&gt; E                      1.874424356   2.46897572</span>
-<span class="co">#&gt; bs(X1, degree = 5)1:E  .             .         </span>
-<span class="co">#&gt; bs(X1, degree = 5)2:E  .             .         </span>
-<span class="co">#&gt; bs(X1, degree = 5)3:E  .             .         </span>
-<span class="co">#&gt; bs(X1, degree = 5)4:E  .             .         </span>
-<span class="co">#&gt; bs(X1, degree = 5)5:E  .             .         </span>
-<span class="co">#&gt; bs(X2, degree = 3)1:E  .            -4.75127931</span>
-<span class="co">#&gt; bs(X2, degree = 3)2:E  .            -6.94326372</span>
-<span class="co">#&gt; bs(X2, degree = 3)3:E  .            -5.20659529</span>
-<span class="co">#&gt; ns(X3, df = 8)1:E      0.353212402   2.57745850</span>
-<span class="co">#&gt; ns(X3, df = 8)2:E      0.342099835   1.56910942</span>
-<span class="co">#&gt; ns(X3, df = 8)3:E      0.127939117   0.62762358</span>
-<span class="co">#&gt; ns(X3, df = 8)4:E     -0.187030929  -0.23937985</span>
-<span class="co">#&gt; ns(X3, df = 8)5:E     -0.293164824  -0.61403976</span>
-<span class="co">#&gt; ns(X3, df = 8)6:E     -0.229613864  -0.73262629</span>
-<span class="co">#&gt; ns(X3, df = 8)7:E      0.057466722  -0.01066009</span>
-<span class="co">#&gt; ns(X3, df = 8)8:E     -0.159106407  -0.89244913</span>
-<span class="co">#&gt; bs(X4, degree = 6)1:E  8.445420010   9.87096853</span>
-<span class="co">#&gt; bs(X4, degree = 6)2:E -0.366956351   3.20154328</span>
-<span class="co">#&gt; bs(X4, degree = 6)3:E -8.561357214 -10.51477700</span>
-<span class="co">#&gt; bs(X4, degree = 6)4:E -8.935164215 -10.62974364</span>
-<span class="co">#&gt; bs(X4, degree = 6)5:E -4.011856731  -1.33322233</span>
-<span class="co">#&gt; bs(X4, degree = 6)6:E -0.800836560  -0.54162938</span>
-<span class="co">#&gt; X5:E                   .             .         </span>
-<span class="co">#&gt; poly(X6, 2)1:E         .             .         </span>
-<span class="co">#&gt; poly(X6, 2)2:E         .             .         </span>
-<span class="co">#&gt; race1:E                .             1.83672002</span>
-<span class="co">#&gt; race2:E                .            -0.57757329</span>
-<span class="co">#&gt; race3:E                .             0.02193520</span>
-<span class="co">#&gt; race4:E                .            -0.34076444</span>
-<span class="co">#&gt; race5:E                .            -0.94031749</span></code></pre></div>
+<span class="co">#&gt;                                 1            1</span>
+<span class="co">#&gt; (Intercept)            5.42057935   5.45022411</span>
+<span class="co">#&gt; bs(X1, degree = 5)1   -0.38913702  -0.99980981</span>
+<span class="co">#&gt; bs(X1, degree = 5)2    0.00947607   0.84044532</span>
+<span class="co">#&gt; bs(X1, degree = 5)3    0.17875174   1.11415914</span>
+<span class="co">#&gt; bs(X1, degree = 5)4    0.40379077   1.16368947</span>
+<span class="co">#&gt; bs(X1, degree = 5)5    0.98556730   2.63944592</span>
+<span class="co">#&gt; bs(X2, degree = 3)1    .           -1.17689836</span>
+<span class="co">#&gt; bs(X2, degree = 3)2    .           -1.03093803</span>
+<span class="co">#&gt; bs(X2, degree = 3)3    .           -0.23466071</span>
+<span class="co">#&gt; ns(X3, df = 8)1        2.17658372   3.43257956</span>
+<span class="co">#&gt; ns(X3, df = 8)2        1.94334296   2.64241254</span>
+<span class="co">#&gt; ns(X3, df = 8)3        0.65644441   1.07346393</span>
+<span class="co">#&gt; ns(X3, df = 8)4       -1.16599084  -0.86948704</span>
+<span class="co">#&gt; ns(X3, df = 8)5       -1.62789320  -1.61625869</span>
+<span class="co">#&gt; ns(X3, df = 8)6       -1.29567515  -1.36272297</span>
+<span class="co">#&gt; ns(X3, df = 8)7        0.46196993   0.51920037</span>
+<span class="co">#&gt; ns(X3, df = 8)8       -1.12199469  -1.58839548</span>
+<span class="co">#&gt; bs(X4, degree = 6)1    4.25730420   5.97839856</span>
+<span class="co">#&gt; bs(X4, degree = 6)2   -0.21970890   0.09042593</span>
+<span class="co">#&gt; bs(X4, degree = 6)3   -4.38745682  -7.10265598</span>
+<span class="co">#&gt; bs(X4, degree = 6)4   -4.56639589  -6.62018513</span>
+<span class="co">#&gt; bs(X4, degree = 6)5   -2.00248806  -1.84209587</span>
+<span class="co">#&gt; bs(X4, degree = 6)6   -0.17598921  -0.35682238</span>
+<span class="co">#&gt; X5                     .            .         </span>
+<span class="co">#&gt; poly(X6, 2)1           .            .         </span>
+<span class="co">#&gt; poly(X6, 2)2           .            .         </span>
+<span class="co">#&gt; race1                  0.22601077   0.37075174</span>
+<span class="co">#&gt; race2                 -0.13058802  -0.20968551</span>
+<span class="co">#&gt; race3                  0.18074321   0.31408729</span>
+<span class="co">#&gt; race4                 -0.09159055  -0.13947230</span>
+<span class="co">#&gt; race5                 -0.18457540  -0.33568122</span>
+<span class="co">#&gt; E                      1.93814553   2.12863361</span>
+<span class="co">#&gt; bs(X1, degree = 5)1:E  .           -0.44742651</span>
+<span class="co">#&gt; bs(X1, degree = 5)2:E  .            0.37610905</span>
+<span class="co">#&gt; bs(X1, degree = 5)3:E  .            0.49859916</span>
+<span class="co">#&gt; bs(X1, degree = 5)4:E  .            0.52076456</span>
+<span class="co">#&gt; bs(X1, degree = 5)5:E  .            1.18118272</span>
+<span class="co">#&gt; bs(X2, degree = 3)1:E  .            .         </span>
+<span class="co">#&gt; bs(X2, degree = 3)2:E  .            .         </span>
+<span class="co">#&gt; bs(X2, degree = 3)3:E  .            .         </span>
+<span class="co">#&gt; ns(X3, df = 8)1:E      0.95642364   1.97522674</span>
+<span class="co">#&gt; ns(X3, df = 8)2:E      0.85393413   1.52053690</span>
+<span class="co">#&gt; ns(X3, df = 8)3:E      0.28845155   0.61770882</span>
+<span class="co">#&gt; ns(X3, df = 8)4:E     -0.51235392  -0.50033335</span>
+<span class="co">#&gt; ns(X3, df = 8)5:E     -0.71532077  -0.93005197</span>
+<span class="co">#&gt; ns(X3, df = 8)6:E     -0.56933916  -0.78415862</span>
+<span class="co">#&gt; ns(X3, df = 8)7:E      0.20299654   0.29876611</span>
+<span class="co">#&gt; ns(X3, df = 8)8:E     -0.49302135  -0.91401850</span>
+<span class="co">#&gt; bs(X4, degree = 6)1:E  8.46740068   9.02807791</span>
+<span class="co">#&gt; bs(X4, degree = 6)2:E -0.43698152   0.13655369</span>
+<span class="co">#&gt; bs(X4, degree = 6)3:E -8.72626271 -10.72583750</span>
+<span class="co">#&gt; bs(X4, degree = 6)4:E -9.08215666  -9.99725035</span>
+<span class="co">#&gt; bs(X4, degree = 6)5:E -3.98277126  -2.78177924</span>
+<span class="co">#&gt; bs(X4, degree = 6)6:E -0.35002695  -0.53884334</span>
+<span class="co">#&gt; X5:E                   .            .         </span>
+<span class="co">#&gt; poly(X6, 2)1:E         .            .         </span>
+<span class="co">#&gt; poly(X6, 2)2:E         .            .         </span>
+<span class="co">#&gt; race1:E                .            .         </span>
+<span class="co">#&gt; race2:E                .            .         </span>
+<span class="co">#&gt; race3:E                .            .         </span>
+<span class="co">#&gt; race4:E                .            .         </span>
+<span class="co">#&gt; race5:E                .            .</span></code></pre></div>
 <p>The estimated non-zero coefficients at <code>lambda.1se</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">predict</span>(cvfit_design, <span class="dt">type =</span> <span class="st">"nonzero"</span>)
-<span class="co">#&gt;                                  1</span>
-<span class="co">#&gt; (Intercept)            5.512775625</span>
-<span class="co">#&gt; bs(X1, degree = 5)1   -0.188049955</span>
-<span class="co">#&gt; bs(X1, degree = 5)2   -0.004952704</span>
-<span class="co">#&gt; bs(X1, degree = 5)3    0.066036357</span>
-<span class="co">#&gt; bs(X1, degree = 5)4    0.181551956</span>
-<span class="co">#&gt; bs(X1, degree = 5)5    0.510802420</span>
-<span class="co">#&gt; ns(X3, df = 8)1        1.980364713</span>
-<span class="co">#&gt; ns(X3, df = 8)2        1.918059611</span>
-<span class="co">#&gt; ns(X3, df = 8)3        0.717319414</span>
-<span class="co">#&gt; ns(X3, df = 8)4       -1.048630940</span>
-<span class="co">#&gt; ns(X3, df = 8)5       -1.643694475</span>
-<span class="co">#&gt; ns(X3, df = 8)6       -1.287381735</span>
-<span class="co">#&gt; ns(X3, df = 8)7        0.322200093</span>
-<span class="co">#&gt; ns(X3, df = 8)8       -0.892065831</span>
-<span class="co">#&gt; bs(X4, degree = 6)1    4.084523670</span>
-<span class="co">#&gt; bs(X4, degree = 6)2   -0.177473933</span>
-<span class="co">#&gt; bs(X4, degree = 6)3   -4.140595275</span>
-<span class="co">#&gt; bs(X4, degree = 6)4   -4.321382441</span>
-<span class="co">#&gt; bs(X4, degree = 6)5   -1.940285238</span>
-<span class="co">#&gt; bs(X4, degree = 6)6   -0.387314767</span>
-<span class="co">#&gt; race1                  0.326543001</span>
-<span class="co">#&gt; race2                 -0.204877512</span>
-<span class="co">#&gt; race3                  0.273547764</span>
-<span class="co">#&gt; race4                 -0.138374297</span>
-<span class="co">#&gt; race5                 -0.256838956</span>
-<span class="co">#&gt; E                      1.874424356</span>
-<span class="co">#&gt; ns(X3, df = 8)1:E      0.353212402</span>
-<span class="co">#&gt; ns(X3, df = 8)2:E      0.342099835</span>
-<span class="co">#&gt; ns(X3, df = 8)3:E      0.127939117</span>
-<span class="co">#&gt; ns(X3, df = 8)4:E     -0.187030929</span>
-<span class="co">#&gt; ns(X3, df = 8)5:E     -0.293164824</span>
-<span class="co">#&gt; ns(X3, df = 8)6:E     -0.229613864</span>
-<span class="co">#&gt; ns(X3, df = 8)7:E      0.057466722</span>
-<span class="co">#&gt; ns(X3, df = 8)8:E     -0.159106407</span>
-<span class="co">#&gt; bs(X4, degree = 6)1:E  8.445420010</span>
-<span class="co">#&gt; bs(X4, degree = 6)2:E -0.366956351</span>
-<span class="co">#&gt; bs(X4, degree = 6)3:E -8.561357214</span>
-<span class="co">#&gt; bs(X4, degree = 6)4:E -8.935164215</span>
-<span class="co">#&gt; bs(X4, degree = 6)5:E -4.011856731</span>
-<span class="co">#&gt; bs(X4, degree = 6)6:E -0.800836560</span></code></pre></div>
+<span class="co">#&gt;                                 1</span>
+<span class="co">#&gt; (Intercept)            5.42057935</span>
+<span class="co">#&gt; bs(X1, degree = 5)1   -0.38913702</span>
+<span class="co">#&gt; bs(X1, degree = 5)2    0.00947607</span>
+<span class="co">#&gt; bs(X1, degree = 5)3    0.17875174</span>
+<span class="co">#&gt; bs(X1, degree = 5)4    0.40379077</span>
+<span class="co">#&gt; bs(X1, degree = 5)5    0.98556730</span>
+<span class="co">#&gt; ns(X3, df = 8)1        2.17658372</span>
+<span class="co">#&gt; ns(X3, df = 8)2        1.94334296</span>
+<span class="co">#&gt; ns(X3, df = 8)3        0.65644441</span>
+<span class="co">#&gt; ns(X3, df = 8)4       -1.16599084</span>
+<span class="co">#&gt; ns(X3, df = 8)5       -1.62789320</span>
+<span class="co">#&gt; ns(X3, df = 8)6       -1.29567515</span>
+<span class="co">#&gt; ns(X3, df = 8)7        0.46196993</span>
+<span class="co">#&gt; ns(X3, df = 8)8       -1.12199469</span>
+<span class="co">#&gt; bs(X4, degree = 6)1    4.25730420</span>
+<span class="co">#&gt; bs(X4, degree = 6)2   -0.21970890</span>
+<span class="co">#&gt; bs(X4, degree = 6)3   -4.38745682</span>
+<span class="co">#&gt; bs(X4, degree = 6)4   -4.56639589</span>
+<span class="co">#&gt; bs(X4, degree = 6)5   -2.00248806</span>
+<span class="co">#&gt; bs(X4, degree = 6)6   -0.17598921</span>
+<span class="co">#&gt; race1                  0.22601077</span>
+<span class="co">#&gt; race2                 -0.13058802</span>
+<span class="co">#&gt; race3                  0.18074321</span>
+<span class="co">#&gt; race4                 -0.09159055</span>
+<span class="co">#&gt; race5                 -0.18457540</span>
+<span class="co">#&gt; E                      1.93814553</span>
+<span class="co">#&gt; ns(X3, df = 8)1:E      0.95642364</span>
+<span class="co">#&gt; ns(X3, df = 8)2:E      0.85393413</span>
+<span class="co">#&gt; ns(X3, df = 8)3:E      0.28845155</span>
+<span class="co">#&gt; ns(X3, df = 8)4:E     -0.51235392</span>
+<span class="co">#&gt; ns(X3, df = 8)5:E     -0.71532077</span>
+<span class="co">#&gt; ns(X3, df = 8)6:E     -0.56933916</span>
+<span class="co">#&gt; ns(X3, df = 8)7:E      0.20299654</span>
+<span class="co">#&gt; ns(X3, df = 8)8:E     -0.49302135</span>
+<span class="co">#&gt; bs(X4, degree = 6)1:E  8.46740068</span>
+<span class="co">#&gt; bs(X4, degree = 6)2:E -0.43698152</span>
+<span class="co">#&gt; bs(X4, degree = 6)3:E -8.72626271</span>
+<span class="co">#&gt; bs(X4, degree = 6)4:E -9.08215666</span>
+<span class="co">#&gt; bs(X4, degree = 6)5:E -3.98277126</span>
+<span class="co">#&gt; bs(X4, degree = 6)6:E -0.35002695</span></code></pre></div>
 </div>
   </div>
 
