@@ -61,7 +61,7 @@ make_gendata_Paper <- function(n, p, corr, betaE, SNR, lambda.type, parameterInd
   # used for glmnet and lasso backtracking
   # f.identity <- function(i) i
 
-  new_model(name = "gendata_Paper",
+  new_model(name = "gendata_thesis",
             label = sprintf("n = %s, p = %s, corr = %s, betaE = %s, SNR = %s, index = %s, lambda = %s",
                             n, p, corr, betaE, SNR, parameterIndex, lambda.type),
             params = list(n = n, p = p, corr = corr, betaE = betaE, SNR = SNR,

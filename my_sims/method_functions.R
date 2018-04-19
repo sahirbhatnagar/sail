@@ -1,17 +1,30 @@
 ## @knitr methods
-# library(doMC)
-# registerDoMC(cores = 8)
+library(doMC)
+registerDoMC(cores = 10)
+error_return <- list(beta = NA,
+                     # cvfit = NULL,
+                     vnames = NA,
+                     nonzero_coef = NA,
+                     active = c(""),
+                     not_active = NA,
+                     yhat_test = NA,
+                     cvmse = NA,
+                     causal = NA,
+                     not_causal = NA,
+                     ytest = NA)
+
 
 sail <- new_method("sail", "Sail",
                    method = function(model, draw) {
-
+                     tryCatch({
                      cvfit <- cv.sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
                                       basis = function(i) splines::bs(i, degree = 5),
+                                      verbose = 1,
                                       # basis = function(i) i,
-                                      dfmax = 20,
+                                      # dfmax = 20,
                                       parallel = TRUE, nfolds = 10, nlambda = 100)
 
-                     nzcoef <- coef(cvfit, s = model$lambda.type)[nonzero(coef(cvfit, s = model$lambda.type)),,drop=F]
+                     nzcoef <- coef(cvfit, s = model$lambda.type)[sail:::nonzero(coef(cvfit, s = model$lambda.type)),,drop=F]
 
                      list(beta = coef(cvfit, s = model$lambda.type)[-1,,drop=F],
                           # cvfit = cvfit,
@@ -24,11 +37,18 @@ sail <- new_method("sail", "Sail",
                           causal = draw[["causal"]],
                           not_causal = draw[["not_causal"]],
                           ytest = draw[["ytest"]])
+                     },
+                     error = function(err) {
+                       return(error_return)
+                     }
+                     )
                    })
 
 
 gbm <- new_method("gbm", "GBM",
                    method = function(model, draw) {
+
+                     tryCatch({
 
                      gbmfit <- gbm::gbm.fit(x = draw[["xtrain_lasso"]], y = draw[["ytrain"]],
                                             distribution = "gaussian", verbose = FALSE,
@@ -43,7 +63,7 @@ gbm <- new_method("gbm", "GBM",
                      active <- rownames(topgbm[which(topgbm$rel.inf>0),,drop=FALSE])
 
 
-                     list(beta = NA,
+                     return(list(beta = NA,
                           # cvfit = cvfit,
                           vnames = draw[["vnames_lasso"]],
                           nonzero_coef = NA,
@@ -53,18 +73,26 @@ gbm <- new_method("gbm", "GBM",
                           cvmse = NA,
                           causal = draw[["causal"]],
                           not_causal = draw[["not_causal"]],
-                          ytest = draw[["ytest"]])
+                          ytest = draw[["ytest"]]))
+                     },
+                     error = function(err) {
+                       return(error_return)
+                     }
+                     )
                    })
 
 
 lasso <- new_method("lasso", "Lasso",
                     method = function(model, draw) {
+
+                      tryCatch({
+
                       fitglmnet <- cv.glmnet(x = draw[["xtrain_lasso"]], y = draw[["ytrain"]],
                                              alpha = 1, nfolds = 10)
 
                       nzcoef <- coef(fitglmnet, s = model$lambda.type)[nonzeroCoef(coef(fitglmnet, s = model$lambda.type)),,drop=F]
 
-                      list(beta = coef(fitglmnet, s = model$lambda.type)[-1,,drop=F],
+                      return(list(beta = coef(fitglmnet, s = model$lambda.type)[-1,,drop=F],
                            # cvfit = fitglmnet,
                            vnames = draw[["vnames_lasso"]],
                            nonzero_coef = nzcoef,
@@ -74,12 +102,19 @@ lasso <- new_method("lasso", "Lasso",
                            cvmse = fitglmnet$cvm[which(fitglmnet[[model$lambda.type]]==fitglmnet$lambda)],
                            causal = draw[["causal"]],
                            not_causal = draw[["not_causal"]],
-                           ytest = draw[["ytest"]])
+                           ytest = draw[["ytest"]]))
+                      },
+                      error = function(err) {
+                        return(error_return)
+                      }
+                      )
                     })
 
 # lassoBT only gives the minimum CV error.. doesnt have lambda.1se
 lassoBT <- new_method("lassoBT", "LassoBT",
                       method = function(model, draw) {
+
+                        tryCatch({
 
                         # fitglmnet <- cv.glmnet(x = model$X_linear_design, y = draw, alpha = 1, nfolds = 10)
                         fitBT <- cvLassoBT(x = draw[["xtrain_lasso"]],
@@ -87,7 +122,7 @@ lassoBT <- new_method("lassoBT", "LassoBT",
 
                         coefBT <- as.matrix(predict(fitBT$BT_fit, type = "coef",
                                                     s = fitBT$lambda[fitBT$cv_opt[1]], iter = fitBT$cv_opt[2]))
-                        nzcoef <- coefBT[nonzero(coefBT),,drop=F]
+                        nzcoef <- coefBT[sail:::nonzero(coefBT),,drop=F]
 
                         ints <- grep(":",rownames(nzcoef)[-1], value=T)
                         if (length(ints) != 0) {
@@ -108,7 +143,7 @@ lassoBT <- new_method("lassoBT", "LassoBT",
                         } # return NULL on error
                         )
 
-                        list(beta = coefBT,
+                        return(list(beta = coefBT,
                              # cvfit = fitBT,
                              vnames = draw[["vnames"]],
                              nonzero_coef = nzcoef,
@@ -118,7 +153,12 @@ lassoBT <- new_method("lassoBT", "LassoBT",
                              cvmse = fitBT$cv_opt_err,
                              causal = draw[["causal"]],
                              not_causal = draw[["not_causal"]],
-                             ytest = draw[["ytest"]])
+                             ytest = draw[["ytest"]]))
+                        },
+                        error = function(err) {
+                          return(error_return)
+                        }
+                        )
                       })
 
 
@@ -158,17 +198,7 @@ GLinternet <- new_method("GLinternet", "GLinternet",
                                          ytest = draw[["ytest"]]))
                            },
                            error = function(err) {
-                             return(list(beta = NULL,
-                                         # cvfit = NULL,
-                                         nonzero_coef = NULL,
-                                         active = c(""),
-                                         not_active = draw[["vnames"]],
-                                         yhat_test = NA,
-                                         cvmse = NA,
-                                         causal = draw[["causal"]],
-                                         not_causal = draw[["not_causal"]],
-                                         ytest = draw[["ytest"]]))
-
+                             return(error_return)
                            }
                            )
                          })

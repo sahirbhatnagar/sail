@@ -22,7 +22,8 @@ pacman::p_load(doMC)
 pacman::p_load(glmnet)
 pacman::p_load(LassoBacktracking)
 pacman::p_load(glinternet)
-
+pacman::p_load(gbm)
+pacman::p_load_gh('sahirbhatnagar/sail')
 # registerDoMC(cores = 10)
 # Index <- as.numeric(as.character(commandArgs(trailingOnly = T)[1]))
 
@@ -30,35 +31,58 @@ pacman::p_load(glinternet)
 # source("/home/sahir/git_repositories/sail/my_sims/method_functions.R")
 # source("/home/sahir/git_repositories/sail/my_sims/eval_functions.R")
 
-source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/my_sims/model_functions.R")
-source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/my_sims/method_functions.R")
-source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/my_sims/eval_functions.R")
-source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git/sail/R/functions.R")
-devtools::load_all("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/")
+source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/model_functions.R")
+source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/method_functions.R")
+source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/eval_functions.R")
 
-sim <- new_simulation(name = "sail_lassoBT_glinternet",
-                       label = "Sail McGill Other", dir = "/mnt/GREENWOOD_SCRATCH/sahir.bhatnagar/sail_simulations/") %>%
-  generate_model(make_gendata_Paper, seed = 123,
-                 n = 200, p = 1000, corr = 0, betaE = 1, SNR = 2, lambda.type = "lambda.min",
-                 parameterIndex = list(1,4,5),
+# registerDoMC(cores = 35)
+
+
+sim <- new_simulation(name = "sail_lasso_glinternet_lassoBT_gbm",
+                      label = "sail v2",
+                      dir = ".") %>%
+  generate_model(make_gendata_Paper, seed = 1234,
+                 n = 400, p = 1000, corr = 0, betaE = 2, SNR = 2, lambda.type = "lambda.min",
+                 parameterIndex = list(1,2),
                  vary_along = "parameterIndex") %>%
-  simulate_from_model(nsim = 2, index = 21) %>%
-  run_method(list(lassoBT, GLinternet),
-             parallel = list(socket_names = 5,
-                        libraries = c("LassoBacktracking", "glinternet","glmnet","splines","magrittr")))
+  simulate_from_model(nsim = 3, index = 1:35) %>%
+  run_method(list(sail, lasso, GLinternet, lassoBT, gbm),
+             parallel = list(socket_names = 35,
+                             libraries = c("LassoBacktracking", "glinternet","glmnet","splines","magrittr","sail","gbm")))
+
+simulator::save_simulation(sim)
+# sim <- load_simulation("sail_lasso_glinternet_lassoBT_gbm")
+
+# sim <- sim %>% evaluate(list(mse, cvmse, tpr, fpr, nactive))
+# sim %>% plot_eval(metric_name = "mse")
+# sim %>% plot_eval(metric_name = "cvmse")
+# sim %>% plot_eval(metric_name = "nactive")
+# sim %>% plot_eval(metric_name = "tpr")
 
 
-sim <- sim %>% evaluate(list(mse, cvmse, r2, tpr, fpr, correct_sparsity,nactive))
-res <- as.data.frame(evals(sim))
-# saveRDS(res, file = "sail/sail_lambda_branch/mcgillsims/sim_results/res7.rds")
+# sim <- new_simulation(name = "sail_lassoBT_glinternet",
+#                        label = "Sail McGill Other", dir = "/mnt/GREENWOOD_SCRATCH/sahir.bhatnagar/sail_simulations/") %>%
+#   generate_model(make_gendata_Paper, seed = 123,
+#                  n = 200, p = 1000, corr = 0, betaE = 1, SNR = 2, lambda.type = "lambda.min",
+#                  parameterIndex = list(1,4,5),
+#                  vary_along = "parameterIndex") %>%
+#   simulate_from_model(nsim = 2, index = 21) %>%
+#   run_method(list(lassoBT, GLinternet),
+#              parallel = list(socket_names = 5,
+#                         libraries = c("LassoBacktracking", "glinternet","glmnet","splines","magrittr")))
 
-saveRDS(object = res,
-        file = tempfile(pattern = sprintf("res_%s_",2),
-                        tmpdir = "/mnt/GREENWOOD_SCRATCH/sahir.bhatnagar/sail_simulations/glinternet_lassoBT/",
-                        fileext = ".rds")
-)
 
-ls()
+# sim <- sim %>% evaluate(list(mse, cvmse, r2, tpr, fpr, correct_sparsity,nactive))
+# res <- as.data.frame(evals(sim))
+# # saveRDS(res, file = "sail/sail_lambda_branch/mcgillsims/sim_results/res7.rds")
+#
+# saveRDS(object = res,
+#         file = tempfile(pattern = sprintf("res_%s_",2),
+#                         tmpdir = "/mnt/GREENWOOD_SCRATCH/sahir.bhatnagar/sail_simulations/glinternet_lassoBT/",
+#                         fileext = ".rds")
+# )
+
+# ls()
 
 
 ## @knitr init
