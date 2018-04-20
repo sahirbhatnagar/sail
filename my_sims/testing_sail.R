@@ -10,7 +10,7 @@ devtools::load_all("/home/sahir/git_repositories/sail/")
 # DT$e
 #
 # DT <- gendata4(n = 100, p = 20, E = stats::rbinom(100, 2,0.5), betaE = 2, SNR = 4)
-DT <- sail::gendata(n = 200, p = 10, corr = 0, SNR = 2, betaE = 1, parameterIndex = 4)
+DT <- sail::gendata(n = 200, p = 10, corr = 0, SNR = 2, betaE = 2, parameterIndex = 1)
 DT$f1.f
 DT$x
 DT$not_causal
@@ -25,7 +25,7 @@ library(doMC)
 registerDoMC(cores = 8)
 data("sailsim")
 f.basis <- function(i) splines::bs(i, degree = 5)
-f.basis <- function(i) i
+# f.basis <- function(i) i
 cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
                  # alpha = 0.5,
                  verbose = 2,

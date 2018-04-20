@@ -197,8 +197,30 @@ is numeric, it is taken as the value(s) of <code>lambda</code> to be used.</p></
 <span class='fu'>predict</span>(<span class='no'>cvfit</span>, <span class='kw'>s</span> <span class='kw'>=</span> <span class='st'>"lambda.min"</span>) <span class='co'># predict at "lambda.min"</span>
 <span class='fu'>predict</span>(<span class='no'>cvfit</span>, <span class='kw'>s</span> <span class='kw'>=</span> <span class='fl'>0.5</span>) <span class='co'># predict at specific value of lambda</span>
 <span class='fu'>predict</span>(<span class='no'>cvfit</span>, <span class='kw'>type</span> <span class='kw'>=</span> <span class='st'>"nonzero"</span>) <span class='co'># non-zero coefficients at lambda.1se</span>
- }</div><div class='output co'>#&gt;                    1
-#&gt; (Intercept) 5.218785</div></pre>
+ }</div><div class='output co'>#&gt;                        1
+#&gt; (Intercept)   5.45327020
+#&gt; X1_1         -0.32795686
+#&gt; X1_2          0.83586426
+#&gt; X1_3          2.40801559
+#&gt; X3_1          3.22773055
+#&gt; X3_2         -2.74925398
+#&gt; X3_3         -2.40840181
+#&gt; X4_1         -0.28482193
+#&gt; X4_2         -9.06472928
+#&gt; X4_3         -1.70457282
+#&gt; X8_1          0.32709320
+#&gt; X8_2         -0.06081891
+#&gt; X8_3         -0.52497808
+#&gt; X11_1         0.15836459
+#&gt; X11_2        -0.47121929
+#&gt; X11_3        -0.85764458
+#&gt; E             2.01866186
+#&gt; X3_1:E        1.86460172
+#&gt; X3_2:E       -1.58819444
+#&gt; X3_3:E       -1.39129028
+#&gt; X4_1:E       -0.58207855
+#&gt; X4_2:E      -18.52520426
+#&gt; X4_3:E       -3.48356346</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
