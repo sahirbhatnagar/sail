@@ -35,6 +35,14 @@ l2norm <- function(x) sqrt(sum(x^2))
 cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
 
+fix.lam <- function(lam){
+  if(length(lam)>2){
+    llam=log(lam)
+    lam[1]=exp(2*llam[2]-llam[3])
+  }
+  lam
+}
+
 
 error.bars <- function(x, upper, lower, width = 0.02, ...) {
   xlim <- range(x)
