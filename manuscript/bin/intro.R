@@ -1,7 +1,9 @@
 rm(list=ls())
 library(sail)
+library(doMC)
+registerDoMC(cores = 8)
 
-## ---- intro ----
+## ---- toy-example ----
 gendataIntro <- function (n, p, corr = 0, E = truncnorm::rtruncnorm(n, a = -1, b = 1),
                           betaE = 2, SNR = 2, hierarchy = c("strong", "weak", "none"),
                           nonlinear = TRUE, interactions = TRUE, causal,
@@ -73,9 +75,304 @@ gendataIntro <- function (n, p, corr = 0, E = truncnorm::rtruncnorm(n, a = -1, b
 }
 
 set.seed(5432)
-rm(cvfit)
-# set.seed(3)
 DT <- gendataIntro(n = 100, p = 20, corr = 0, SNR = 2, betaE = 1.75)
+
+f.basis <- function(i) splines::bs(i, degree = 3)
+cvfit <- cv.sail(x = DT$x, y = DT$y, e = DT$e,
+                 center.e = FALSE,
+                 verbose = 1,
+                 nlambda = 100,
+                 basis = f.basis, nfolds = 5, parallel = TRUE)
+
+## ---- toy-solution-path ----
+
+plotSailCoefIntro <- function(cvfit, coefs, lambda, group, df, dev, vnames, environ,
+                              alpha = 1, legend.loc, label = TRUE, log.l = TRUE,
+                              norm = FALSE, ...) {
+
+  if (alpha < 0 | alpha > 1) {
+    warning("alpha must be in the range [0,1]. Setting alpha = 1")
+    alpha <- 1
+  }
+
+  lambda.min.index <- which(cvfit[["lambda.min"]]==cvfit$lambda)
+  lambda.1se.index <- which(cvfit[["lambda.1se"]]==cvfit$lambda)
+  nzind <- cvfit$sail.fit$group[abs(cvfit$sail.fit$beta[,lambda.1se.index])>0]
+  zind <- cvfit$sail.fit$group[abs(cvfit$sail.fit$beta[,lambda.1se.index])==0]
+
+  if (norm) {
+    # not implemented for now
+  } else {
+    if (length(dim(coefs)) == 3) {
+      beta <- matrix(coefs[, -1, , drop = FALSE], ncol = dim(coefs)[3])
+    } else {
+      beta <- coefs
+    }
+    penalized <- which(group != 0)
+    nonzero <- which(apply(abs(beta), 1, sum) != 0)
+    ind <- intersect(penalized, nonzero)
+    Y <- as.matrix(beta[ind, , drop = FALSE])
+    g <- as.numeric(as.factor(group[ind]))
+  }
+  p <- nrow(Y)
+  l <- lambda
+  n.g <- max(g)
+  if (log.l) {
+    l <- log(l)
+    index <- l
+    approx.f <- 0
+    xlab <- expression(log(lambda))
+  } else {
+    xlab <- expression(lambda)
+    index <- lambda
+    approx.f <- 0
+  }
+
+  ylims <- if (!missing(environ)) range(Y, environ) else range(Y)
+  plot.args <- list(
+    x = l, y = 1:length(l), ylim = ylims,
+    xlab = xlab, ylab = "", type = "n",
+    xlim = c(rev(range(l))[1], rev(range(l))[2]),
+    cex.lab = 1.05,
+    cex.axis = 1.05,
+    cex = 1.05,
+    family = "serif"
+  )
+  new.args <- list(...)
+  if (length(new.args)) {
+    new.plot.args <- new.args[names(new.args) %in% c(
+      names(par()),
+      names(formals(plot.default))
+    )]
+    plot.args[names(new.plot.args)] <- new.plot.args
+  }
+  do.call("plot", plot.args)
+  if (plot.args$ylab == "") {
+    ylab <- if (norm) {
+      expression("||" * hat(theta) * "||")
+    } else {
+      expression(hat(theta))
+    }
+    mtext(ylab, 2, 3.5, las = 1, adj = 0, cex = 2*0.5)
+  }
+  abline(h = 0, lwd = 0.8, col = "gray")
+  cols <- hcl(
+    h = seq(15, 375, len = max(4, n.g + 1)), l = 60,
+    c = 150, alpha = alpha
+  )
+  cols <- if (n.g == 2) cols[c(1, 3)] else cols[1:n.g]
+  line.args <- list(
+    col = cols, lwd = 1 + 2 * exp(-p / 20),
+    lty = 1, pch = ""
+  )
+  if (length(new.args)) {
+    line.args[names(new.args)] <- new.args
+  }
+
+  line.args$x <- l
+  line.args$y <- t(Y)
+
+  newcols <- rep("#D3D3D3", n.g)
+  newcols[unique(nzind)] <- sail:::cbbPalette[c(4,7)]
+  line.args$col <- newcols[g]
+
+  line.args$lty <- rep(line.args$lty, length.out = max(g))
+  line.args$lty <- line.args$lty[g]
+
+  line.args$lwd <- rep(line.args$lwd, length.out = max(g))
+  line.args$lwd[unique(nzind)] <- 2
+  line.args$lwd <- line.args$lwd[g]
+
+  do.call("matlines", line.args)
+
+  if (!missing(environ)) lines(l, environ, lwd = 2)
+
+  if (!missing(legend.loc)) {
+    legend.args <- list(
+      col = cols, lwd = line.args$lwd,
+      lty = line.args$lty, legend = vnames
+    )
+    if (length(new.args)) {
+      new.legend.args <- new.args[names(new.args) %in%
+                                    names(formals(legend))]
+      legend.args[names(new.legend.args)] <- new.legend.args
+    }
+    legend.args$x <- legend.loc
+    do.call("legend", legend.args)
+  }
+
+  if (label) {
+    ypos <- Y[c("X1_1","X1_2","X1_3","X2_1","X2_2","X2_3"), ncol(Y)]
+    # mtext(text = names(ypos), side = 4, at = ypos, las = 1)
+    mtext(text = c(TeX("$X1_1$"),TeX("$X1_2$"),TeX("$X1_3$"),
+                   TeX("$X2_1$"),TeX("$X2_2$"),TeX("$X2_3$")), side = 4, at = ypos, las = 1)
+    mtext(text = "E", side = 4, at = environ[length(environ)], las = 1)
+  }
+
+  abline(v = log(cvfit$lambda.1se), lty=2)
+  mtext(text = latex2exp::TeX("$\\lambda_{1SE}$"), side = 1, at = log(cvfit$lambda.1se), line = 1)
+
+}
+
+plotSailCoefInterIntro <- function(cvfit, coefs, lambda, group, df, dev, vnames, environ,
+                              alpha = 1, legend.loc, label = TRUE, log.l = TRUE,
+                              norm = FALSE, ...) {
+
+  # browser()
+  if (alpha < 0 | alpha > 1) {
+    warning("alpha must be in the range [0,1]. Setting alpha = 1")
+    alpha <- 1
+  }
+
+  lambda.min.index <- which(cvfit[["lambda.min"]]==cvfit$lambda)
+  lambda.1se.index <- which(cvfit[["lambda.1se"]]==cvfit$lambda)
+  nzind <- cvfit$sail.fit$group[abs(cvfit$sail.fit$alpha[,lambda.1se.index])>0]
+  zind <- cvfit$sail.fit$group[abs(cvfit$sail.fit$alpha[,lambda.1se.index])==0]
+
+  if (norm) { # not implemented for now
+  } else {
+    if (length(dim(coefs)) == 3) {
+      beta <- matrix(coefs[, -1, , drop = FALSE], ncol = dim(coefs)[3])
+    } else {
+      beta <- coefs
+    }
+    penalized <- which(group != 0)
+    nonzero <- which(apply(abs(beta), 1, sum) != 0)
+    ind <- intersect(penalized, nonzero)
+    Y <- as.matrix(beta[ind, , drop = FALSE])
+    g <- as.numeric(as.factor(group[ind]))
+  }
+  p <- nrow(Y)
+  l <- lambda
+  n.g <- max(g)
+  if (log.l) {
+    l <- log(l)
+    index <- l
+    approx.f <- 0
+    xlab <- expression(log(lambda))
+  } else {
+    xlab <- expression(lambda)
+    index <- lambda
+    approx.f <- 0
+  }
+
+  ylims <- if (!missing(environ)) range(Y, environ) else range(Y)
+  plot.args <- list(
+    x = l, y = 1:length(l), ylim = ylims,
+    xlab = xlab, ylab = "", type = "n",
+    xlim = c(rev(range(l))[1], rev(range(l))[2]),
+    cex.lab = 1.05,
+    cex.axis = 1.05,
+    cex = 1.05,
+    family = "serif"
+  )
+  new.args <- list(...)
+  if (length(new.args)) {
+    new.plot.args <- new.args[names(new.args) %in% c(
+      names(par()),
+      names(formals(plot.default))
+    )]
+    plot.args[names(new.plot.args)] <- new.plot.args
+  }
+  do.call("plot", plot.args)
+  if (plot.args$ylab == "") {
+    ylab <- if (norm) {
+      expression("||" * hat(theta) * "||")
+    } else {
+      expression(hat(theta))
+    }
+    mtext(ylab, 2, 3.5, las = 1, adj = 0, cex = 2*.5)
+  }
+  abline(h = 0, lwd = 0.8, col = "gray")
+  cols <- hcl(
+    h = seq(15, 375, len = max(4, n.g + 1)), l = 60,
+    c = 150, alpha = alpha
+  )
+  cols <- if (n.g == 2) cols[c(1, 3)] else cols[1:n.g]
+  line.args <- list(
+    col = cols, lwd = 1 + 2 * exp(-p / 20),
+    lty = 1, pch = ""
+  )
+  if (length(new.args)) {
+    line.args[names(new.args)] <- new.args
+  }
+
+  line.args$x <- l
+  line.args$y <- t(Y)
+# browser()
+  newcols <- rep("#D3D3D3", n.g)
+  newcols[unique(nzind)] <- sail:::cbbPalette[c(7)]
+  line.args$col <- newcols[g]
+
+  line.args$lty <- rep(line.args$lty, length.out = max(g))
+  line.args$lty <- line.args$lty[g]
+
+  line.args$lwd <- rep(line.args$lwd, length.out = max(g))
+  line.args$lwd[unique(nzind)] <- 2
+  line.args$lwd <- line.args$lwd[g]
+
+  do.call("matlines", line.args)
+
+  if (!missing(environ)) lines(l, environ, lwd = 2)
+
+  if (!missing(legend.loc)) {
+    legend.args <- list(
+      col = cols, lwd = line.args$lwd,
+      lty = line.args$lty, legend = vnames
+    )
+    if (length(new.args)) {
+      new.legend.args <- new.args[names(new.args) %in%
+                                    names(formals(legend))]
+      legend.args[names(new.legend.args)] <- new.legend.args
+    }
+    legend.args$x <- legend.loc
+    do.call("legend", legend.args)
+  }
+
+  if (label) {
+    ypos <- Y[c("X2_1:E","X2_2:E","X2_3:E"), ncol(Y)]
+    mtext(text = c(TeX("$E\\cdot X2_1$"),TeX("$E\\cdot X2_2$"),TeX("$E\\cdot X2_3$")), side = 4, at = ypos, las = 1)
+  }
+
+  abline(v = log(cvfit$lambda.1se), lty=2)
+}
+
+# c(bottom, left, top, right)
+trim <- 1:70
+x <- cvfit$sail.fit
+par(mfrow = c(2, 1),
+    mar = 0.1 + c(3.7, 4.0, 0, 3.2),
+    oma = c(0, 1, 1, 0),
+    cex.lab = 1.2, font.lab = 1.2, cex.axis = 1.2,
+    cex.main = 1.2)
+plotSailCoefIntro(
+  cvfit = cvfit,
+  coefs = x$beta[,trim],
+  environ = x$bE[trim],
+  lambda = x$lambda[trim],
+  df = (x$dfbeta + x$dfenviron)[trim],
+  group = x$group,
+  dev = x$dev.ratio[trim],
+  vnames = x$vnames,
+  ylab = "Main effects",
+  xlab = "", xaxt = "n")
+plotSailCoefInterIntro(
+  cvfit = cvfit,
+  coefs = x$alpha[,trim],
+  lambda = x$lambda[trim],
+  df = x$dfalpha[trim],
+  group = x$group,
+  dev = x$dev.ratio[trim],
+  vnames = x$vnames,
+  ylab = "Interactions")
+
+
+
+
+
+
+
+## ---- toy-effects ----
 
 x2 <- DT$X2
 e <- DT$e
@@ -130,39 +427,14 @@ rug(x2)
 dev.off()
 
 
+## ---- toy-plots ----
 
-
-
-library(doMC)
-registerDoMC(cores = 8)
-f.basis <- function(i) splines::bs(i, degree = 3)
-cvfit <- cv.sail(x = DT$x, y = DT$y, e = DT$e,
-                 center.e = FALSE,
-                 # thresh = 1e-05,
-                 # alpha = 0.6,
-                 verbose = 1,
-                 nlambda = 100,
-                 # dfmax = 10,
-                 basis = f.basis, nfolds = 5, parallel = TRUE)
-
-# fit <- sail(x = DT$x, y = DT$y, e = DT$e,
-#                  center.e = FALSE,
-#                  # thresh = 1e-05,
-#                  # alpha = 0.6,
-#                  verbose = 1,
-#                  nlambda = 100,
-#                  # dfmax = 10,
-#                  basis = f.basis)
-# plot(fit)
 plot(cvfit)
 predict(cvfit, s="lambda.min", type = "nonzero")
 predict(cvfit, s="lambda.1se", type = "nonzero")
-
-
 plot(cvfit$sail.fit)
 
 
-cvfit$lambda
 plot(cvfit$sail.fit)#, xlim = c(1,-3), ylim = c(-5,5))
 abline(v = log(cvfit[["lambda.1se"]]))
 abline(v = log(cvfit[["lambda.min"]]))
@@ -170,7 +442,7 @@ abline(v = log(cvfit[["lambda.min"]]))
 plotMain(cvfit$sail.fit, x = DT$x, xvar = "X1",
          s = cvfit$lambda.1se, f.truth = DT$f1.f)
 plotMain(cvfit$sail.fit, x = DT$x, xvar = "X2",
-        s = cvfit$lambda.1se, f.truth = DT$f2.f)
+         s = cvfit$lambda.1se, f.truth = DT$f2.f)
 plotInter(cvfit$sail.fit, x = DT$x, xvar = "X4",
           f.truth = DT$f4.inter,
           s = cvfit$lambda.min,
@@ -180,200 +452,3 @@ which(cvfit$lambda.min==cvfit$lambda)
 which(cvfit$lambda.1se==cvfit$lambda)
 cbind(cvfit$sail.fit$beta[,40,drop=F], cvfit$sail.fit$beta[,30,drop=F])
 cbind(cvfit$sail.fit$alpha[,40,drop=F], cvfit$sail.fit$alpha[,30,drop=F])
-
-dev.off()
-op <- graphics::par(
-    mfrow = c(2, 1),
-    mar = 0.1 + c(4.2, 4.0, 1, 3),
-    oma = c(0, 1, 1, 0),
-    cex.lab = 1.2, font.lab = 1.2, cex.axis = 1.2,
-    cex.main = 1.2
-  )
-
-trim <- 1:70
-
-x <- cvfit$sail.fit
-
-plotSailCoefIntro(
-  cvfit = cvfit,
-  coefs = x$beta[,trim],
-  environ = x$bE[trim],
-  lambda = x$lambda[trim],
-  df = (x$dfbeta + x$dfenviron)[trim],
-  group = x$group,
-  dev = x$dev.ratio[trim],
-  vnames = x$vnames,
-  ylab = "Main effects",
-  xlab = "", xaxt = "n")
-
-plotSailCoefIntro(
-  cvfit = cvfit,
-  coefs = x$alpha[,trim],
-  lambda = x$lambda[trim],
-  df = x$dfalpha[trim],
-  group = x$group,
-  dev = x$dev.ratio[trim],
-  vnames = x$vnames,
-  ylab = "Interactions")
-
-graphics::par(op)
-
-
-
-plotSailCoefIntro <- function(cvfit, coefs, lambda, group, df, dev, vnames, environ,
-                         alpha = 1, legend.loc, label = TRUE, log.l = TRUE,
-                         norm = FALSE, ...) {
-
-  # browser()
-  if (alpha < 0 | alpha > 1) {
-    warning("alpha must be in the range [0,1]. Setting alpha = 1")
-    alpha <- 1
-  }
-
-  lambda.min.index <- which(cvfit[["lambda.min"]]==cvfit$lambda)
-  lambda.1se.index <- which(cvfit[["lambda.1se"]]==cvfit$lambda)
-  nzind <- cvfit$sail.fit$group[abs(cvfit$sail.fit$beta[,lambda.1se.index])>0]
-  zind <- cvfit$sail.fit$group[abs(cvfit$sail.fit$beta[,lambda.1se.index])==0]
-
-  if (norm) { # not implemented for now
-    # Y <- predict(x, type = "norm")
-    # index <- Y
-    # approx.f = 1
-    # if (any(x$group == 0))
-    #   Y <- Y[-1, ]
-    # nonzero <- which(apply(abs(Y), 1, sum) != 0)
-    # Y <- Y[nonzero, ]
-    # g <- 1:nrow(Y)
-  } else {
-    if (length(dim(coefs)) == 3) {
-      beta <- matrix(coefs[, -1, , drop = FALSE], ncol = dim(coefs)[3])
-    } else {
-      beta <- coefs
-    }
-    penalized <- which(group != 0)
-    nonzero <- which(apply(abs(beta), 1, sum) != 0)
-    ind <- intersect(penalized, nonzero)
-    Y <- as.matrix(beta[ind, , drop = FALSE])
-    g <- as.numeric(as.factor(group[ind]))
-  }
-  p <- nrow(Y)
-  l <- lambda
-  n.g <- max(g)
-  if (log.l) {
-    l <- log(l)
-    index <- l
-    approx.f <- 0
-    xlab <- expression(log(lambda))
-  } else {
-    xlab <- expression(lambda)
-    index <- lambda
-    approx.f <- 0
-  }
-
-  ylims <- if (!missing(environ)) range(Y, environ) else range(Y)
-  plot.args <- list(
-    x = l, y = 1:length(l), ylim = ylims,
-    xlab = xlab, ylab = "", type = "n",
-    xlim = c(rev(range(l))[1], rev(range(l))[2]),
-    # las = 1,
-    cex.lab = 1.5,
-    cex.axis = 1.5,
-    cex = 1.5,
-    # bty = "n",
-    # mai=c(1,1,0.1,0.2),
-    # tcl = -0.5,
-    # omi = c(0.2,1,0.2,0.2),
-    family = "serif"
-  )
-  new.args <- list(...)
-  if (length(new.args)) {
-    new.plot.args <- new.args[names(new.args) %in% c(
-      names(par()),
-      names(formals(plot.default))
-    )]
-    plot.args[names(new.plot.args)] <- new.plot.args
-  }
-  do.call("plot", plot.args)
-  if (plot.args$ylab == "") {
-    ylab <- if (norm) {
-      expression("||" * hat(theta) * "||")
-    } else {
-      expression(hat(theta))
-    }
-    mtext(ylab, 2, 3.5, las = 1, adj = 0, cex = 2)
-  }
-  abline(h = 0, lwd = 0.8, col = "gray")
-  cols <- hcl(
-    h = seq(15, 375, len = max(4, n.g + 1)), l = 60,
-    c = 150, alpha = alpha
-  )
-  cols <- if (n.g == 2) cols[c(1, 3)] else cols[1:n.g]
-  line.args <- list(
-    col = cols, lwd = 1 + 2 * exp(-p / 20),
-    lty = 1, pch = ""
-  )
-  if (length(new.args)) {
-    line.args[names(new.args)] <- new.args
-  }
-
-  # browser()
-  # nzind;zind
-  line.args$x <- l
-  line.args$y <- t(Y)
-
-  newcols <- rep("#D3D3D3", n.g)
-  newcols[unique(nzind)] <- sail:::cbbPalette[c(4,7)]
-  line.args$col <- newcols[g]
-
-  line.args$lty <- rep(line.args$lty, length.out = max(g))
-  line.args$lty <- line.args$lty[g]
-
-  line.args$lwd <- rep(line.args$lwd, length.out = max(g))
-  line.args$lwd[unique(nzind)] <- 2
-  line.args$lwd <- line.args$lwd[g]
-
-  do.call("matlines", line.args)
-
-  if (!missing(environ)) lines(l, environ, lwd = 2)
-  if (!missing(legend.loc)) {
-    legend.args <- list(
-      col = cols, lwd = line.args$lwd,
-      lty = line.args$lty, legend = vnames
-    )
-    if (length(new.args)) {
-      new.legend.args <- new.args[names(new.args) %in%
-                                    names(formals(legend))]
-      legend.args[names(new.legend.args)] <- new.legend.args
-    }
-    legend.args$x <- legend.loc
-    do.call("legend", legend.args)
-  }
-  if (label) {
-    ypos <- Y[c("X1_1","X1_2","X1_3","X2_1","X2_2","X2_3"), ncol(Y)]
-    # text(min(l), ypos, names(ypos), xpd = NA, adj = c(0,NA))
-    mtext(text = names(ypos), side = 4, at = ypos, las = 1)
-    # browser()
-    mtext(text = "E", side = 4, at = environ[length(environ)], las = 1)
-  }
-
-  # browser()
-
-  abline(v = log(cvfit$lambda.1se), lty=2)
-  # mtext(text = latex2exp::TeX("$\\lambda_{1se}$"))
-  abline(v = log(cvfit$lambda.min), lty=2)
-  # mtext(latex2exp::TeX("$\\lambda_{min}$"))
-
-
-  # atdf <- pretty(index)
-  # prettydf <- stats::approx(
-  #   x = index, y = df, xout = atdf, rule = 2,
-  #   method = "constant", f = approx.f
-  # )$y
-  # axis(3,
-  #      at = atdf, labels = prettydf, mgp = c(3, .3, 0),
-  #      tcl = NA,
-  #      cex.axis = 1.2
-  # )
-
-
-}

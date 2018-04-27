@@ -178,13 +178,14 @@
 
 <<setup, include=FALSE>>=
 rm(list = ls())
-knitr::opts_chunk$set(cache=TRUE, message = FALSE, tidy = FALSE, echo = FALSE, 
+knitr::opts_chunk$set(cache=FALSE, message = FALSE, tidy = FALSE, echo = FALSE, 
 						fig.width = 6, fig.asp = 0.618, warning = FALSE,
 						fig.align = 'center', out.width = "100%", size = 'scriptsize')
 
 knitr::opts_knit$set(eval.after = 'fig.cap') # for captions to be evaluated after R objects are available 
 
 knitr::read_chunk("../bin/setup.R")
+knitr::read_chunk("../bin/intro.R")
 @
 
 <<packages>>=
@@ -233,6 +234,18 @@ where $g(\bmu)$ is from~\eqref{eq:linpred2}, $\lambda_\beta$ and $\lambda_\gamma
 w_j = \left | \frac{1}{\hat{\beta}_j} \right|, \quad w_{jE} = \left | \frac{\hat{\beta}_j \hat{\beta}_E}{\hat{\alpha}_{jE}} \right| \quad \tm{ for }j=1, \ldots, q   \label{eq:weights}
 \end{equation}
 where $\hat{\beta}_j$ and $\hat{\alpha}_{j}$ are the MLEs, from~\eqref{eq:linpred1.1} or the ridge regression estimates when $p > n$. The rationale behind the data-dependent $\hat{\bs{w}}$ is that as the sample size grows, the weights for the truly zero predictors go to $\infty$ (which translates to a large penalty), whereas the weights for the truly non-zero predictors converge to a finite constant~\citep{zou2006adaptive}. 
+
+
+
+
+<<toy-example>>=
+@
+
+<<toy-solution-path, fig.width=7, fig.height=9, fig.asp=1, fig.cap="Toy example solution path">>=
+@
+
+
+
 
 \subsection{Existing Literature}
 

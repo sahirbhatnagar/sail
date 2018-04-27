@@ -273,6 +273,27 @@ w_j = \left | \frac{1}{\hat{\beta}_j} \right|, \quad w_{jE} = \left | \frac{\hat
 \end{equation}
 where $\hat{\beta}_j$ and $\hat{\alpha}_{j}$ are the MLEs, from~\eqref{eq:linpred1.1} or the ridge regression estimates when $p > n$. The rationale behind the data-dependent $\hat{\bs{w}}$ is that as the sample size grows, the weights for the truly zero predictors go to $\infty$ (which translates to a large penalty), whereas the weights for the truly non-zero predictors converge to a finite constant~\citep{zou2006adaptive}. 
 
+
+
+
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{figure/toy-solution-path-1} 
+
+}
+
+\caption[Toy example solution path]{Toy example solution path}\label{fig:toy-solution-path}
+\end{figure}
+
+
+\end{knitrout}
+
+
+
+
 \subsection{Existing Literature}
 
 \ctable[pos=h!,doinside=\footnotesize]{lcc}{

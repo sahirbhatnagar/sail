@@ -6,7 +6,10 @@ if (!requireNamespace("pacman", quietly = TRUE)) {
 
 pacman::p_load_current_gh("sahirbhatnagar/sail")
 pacman::p_load(ggplot2)
-
+pacman::p_load(doMC)
+registerDoMC(cores = 8)
+pacman::p_load(latex2exp)
+# pacman::p_load(multipanelfigure)
 
 ## ---- globals ----
 
