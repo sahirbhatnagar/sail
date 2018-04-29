@@ -9,6 +9,7 @@ pacman::p_load(ggplot2)
 pacman::p_load(doMC)
 registerDoMC(cores = 8)
 pacman::p_load(latex2exp)
+pacman::p_load(truncnorm)
 # pacman::p_load(multipanelfigure)
 
 ## ---- globals ----
