@@ -83,7 +83,7 @@ lspath <- function(x,
     # R1 <- R2 <- y - b0 # this is used as the starting residual for Gamma and Theta update
     term1 <- (1 / we) * (crossprod(e, R.star))
     term2 <- (1 / wj) * sapply(Phi_j_list, function(i) l2norm(crossprod(i, R.star)))
-    lambda_max <- (1 / (nobs * (1 - alpha))) * max(term1[term1 != Inf], max(term2[term2 != Inf])) + thresh
+    lambda_max <- (1 / (nobs * (1 - alpha))) * max(term1[term1 != Inf], max(term2[term2 != Inf]))
     lambdas <- rev(exp(seq(log(flmin * lambda_max), log(lambda_max), length.out = nlambda)))
     lambdaNames <- paste0("s", seq_along(lambdas))
   } else {
@@ -162,11 +162,12 @@ lspath <- function(x,
 
   # Lambda Loop Start -------------------------------------------------------
 
+  lambdas[1] <- .Machine$double.xmax
   for (LAMBDA in lambdas) {
     lambdaIndex <- which(LAMBDA == lambdas)
 
     if (verbose >= 1) {
-      message(sprintf("Index: %g, lambda: %0.4f", lambdaIndex, LAMBDA))
+      message(sprintf("Index: %g, lambda: %0.4f", lambdaIndex, if (lambdaIndex==1) lambda_max else LAMBDA))
     }
 
     # store likelihood values at each iteration in a matrix Q
@@ -461,6 +462,8 @@ lspath <- function(x,
 
   if (all(!converged)) warning("The algorithm did not converge for all values of lambda.\n
                                Try changing the value of alpha and the convergence threshold.")
+
+  lambdas[1] <- lambda_max
 
   out <- list(
     a0 = a0[converged],
