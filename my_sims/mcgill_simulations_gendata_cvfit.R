@@ -52,56 +52,54 @@ p = 1000
 #                    E = truncnorm::rtruncnorm(n, a = -1, b = 1))
 
 draw <- make_gendata_Paper_data_split_not_simulator(n = n, p = p, corr = 0,
-                                                  betaE = 2, SNR = 2, lambda.type = "lambda.min", parameterIndex = parameterIndex)
+                                                    betaE = 2, SNR = 2, lambda.type = "lambda.min", parameterIndex = parameterIndex)
 
-message("simulated data")
-fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
-            basis = function(i) splines::bs(i, degree = 5))
-message("ran sail")
-ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
-msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
-lambda.min.index <- as.numeric(which.min(msetest))
-lambda.min <- fit$lambda[which.min(msetest)]
-# plot(log(fit$lambda), msetest)
-yvalid_hat <- predict(fit, newx = draw[["xvalid"]], newe = draw[["evalid"]], s = lambda.min)
-msevalid <- mean((draw[["yvalid"]] - drop(yvalid_hat))^2)
+# message("simulated data")
+# fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
+#             basis = function(i) splines::bs(i, degree = 5))
+# message("ran sail")
+# ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
+# msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
+# lambda.min.index <- as.numeric(which.min(msetest))
+# lambda.min <- fit$lambda[which.min(msetest)]
+# # plot(log(fit$lambda), msetest)
+# yvalid_hat <- predict(fit, newx = draw[["xvalid"]], newe = draw[["evalid"]], s = lambda.min)
+# msevalid <- mean((draw[["yvalid"]] - drop(yvalid_hat))^2)
+#
+# nzcoef <- predict(fit, s = lambda.min, type = "nonzero")
 
-nzcoef <- predict(fit, s = lambda.min, type = "nonzero")
 
+# res <- list(beta = coef(fit, s = lambda.min)[-1,,drop=F],
+#             fit = fit,
+#             lambda.min = lambda.min,
+#             lambda.min.index = lambda.min.index,
+#             vnames = draw[["vnames"]],
+#             nonzero_coef = nzcoef,
+#             active = fit$active[[lambda.min.index]],
+#             not_active = setdiff(draw[["vnames"]], fit$active[[lambda.min.index]]),
+#             yvalid_hat = yvalid_hat,
+#             msevalid = msevalid,
+#             causal = draw[["causal"]],
+#             not_causal = draw[["not_causal"]],
+#             yvalid = draw[["yvalid"]])
 
-res <- list(beta = coef(fit, s = lambda.min)[-1,,drop=F],
-            fit = fit,
-            lambda.min = lambda.min,
-            lambda.min.index = lambda.min.index,
-            vnames = draw[["vnames"]],
-            nonzero_coef = nzcoef,
-            active = fit$active[[lambda.min.index]],
-            not_active = setdiff(draw[["vnames"]], fit$active[[lambda.min.index]]),
-            yvalid_hat = yvalid_hat,
-            msevalid = msevalid,
-            causal = draw[["causal"]],
-            not_causal = draw[["not_causal"]],
-            yvalid = draw[["yvalid"]])
+registerDoMC(cores = 10)
 
-# if (parameterIndex != 6) {
-# cvfit <- cv.sail(x = DT$x, y = DT$y, e = DT$e, df = 5, degree = 3, basis.intercept = FALSE,
-#                  thresh = 1e-4,
-#                  maxit = 1000,
-#                  alpha = .2,
-#                  parallel = TRUE,
-#                  center.x = TRUE,
-#                  # foldid = foldid,
-#                  nfolds = 10, verbose = T, nlambda = 100)
-# } else if (parameterIndex == 6){
-#   cvfit <- cv.sail(x = DT$x, y = DT$y, e = DT$e, degree = 1, basis.intercept = FALSE,
-#                    thresh = 1e-4,
-#                    maxit = 1000,
-#                    alpha = .05,
-#                    parallel = TRUE,
-#                    # foldid = foldid,
-#                    nfolds = 10, verbose = T, nlambda = 100)
-#   DT$scenario <- "6"
-# }
+if (parameterIndex != 6) {
+cvfit <- cv.sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
+                 basis = function(i) splines::bs(i, degree = 5),
+                 parallel = TRUE,
+                 nfolds = 10)
+} else if (parameterIndex == 6){
+  cvfit <- cv.sail(x = DT$x, y = DT$y, e = DT$e, degree = 1, basis.intercept = FALSE,
+                   thresh = 1e-4,
+                   maxit = 1000,
+                   alpha = .05,
+                   parallel = TRUE,
+                   # foldid = foldid,
+                   nfolds = 10, verbose = T, nlambda = 100)
+  DT$scenario <- "6"
+}
 # plot(cvfit)
 # plot(cvfit2)
 # plot(cvfit$sail.fit)
@@ -122,8 +120,8 @@ res <- list(beta = coef(fit, s = lambda.min)[-1,,drop=F],
 # }
 
 if (parameterIndex != 6) {
-  saveRDS(object = res,
-          file = tempfile(pattern = sprintf("fit_thesis_n200_p1000_SNR2_betaE2_df5_%s",parameterIndex),
+  saveRDS(object = cvfit,
+          file = tempfile(pattern = sprintf("cvfit_thesis_n200_p1000_SNR2_betaE2_df5_%s",parameterIndex),
                           tmpdir = "/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/thesis_p1000_1a",
                           fileext = ".rds")
   )

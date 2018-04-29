@@ -11,6 +11,12 @@ mse <- new_metric("mse", "Test Set MSE",
                      as.numeric(crossprod(out$ytest - out$yhat_test) / (length(out$ytest)))
                    })
 
+msevalid <- new_metric("mse", "Validation Set MSE",
+                  metric = function(model, out) {
+                    # as.numeric(sqrt(crossprod(out$y - out$yhat)))
+                    as.numeric(out$msevalid)
+                  })
+
 
 cvmse <- new_metric("cvmse", "10-Fold CV MSE",
                    metric = function(model, out) {
@@ -24,7 +30,7 @@ tpr <- new_metric("tpr", "True Positive Rate",
 
 r2 <- new_metric("r2", "R squared",
                  metric = function(model, out) {
-                   cor(out$ytest,as.vector(out$yhat))^2
+                   cor(out$yvalid,as.vector(out$yvalid_hat))^2
                  })
 
 "%ni%" <- Negate("%in%")
