@@ -73,7 +73,7 @@ plot(x1, lin_pred,
      pch = 19,
      ylab = "Obesity",
      xlab = "DNA Methylation",
-     col = cbbPalette()[c(4,7)],
+     col = sail:::cbbPalette[c(4,7)],
      bty="n",
      xaxt="n",
      type = "n",
@@ -84,10 +84,10 @@ plot(x1, lin_pred,
      cex.main = 2.5,
      ylim = c(min.length.top-3, max.length.top+5))
 axis(1, labels = T, cex.axis = 2)
-lines(x1e0[order(x1e0)],e0[order(x1e0)], col = cbbPalette()[c(4)], lwd = 4)
-lines(x1e1[order(x1e1)],e1[order(x1e1)], col = cbbPalette()[c(7)], lwd = 4)
+lines(x1e0[order(x1e0)],e0[order(x1e0)], col = sail:::cbbPalette[c(4)], lwd = 4)
+lines(x1e1[order(x1e1)],e1[order(x1e1)], col = sail:::cbbPalette[c(7)], lwd = 4)
 legend("topleft", c("Controls", "GD Affected Pregnancy"),
-                   col = cbbPalette()[c(4,7)], pch = 19, cex = 2, bty = "n")
+                   col = sail:::cbbPalette[c(4,7)], pch = 19, cex = 2, bty = "n")
 rug(x1)
 dev.off()
 

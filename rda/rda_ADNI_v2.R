@@ -14,8 +14,8 @@ pacman::p_load(doMC)
 
 
 # amy_pheno <- xlsx::read.xlsx("~/Downloads/DrCelia_data.xlsx", sheetIndex = 1)
-amy_mat <- read.csv("~/git_repositories/sail/data/adni_new/csf_amyloid_final.csv", stringsAsFactors = FALSE)
-covr <- read.csv("~/git_repositories/sail/data/adni_new/covariates.csv", stringsAsFactors = FALSE, sep = ";")
+amy_mat <- read.csv("~/git_repositories/sail/data-nogit/adni_new/csf_amyloid_final.csv", stringsAsFactors = FALSE)
+covr <- read.csv("~/git_repositories/sail/data-nogit/adni_new/covariates.csv", stringsAsFactors = FALSE, sep = ";")
 # surv <- read.csv("~/git_repositories/sail/data/adni_new/fdg_info.csv", stringsAsFactors = FALSE, sep = ",")
 
 # sum(as.character(amy_pheno$PTID) %in% amy_mat$PTID)
@@ -24,26 +24,36 @@ covr <- read.csv("~/git_repositories/sail/data/adni_new/covariates.csv", strings
 
 DT <- dplyr::inner_join(amy_mat, covr, by = c("PTID" = "IID")) %>%
   select(-AV45_path_bl)
+colnames(DT)
+DT$diag_3bl.x %>% table
 
-X <- DT %>% select(starts_with("X"), Age_bl, diag_3bl.x) %>% as.matrix()
+brain_regions <- grep("X", colnames(DT), value=T)
+fmla <- reformulate(c(sapply(brain_regions, function(i) sprintf("bs(%s)",i)),
+                      "Age_bl", "diag_3bl.y"), intercept = FALSE)
+
+
+model_mat <- model.matrix(fmla, data = DT)
+
+
+# X <- DT %>% select(starts_with("X"), Age_bl, diag_3bl.x) %>% as.matrix()
 # X <- DT %>% select(starts_with("X"), Age_bl, EDUCAT) %>% as.matrix()
 # X <- DT %>% select(starts_with("X")) %>% as.matrix()
 # X <- DT %>% select(starts_with("X"), diag_3bl.x) %>% as.matrix()
-dimnames(X)[[1]] <- DT$PTID
+# dimnames(X)[[1]] <- DT$PTID
 # X <- X[,80:97]
 
 # ind <- which(DT$diag_3bl.x==2)
 # X <- X[ind,,drop = F]
 
-E <- DT %>% pull(APOE_bin) %>% as.numeric
+# E <- DT %>% pull(APOE_bin) %>% as.numeric
 # E <- DT %>% pull(APOE_bin) %>% as.numeric
 # E <- E[ind]
-# E <- DT %>% pull(EDUCAT) %>% as.numeric
+E <- DT %>% pull(EDUCAT) %>% as.numeric
 # E <- DT %>% pull(diag_3bl.x) %>% as.numeric
 
 Y <- DT %>% pull(MMSCORE_bl) %>% as.numeric
 # Y <- Y[ind]
-
+dev.off()
 hist(Y)
 hist(E)
 table(Y)
@@ -53,6 +63,18 @@ f.basis <- function(i) splines::bs(i, df = 5)
 system.time(
   fit <- sail(x = X, y = Y, e = E, basis = f.basis, alpha = 0.1)
 )
+
+fit <- sail(x = model_mat, y = Y, e = E, expand = FALSE,
+            # center.e = FALSE,
+            fdev = 1e-8,
+            group = attr(model_mat, "assign"), verbose = 2, alpha = 0.1)
+plot(fit)
+fit
+as.matrix(coef(fit)[nonzero(coef(fit)),,])
+
+as.matrix(fit$alpha[nonzero(fit$alpha),,])
+
+help(sail)
 
 fit
 any(!fit$converged)
