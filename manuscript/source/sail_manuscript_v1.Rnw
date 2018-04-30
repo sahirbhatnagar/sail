@@ -187,6 +187,7 @@ knitr::opts_knit$set(eval.after = 'fig.cap') # for captions to be evaluated afte
 
 knitr::read_chunk("../bin/setup.R")
 knitr::read_chunk("../bin/intro.R")
+knitr::read_chunk("../bin/simulation.R")
 @
 
 <<packages>>=
@@ -716,10 +717,36 @@ We evaluate the performance of our method on three of its defining characteristi
 \end{enumerate}
 
 
-\begin{figure}
+<<simulation-results, dev="cairo_pdf", fig.asp=1, fig.width=8, fig.heigh=11, fig.pos = 'H'>>=
+@
+
+
+\begin{figure}[H]
 	\centering
 	\includegraphics[scale=0.61]{/home/sahir/git_repositories/sail/my_sims/figures/sail_main_eff_paramIndex1_200sims.pdf}
 	\caption{text}\label{fig:main_eff}
+\end{figure}
+
+
+\begin{figure}[H]
+	\centering
+	\subfloat{\includegraphics[width=0.50\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_intertruth_X3_paramIndex1_200sims.pdf}}
+	\subfloat{\includegraphics[width=0.50\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter25_X3_paramIndex1_200sims.pdf}}\quad 
+	\subfloat{\includegraphics[width=0.50\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter50_X3_paramIndex1_200sims.pdf}}
+	\subfloat{\includegraphics[width=0.50\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter75_X3_paramIndex1_200sims.pdf}}
+	\caption{True and estimated interaction effects for $E \cdot f(X_3)$ in simulation scenario 1a).}
+	\label{fig:X3}
+\end{figure}
+
+
+\begin{figure}[H]
+	\centering
+	\subfloat{\includegraphics[width=0.50\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_intertruth_X4_paramIndex1_200sims.pdf}}
+	\subfloat{\includegraphics[width=0.50\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter25_X4_paramIndex1_200sims.pdf}}\quad 
+	\subfloat{\includegraphics[width=0.50\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter50_X4_paramIndex1_200sims.pdf}}
+	\subfloat{\includegraphics[width=0.50\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter75_X4_paramIndex1_200sims.pdf}}
+	\caption{True and estimated interaction effects for $E \cdot f(X_4)$ in simulation scenario 1a).}
+	\label{fig:X4}
 \end{figure}
 
 
