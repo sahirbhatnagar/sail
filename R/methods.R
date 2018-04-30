@@ -297,15 +297,19 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
 
 
   if (type == "both") {
-    op <- graphics::par(
-      mfrow = c(2, 1),
-      mar = 0.1 + c(4.2, 4.0, 1, 1),
-      oma = c(0, 1, 1, 0),
-      cex.lab = 1.2, font.lab = 1.2, cex.axis = 1.2,
-      cex.main = 1.2
-    )
+    # op <- graphics::par(
+    #   mfrow = c(2, 1),
+    #   mar = 0.1 + c(4.2, 4.0, 1, 1),
+    #   oma = c(0, 1, 1, 0),
+    #   cex.lab = 1.2, font.lab = 1.2, cex.axis = 1.2,
+    #   cex.main = 1.2
+    # )
 
+    par(mfrow=c(2,1), tcl=-0.5, family="serif", omi=c(0.2,0.2,0,0),
+        cex.lab = 1.2, font.lab = 1.2, cex.axis = 1.2,
+        cex.main = 1.2)
 
+    par(mar=c(2,4,2,3.2))
     plotSailCoef(
       coefs = x$beta,
       environ = x$bE,
@@ -319,6 +323,7 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
       ...
     )
 
+    par(mar=c(4,4,0,3.2))
     plotSailCoef(
       coefs = x$alpha,
       lambda = x$lambda,
@@ -330,7 +335,6 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
       ...
     )
 
-    graphics::par(op)
   }
 
   graphics::par(op)

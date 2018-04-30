@@ -69,7 +69,7 @@ pacman::p_load(tidyverse)
 pacman::p_load(doParallel)
 pacman::p_load(mice)
 
-DT <- read.csv("~/git_repositories/sail/data/ashley/Celia_Sahir_data.csv", stringsAsFactors = FALSE)
+DT <- read.csv("~/git_repositories/sail/data-nogit/ashley/Celia_Sahir_data.csv", stringsAsFactors = FALSE)
 # dput(colnames(DT))
 col_names <- c("PSCID", "true_id", "time_24",
                "ITSEA_Att", # outcome: Attention of the child
@@ -103,6 +103,7 @@ col_names <- c("PSCID", "true_id", "time_24",
                "mom_age_birth_x", # mother age at birth (centered)
                "gender_male" )# gender of child)
 
+# exposure: prenatal, 6 month, 12 month maternal depression
 DT$Pren_CESD %>% table(useNA = "always")
 DT$HWB6_CESD %>% table(useNA = "always")
 DT$HWB12_CESD %>% table(useNA = "always")
@@ -126,46 +127,58 @@ complete.cases(DT.18) %>% sum
 complete.cases(DT.24) %>% sum
 
 Y <- as.numeric(DT.18$ITSEA_Att)
-Y <- as.numeric(DT.24$ITSEA_Att)
+# Y <- as.numeric(DT.24$ITSEA_Att)
 table(Y, useNA = "always")
+hist(Y)
 
 E <- as.numeric(DT.18$Pren_CESD)
-E <- as.numeric(DT.18$HWB12_CESD)
-E <- as.numeric(DT.18$Factor3_6m)
+# E <- as.numeric(DT.18$HWB12_CESD)
+# E <- as.numeric(DT.18$Factor3_6m)
 
-E <- as.numeric(DT.24$Pren_CESD)
-E <- as.numeric(DT.24$HWB6_CESD)
-E <- as.numeric(DT.24$Factor3_6m)
+# E <- as.numeric(DT.24$Pren_CESD)
+# E <- as.numeric(DT.24$HWB6_CESD)
+# E <- as.numeric(DT.24$Factor3_6m)
 
 colnames(DT.18)
 X <- DT.18 %>% select(-ITSEA_Att, -PSCID, -ends_with("CESD"),-true_id,-time_24, -Factor3_6m) %>% as.matrix()
-X <- DT.24 %>% select(-ITSEA_Att, -PSCID, -ends_with("CESD"),-true_id,-time_24, -Factor3_6m) %>% as.matrix()
-X <- DT.24 %>% select(-ITSEA_Att, -PSCID,-true_id,-time_24, -Factor3_6m, -HWB6_CESD, -HWB12_CESD) %>% as.matrix()
+# X <- DT.24 %>% select(-ITSEA_Att, -PSCID, -ends_with("CESD"),-true_id,-time_24, -Factor3_6m) %>% as.matrix()
+# X <- DT.24 %>% select(-ITSEA_Att, -PSCID,-true_id,-time_24, -Factor3_6m, -HWB6_CESD, -HWB12_CESD) %>% as.matrix()
+
+f.identity <- function(i) i
+
+fit <- sail(x = X, y = Y, e = E, basis = f.identity, verbose = 2)
+
+
+
+
+
+
+
 dim(X)
 
 summary(lm(Y ~ X*E))
 
 
-doParallel::registerDoParallel(cores = 5)
-getDoParWorkers()
-cvfit <- cv.sail(x = X, y = Y, e = E, df = 3, maxit = 500,
-                    nlambda.gamma = 5, nlambda.beta = 5,
-                    nlambda = 25,
-                 group.penalty = "SCAD",
-                    # lambda.beta = exp(seq(log(0.01 * 1000), log(1000), length.out = 25)),
-                    # lambda.gamma =rep(1000,25),
-                    lambda.factor = 0.0001,
-                    nfolds = 5,
-                    thresh = 1e-5, center=T, normalize=F, verbose = T)
-plot(cvfit)
-coef(cvfit, s="lambda.min")
-cvfit$sail.fit$beta
-
-fmla <- as.formula(paste0("~0+",paste(colnames(X), collapse = "+"), "+ E +",paste(colnames(X),":E", collapse = "+") ))
-Xmat <- model.matrix(fmla, data = data.frame(X,E))
-glfit <- cv.glmnet(x = Xmat, y = Y, nfolds = 10)
-plot(glfit)
-coef(glfit)
+# doParallel::registerDoParallel(cores = 5)
+# getDoParWorkers()
+# cvfit <- cv.sail(x = X, y = Y, e = E, df = 3, maxit = 500,
+#                     nlambda.gamma = 5, nlambda.beta = 5,
+#                     nlambda = 25,
+#                  group.penalty = "SCAD",
+#                     # lambda.beta = exp(seq(log(0.01 * 1000), log(1000), length.out = 25)),
+#                     # lambda.gamma =rep(1000,25),
+#                     lambda.factor = 0.0001,
+#                     nfolds = 5,
+#                     thresh = 1e-5, center=T, normalize=F, verbose = T)
+# plot(cvfit)
+# coef(cvfit, s="lambda.min")
+# cvfit$sail.fit$beta
+#
+# fmla <- as.formula(paste0("~0+",paste(colnames(X), collapse = "+"), "+ E +",paste(colnames(X),":E", collapse = "+") ))
+# Xmat <- model.matrix(fmla, data = data.frame(X,E))
+# glfit <- cv.glmnet(x = Xmat, y = Y, nfolds = 10)
+# plot(glfit)
+# coef(glfit)
 
 
 
