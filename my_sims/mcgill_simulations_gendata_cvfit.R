@@ -100,6 +100,10 @@ cvfit <- cv.sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]
                    nfolds = 10, verbose = T, nlambda = 100)
   DT$scenario <- "6"
 }
+
+cvfit$sail.fit$x <- draw[["xtrain"]]
+
+
 # plot(cvfit)
 # plot(cvfit2)
 # plot(cvfit$sail.fit)

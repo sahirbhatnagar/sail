@@ -71,6 +71,7 @@ nzcoef <- predict(fit, s = lambda.min, type = "nonzero")
 
 res <- list(beta = coef(fit, s = lambda.min)[-1,,drop=F],
             fit = fit,
+            x = draw[["xtrain"]],
             lambda.min = lambda.min,
             lambda.min.index = lambda.min.index,
             vnames = draw[["vnames"]],

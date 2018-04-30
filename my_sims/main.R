@@ -61,15 +61,28 @@ sim <- new_simulation(name = "apr_25_2018",
                                            "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
 simulator::save_simulation(sim)
 
-
-
+s2 <- new_simulation(name = "apr_29_2018",
+                      label = "apr_29_2018",
+                      dir = ".") %>%
+  generate_model(make_gendata_Paper_data_split, seed = 1234,
+                 n = 400, p = 25, corr = 0, betaE = 2, SNR = 2, lambda.type = "lambda.min",
+                 parameterIndex = list(1),
+                 vary_along = "parameterIndex") %>%
+  simulate_from_model(nsim = 2, index = 1:2) %>%
+  run_method(list(sailsplitadaptive))
+# s2 <- s2 %>% evaluate(list(msevalid, tpr, fpr, nactive, r2))
+# s2 %>% plot_eval(metric_name = "r2")
 # load simulation ---------------------------------------------------------
 
 sim <- load_simulation("apr_25_2018")
 # sim <- sim %>% evaluate(list(msevalid, tpr, fpr, nactive, r2))
 # simulator::save_simulation(sim)
-
-
+sim <- sim %>% run_method(list(sailsplitadaptive),
+                          parallel = list(socket_names = 35,
+                                          libraries = c("LassoBacktracking", "glinternet","glmnet","splines",
+                                                        "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
+simulator::save_simulation(sim)
+ls()
 
 # analyze results ---------------------------------------------------------
 

@@ -5,9 +5,10 @@ pacman::p_load(methods)
 pacman::p_load(doMC)
 pacman::p_load(latex2exp)
 pacman::p_load(UpSetR)
+pacman::p_load(sail)
 # rm(list=ls())
 # dev.off()
-devtools::load_all("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/")
+# devtools::load_all("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/")
 
 
 # Gendata2-Hierarchy=TRUE ----------------------------------------------------------------
@@ -18,16 +19,19 @@ devtools::load_all("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_
 #                    pattern = '*.rds', full.names = TRUE)
 # files <- list.files(path = '/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/gendata2/',
 #                    pattern = '*.rds', full.names = TRUE)
-files <- list.files(path = '/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/gendata2_p1000_1c_2_3_6',
-                    pattern = 'degree1_alpha05_6_', full.names = TRUE)
+# files <- list.files(path = '/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/gendata2_p1000_1c_2_3_6',
+#                     pattern = 'degree1_alpha05_6_', full.names = TRUE)
+files <- list.files(path = '/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/thesis_p1000_1a',
+                    pattern = '^fit', full.names = TRUE)
 dat_list <- lapply(files, function (x) readRDS(x))
 lambda.type <- "lambda.min"
-nonlinear <- FALSE
+nonlinear <- TRUE
 
 # Gendata2-Hierarchy=TRUE main effects ----------------------------------------------------------------
 
+# this is used for cvfit objects
 f.hat <- function(object, xvar, s){
-
+# browser()
   ind <- object$group == which(object$vnames == xvar)
   allCoefs <- coef(object, s = s)
   a0 <- allCoefs[1,]
@@ -40,14 +44,34 @@ f.hat <- function(object, xvar, s){
   return(list(X = originalX[order(originalX)], fX = fhat[order(originalX)]))
 }
 
+# used for fit objects
+f.hat.fit <- function(object, xvar, s, x){
+  # browser()
+  ind <- object$group == which(object$vnames == xvar)
+  allCoefs <- coef(object, s = s)
+  a0 <- allCoefs[1,]
+  betas <- as.matrix(allCoefs[object$main.effect.names[ind],,drop = FALSE])
+  design.mat <- object$design[,object$main.effect.names[ind],drop = FALSE]
+  originalX <- x[,unique(object$group[ind])]
+
+  # fhat <- drop(a0 + design.mat %*% betas)
+  fhat <- drop(design.mat %*% betas)
+  return(list(X = originalX[order(originalX)], fX = fhat[order(originalX)]))
+}
+
+# i = dat_list[[1]]
+# plot(i$fit)
+# f.hat.fit(object = i$fit, xvar = "X1", s = i$lambda.min, x = i$x)[["fX"]]
+
+
 if (nonlinear) {
   # non linear
   f1 <- function(x) 5 * x
-  f2 <- function(x) 4.5 * (2 * x - 1) ^ 2
+  f2 <- function(x) 3 * (2 * x - 1)^2
   f3 <- function(x) 4 * sin(2 * pi * x) / (2 - sin(2 * pi * x))
   f4 <- function(x) 6 * (0.1 * sin(2 * pi * x) + 0.2 * cos(2 * pi * x) +
-                           0.3 * sin(2 * pi * x) ^ 2 + 0.4 * cos(2 * pi * x) ^ 3 +
-                           0.5 * sin(2 * pi * x) ^ 3)
+                           0.3 * sin(2 * pi * x)^2 + 0.4 * cos(2 * pi * x)^3 +
+                           0.5 * sin(2 * pi * x)^3)
 } else {
   # linear (Scenario 2)
   f1 <- function(x) -1.5 * (x-2)
@@ -68,7 +92,7 @@ for (xt in 1:4){
 
     main <- switch(xvar,
                    X1 = latex2exp::TeX("$f(x_1) = 5x_1$"),
-                   X2 = latex2exp::TeX("$f(x_2) = 4.5 (2x_2 - 1)^2$"),
+                   X2 = latex2exp::TeX("$f(x_2) = 3 (2x_2 - 1)^2$"),
                    X3 = latex2exp::TeX("$f(x_3) = \\frac{4\\sin(2\\pi x_3)}{2 - \\sin(2\\pi x_3)}$"),
                    X4 = as.list(expression(paste("f(x", phantom()[{
                      paste("4")
@@ -97,13 +121,15 @@ for (xt in 1:4){
 
 
 
-  fhats <- lapply(dat_list, function(i) f.hat(object = i$sail.fit, xvar = xvar, s = i[[lambda.type]])[["fX"]])
+  # fhats <- lapply(dat_list, function(i) f.hat(object = i$sail.fit, xvar = xvar, s = i[[lambda.type]])[["fX"]])
+  fhats <- lapply(dat_list, function(i) f.hat.fit(object = i$fit, xvar = xvar, s = i$lambda.min, x = i$x)[["fX"]])
   fhats_dat <- do.call(cbind,fhats)
   ylims <- range(fhats_dat)
   ylims[1] <- if (nonlinear) ylims[1] else ylims[1]-0.5
   ylims[2] <- if (nonlinear) ylims[2] + 2.5 else ylims[2] + 1
 
-  Xs <- lapply(dat_list, function(i) f.hat(object = i$sail.fit, xvar = xvar, s = i[[lambda.type]])[["X"]])
+  # Xs <- lapply(dat_list, function(i) f.hat(object = i$sail.fit, xvar = xvar, s = i[[lambda.type]])[["X"]])
+  Xs <- lapply(dat_list, function(i) f.hat.fit(object = i$fit, xvar = xvar, s = i$lambda.min, x = i$x)[["X"]])
   Xs_dat <- do.call(cbind,Xs)
   xlims <- range(Xs_dat)
 
@@ -132,11 +158,11 @@ for (xt in 1:4){
   do.call("plot", plot.args)
   abline(h = 0, lwd = 1, col = "gray")
   for (i in seq_len(ncol(Xs_dat))) {
-    lines(Xs_dat[,i], fhats_dat[,i], col = cbbPalette()[3], lwd = 1)
+    lines(Xs_dat[,i], fhats_dat[,i], col = sail:::cbbPalette[3], lwd = 1)
   }
 
   ff <- get(paste0("f",xt), mode="function")
-  curve(ff, add = TRUE, lwd = 3, col = cbbPalette()[7])
+  curve(ff, add = TRUE, lwd = 3, col = sail:::cbbPalette[7])
   if(xvar=="X4" & nonlinear) mtext(do.call(expression, main),side=3, line = c(1,-1) , cex = 1.3,
                        family = "serif")
 
