@@ -11,7 +11,7 @@ data-nogit
 .Rproj.user
 .Rhistory
 .RData
-*.pdf
+#*.pdf
 my_sims/files/
 files/
 goals2.png
