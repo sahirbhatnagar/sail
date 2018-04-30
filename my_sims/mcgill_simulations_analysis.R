@@ -82,7 +82,7 @@ if (nonlinear) {
 
 dev.off()
 
-pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/figures/gendata2_main_n200_p1000_SNR2_betaE1_df5_degree3_alpha2_1a_500sims.pdf",
+pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/figures/sail_main_eff_paramIndex1_200sims.pdf",
     width=11,height=8)
 par(mfrow = c(2,2))
 for (xt in 1:4){
@@ -165,6 +165,9 @@ for (xt in 1:4){
   curve(ff, add = TRUE, lwd = 3, col = sail:::cbbPalette[7])
   if(xvar=="X4" & nonlinear) mtext(do.call(expression, main),side=3, line = c(1,-1) , cex = 1.3,
                        family = "serif")
+  if(xvar=="X1") legend("topleft", c("Truth", "Estimated"),
+                        cex = 1.2, bty = "n", lwd = 2,
+                        col = sail:::cbbPalette[c(7,4)])
 
 }
 dev.off()
