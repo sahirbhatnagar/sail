@@ -1,5 +1,5 @@
 ######################################
-# R Source code file for fitting functions
+# R Source code file for least squares strong hierarchy
 # this is where most of the work is being done
 # not exported
 # Author: Sahir Bhatnagar
