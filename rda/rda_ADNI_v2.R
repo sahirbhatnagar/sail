@@ -27,13 +27,22 @@ DT <- dplyr::inner_join(amy_mat, covr, by = c("PTID" = "IID")) %>%
 colnames(DT)
 DT$diag_3bl.x %>% table
 
+DT <- DT %>% dplyr::filter(diag_3bl.x == 2)
+
 brain_regions <- grep("X", colnames(DT), value=T)
 fmla <- reformulate(c(sapply(brain_regions, function(i) sprintf("bs(%s)",i)),
                       "Age_bl", "diag_3bl.y"), intercept = FALSE)
+fmla <- reformulate(c(sapply(brain_regions, function(i) sprintf("bs(%s)",i)),
+                      "Age_bl"), intercept = FALSE)
 
+train <- caret::createDataPartition(DT$diag_3bl.x)[[1]]
+train <- seq(nrow(DT))
+test <- setdiff(seq(nrow(DT)), train)
+DT$diag_3bl.x[train] %>% table
+DT$diag_3bl.x[test] %>% table
 
-model_mat <- model.matrix(fmla, data = DT)
-
+model_mat <- model.matrix(fmla, data = DT[train,])
+head(model_mat)
 
 # X <- DT %>% select(starts_with("X"), Age_bl, diag_3bl.x) %>% as.matrix()
 # X <- DT %>% select(starts_with("X"), Age_bl, EDUCAT) %>% as.matrix()
@@ -45,15 +54,17 @@ model_mat <- model.matrix(fmla, data = DT)
 # ind <- which(DT$diag_3bl.x==2)
 # X <- X[ind,,drop = F]
 
-# E <- DT %>% pull(APOE_bin) %>% as.numeric
+# E <- DT[train,] %>% pull(APOE_bin) %>% as.numeric
 # E <- DT %>% pull(APOE_bin) %>% as.numeric
 # E <- E[ind]
-E <- DT %>% pull(EDUCAT) %>% as.numeric
-# E <- DT %>% pull(diag_3bl.x) %>% as.numeric
+# E <- DT[train,] %>% pull(EDUCAT) %>% as.numeric
+# E <- DT[train,] %>% pull(diag_3bl.x) %>% as.numeric
+E <- DT[train,] %>% pull(Age_bl) %>% as.numeric
 
-Y <- DT %>% pull(MMSCORE_bl) %>% as.numeric
+Y <- DT[train,] %>% pull(MMSCORE_bl) %>% as.numeric
 # Y <- Y[ind]
 dev.off()
+hist(DT$MMSCORE_bl)
 hist(Y)
 hist(E)
 table(Y)
@@ -64,10 +75,17 @@ system.time(
   fit <- sail(x = X, y = Y, e = E, basis = f.basis, alpha = 0.1)
 )
 
-fit <- sail(x = model_mat, y = Y, e = E, expand = FALSE,
-            # center.e = FALSE,
-            fdev = 1e-8,
-            group = attr(model_mat, "assign"), verbose = 2, alpha = 0.1)
+fit <- sail(
+  # x = model_mat,
+  x = as.matrix(DT[,brain_regions[1:10]]),
+  y = Y, e = E,
+  # expand = FALSE,
+  # center.e = FALSE,
+  # alpha = 0.2
+  # fdev = 1e-8,
+  # group = attr(model_mat, "assign"),
+  verbose = 2)
+
 plot(fit)
 fit
 as.matrix(coef(fit)[nonzero(coef(fit)),,])
