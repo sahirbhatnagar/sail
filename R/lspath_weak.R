@@ -57,6 +57,10 @@ lspathweak <- function(x,
     group <- rep(seq_len(nvars), each = ncols)
   }
 
+  # vector of ones used as multiplier in xtilde updates. this is a vector of 1s of length
+  # equal to lenght of group membership
+  ones <- split(stats::setNames(rep(1, length(main_effect_names)), main_effect_names), group)
+
   # this is used for the predict function
   design <- expansion$design
 
@@ -231,7 +235,7 @@ lspathweak <- function(x,
 
       x_tilde_2 <- lapply(
         seq_along(Phi_j_list),
-        function(i) Phi_j_list[[i]] + gamma_next[i] * betaE * XE_Phi_j_list[[i]]
+        function(i) Phi_j_list[[i]] + gamma_next[i] * XE_Phi_j_list[[i]]
       )
 
       # converged_theta <- FALSE
@@ -334,7 +338,7 @@ lspathweak <- function(x,
       # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       # update betaE
       # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+# browser()
       # this can be used for betaE, b0 and gamma update!
       Phi_tilde_theta <- do.call(
         cbind,
@@ -344,9 +348,17 @@ lspathweak <- function(x,
         )
       )
 
-      gamma_Phi_tilde_theta_sum <- rowSums(sweep(Phi_tilde_theta, 2, gamma_next, FUN = "*"))
+      Phi_tilde_one <- do.call(
+        cbind,
+        lapply(
+          seq_along(XE_Phi_j_list),
+          function(i) XE_Phi_j_list[[i]] %*% ones[[i]]
+        )
+      )
 
-      x_tilde_E <- e + gamma_Phi_tilde_theta_sum
+      gamma_Phi_tilde_one_sum <- rowSums(sweep(Phi_tilde_one, 2, gamma_next, FUN = "*"))
+
+      x_tilde_E <- e + gamma_Phi_tilde_one_sum
 
       R <- R.star + betaE * x_tilde_E
 
@@ -371,7 +383,7 @@ lspathweak <- function(x,
       b0_next <- mean(R)
 
       # used for gamma update
-      x_tilde <- betaE_next * Phi_tilde_theta
+      x_tilde <- Phi_tilde_theta + betaE_next * Phi_tilde_one
       add_back <- rowSums(sweep(x_tilde, 2, gamma_next, FUN = "*"))
 
       Delta <- (b0 - b0_next)
@@ -500,6 +512,7 @@ lspathweak <- function(x,
     basis = basis,
     expand = expand,
     group = group,
+    strong = strong,
     interaction.names = interaction_names,
     main.effect.names = main_effect_names
   )

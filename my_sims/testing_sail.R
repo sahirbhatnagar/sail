@@ -10,7 +10,7 @@ devtools::load_all("/home/sahir/git_repositories/sail/")
 # DT$e
 #
 # DT <- gendata4(n = 100, p = 20, E = stats::rbinom(100, 2,0.5), betaE = 2, SNR = 4)
-DT <- sail::gendata(n = 200, p = 10, corr = 0, SNR = 2, betaE = 2, parameterIndex = 1)
+DT <- sail::gendata(n = 200, p = 20, corr = 0, SNR = 2, betaE = 1, parameterIndex = 2)
 DT$f1.f
 DT$x
 DT$not_causal
@@ -23,19 +23,38 @@ trainIndex <- drop(caret::createDataPartition(DT$y, p = 0.5, list = FALSE, times
 
 library(doMC)
 registerDoMC(cores = 8)
-data("sailsim")
 f.basis <- function(i) splines::bs(i, degree = 5)
+fit <- sail(x = DT$x, y = DT$y, e = DT$e,
+            # alpha = 0.5,
+            strong = FALSE,
+            verbose = 2,
+            basis = f.basis)
+
+plot(fit)
+
 # f.basis <- function(i) i
-cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
+cvfit <- cv.sail(x = DT$x, y = DT$y, e = DT$e,
+                 strong = FALSE,
+                 # alpha = 0.5,
+                 verbose = 1,
+                 basis = f.basis, nfolds = 10, parallel = TRUE)
+
+cvfit2 <- cv.sail(x = DT$x, y = DT$y, e = DT$e,
+                 strong = TRUE,
                  # alpha = 0.5,
                  verbose = 2,
-                 basis = f.basis, nfolds = 10, parallel = TRUE)
+                 basis = f.basis, nfolds = 5, parallel = TRUE)
+
 cvfit$sail.fit
 # plot cv-error curve
 plot(cvfit)
+plot(cvfit2)
+
+cvfit$cvm[which(cvfit$lambda.min==cvfit$lambda)]
+cvfit2$cvm[which(cvfit2$lambda.min==cvfit2$lambda)]
 
 # non-zero estimated coefficients at lambda.1se
-predict(cvfit, type = "non") %>% class
+predict(cvfit, type = "non")
 predict(cvfit, type = "nonzero", s="lambda.min")
 
 

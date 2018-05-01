@@ -21,6 +21,8 @@
 #' @param basis user defined basis expansion function. This function will be
 #'   applied to every column in \code{x}. Specify \code{function(i) i} if no
 #'   expansion is desired. Default: \code{function(i) splines::bs(i, df = 5)}.
+#' @param strong Flag specifying strong hierarchy (TRUE) or weak hierarchy
+#'   (FALSE). Default FALSE.
 #' @param group.penalty group lasso penalty. Can be one of \code{"gglasso"}
 #'   (group lasso), \code{"grMCP"} (group MCP) or \code{"grSCAD"} (group SCAD).
 #'   See references for details. Default: \code{"gglasso"}.
@@ -95,12 +97,12 @@
 #'   \item{alpha}{a (# interaction effects after basis expansion x
 #'   \code{nlambda}) matrix of interaction effects coefficients, stored in
 #'   sparse column format \code{("dgCMatrix")}} \item{gamma}{A \code{p x
-#'   nlambda} matrix of (\eqn{\gamma}) coefficients, stored in sparse
-#'   column format \code{("dgCMatrix")}} \item{bE}{exposure effect estimates of
-#'   length \code{nlambda}} \item{active}{list of length \code{nlambda}
-#'   containing character vector of selected variables} \item{lambda}{the actual
-#'   sequence of lambda values used} \item{lambda2}{value for the mixing tuning
-#'   parameter \eqn{0<\alpha<1}} \item{dfbeta}{the number of nonzero main effect
+#'   nlambda} matrix of (\eqn{\gamma}) coefficients, stored in sparse column
+#'   format \code{("dgCMatrix")}} \item{bE}{exposure effect estimates of length
+#'   \code{nlambda}} \item{active}{list of length \code{nlambda} containing
+#'   character vector of selected variables} \item{lambda}{the actual sequence
+#'   of lambda values used} \item{lambda2}{value for the mixing tuning parameter
+#'   \eqn{0<\alpha<1}} \item{dfbeta}{the number of nonzero main effect
 #'   coefficients for each value of lambda} \item{dfalpha}{the number of nonzero
 #'   interaction coefficients for each value of lambda} \item{dfenviron}{the
 #'   number of nonzero exposure (\code{e}) coefficients for each value of
@@ -192,6 +194,7 @@
 #' @export
 sail <- function(x, y, e,
                  basis = function(i) splines::bs(i, df = 5),
+                 strong = TRUE,
                  group.penalty = c("gglasso", "grMCP", "grSCAD"),
                  family = c("gaussian", "binomial"),
                  center.x = TRUE, # if true, this centers X
@@ -341,36 +344,69 @@ sail <- function(x, y, e,
     nlam <- as.integer(length(lambda))
   }
 
-  fit <- switch(family,
-    gaussian = lspath(
-      x = x,
-      y = y,
-      e = e,
-      basis = basis,
-      center.x = center.x,
-      center.e = center.e,
-      expand = expand,
-      group = group,
-      group.penalty = group.penalty,
-      weights = weights,
-      nlambda = nlam,
-      thresh = thresh,
-      fdev = fdev,
-      maxit = maxit,
-      verbose = verbose,
-      alpha = alpha,
-      nobs = nobs,
-      nvars = nvars,
-      vp = vp, # penalty.factor
-      we = we, # we, wj, wje are subsets of vp
-      wj = wj,
-      wje = wje,
-      flmin = flmin, # lambda.factor
-      vnames = vnames, # variable names
-      ne = ne, # dfmax
-      ulam = ulam
+  if (strong) {
+    fit <- switch(family,
+                  gaussian = lspath(
+                    x = x,
+                    y = y,
+                    e = e,
+                    basis = basis,
+                    center.x = center.x,
+                    center.e = center.e,
+                    expand = expand,
+                    group = group,
+                    group.penalty = group.penalty,
+                    weights = weights,
+                    nlambda = nlam,
+                    thresh = thresh,
+                    fdev = fdev,
+                    maxit = maxit,
+                    verbose = verbose,
+                    alpha = alpha,
+                    nobs = nobs,
+                    nvars = nvars,
+                    vp = vp, # penalty.factor
+                    we = we, # we, wj, wje are subsets of vp
+                    wj = wj,
+                    wje = wje,
+                    flmin = flmin, # lambda.factor
+                    vnames = vnames, # variable names
+                    ne = ne, # dfmax
+                    ulam = ulam
+                  )
     )
-  )
+  } else {
+    fit <- switch(family,
+                  gaussian = lspathweak(
+                    x = x,
+                    y = y,
+                    e = e,
+                    basis = basis,
+                    center.x = center.x,
+                    center.e = center.e,
+                    expand = expand,
+                    group = group,
+                    group.penalty = group.penalty,
+                    weights = weights,
+                    nlambda = nlam,
+                    thresh = thresh,
+                    fdev = fdev,
+                    maxit = maxit,
+                    verbose = verbose,
+                    alpha = alpha,
+                    nobs = nobs,
+                    nvars = nvars,
+                    vp = vp, # penalty.factor
+                    we = we, # we, wj, wje are subsets of vp
+                    wj = wj,
+                    wje = wje,
+                    flmin = flmin, # lambda.factor
+                    vnames = vnames, # variable names
+                    ne = ne, # dfmax
+                    ulam = ulam
+                  )
+    )
+  }
 
   fit$call <- this.call
   fit$nobs <- nobs

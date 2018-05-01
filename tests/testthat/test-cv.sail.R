@@ -22,6 +22,11 @@ cvfit_parallel <- try(cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
                               basis = f.basis, nfolds = 3, parallel = TRUE),
                       silent = FALSE)
 
+cvfit_parallel_weak <- try(cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, strong = TRUE,
+                              dfmax = 5,
+                              basis = f.basis, nfolds = 3, parallel = TRUE),
+                      silent = FALSE)
+
 new_x <- replicate(20, rnorm(50))
 new_e <- rnorm(50, sd = 0.5)
 
@@ -30,6 +35,7 @@ test_that("no error in fitting cv.sail and parallel version for both simulated a
   expect_false(inherits(cvfit_sim, "try-error"))
   expect_false(inherits(cvfit_oasis, "try-error"))
   expect_false(inherits(cvfit_parallel, "try-error"))
+  expect_false(inherits(cvfit_parallel_weak, "try-error"))
   expect_is(cvfit_sim, "cv.sail")
   expect_is(cvfit_oasis, "cv.sail")
   expect_is(cvfit_parallel, "cv.sail")
