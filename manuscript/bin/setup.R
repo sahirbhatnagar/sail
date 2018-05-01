@@ -24,7 +24,7 @@ extrafont::loadfonts()
 
 ## ---- globals ----
 
-cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+cbbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 trop <- RSkittleBrewer::RSkittleBrewer("trop")
 gg_sy <- theme(legend.position = "bottom", axis.text = element_text(size = 20),
                axis.title = element_text(size = 20), legend.text = element_text(size = 20), legend.title = element_text(size = 20))
