@@ -75,7 +75,7 @@ s2 <- new_simulation(name = "apr_29_2018",
 # load simulation ---------------------------------------------------------
 
 sim <- load_simulation("apr_25_2018")
-# sim <- sim %>% evaluate(list(msevalid, tpr, fpr, nactive, r2))
+sim <- sim %>% evaluate(list(msevalid, tpr, fpr, nactive, r2))
 # simulator::save_simulation(sim)
 sim <- sim %>% run_method(list(sailsplitadaptive),
                           parallel = list(socket_names = 35,
@@ -97,7 +97,7 @@ trop <- RSkittleBrewer::RSkittleBrewer("trop")
 DT[parameterIndex=="parameterIndex_1", table(Method)]
 
 
-cbbPalette <- c("#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+cbbPalette <- c("#8720B6","#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 trop <- RSkittleBrewer::RSkittleBrewer("trop")
 gg_sy <- theme(legend.position = "bottom", axis.text = element_text(size = 20),
                axis.title = element_text(size = 20), legend.text = element_text(size = 20),
