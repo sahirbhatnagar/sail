@@ -54,12 +54,12 @@ head(model_mat)
 # ind <- which(DT$diag_3bl.x==2)
 # X <- X[ind,,drop = F]
 
-# E <- DT[train,] %>% pull(APOE_bin) %>% as.numeric
+E <- DT[train,] %>% pull(APOE_bin) %>% as.numeric
 # E <- DT %>% pull(APOE_bin) %>% as.numeric
 # E <- E[ind]
 # E <- DT[train,] %>% pull(EDUCAT) %>% as.numeric
 # E <- DT[train,] %>% pull(diag_3bl.x) %>% as.numeric
-E <- DT[train,] %>% pull(Age_bl) %>% as.numeric
+# E <- DT[train,] %>% pull(Age_bl) %>% as.numeric
 
 Y <- DT[train,] %>% pull(MMSCORE_bl) %>% as.numeric
 # Y <- Y[ind]
@@ -72,13 +72,14 @@ hist(scale(Y, scale = F))
 # summary(lm(Y ~ X*E))
 f.basis <- function(i) splines::bs(i, df = 5)
 system.time(
-  fit <- sail(x = X, y = Y, e = E, basis = f.basis, alpha = 0.1)
+  fit <- sail(x = X, y = Y, e = E, basis = f.basis, alpha = 0.1, strong = FALSE)
 )
 
 fit <- sail(
-  # x = model_mat,
-  x = as.matrix(DT[,brain_regions[1:10]]),
+  x = model_mat,
+  # x = as.matrix(DT[,brain_regions[1:10]]),
   y = Y, e = E,
+  strong = FALSE,
   # expand = FALSE,
   # center.e = FALSE,
   # alpha = 0.2

@@ -68,17 +68,20 @@ head(model_mat)
 registerDoMC(cores = 8)
 system.time(
   fit <- sail(x = model_mat, y = Y, e = E,
+              strong = FALSE,
               alpha = 0.5,
               verbose = 2,
               expand = FALSE,
               group = attr(model_mat,"assign"))
 )
 
-
+plot(fit)
 
 system.time(
   cvfit <- cv.sail(x = model_mat, y = Y, e = E,
                    parallel = TRUE,
+                   strong = FALSE,
+                   # dfmax = 30,
                    nfolds = 5,
                    alpha = 0.5,
                    verbose = 2,
@@ -87,7 +90,7 @@ system.time(
 )
 
 plot(cvfit)
-predict(cvfit, type = "nonzero")
+predict(cvfit, type = "nonzero", s="lambda.min")
 cvfit$cvm[which(cvfit$lambda.min==cvfit$lambda)]
 
 
