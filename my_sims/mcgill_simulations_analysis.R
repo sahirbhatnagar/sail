@@ -82,7 +82,7 @@ if (nonlinear) {
 
 dev.off()
 
-pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/figures/gendata2_main_n200_p1000_SNR2_betaE1_df5_degree3_alpha2_1a_500sims.pdf",
+pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/figures/sail_main_eff_paramIndex1_200sims.pdf",
     width=11,height=8)
 par(mfrow = c(2,2))
 for (xt in 1:4){
@@ -165,6 +165,9 @@ for (xt in 1:4){
   curve(ff, add = TRUE, lwd = 3, col = sail:::cbbPalette[7])
   if(xvar=="X4" & nonlinear) mtext(do.call(expression, main),side=3, line = c(1,-1) , cex = 1.3,
                        family = "serif")
+  if(xvar=="X1") legend("topleft", c("Truth", "Estimated"),
+                        cex = 1.2, bty = "n", lwd = 2,
+                        col = sail:::cbbPalette[c(7,4)])
 
 }
 dev.off()
@@ -197,12 +200,12 @@ if (nonlinear) {
 
 i = 4
 xv <- paste0("X",4)
-plotInter(object = dat_list[[120]]$sail.fit, xvar = xv, s = dat_list[[120]][[lambda.type]],
-          f.truth = f4.persp,
-          simulation = T,
-          npoints = 40)
+plotInter(object = dat_list[[120]]$fit,
+          x = dat_list[[120]]$x,
+          xvar = xv, s = dat_list[[120]][[lambda.type]],
+          f.truth = f4.persp)
 
-
+# used for cvfit
 f.hat.inter <- function(object, xvar, s, f.truth){
 
   ind <- object$group == which(object$vnames == xvar)
@@ -227,105 +230,156 @@ f.hat.inter <- function(object, xvar, s, f.truth){
   # return(list(fhat = fhat, ftruth = ftruth, l2 = l2norm(fhat - ftruth)))
 }
 
-resX3 <- sapply(dat_list, function(i) f.hat.inter(object = i$sail.fit,
-                                                  xvar = "X3",
-                                                  s = i[[lambda.type]],
-                                                  f.truth = f3.persp))
-resX3
+# used for fit (objects of class sail.fit)
+f.hat.inter.fit <- function(object, xvar, s, f.truth, x){
+
+  ind <- object$group == which(object$vnames == xvar)
+  allCoefs <- coef(object, s = s)
+  a0 <- allCoefs[1,]
+
+  betas <- as.matrix(allCoefs[object$main.effect.names[ind],,drop = FALSE])
+  alphas <- as.matrix(allCoefs[object$interaction.names[ind],,drop = FALSE])
+  betaE <- as.matrix(allCoefs["E",,drop = FALSE])
+
+  design.mat.main <- object$design[,object$main.effect.names[ind],drop = FALSE]
+  design.mat.int <- object$design[,object$interaction.names[ind],drop = FALSE]
+  originalE <- object$design[,"E",drop = FALSE] # this is the centered E
+  originalX <- x[,unique(object$group[ind])]
+
+  # fhat <- drop(originalE %*% betaE + design.mat.main %*% betas + design.mat.int %*% alphas)
+  fhat <- drop(design.mat.int %*% alphas)
+  ftruth <- drop(f.truth(originalX,originalE))
+
+  sail:::l2norm(fhat - ftruth)
+  # dist(rbind(fhat,ftruth), method = "minkowski", p=3)
+  # return(list(fhat = fhat, ftruth = ftruth, l2 = l2norm(fhat - ftruth)))
+}
+
+
+
+# X3 interactions ---------------------------------------------------------
+
+resX3 <- sapply(dat_list, function(i) f.hat.inter.fit(object = i$fit,
+                                                           xvar = "X3",
+                                                           s = i[[lambda.type]],
+                                                           f.truth = f3.persp,
+                                                           x = i[["x"]]))
+# resX3
 indX3 <- match(quantile(resX3, probs = c(0.25,0.50,0.75), type = 1), resX3)
-resX3[indX3]
-plot(dat_list[[indX3[1]]])
+# resX3[indX3]
+# plot(dat_list[[indX3[1]]]$fit)
 dev.off()
 
 
-devtools::load_all("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/")
+# devtools::load_all("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/")
 
 i = 3
 xv <- paste0("X",i)
-pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/figures/gendata2_inter_truth_n200_p1000_SNR2_betaE1_df5_degree3_alpha2_1a_500sims.pdf",
-    width=11,height=8)
-plotInter(object = dat_list[[indX3[1]]]$sail.fit, xvar = xv, s = dat_list[[indX3[1]]][[lambda.type]],
+pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/figures/sail_intertruth_X3_paramIndex1_200sims.pdf",
+    width=11, height=8)
+plotInter(object = dat_list[[indX3[1]]]$fit,
+          xvar = xv,
+          x = dat_list[[indX3[1]]]$x,
+          s = dat_list[[indX3[1]]][[lambda.type]],
           truthonly = TRUE,
-          f.truth = f3.persp,
-          simulation = T,
-          npoints = 30)
+          f.truth = f3.persp)
 dev.off()
 
-pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/figures/gendata2_inter25_n200_p1000_SNR2_betaE1_df5_degree3_alpha2_1a_500sims.pdf",
+pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/figures/sail_inter25_X3_paramIndex1_200sims.pdf",
     width=11,height=8)
-plotInter(object = dat_list[[indX3[1]]]$sail.fit, xvar = xv, s = dat_list[[indX3[1]]][[lambda.type]],
-          simulation = T,
-          npoints = 30, title_z = "Estimated: 25th Percentile")
+plotInter(object = dat_list[[indX3[1]]]$fit,
+          xvar = xv,
+          x = dat_list[[indX3[1]]]$x,
+          s = dat_list[[indX3[1]]][[lambda.type]],
+          title_z = "Estimated: 25th Percentile")
 dev.off()
 
-pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/figures/gendata2_inter50_n200_p1000_SNR2_betaE1_df5_degree3_alpha2_1a_500sims.pdf",
+pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/figures/sail_inter50_X3_paramIndex1_200sims.pdf",
     width=11,height=8)
-plotInter(object = dat_list[[indX3[2]]]$sail.fit, xvar = xv, s = dat_list[[indX3[2]]][[lambda.type]],
-          simulation = T,
-          npoints = 30, title_z = "Estimated: 50th Percentile")
+plotInter(object = dat_list[[indX3[2]]]$fit,
+          xvar = xv,
+          x = dat_list[[indX3[2]]]$x,
+          s = dat_list[[indX3[2]]][[lambda.type]],
+          title_z = "Estimated: 50th Percentile")
 dev.off()
 
 
-pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/figures/gendata2_inter75_n200_p1000_SNR2_betaE1_df5_degree3_alpha2_1a_500sims.pdf",
+pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/figures/sail_inter75_X3_paramIndex1_200sims.pdf",
     width=11,height=8)
 # png(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/figures/gendata2_inter75_n200_p1000_SNR2_betaE1_df5_degree3_alpha2_1a_500sims.png",
 #     width=11,height=8, units = "in", res = 125)
-plotInter(object = dat_list[[indX3[3]]]$sail.fit, xvar = xv, s = dat_list[[indX3[3]]][[lambda.type]],
-          simulation = T,
-          npoints = 30, title_z = "Estimated: 75th Percentile")
+plotInter(object = dat_list[[indX3[3]]]$fit,
+          xvar = xv,
+          x = dat_list[[indX3[3]]]$x,
+          s = dat_list[[indX3[3]]][[lambda.type]],
+          title_z = "Estimated: 75th Percentile")
 dev.off()
 
 
-resX4 <- sapply(dat_list, function(i) f.hat.inter(object = i$sail.fit,
-                                                  xvar = "X4",
-                                                  s = i[[lambda.type]],
-                                                  f.truth = f4.persp))
-resX4
+# X4 interactions ---------------------------------------------------------
+
+
+resX4 <- sapply(dat_list, function(i) f.hat.inter.fit(object = i$fit,
+                                                      xvar = "X4",
+                                                      s = i[[lambda.type]],
+                                                      f.truth = f4.persp,
+                                                      x = i[["x"]]))
+# resX4
 indX4 <- match(quantile(resX4, probs = c(0.25,0.5,0.75), type = 1), resX4)
-resX4[indX4]
-plot(dat_list[[indX4[1]]])
-coef(dat_list[[indX4[2]]], s = lambda.type)[nonzero(coef(dat_list[[indX4[2]]], s = lambda.type)),,drop=F]
+# resX4[indX4]
+# plot(dat_list[[indX4[1]]]$fit)
+# coef(dat_list[[indX4[2]]]$fit, s = lambda.type)[nonzero(coef(dat_list[[indX4[2]]]$fit, s = lambda.type)),,drop=F]
+
 dev.off()
+# i = 4
+# xv <- paste0("X",i)
+# plotInter(object = dat_list[[indX4[1]]]$sail.fit,
+#           xvar = xv,
+#           s = dat_list[[indX4[1]]][[lambda.type]],
+#           f.truth = f4.persp,
+#           simulation = T,
+#           npoints = 40)
+
+# devtools::load_all("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/")
+
 i = 4
 xv <- paste0("X",i)
-plotInter(object = dat_list[[indX4[1]]]$sail.fit, xvar = xv, s = dat_list[[indX4[1]]][[lambda.type]],
-          f.truth = f4.persp,
-          simulation = T,
-          npoints = 40)
-
-devtools::load_all("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/")
-
-i = 4
-xv <- paste0("X",i)
-pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/figures/gendata2_inter_truth_X4_n200_p1000_SNR2_betaE1_df5_degree3_alpha2_1a_500sims.pdf",
-    width=11,height=8)
-plotInter(object = dat_list[[indX4[1]]]$sail.fit, xvar = xv, s = dat_list[[indX4[1]]][[lambda.type]],
+pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/figures/sail_intertruth_X4_paramIndex1_200sims.pdf",
+    width=11, height=8)
+plotInter(object = dat_list[[indX4[1]]]$fit,
+          xvar = xv,
+          x = dat_list[[indX4[1]]]$x,
+          s = dat_list[[indX4[1]]][[lambda.type]],
           truthonly = TRUE,
-          f.truth = f4.persp,
-          simulation = T,
-          npoints = 30)
+          f.truth = f4.persp)
 dev.off()
 
-pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/figures/gendata2_inter25_X4_n200_p1000_SNR2_betaE1_df5_degree3_alpha2_1a_500sims.pdf",
+pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/figures/sail_inter25_X4_paramIndex1_200sims.pdf",
     width=11,height=8)
-plotInter(object = dat_list[[indX4[1]]]$sail.fit, xvar = xv, s = dat_list[[indX4[1]]][[lambda.type]],
-          simulation = T,
-          npoints = 30, title_z = "Estimated: 25th Percentile")
+plotInter(object = dat_list[[indX4[1]]]$fit,
+          xvar = xv,
+          x = dat_list[[indX4[1]]]$x,
+          s = dat_list[[indX4[1]]][[lambda.type]],
+          title_z = "Estimated: 25th Percentile")
 dev.off()
 
-pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/figures/gendata2_inter50_X4_n200_p1000_SNR2_betaE1_df5_degree3_alpha2_1a_500sims.pdf",
+pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/figures/sail_inter50_X4_paramIndex1_200sims.pdf",
     width=11,height=8)
-plotInter(object = dat_list[[indX4[2]]]$sail.fit, xvar = xv, s = dat_list[[indX4[2]]][[lambda.type]],
-          simulation = T,
-          npoints = 30, title_z = "Estimated: 50th Percentile")
+plotInter(object = dat_list[[indX4[2]]]$fit,
+          xvar = xv,
+          x = dat_list[[indX4[2]]]$x,
+          s = dat_list[[indX4[2]]][[lambda.type]],
+          title_z = "Estimated: 50th Percentile")
 dev.off()
 
 
-pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/figures/gendata2_inter75_X4_n200_p1000_SNR2_betaE1_df5_degree3_alpha2_1a_500sims.pdf",
-    width=11,height=8)
-plotInter(object = dat_list[[indX4[3]]]$sail.fit, xvar = xv, s = dat_list[[indX4[3]]][[lambda.type]],
-          simulation = T,
-          npoints = 30, title_z = "Estimated: 75th Percentile")
+pdf(file="/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/figures/sail_inter75_X4_paramIndex1_200sims.pdf",
+    width=11, height=8)
+plotInter(object = dat_list[[indX4[3]]]$fit,
+          xvar = xv,
+          x = dat_list[[indX4[3]]]$x,
+          s = dat_list[[indX4[3]]][[lambda.type]],
+          title_z = "Estimated: 75th Percentile")
 dev.off()
 
 
@@ -333,60 +387,62 @@ dev.off()
 
 # Gendata2-Hierarchy=TRUE Selection Rates ---------------------------------
 
-vnames <- c(dat_list[[1]]$sail.fit$vnames, "E", paste0(dat_list[[1]]$sail.fit$vnames, ":E"))
+vnames <- c(dat_list[[1]]$fit$vnames, "E", paste0(dat_list[[1]]$fit$vnames, ":E"))
 show <- c("X1","X2","X3","X4","E","X3:E","X4:E") # this will be the same as truth for hierarchy=TRUE
 truth <- c("X1","X2","X3","X4","E","X3:E","X4:E") # this will be the same as truth for hierarchy=TRUE
 # truth <- c("X1","X2","E","X3:E","X4:E") # this is for hierarchy=FALSE
 negatives <- setdiff(vnames, truth)
 
+# dat_list[[1]]$fit$active[[which(dat_list[[1]][[lambda.type]]==dat_list[[1]]$fit$lambda )]]
 active_set <- do.call(rbind,lapply(dat_list, function(i){
-  1 * (show %in% i$sail.fit$active[[which(i[[lambda.type]]==i$lambda)]])
+  1 * (show %in% i$fit$active[[which(i[[lambda.type]]==i$fit$lambda)]])
 })) %>% as.data.frame()
 
 colnames(active_set) <- show
 
 n_active <- sapply(dat_list, function(i){
-  length(i$sail.fit$active[[which(i[[lambda.type]]==i$lambda)]])
+  length(i$fit$active[[which(i[[lambda.type]]==i$fit$lambda)]])
 })
 
 active_set$`Number Active` <- n_active
 
-r2 <- sapply(dat_list, function(i){
-  cor(predict(i, s = i[[lambda.type]]),
-      i$sail.fit$y)^2})
+# r2 <- sapply(dat_list, function(i){
+#   cor(predict(i, s = i[[lambda.type]]),
+#       i$fit$y)^2})
 
-active_set$`R-Squared` <- r2
+# active_set$`R-Squared` <- r2
 
 CVMSE <- sapply(dat_list, function(i){
-  i$cvm[which(i[[lambda.type]]==i$lambda)]
+  # i$cvm[which(i[[lambda.type]]==i$lambda)]
+  i$msevalid
   })
 
-active_set$`10 Fold-CV MSE` <- CVMSE
+active_set$`Test Set MSE` <- CVMSE
 
-correct_sparsity <- sapply(dat_list, function(i) {
-  correct_nonzeros <- sum(i$sail.fit$active[[which(i[[lambda.type]]==i$lambda)]] %in% truth)
-  correct_zeros <- length(setdiff(negatives,i$sail.fit$active[[which(i[[lambda.type]]==i$lambda)]]))
-  #correct sparsity
-  (1 / length(vnames)) * (correct_nonzeros + correct_zeros)
-})
+# correct_sparsity <- sapply(dat_list, function(i) {
+#   correct_nonzeros <- sum(i$sail.fit$active[[which(i[[lambda.type]]==i$lambda)]] %in% truth)
+#   correct_zeros <- length(setdiff(negatives,i$sail.fit$active[[which(i[[lambda.type]]==i$lambda)]]))
+#   #correct sparsity
+#   (1 / length(vnames)) * (correct_nonzeros + correct_zeros)
+# })
+#
+# active_set$`Correct Sparsity` <- correct_sparsity
 
-active_set$`Correct Sparsity` <- correct_sparsity
 
-
-tpr <- sapply(dat_list, function(i) {
-      length(intersect(i$sail.fit$active[[which(i[[lambda.type]]==i$lambda)]],
-                                     truth))/length(truth)
-                  })
-
-active_set$`True_Positive_Rate` <- tpr
-
-fpr <- sapply(dat_list, function(i) {
-  active <- i$sail.fit$active[[which(i[[lambda.type]]==i$lambda)]]
-  FPR <- sum(active %ni% truth) / length(negatives)
-  FPR
-})
-
-active_set$`False_Positive_Rate` <- fpr
+# tpr <- sapply(dat_list, function(i) {
+#       length(intersect(i$sail.fit$active[[which(i[[lambda.type]]==i$lambda)]],
+#                                      truth))/length(truth)
+#                   })
+#
+# active_set$`True_Positive_Rate` <- tpr
+#
+# fpr <- sapply(dat_list, function(i) {
+#   active <- i$sail.fit$active[[which(i[[lambda.type]]==i$lambda)]]
+#   FPR <- sum(active %ni% truth) / length(negatives)
+#   FPR
+# })
+#
+# active_set$`False_Positive_Rate` <- fpr
 
 
 # Myfunc <- function(row, release, rating) {
@@ -394,17 +450,17 @@ active_set$`False_Positive_Rate` <- fpr
 # }
 
 head(active_set)
-png("mcgillsims/figures/upset_selection.png", width = 11, height = 8, units = "in", res = 100)
+# png("mcgillsims/figures/upset_selection.png", width = 11, height = 8, units = "in", res = 100)
 
-pdf("mcgillsims/figures/upset_selection_truth_linear_sail_degree1.pdf", width = 10, height = 8)
+pdf("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/figures/upset_selection_sail_paramIndex1.pdf", width = 10, height = 8)
 upset(active_set,
       sets = rev(show),
       # sets =
       point.size = 3.5, line.size = 2,
       mainbar.y.label = "Frequency", sets.x.label = "Selection Frequency",
       text.scale = 2, order.by = "freq", keep.order = TRUE,
-      boxplot.summary = c("Number Active"),
-      # boxplot.summary = c("Correct Sparsity","Number Active")#,
+      # boxplot.summary = c("Number Active"),
+      boxplot.summary = c("Test Set MSE","Number Active"),
       queries = list(
       list(query = intersects, params = list(truth), active = T, color = "#D55E00"))#,
   #     attribute.plots = list(gridrows = 45,

@@ -8,6 +8,11 @@ pacman::p_load(genefilter)
 pacman::p_load(tidyverse)
 pacman::p_load(latex2exp)
 pacman::p_load(glmnet)
+pacman::p_load(splines)
+pacman::p_load(doParallel)
+pacman::p_load(splines)
+pacman::p_load(foreach)
+pacman::p_load(doMC)
 
 library(ISLR)
 data("Credit")
@@ -36,13 +41,62 @@ fitls <- lm(Balance ~ ., data = Credit)
 summary(fitls)
 sum(abs(coef(fitls)[-1]))
 
-fitnet <- glmnet(x = X, y = Y)
+fitnet <- glmnet(x = c_dat[,c(preds, "Gender")], y = Y)
+
 plot(fitnet, xvar = "lambda")
-fit_lasso <- cv.glmnet(x = X, y = Y)
+fit_lasso <- cv.glmnet(x = c_dat[,c(preds, "Gender")], y = Y)
 plot(fit_lasso)
+fit_lasso$cvm[which(fit_lasso$lambda.min==fit_lasso$lambda)]
+coef(fit_lasso)
 colSums(abs(coef(fitnet)[-1,]), na.rm = TRUE)
 
 
+f.basis <- function(i) splines::bs(i, df = 3)
+system.time(
+  fit <- sail(x = X, y = Y, e = E, basis = f.basis, alpha = 0.5, verbose = 2)
+)
+
+X[, "Cards"] %>% splines::bs()
+preds_expand <- c("Income", "Limit", "Rating", "Cards", "Age", "Education")
+
+fmla <- reformulate(c(sapply(preds_expand, function(i) sprintf("bs(%s)",i)),
+                      "Married", "Ethnicity","Gender"), intercept = FALSE)
+
+model_mat <- model.matrix(fmla, data = as.data.frame(c_dat))
+head(model_mat)
+
+registerDoMC(cores = 8)
+system.time(
+  fit <- sail(x = model_mat, y = Y, e = E,
+              alpha = 0.5,
+              verbose = 2,
+              expand = FALSE,
+              group = attr(model_mat,"assign"))
+)
+
+
+
+system.time(
+  cvfit <- cv.sail(x = model_mat, y = Y, e = E,
+                   parallel = TRUE,
+                   nfolds = 5,
+                   alpha = 0.5,
+                   verbose = 2,
+                   expand = FALSE,
+                   group = attr(model_mat,"assign"))
+)
+
+plot(cvfit)
+predict(cvfit, type = "nonzero")
+cvfit$cvm[which(cvfit$lambda.min==cvfit$lambda)]
+
+
+
+
+
+
+
+plot(fit)
 fmla <- as.formula(paste0("~0+",paste(colnames(X), collapse = "+"), "+ E +",paste(colnames(X),":E", collapse = "+") ))
 Xmat <- model.matrix(fmla, data = data.frame(X,E))
 head(Xmat)

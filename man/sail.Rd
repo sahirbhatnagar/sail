@@ -4,7 +4,7 @@
 \alias{sail}
 \title{Fit Sparse Additive Interaction Model with Strong Heredity}
 \usage{
-sail(x, y, e, basis = function(i) splines::bs(i, df = 5),
+sail(x, y, e, basis = function(i) splines::bs(i, df = 5), strong = TRUE,
   group.penalty = c("gglasso", "grMCP", "grSCAD"), family = c("gaussian",
   "binomial"), center.x = TRUE, center.e = TRUE, expand = TRUE, group,
   weights, penalty.factor = rep(1, 1 + 2 * nvars),
@@ -29,6 +29,9 @@ must be converted to numeric.}
 \item{basis}{user defined basis expansion function. This function will be
 applied to every column in \code{x}. Specify \code{function(i) i} if no
 expansion is desired. Default: \code{function(i) splines::bs(i, df = 5)}.}
+
+\item{strong}{Flag specifying strong hierarchy (TRUE) or weak hierarchy
+(FALSE). Default FALSE.}
 
 \item{group.penalty}{group lasso penalty. Can be one of \code{"gglasso"}
 (group lasso), \code{"grMCP"} (group MCP) or \code{"grSCAD"} (group SCAD).
@@ -122,12 +125,12 @@ an object with S3 class "sail", \code{"*"}, where \code{"*"} is
   \item{alpha}{a (# interaction effects after basis expansion x
   \code{nlambda}) matrix of interaction effects coefficients, stored in
   sparse column format \code{("dgCMatrix")}} \item{gamma}{A \code{p x
-  nlambda} matrix of (\eqn{\gamma}) coefficients, stored in sparse
-  column format \code{("dgCMatrix")}} \item{bE}{exposure effect estimates of
-  length \code{nlambda}} \item{active}{list of length \code{nlambda}
-  containing character vector of selected variables} \item{lambda}{the actual
-  sequence of lambda values used} \item{lambda2}{value for the mixing tuning
-  parameter \eqn{0<\alpha<1}} \item{dfbeta}{the number of nonzero main effect
+  nlambda} matrix of (\eqn{\gamma}) coefficients, stored in sparse column
+  format \code{("dgCMatrix")}} \item{bE}{exposure effect estimates of length
+  \code{nlambda}} \item{active}{list of length \code{nlambda} containing
+  character vector of selected variables} \item{lambda}{the actual sequence
+  of lambda values used} \item{lambda2}{value for the mixing tuning parameter
+  \eqn{0<\alpha<1}} \item{dfbeta}{the number of nonzero main effect
   coefficients for each value of lambda} \item{dfalpha}{the number of nonzero
   interaction coefficients for each value of lambda} \item{dfenviron}{the
   number of nonzero exposure (\code{e}) coefficients for each value of
