@@ -512,7 +512,7 @@ lspathweak <- function(x,
     basis = basis,
     expand = expand,
     group = group,
-    strong = strong,
+    # strong = strong,
     interaction.names = interaction_names,
     main.effect.names = main_effect_names
   )

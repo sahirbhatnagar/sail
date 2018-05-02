@@ -1,7 +1,4 @@
-library(sail)
-library(splines)
-
-context("sail model fit with both packaged datasets")
+context("sail model fit strong and weak hierarchy with both packaged datasets")
 
 data("sailsim")
 data("oasis")
