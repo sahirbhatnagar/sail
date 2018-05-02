@@ -1,3 +1,5 @@
+library(splines)
+
 context("sail model fit strong and weak hierarchy with both packaged datasets")
 
 data("sailsim")
