@@ -10,6 +10,7 @@ f.basis <- function(i) splines::bs(i, degree = 3)
 data("oasis")
 system.time(fit <- sail(x = oasis$x, y = oasis$y, e = oasis$e,
                         basis = f.basis,
+                        strong = FALSE,
                         # dfmax = 10,
                         # thresh = 1e-3,
                         # expand = FALSE, group = attr(Xm,"assign"),
