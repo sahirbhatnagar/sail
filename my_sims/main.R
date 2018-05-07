@@ -22,7 +22,8 @@ pacman::p_load(glmnet)
 pacman::p_load(LassoBacktracking)
 pacman::p_load(glinternet)
 pacman::p_load(gbm)
-pacman::p_load_gh('sahirbhatnagar/sail')
+# pacman::p_load_gh('sahirbhatnagar/sail', dependencies = FALSE)
+library(sail)
 pacman::p_load_gh('asadharis/HierBasis')
 pacman::p_load(SAM)
 pacman::p_load(gamsel)
@@ -61,28 +62,30 @@ sim <- new_simulation(name = "apr_25_2018",
                                            "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
 simulator::save_simulation(sim)
 
-s2 <- new_simulation(name = "apr_29_2018",
-                      label = "apr_29_2018",
+s2 <- new_simulation(name = "may_1_2018",
+                      label = "may_1_2018",
                       dir = ".") %>%
   generate_model(make_gendata_Paper_data_split, seed = 1234,
-                 n = 400, p = 25, corr = 0, betaE = 2, SNR = 2, lambda.type = "lambda.min",
-                 parameterIndex = list(1),
+                 n = 400, p = 50, corr = 0, betaE = 2, SNR = 2, lambda.type = "lambda.min",
+                 parameterIndex = list(1,2),
                  vary_along = "parameterIndex") %>%
   simulate_from_model(nsim = 2, index = 1:2) %>%
-  run_method(list(sailsplitadaptive))
-# s2 <- s2 %>% evaluate(list(msevalid, tpr, fpr, nactive, r2))
-# s2 %>% plot_eval(metric_name = "r2")
+  run_method(list(sailsplitadaptive, sailsplit, sailsplitweak, sailsplitadaptiveweak))
+
+
+s2 <- s2 %>% evaluate(list(msevalid, tpr, fpr, nactive, r2))
+s2 %>% plot_eval_by(metric_name = "fpr", varying = "parameterIndex")
 # load simulation ---------------------------------------------------------
 
 sim <- load_simulation("apr_25_2018")
 sim <- sim %>% evaluate(list(msevalid, tpr, fpr, nactive, r2))
 # simulator::save_simulation(sim)
-sim <- sim %>% run_method(list(sailsplitadaptive),
-                          parallel = list(socket_names = 35,
-                                          libraries = c("LassoBacktracking", "glinternet","glmnet","splines",
-                                                        "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
-simulator::save_simulation(sim)
-ls()
+# sim <- sim %>% run_method(list(sailsplitweak, sailsplitadaptiveweak),
+#                           parallel = list(socket_names = 35,
+#                                           libraries = c("LassoBacktracking", "glinternet","glmnet","splines",
+#                                                         "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
+# simulator::save_simulation(sim)
+# ls()
 
 # analyze results ---------------------------------------------------------
 
@@ -121,7 +124,7 @@ DT$scen %>% table
     facet_rep_wrap(~scen, scales = "free", ncol = 2,repeat.tick.labels = 'left',
                labeller = as_labeller(appender,
                                       default = label_parsed))+
-    scale_fill_manual(values=cbbPalette, guide=guide_legend(ncol=2)) +
+    scale_fill_manual(values=c(cbbPalette, "red","pink"), guide=guide_legend(ncol=2)) +
     ggplot2::labs(y = "Test Set MSE", title = "") + xlab("") + panel_border()+background_grid()+
     theme(legend.position = "right", legend.text=element_text(size=18)) )
 
