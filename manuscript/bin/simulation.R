@@ -7,19 +7,25 @@ df <- df %>% separate(Model, into = c("simnames","betaE","corr","lambda.type","n
 DT <- as.data.table(df, stringsAsFactors = FALSE)
 
 # DT[parameterIndex=="parameterIndex_1", table(Method)] %>% names %>% dput
-DT[, table(Method)]
+# DT[, table(Method)]
 
 DT[Method=="Adaptivesail", Method := "Asail"]
-DT[Method=="Adaptivesailweak", Method := "Asail_weak"]
+DT[Method=="Adaptivesailweak", Method := "Asail weak"]
+DT[Method=="Adaptivelasso", Method := "Alasso"]
+DT[Method=="sailweak", Method := "sail weak"]
+DT[Method=="sail", Method := "sail strong"]
+DT[Method=="Asail", Method := "Asail strong"]
+
+# DT[, table(Method)]
 
 appender <- function(string) TeX(paste(string))
 
-DT[, method:=factor(Method, levels = c("lasso", "lassoBT", "GLinternet", "HierBasis", "SPAM", "gamsel",
-                                       "sail", "Asail"))]
+DT[, method := factor(Method, levels = c("lasso","Alasso","lassoBT", "GLinternet", "HierBasis", "SPAM", "gamsel",
+                                       "sail strong", "Asail strong", "sail weak", "Asail weak"))]
 # DT[, table(method)]
 DT[, scenario:= as.numeric(as.character(stringr::str_extract_all(parameterIndex, "\\d", simplify = T)))]
-DT[, scen:=ifelse(scenario==1,"Strong Hierarchy",ifelse(scenario==2, "Weak Hierarchy", ifelse(scenario==3,"Interactions Only",ifelse(scenario==4, "Strong Hierarchy (Linear)", "Main Effects Only"))))]
-DT[, scen:=factor(scen, levels = c("Strong Hierarchy", "Weak Hierarchy","Interactions Only","Strong Hierarchy (Linear)", "Main Effects Only"))]
+DT[, scen:=ifelse(scenario==1,"Strong Hierarchy",ifelse(scenario==2, "Weak Hierarchy", ifelse(scenario==3,"Interactions Only",ifelse(scenario==4, "Linear Effects", "Main Effects Only"))))]
+DT[, scen:=factor(scen, levels = c("Strong Hierarchy", "Weak Hierarchy","Interactions Only","Linear Effects", "Main Effects Only"))]
 # DT$scen %>% table
 #Truth obeys strong hierarchy (parameterIndex = 1)
 #Truth obeys weak hierarchy (parameterIndex = 2)
@@ -39,7 +45,7 @@ p1_mse <- ggplot(DT, aes(method, mse, fill = method)) +
                    repeat.tick.labels = 'left',
                    labeller = as_labeller(appender,
                                           default = label_parsed)) +
-    scale_fill_manual(values=cbbPalette, guide=guide_legend(ncol=2)) +
+    scale_fill_manual(values=RColorBrewer::brewer.pal(11, "Paired"), guide=guide_legend(ncol=3)) +
     # ggplot2::labs(y = "Test Set MSE", title = "") + xlab("") +
     labs(x="", y="Test Set MSE",
          title="Simulation Study Results: Test Set MSE",
