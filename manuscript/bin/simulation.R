@@ -7,7 +7,10 @@ df <- df %>% separate(Model, into = c("simnames","betaE","corr","lambda.type","n
 DT <- as.data.table(df, stringsAsFactors = FALSE)
 
 # DT[parameterIndex=="parameterIndex_1", table(Method)] %>% names %>% dput
+DT[, table(Method)]
+
 DT[Method=="Adaptivesail", Method := "Asail"]
+DT[Method=="Adaptivesailweak", Method := "Asail_weak"]
 
 appender <- function(string) TeX(paste(string))
 

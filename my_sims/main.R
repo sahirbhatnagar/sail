@@ -89,8 +89,9 @@ sim <- sim %>% evaluate(list(msevalid, tpr, fpr, nactive, r2))
 
 # analyze results ---------------------------------------------------------
 
-df <- as.data.frame(evals(sim))
-saveRDS(df, file = "my_sims/simulation_results/apr_25_2018_results.rds")
+# df <- as.data.frame(evals(sim))
+# saveRDS(df, file = "my_sims/simulation_results/apr_25_2018_results.rds")
+df <- readRDS("my_sims/simulation_results/apr_25_2018_results.rds")
 df <- df %>% separate(Model, into = c("simnames","betaE","corr","lambda.type","n","p","parameterIndex","SNR_2"),
                       sep = "/")
 DT <- as.data.table(df)
