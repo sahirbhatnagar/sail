@@ -2,7 +2,7 @@
 #PBS -l walltime=1:00:00
 #PBS -o log/
 #PBS -e log/
-#PBS -N thesisFit
+#PBS -N WeakFit
 #PBS -m ea
 #PBS -l mem=8G
 #PBS -l vmem=8G

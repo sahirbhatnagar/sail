@@ -1,6 +1,9 @@
 rm(list=ls())
 dev.off()
-devtools::load_all("/home/sahir/git_repositories/sail/")
+# devtools::load_all("/home/sahir/git_repositories/sail/")
+# pacman::p_load_current_gh('sahirbhatnagar/sail')
+# devtools::load_all()
+library(sail)
 # source("my_sims/model_functions.R")
 
 # set.seed(123)

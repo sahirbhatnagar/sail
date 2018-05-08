@@ -21,8 +21,10 @@ pacman::p_load(sail)
 #                    pattern = '*.rds', full.names = TRUE)
 # files <- list.files(path = '/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/gendata2_p1000_1c_2_3_6',
 #                     pattern = 'degree1_alpha05_6_', full.names = TRUE)
+# files <- list.files(path = '/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/thesis_p1000_1a',
+#                     pattern = '^fit', full.names = TRUE)
 files <- list.files(path = '/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/thesis_p1000_1a',
-                    pattern = '^fit', full.names = TRUE)
+                    pattern = '^weak', full.names = TRUE)
 dat_list <- lapply(files, function (x) readRDS(x))
 lambda.type <- "lambda.min"
 nonlinear <- TRUE
@@ -167,7 +169,7 @@ for (xt in 1:4){
                        family = "serif")
   if(xvar=="X1") legend("topleft", c("Truth", "Estimated"),
                         cex = 1.2, bty = "n", lwd = 2,
-                        col = sail:::cbbPalette[c(7,4)])
+                        col = sail:::cbbPalette[c(7,3)])
 
 }
 dev.off()
