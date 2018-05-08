@@ -53,7 +53,8 @@ colSums(abs(coef(fitnet)[-1,]), na.rm = TRUE)
 
 f.basis <- function(i) splines::bs(i, df = 3)
 system.time(
-  fit <- sail(x = X, y = Y, e = E, basis = f.basis, alpha = 0.5, verbose = 2)
+  fit <- sail(x = X, y = Y, e = E, basis = f.basis, alpha = 0.5, verbose = 2,
+              strong = FALSE)
 )
 
 X[, "Cards"] %>% splines::bs()
@@ -80,7 +81,7 @@ plot(fit)
 system.time(
   cvfit <- cv.sail(x = model_mat, y = Y, e = E,
                    parallel = TRUE,
-                   strong = FALSE,
+                   strong = TRUE,
                    # dfmax = 30,
                    nfolds = 5,
                    alpha = 0.5,
