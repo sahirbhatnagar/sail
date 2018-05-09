@@ -812,7 +812,7 @@ We evaluate the performance of our method on three of its defining characteristi
 The true component functions are the same as in~\citep{lin2006component,huang2010variable}. Using this setup, we generated a training set of $n=200$, a validation set of $n=200$ and a test set of $n=800$. The training set was used to fit the model and the validation set was used to select the optimal tuning parameter corresponding to the minimum prediction mean-squared error. Performance was assessed on the test set. Results are shown in Figure~\ref{fig:simulation-results}.
 
 
-<<simulation-results, dev="cairo_pdf", fig.asp=1, fig.width=8, fig.heigh=11, fig.pos = 'H', eval=T, fig.cap="Test set MSE results.">>=
+<<simulation-results, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', eval=T, fig.cap="Test set MSE results.">>=
 @
 
 
