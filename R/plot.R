@@ -326,7 +326,7 @@ plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
 #' @importFrom stats coef
 #' @export
 plotInter <- function(object, x, xvar, s, f.truth, interation.only = TRUE, truthonly = FALSE,
-                      npoints = 30, col = c("#56B4E9", "#D55E00"), title_z = "",
+                      npoints = 30, col = c("#56B4E9", "#D55E00"), title_z = "", xlab, ylab, zlab,
                       ...) {
 
   # browser()
@@ -403,9 +403,10 @@ plotInter <- function(object, x, xvar, s, f.truth, interation.only = TRUE, truth
       col = col[2],
       cex.lab = 3,
       cex.main = 3,
-      xlab = sprintf("f(%s)", xvar),
-      ylab = "X_E",
-      zlab = "Y", main = "Truth"
+      xlab = if(missing(xlab)) sprintf("f(%s)", xvar) else xlab,
+      ylab = if(missing(ylab)) "X_E" else ylab,
+      zlab = if(missing(zlab)) "Y" else zlab,
+      main = "Truth"
     )
   } else if (!missing(f.truth)) {
     par(mfrow = c(1, 2), tcl = -0.5, family = "serif", omi = c(0.2, 0.2, 0, 0))
@@ -420,9 +421,9 @@ plotInter <- function(object, x, xvar, s, f.truth, interation.only = TRUE, truth
       col = col[2],
       cex.lab = 3,
       cex.main = 3,
-      xlab = sprintf("f(%s)", xvar),
-      ylab = "X_E",
-      zlab = "Y", main = "Truth"
+      xlab = if(missing(xlab)) sprintf("f(%s)", xvar) else xlab,
+      ylab = if(missing(ylab)) "X_E" else ylab,
+      zlab = if(missing(zlab)) "Y" else zlab, main = "Truth"
     )
     graphics::persp(x, e, z.est,
       theta = 30, phi = 30,
@@ -434,9 +435,10 @@ plotInter <- function(object, x, xvar, s, f.truth, interation.only = TRUE, truth
       cex.main = 3,
       # ticktype="detailed",
       col = col[1],
-      xlab = sprintf("f(%s)", xvar),
-      ylab = "X_E",
-      zlab = "Y", main = title_z
+      xlab = if(missing(xlab)) sprintf("f(%s)", xvar) else xlab,
+      ylab = if(missing(ylab)) "X_E" else ylab,
+      zlab = if(missing(zlab)) "Y" else zlab,
+      main = title_z
     )
   } else {
     par(mfrow = c(1, 1), tcl = -0.5, family = "serif", omi = c(0.2, 0.2, 0, 0))
@@ -451,9 +453,9 @@ plotInter <- function(object, x, xvar, s, f.truth, interation.only = TRUE, truth
       zlim = z_range,
       col = col[1],
       # xlab=sprintf("f(x_%s)",as.numeric(gsub("X","",4))),
-      xlab = sprintf("f(%s)", xvar),
-      ylab = "X_E",
-      zlab = "Y",
+      xlab = if(missing(xlab)) sprintf("f(%s)", xvar) else xlab,
+      ylab = if(missing(ylab)) "X_E" else ylab,
+      zlab = if(missing(zlab)) "Y" else zlab,
       # main=sprintf("Estimated Interaction Effect for %s",xvar)
       main = title_z
     )
