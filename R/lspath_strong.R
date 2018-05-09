@@ -298,7 +298,7 @@ lspath <- function(x,
               lambda = LAMBDA * (1 - alpha),
               intercept = F
             ))[-1, ],
-            MCP = grpreg::grpreg(
+            grMCP = grpreg::grpreg(
               X = x_tilde_2[[j]],
               y = R,
               group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
@@ -308,7 +308,7 @@ lspath <- function(x,
               lambda = LAMBDA * (1 - alpha),
               intercept = T
             )$beta[-1, ],
-            SCAD = grpreg::grpreg(
+            grSCAD = grpreg::grpreg(
               X = x_tilde_2[[j]],
               y = R,
               group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
