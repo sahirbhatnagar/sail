@@ -299,6 +299,7 @@ An issue with~\eqref{eq:lassolikelihood3} is that since no constraint is placed 
 \subsection{Strong and weak heredity}
 
 The strong heredity principle states that the interaction term can only have a non-zero estimate if its corresponding main effects are estimated to be non-zero. The weak heredity principle allows for a non-zero interaction estimate as long as one of the corresponding main effects are estimated to be non-zero~\citep{chipman1996bayesian}. In the context of penalized regression methods, these principles can be formulated as structured sparsity \citep{bach2012structured} problems. Several authors have proposed to modify the type of penalty in order to achieve the heredity principle~\citep{radchenko2010variable,bien2013lasso,haris2014convex,lim2014learning}. We take an alternative approach. Following Choi et al.~\citep{choi2010variable}, we introduce a parameter $\bgamma = (\gamma_1, \ldots, \gamma_p)\in \mathbb{R}^p$ and reparametrize the coefficients for the interaction terms $\btau_j$ in~\eqref{eq:linpred} as a function of $\gamma_j$ and the main effect parameters $\btheta_j$ and $\beta_E$. This reparametrization for both strong and weak heredity is summarized in Table~\ref{tab:reparam}.
+
 \ctable[caption={Reparametrization for strong and weak heredity principle for \texttt{sail} model},label=tab:reparam,pos=h!,doinside=\footnotesize, ]{lll}{
 }{
 \FL
@@ -370,33 +371,11 @@ where $f_1(x) = -3x$, $f_2(x) = 2(2x-1)^3$ and the error term $\varepsilon$ is g
 
 
 
-\begin{knitrout}\scriptsize
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
 
-{\centering \includegraphics[width=1\linewidth]{figure/toy-solution-path-1} 
-
-}
-
-\caption[Toy example solution path]{Toy example solution path}\label{fig:toy-solution-path}
-\end{figure}
-
-
-\end{knitrout}
 
 In Figure~\ref{fig:toy-effects}, we plot the true and estimated component functions $\hat{f}_1(X_1)$ and $E \cdot \hat{f}_2(X_2)$. Our method is able to capture the correct functional form for the nonlinear interaction. The lack-of-fit for $f_1(X_1)$ can be explained by the fact that \sail is trying to fit a cubic spline to a linear function. Nevertheless, this example demonstrates that it can still identify linear associations. 
 
-\begin{knitrout}\scriptsize
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
 
-{\centering \includegraphics[width=1\linewidth]{figure/toy-effects-1} 
-
-}
-
-\caption[Estimated smooth functions by \texttt{sail} method based on $\lambda_{min}$]{Estimated smooth functions by \texttt{sail} method based on $\lambda_{min}$.}\label{fig:toy-effects}
-\end{figure}
-
-
-\end{knitrout}
 
 
 \subsection{Related Work}
@@ -404,15 +383,17 @@ In Figure~\ref{fig:toy-effects}, we plot the true and estimated component functi
 \ctable[pos=H,doinside=\footnotesize]{lcc}{
 }{
 \FL
-Type      & Model   & Software \ML
-\multicolumn{1}{m{1cm}}{Linear}    & \multicolumn{1}{m{6cm}}{\texttt{CAP} (Zhao et al. 2009, \emph{Ann. Stat})}        &   \xmark    \\
-& \multicolumn{1}{m{8cm}}{\texttt{SHIM} (Choi et al. 2009, \emph{JASA})}        &   \xmark    \\
-& \multicolumn{1}{m{8cm}}{\texttt{hiernet} (Bien et al. 2013, \emph{Ann. Stat})}        &   \texttt{hierNet(x, y)}    \\
-& \multicolumn{1}{m{8cm}}{\texttt{GRESH} (She and Jiang 2014, \emph{JASA})}        &  \xmark     \\
-& \multicolumn{1}{m{8cm}}{\texttt{FAMILY} (Haris et al. 2014, \emph{JCGS})}    &  \texttt{FAMILY(x, z, y)}   \\
-& \multicolumn{1}{m{8cm}}{\texttt{glinternet} (Lim and Hastie 2015, \emph{JCGS})}    & \texttt{glinternet(x, y)}  \\			   	 	& \multicolumn{1}{m{6cm}}{\texttt{RAMP} (Hao et al. 2016, \emph{JASA})}        & \texttt{RAMP(x, y)}   \ML
-\multicolumn{1}{m{1cm}}{Non-linear} 	& \multicolumn{1}{m{8cm}}{\texttt{VANISH} (Radchenko and James 2010, \emph{JASA})}        & \xmark  \\
-& \multicolumn{1}{m{8cm}}{\texttt{sail} (Bhatnagar et al. 2017+)}        & \texttt{sail(x, e, y)}  \LL
+Type      & Method   & Software \ML
+\multicolumn{1}{m{1cm}}{Linear}    & \multicolumn{1}{m{6cm}}{\texttt{CAP}~\citep{zhao2009composite} }        &   \xmark    \\
+& \multicolumn{1}{m{4cm}}{\texttt{SHIM}~\citep{choi2010variable}}        &   \xmark    \\
+& \multicolumn{1}{m{4cm}}{\texttt{hiernet}~\citep{bien2013lasso}}        &   \texttt{hierNet(x, y)}    \\
+& \multicolumn{1}{m{4cm}}{\texttt{GRESH}~\citep{she2014group} }        &  \xmark     \\
+& \multicolumn{1}{m{4cm}}{\texttt{FAMILY}~\citep{haris2016convex}}    &  \texttt{FAMILY(x, z, y)}   \\
+& \multicolumn{1}{m{4cm}}{\texttt{glinternet}~\citep{lim2015learning} }    & \texttt{glinternet(x, y)}  \\			   	 	
+& \multicolumn{1}{m{4cm}}{\texttt{RAMP}~\citep{hao2018model}}        & \texttt{RAMP(x, y)}  \\ 
+& \multicolumn{1}{m{4cm}}{\texttt{LassoBacktracking}~\citep{shah2016modelling}   }        & \texttt{LassoBT(x, y)}  \ML
+\multicolumn{1}{m{4cm}}{Non-linear} 	& \multicolumn{1}{m{8cm}}{\texttt{VANISH}~\citep{radchenko2010variable} }        & \xmark  \\
+& \multicolumn{1}{m{4cm}}{\texttt{sail}}        & \texttt{sail(x, y, e)}  \LL
 }
 
 
@@ -868,20 +849,9 @@ We evaluate the performance of our method on three of its defining characteristi
 The true component functions are the same as in~\citep{lin2006component,huang2010variable}. Using this setup, we generated a training set of $n=200$, a validation set of $n=200$ and a test set of $n=800$. The training set was used to fit the model and the validation set was used to select the optimal tuning parameter corresponding to the minimum prediction mean-squared error. Performance was assessed on the test set. Results are shown in Figure~\ref{fig:simulation-results}.
 
 
-\begin{knitrout}\scriptsize
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
-
-{\centering \includegraphics[width=1\linewidth]{figure/simulation-results-1} 
-
-}
-
-\caption[Test set MSE results]{Test set MSE results.}\label{fig:simulation-results}
-\end{figure}
 
 
-\end{knitrout}
-
-
+\begin{comment}
 \begin{figure}[H]
 	\centering
 	\includegraphics[scale=0.61]{/home/sahir/git_repositories/sail/my_sims/figures/sail_main_eff_paramIndex1_200sims.pdf}
@@ -915,7 +885,7 @@ The true component functions are the same as in~\citep{lin2006component,huang201
 	\includegraphics[scale=0.61]{/home/sahir/git_repositories/sail/my_sims/figures/upset_selection_sail_paramIndex1-2-2.pdf}
 	\caption{text}\label{fig:upset}
 \end{figure}
-
+\end{comment}
 
 
 \section{Real Data Application}

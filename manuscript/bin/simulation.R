@@ -1,6 +1,7 @@
 ## ---- simulation-results ----
 
-df <- readRDS("/home/sahir/git_repositories/sail/my_sims/simulation_results/apr_25_2018_results.rds")
+# df <- readRDS("/home/sahir/git_repositories/sail/my_sims/simulation_results/apr_25_2018_results.rds")
+df <- readRDS("C:/Users/sahir/Documents/git_repositories/sail/my_sims/simulation_results/apr_25_2018_results.rds")
 df <- df %>% separate(Model, into = c("simnames","betaE","corr","lambda.type","n","p","parameterIndex","SNR_2"),
                       sep = "/")
 
