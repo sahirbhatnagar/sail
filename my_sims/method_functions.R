@@ -88,6 +88,40 @@ sailsplit <- new_method("sail", "Sail",
                      )
                    })
 
+sailsplitlinear <- new_method("linearsail", "Linear Sail",
+                        method = function(model, draw) {
+                          tryCatch({
+                            fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
+                                        basis = function(i) i)
+
+                            ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
+                            msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
+                            lambda.min.index <- as.numeric(which.min(msetest))
+                            lambda.min <- fit$lambda[which.min(msetest)]
+
+                            yvalid_hat <- predict(fit, newx = draw[["xvalid"]], newe = draw[["evalid"]], s = lambda.min)
+                            msevalid <- mean((draw[["yvalid"]] - drop(yvalid_hat))^2)
+
+                            nzcoef <- predict(fit, s = lambda.min, type = "nonzero")
+
+                            return(list(beta = coef(fit, s = lambda.min)[-1,,drop=F],
+                                        # fit = fit,
+                                        vnames = draw[["vnames"]],
+                                        nonzero_coef = nzcoef,
+                                        active = fit$active[[lambda.min.index]],
+                                        not_active = setdiff(draw[["vnames"]], fit$active[[lambda.min.index]]),
+                                        yvalid_hat = yvalid_hat,
+                                        msevalid = msevalid,
+                                        causal = draw[["causal"]],
+                                        not_causal = draw[["not_causal"]],
+                                        yvalid = draw[["yvalid"]]))
+                          },
+                          error = function(err) {
+                            return(error_return)
+                          }
+                          )
+                        })
+
 
 sailsplitadaptive <- new_method("Adaptivesail", "Adaptive Sail",
                         method = function(model, draw) {

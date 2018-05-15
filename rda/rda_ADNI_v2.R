@@ -14,8 +14,9 @@ pacman::p_load(doMC)
 
 
 # amy_pheno <- xlsx::read.xlsx("~/Downloads/DrCelia_data.xlsx", sheetIndex = 1)
-amy_mat <- read.csv("~/git_repositories/sail/data-nogit/adni_new/csf_amyloid_final.csv", stringsAsFactors = FALSE)
-covr <- read.csv("~/git_repositories/sail/data-nogit/adni_new/covariates.csv", stringsAsFactors = FALSE, sep = ";")
+# amy_mat <- read.csv("~/git_repositories/sail/data-nogit/adni_new/csf_amyloid_final.csv", stringsAsFactors = FALSE)
+amy_mat <- read.csv("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/rda/csf_amyloid_final.csv", stringsAsFactors = FALSE)
+covr <- read.csv("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/rda/covariates.csv", stringsAsFactors = FALSE, sep = ";")
 # surv <- read.csv("~/git_repositories/sail/data/adni_new/fdg_info.csv", stringsAsFactors = FALSE, sep = ",")
 
 # sum(as.character(amy_pheno$PTID) %in% amy_mat$PTID)
@@ -33,7 +34,9 @@ brain_regions <- grep("X", colnames(DT), value=T)
 fmla <- reformulate(c(sapply(brain_regions, function(i) sprintf("bs(%s)",i)),
                       "Age_bl", "diag_3bl.y"), intercept = FALSE)
 fmla <- reformulate(c(sapply(brain_regions, function(i) sprintf("bs(%s)",i)),
-                      "Age_bl"), intercept = FALSE)
+                      "bs(Age_bl)"), intercept = FALSE)
+fmla <- reformulate(c(sapply(brain_regions, function(i) sprintf("bs(%s)",i))),
+                    intercept = FALSE)
 
 train <- caret::createDataPartition(DT$diag_3bl.x)[[1]]
 train <- seq(nrow(DT))
@@ -76,14 +79,15 @@ system.time(
 )
 
 fit <- sail(
-  # x = model_mat,
-  x = as.matrix(DT[,brain_regions[1:10]]),
+  x = model_mat,
+  # x = as.matrix(DT[,brain_regions[1:10]]),
   y = Y, e = E,
-  # expand = FALSE,
+  expand = FALSE,
+  thresh = 5e-3,
   # center.e = FALSE,
-  # alpha = 0.2
+  alpha = 0.2,
   # fdev = 1e-8,
-  # group = attr(model_mat, "assign"),
+  group = attr(model_mat, "assign"),
   verbose = 2)
 
 plot(fit)

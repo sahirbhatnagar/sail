@@ -23,8 +23,9 @@ pacman::p_load(LassoBacktracking)
 pacman::p_load(glinternet)
 pacman::p_load(gbm)
 # pacman::p_load_gh('sahirbhatnagar/sail', dependencies = FALSE)
-library(sail)
+# library(sail)
 pacman::p_load_gh('asadharis/HierBasis')
+devtools::load_all()
 pacman::p_load(SAM)
 pacman::p_load(gamsel)
 pacman::p_load(cowplot)
@@ -80,10 +81,10 @@ s2 %>% plot_eval_by(metric_name = "fpr", varying = "parameterIndex")
 sim <- load_simulation("apr_25_2018")
 sim <- sim %>% evaluate(list(msevalid, tpr, fpr, nactive, r2))
 # simulator::save_simulation(sim)
-# sim <- sim %>% run_method(list(sailsplitweak, sailsplitadaptiveweak),
-#                           parallel = list(socket_names = 35,
-#                                           libraries = c("LassoBacktracking", "glinternet","glmnet","splines",
-#                                                         "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
+sim <- sim %>% run_method(list(sailsplitlinear),
+                          parallel = list(socket_names = 35,
+                                          libraries = c("LassoBacktracking", "glinternet","glmnet","splines",
+                                                        "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
 # simulator::save_simulation(sim)
 # ls()
 
