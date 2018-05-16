@@ -345,6 +345,9 @@ In Figure~\ref{fig:toy-effects}, we plot the true and estimated component functi
 
 
 \subsection{Related Work}
+Methods for interaction selection can be broken down into two categories: linear and non-linear interaction effects. 
+Many of the linear effect methods consider all pairwise interactions in $\bX$~\citep{zhao2009composite,choi2010variable,bien2013lasso, she2014group,hao2018model,shah2016modelling} while some allow the user to restrict the search to interaction candidates~\citep{lim2015learning,haris2016convex}. 
+There is not much literature for non-linear interactions. Our proposal is most similar to the pliable lasso which can also be viewed as a varying coefficient model. 
 
 \ctable[pos=H,doinside=\footnotesize]{lcc}{
 }{
