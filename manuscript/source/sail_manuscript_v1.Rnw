@@ -346,8 +346,20 @@ In Figure~\ref{fig:toy-effects}, we plot the true and estimated component functi
 
 \subsection{Related Work}
 Methods for interaction selection can be broken down into two categories: linear and non-linear interaction effects. 
-Many of the linear effect methods consider all pairwise interactions in $\bX$~\citep{zhao2009composite,choi2010variable,bien2013lasso, she2014group,hao2018model,shah2016modelling} while some allow the user to restrict the search to interaction candidates~\citep{lim2015learning,haris2016convex}. 
-There is not much literature for non-linear interactions. Our proposal is most similar to the pliable lasso which can also be viewed as a varying coefficient model. 
+Many of the linear effect methods consider all pairwise interactions in $\bX$~\citep{zhao2009composite,choi2010variable,bien2013lasso, she2014group} which can be computationally prohibitive when $p$ is large. This is evidenced by the relatively small number of variables used in their simulations and real data analysis. 
+More recent proposals allow the user to restrict the search space to interaction candidates~\citep{lim2015learning,haris2016convex} which is useful when the researcher wants to impose some prior information on the model. 
+Two-stage procedures, where interactions candidates are considered from an original screen of main effects, have shown good performance when $p$ is large~\citep{hao2018model,shah2016modelling} in the linear setting.  
+There are many fewer methods avaliable for non-linear interactions. For example, Radchenko and James (2010)~\citep{radchenko2010variable} proposed a model of the form
+\[Y = \beta_0 + \sum_{j=1}^{p} f_j(X_j) + \sum_{j>k}f_{jk}(X_j, X_k) + \varepsilon\]
+where $f(\cdot)$ are smooth component functions. This method is computationally expensive however, as it involves a complex penalty function and considers all pairwise interactions. 
+Furthermore, it's effectiveness in both simulations and real-data applications is unknown as there is no software implementation.  
+While working on this paper, we were made aware of the recently proposed pliable lasso~\citep{tibshirani2017pliable} which considers the interactions between $\bX_{n \times p}$ and another matrix $\mathbf{Z}_{n\times K}$ and takes the form
+\[Y = \beta_0 + \sum_{j=1}^{p}\beta_j X_j + \sum_{j=1}^{K}\theta_j Z_j + \sum_{j=1}^{p} (X_j \circ \mathbf{Z}) \alpha_j + \varepsilon  \] where $\alpha_j$ is a $K$-dimensional vector. Our proposal is most closely related to this method with $\mathbf{Z}$ being a single column matrix. The key difference being the non-linearity of the predictor variables. 
+The main contributions of this paper are threefold. 
+
+%~
+
+
 
 \ctable[pos=H,doinside=\footnotesize]{lcc}{
 }{
