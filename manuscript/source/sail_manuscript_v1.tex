@@ -233,7 +233,12 @@
 
 
 
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in loadNamespace(name): there is no package called 'RSkittleBrewer'}}\end{kframe}
+\end{knitrout}
 
 \maketitle
 \pagestyle{fancy}
@@ -371,11 +376,33 @@ where $f_1(x) = -3x$, $f_2(x) = 2(2x-1)^3$ and the error term $\varepsilon$ is g
 
 
 
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
 
+{\centering \includegraphics[width=1\linewidth]{figure/toy-solution-path-1} 
+
+}
+
+\caption[Toy example solution path]{Toy example solution path}\label{fig:toy-solution-path}
+\end{figure}
+
+
+\end{knitrout}
 
 In Figure~\ref{fig:toy-effects}, we plot the true and estimated component functions $\hat{f}_1(X_1)$ and $E \cdot \hat{f}_2(X_2)$. Our method is able to capture the correct functional form for the nonlinear interaction. The lack-of-fit for $f_1(X_1)$ can be explained by the fact that \sail is trying to fit a cubic spline to a linear function. Nevertheless, this example demonstrates that it can still identify linear associations. 
 
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
 
+{\centering \includegraphics[width=1\linewidth]{figure/toy-effects-1} 
+
+}
+
+\caption[Estimated smooth functions by \texttt{sail} method based on $\lambda_{min}$]{Estimated smooth functions by \texttt{sail} method based on $\lambda_{min}$.}\label{fig:toy-effects}
+\end{figure}
+
+
+\end{knitrout}
 
 
 \subsection{Related Work}
@@ -388,13 +415,19 @@ There are many fewer methods avaliable for non-linear interactions. For example,
 where $f(\cdot)$ are smooth component functions. This method is computationally expensive however, as it involves a complex penalty function and considers all pairwise interactions. 
 Furthermore, it's effectiveness in both simulations and real-data applications is unknown as there is no software implementation.  
 While working on this paper, we were made aware of the recently proposed pliable lasso~\citep{tibshirani2017pliable} which considers the interactions between $\bX_{n \times p}$ and another matrix $\mathbf{Z}_{n\times K}$ and takes the form
-\[Y = \beta_0 + \sum_{j=1}^{p}\beta_j X_j + \sum_{j=1}^{K}\theta_j Z_j + \sum_{j=1}^{p} (X_j \circ \mathbf{Z}) \alpha_j + \varepsilon  \] where $\alpha_j$ is a $K$-dimensional vector. Our proposal is most closely related to this method with $\mathbf{Z}$ being a single column matrix. The key difference being the non-linearity of the predictor variables. 
+\[Y = \beta_0 + \sum_{j=1}^{p}\beta_j X_j + \sum_{j=1}^{K}\theta_j Z_j + \sum_{j=1}^{p} (X_j \circ \mathbf{Z}) \balpha_j + \varepsilon  \] where $\alpha_j$ is a $K$-dimensional vector. Our proposal is most closely related to this method with $\mathbf{Z}$ being a single column matrix; the key difference being the non-linearity of the predictor variables. 
+As pointed out by the authors of the pliable lasso, these methods can be seen as a varying coefficient model, i.e., the effect of the predictors vary as a function of the exposure variable $E$. 
 
+The main contributions of this paper are fourfold. 
+First, we develop a model for non-linear interactions with a key exposure variable following either the weak or strong heredity principle that is computationally efficient and scales to the high-dimensional setting ($n << p$). 
+Second, through simulation studies, we show improved performance over existing methods that only consider linear interactions or additive main effects. 
+Third, we show that our method possesses the oracle property~\citep{fan2001variable}, i.e., it performs as well as if the true model were known in advance. 
+Fourth, all of our algorithms are implemented in the \texttt{sail} R package hosted on GitHub with extensive documentation (\url{http://sahirbhatnagar.com/sail/}). In particular, our implementation also allows for linear interaction models, user-defined basis expansions, a cross-validation procedure for selecting the optimal tuning parameter, and differential shrinkage parameters to apply the adaptive lasso~\citep{zou2006adaptive} idea. 
+
+The rest of the paper is organized as follows. Sections 2 and 3 describe our optimization procedure and some details about the algorithm used to fit the \texttt{sail} model for the least squares and logistic case, respectively. In Section 4, we compare the performance of our proposed approach and demonstrate the scenarios where it can be advantageous to use over existing methods through simulation studies. Section 5 contains some real data examples and Section 6 discusses some limitations and future directions. 
 
 %~
-
-
-
+\begin{comment}
 \ctable[pos=H,doinside=\footnotesize]{lcc}{
 }{
 \FL
@@ -411,7 +444,7 @@ Type      & Method   & Software \ML
 & \multicolumn{1}{m{4cm}}{\texttt{sail}}        & \texttt{sail(x, y, e)}  \LL
 }
 
-
+\end{comment}
 
 
 
