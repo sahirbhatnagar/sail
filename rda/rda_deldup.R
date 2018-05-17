@@ -45,23 +45,31 @@ x_vars <- c(#"sum_Size_Ok.COMB",
 DT$sum_ExAC_005.popn.COMB %>% table
 
 X <- DT_cc_PIQ[,x_vars, with=F] %>% as.matrix()
-# X <- standardize(X, center = TRUE, normalize = TRUE)$x
+X <- standardize(X, center = TRUE, normalize = TRUE)$x
 E <- DT_cc_PIQ$Enum
+E <- standardize(E, center = TRUE, normalize = TRUE)$x
 Y <- DT_cc_PIQ$Combine_PIQ
 any(is.na(Y))
 hist(Y)
 DataExplorer::plot_histogram(X)
 
 
-f.basis <- function(x) x
-fit <- sail(x = X, y = Y, e = E, basis = f.basis, center.e = TRUE,
-            verbose = 2, strong = FALSE, center.x = TRUE)
+f.basis <- function(x) splines::bs(x)
+fit <- sail(x = X, y = Y, e = E, basis = f.basis, center.e = FALSE,
+            verbose = 2, strong = FALSE, center.x = FALSE, thresh = 5e-03,
+            fdev = 1e-10)
 coef(fit)
 plot(fit)
 fit
 DataExplorer::plot_histogram(X)
 
-
+library(doMC)
+registerDoMC(cores = 8)
+fit <- cv.sail(x = X, y = Y, e = E, basis = f.basis, center.e = FALSE,
+            verbose = 2, strong = FALSE, center.x = FALSE, thresh = 5e-03,
+            fdev = 1e-10, nfolds = 10, parallel = TRUE)
+plot(fit)
+predict(fit, type="non", s = "lambda.min")
 DT <- fread("~/Downloads/abalone/Dataset.data")
 setnames(DT, c("Sex","Length","Diameter", "Height", "Whole_weight", "Shucked_weight",
                "Viscera_weight","Shell_weight","Rings"))
