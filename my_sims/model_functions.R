@@ -129,7 +129,7 @@ make_gendata_Paper_data_split <- function(n, p, corr, betaE, SNR, lambda.type, p
   # used for glmnet and lasso backtracking
   # f.identity <- function(i) i
 
-  new_model(name = "gendata_thesis_split_v3",
+  new_model(name = "gendata_thesis_split_v4",
             label = sprintf("n = %s, p = %s, corr = %s, betaE = %s, SNR = %s, index = %s, lambda = %s",
                             n, p, corr, betaE, SNR, parameterIndex, lambda.type),
             params = list(n = n, p = p, corr = corr, betaE = betaE, SNR = SNR,
@@ -359,6 +359,102 @@ make_nihpd_data_split <- function(nprobes, phenoVariable, exposure, filter, data
             })
 
 }
+
+
+
+make_ADNI_data_split <- function(phenoVariable = "MMSCORE_bl", exposure = "diag_3bl.x", n_train_test = 200) {
+
+  amy_mat <- read.csv("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/rda/csf_amyloid_final.csv", stringsAsFactors = FALSE)
+  covr <- read.csv("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/rda/covariates.csv", stringsAsFactors = FALSE, sep = ";")
+  DT <- dplyr::inner_join(amy_mat, covr, by = c("PTID" = "IID")) %>%
+    select(-AV45_path_bl)
+
+  brain_regions <- grep("X", colnames(DT), value=T)
+
+  fmla <- reformulate(c(sapply(brain_regions, function(i) sprintf("bs(%s,3)",i)),
+                        "APOE_bin"), intercept = FALSE)
+
+  X <- DT %>% select(starts_with("X"), diag_3bl.x, APOE_bin) %>%
+    mutate(diag_3bl.x = diag_3bl.x - 1) %>%
+    as.matrix()
+
+  Xnorm <- sail:::standardize(X, center = TRUE, normalize = TRUE)$x
+
+  model_mat <- model.matrix(fmla, data = as.data.frame(Xnorm))
+  group = attr(model_mat, "assign")
+
+  E <- Xnorm[, "diag_3bl.x"]
+  Y <- DT %>% pull(MMSCORE_bl) %>% as.numeric
+
+
+  new_model(name = "ADNI_split",
+            label = sprintf("traintest = %s, pheno = %s, exposure = %s",
+                            n_train_test, phenoVariable, exposure),
+            params = list(Xnorm = Xnorm,
+                          phenoVariable = phenoVariable,
+                          exposure = exposure,
+                          E = E,
+                          Y = Y,
+                          X = X,
+                          model_mat = model_mat,
+                          group = group,
+                          n_train_test = n_train_test),
+            simulate = function(Xnorm, phenoVariable, exposure, E, Y, X, model_mat, group, n_train_test, nsim) {
+
+              models <- list()
+
+              for(i in seq(nsim)) {
+
+                #need to do it seperately, because for sail we need to normalize externally
+                dat_lasso <- sail:::partition_data(x = X[,-which(colnames(X) %in% c("diag_3bl.x"))],
+                                                   y = Y, e = X[,"diag_3bl.x"], p = n_train_test/length(Y),
+                                                   partition_on = Xnorm[, "diag_3bl.x"], type = "train_test_val")
+                dat <- sail:::partition_data(x = model_mat, y = Y, e = E, p = n_train_test/length(Y),
+                                             partition_on = Xnorm[,"diag_3bl.x"], type = "train_test_val")
+
+                xtrain <- dat[["xtrain"]]
+                xtest <- dat[["xtest"]]
+                xvalid <- dat[["xvalid"]]
+
+                xtrain_lasso <- dat_lasso[["xtrain_lasso"]]
+                xtest_lasso <- dat_lasso[["xtest_lasso"]]
+                xvalid_lasso <- dat_lasso[["xvalid_lasso"]]
+
+                etrain <- dat[["etrain"]]
+                etest <- dat[["etest"]]
+                evalid <- dat[["evalid"]]
+
+                etrain_lasso <- dat_lasso[["etrain"]]
+                etest_lasso <- dat_lasso[["etest"]]
+                evalid_lasso <- dat_lasso[["evalid"]]
+
+                ytrain <- dat[["ytrain"]]
+                ytest <- dat[["ytest"]]
+                yvalid <- dat[["yvalid"]]
+
+                ytrain_lasso <- dat_lasso[["ytrain"]]
+                ytest_lasso <- dat_lasso[["ytest"]]
+                yvalid_lasso <- dat_lasso[["yvalid"]]
+
+                # main <- colnames(DT$x)
+                # vnames <- c(main, "E", paste0(main,":E"))
+                # vnames_lasso <- c("E", main) # needs to be in this order for glinternet
+
+                models[[i]] <- list(xtrain = xtrain, xtrain_lasso = xtrain_lasso,
+                                    etrain = etrain, etrain_lasso = etrain_lasso,
+                                    ytrain = ytrain, ytrain_lasso = ytrain_lasso,
+                                    xtest = xtest, xtest_lasso = xtest_lasso,
+                                    etest = etest, etest_lasso = etest_lasso,
+                                    ytest = ytest, ytest_lasso = ytest_lasso,
+                                    xvalid = xvalid, xvalid_lasso = xvalid_lasso,
+                                    evalid = evalid, evalid_lasso = evalid_lasso,
+                                    yvalid = yvalid, yvalid_lasso = yvalid_lasso, group = group)
+              }
+              return(models)
+            })
+
+}
+
 
 # nsim = 10;n=100;SNR=3
 # error <- MASS::mvrnorm(nsim, mu = rep(0, n), Sigma = diag(n))

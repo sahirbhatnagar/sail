@@ -96,15 +96,20 @@ abline(a=0,b=1)
 
 # f.basis <- function(i) splines::bs(i, degree = 3)
 f.basis <- function(i) i
+devtools::load_all()
+
 E <- DT[complete.cases(X)]$std2_pop_100m
 Xcc <- Xc[, -which(colnames(Xc)=="std2_pop_100m")]
 registerDoMC(cores = 10)
 set.seed(123456)
 cvfit03 <- cv.sail(x = Xcc, y = Y, e = E, basis = f.basis, alpha = 0.5,
-                   maxit = 1000, thresh = 5e-03,
+                   maxit = 1000,
+                   # thresh = 5e-03,
                    # fdev = 1e-10,
+                   # dfmax = 20,
                    grouped = FALSE,
-                   strong = FALSE, verbose = 2, nfolds = 10, parallel = TRUE)
+                   strong = TRUE,
+                   verbose = 2, nfolds = 10, parallel = TRUE)
 # saveRDS(cvfit03, file = "rda/scott/cvfit_alpha01_groupedFalse_strongFalse_nfolds5_bs3_Estd2_pop_100m.rds")
 plot(cvfit03)
 plot(cvfit03$sail.fit)

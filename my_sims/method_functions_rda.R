@@ -67,8 +67,15 @@ sailsplit <- new_method("sail", "Sail",
                           tryCatch({
                             fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
                                         basis = function(i) splines::bs(i, degree = 5),
-                                        thresh = 5e-3,
-                                        dfmax = 50)
+                                        expand = FALSE,
+                                        group = draw[["group"]],
+                                        alpha = 0.1,
+                                        strong = TRUE,
+                                        center.x = F,
+                                        center.e = T
+                                        # thresh = 5e-3,
+                                        # dfmax = 50,
+                                        )
 
                             ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
                             msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
@@ -80,11 +87,21 @@ sailsplit <- new_method("sail", "Sail",
 
                             nzcoef <- predict(fit, s = lambda.min, type = "nonzero")
 
+                            vars <- fit$active[[lambda.min.index]]
+                            ints <- grep(":", vars, value=T)
+                            mains <- setdiff(vars, ints)
+                            apoe <- if(any(mains=="APOEbin")) "APOEbin" else NULL
+                            environ <- if(any(mains=="E")) "E" else NULL
+                            mains_wo_apoe <- setdiff(mains, c("APOEbin","E"))
+
+                            orig_mains <- unique(stringr::str_extract(mains_wo_apoe, "X\\d*"))
+
+
                             return(list(beta = coef(fit, s = lambda.min)[-1,,drop=F],
                                         # fit = fit,
                                         vnames = draw[["vnames"]],
                                         nonzero_coef = nzcoef,
-                                        active = fit$active[[lambda.min.index]],
+                                        active = c(orig_mains, apoe, environ), # this probably only works for expand=FALSE
                                         not_active = setdiff(draw[["vnames"]], fit$active[[lambda.min.index]]),
                                         yvalid_hat = yvalid_hat,
                                         msevalid = msevalid,
@@ -358,16 +375,16 @@ lassosplit <- new_method("lasso", "Lasso",
 
                            tryCatch({
 
-                             fit <- glmnet(x = draw[["xtrain_lasso"]], y = draw[["ytrain"]],
+                             fit <- glmnet(x = draw[["xtrain_lasso"]], y = draw[["ytrain_lasso"]],
                                            alpha = 1)
 
                              ytest_hat <- predict(fit, newx = draw[["xtest_lasso"]])
-                             msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
+                             msetest <- colMeans((draw[["ytest_lasso"]] - ytest_hat)^2)
                              lambda.min.index <- as.numeric(which.min(msetest))
                              lambda.min <- fit$lambda[which.min(msetest)]
 
                              yvalid_hat <- predict(fit, newx = draw[["xvalid_lasso"]], s = lambda.min)
-                             msevalid <- mean((draw[["yvalid"]] - drop(yvalid_hat))^2)
+                             msevalid <- mean((draw[["yvalid_lasso"]] - drop(yvalid_hat))^2)
 
                              nzcoef <- coef(fit, s = lambda.min)[nonzeroCoef(coef(fit, s = lambda.min)),,drop=F]
 
@@ -380,7 +397,7 @@ lassosplit <- new_method("lasso", "Lasso",
                                          msevalid = msevalid,
                                          # causal = draw[["causal"]],
                                          # not_causal = draw[["not_causal"]],
-                                         yvalid = draw[["yvalid"]]))
+                                         yvalid = draw[["yvalid_lasso"]]))
                            },
                            error = function(err) {
                              return(error_return)
@@ -508,10 +525,10 @@ lassoBTsplit <- new_method("lassoBT", "LassoBT",
                                # fitBT <- cvLassoBT(x = draw[["xtrain_lasso"]],
                                #                    y = draw[["ytrain"]], iter_max=10, nperms=1, nfolds = 10, nlambda = 100)
                                fitBT <- LassoBT(x = draw[["xtrain_lasso"]],
-                                                y = draw[["ytrain"]], iter_max=10, nlambda = 100)
+                                                y = draw[["ytrain_lasso"]], iter_max=10, nlambda = 100)
 
                                ytest_hat <- predict(fitBT, newx = draw[["xtest_lasso"]])
-                               msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
+                               msetest <- colMeans((draw[["ytest_lasso"]] - ytest_hat)^2)
                                lambda.min.index <- which(msetest==min(msetest), arr.ind = TRUE)
                                lambda.min <- fitBT$lambda[lambda.min.index[1,1]]
                                iter.min <- lambda.min.index[1,2]
@@ -538,7 +555,7 @@ lassoBTsplit <- new_method("lassoBT", "LassoBT",
                                } # return NULL on error
                                )
 
-                               msevalid <- mean((draw[["yvalid"]] - drop(yvalid_hat))^2)
+                               msevalid <- mean((draw[["yvalid_lasso"]] - drop(yvalid_hat))^2)
 
                                return(list(beta = coefBT,
                                            # cvfit = fitBT,
@@ -550,7 +567,7 @@ lassoBTsplit <- new_method("lassoBT", "LassoBT",
                                            msevalid = msevalid,
                                            causal = draw[["causal"]],
                                            not_causal = draw[["not_causal"]],
-                                           yvalid = draw[["yvalid"]]))
+                                           yvalid = draw[["yvalid_lasso"]]))
                              },
                              error = function(err) {
                                return(error_return)
@@ -614,26 +631,38 @@ GLinternet <- new_method("GLinternet", "GLinternet",
 GLinternetsplit <- new_method("GLinternet", "GLinternet",
                               method = function(model, draw) {
 
-                                # tryCatch({
-                                  fitGL <- glinternet(X = draw[["xtrain_lasso"]], Y = draw[["ytrain"]],
+                                tryCatch({
+                                  fitGL <- glinternet(X = draw[["xtrain_lasso"]], Y = draw[["ytrain_lasso"]],
                                                       # numLevels = rep(1, ncol(draw[["xtrain_lasso"]])),
-                                                      numLevels = c(2,rep(1, ncol(draw[["xtrain_lasso"]])-1)),
+                                                      numLevels = c(3,rep(1, ncol(draw[["xtrain_lasso"]])-2),2),
                                                       nLambda = 100, interactionCandidates = c(1),
                                                       verbose = F)
 
                                   ytest_hat <- predict(fitGL, X = draw[["xtest_lasso"]])
-                                  msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
+                                  msetest <- colMeans((draw[["ytest_lasso"]] - ytest_hat)^2)
                                   lambda.min.index <- as.numeric(which.min(msetest))
                                   lambda.min <- fitGL$lambda[which.min(msetest)]
 
                                   yvalid_hat <- predict(fitGL, X = draw[["xvalid_lasso"]], lambda = lambda.min)
-                                  msevalid <- mean((draw[["yvalid"]] - drop(yvalid_hat))^2)
+                                  msevalid <- mean((draw[["yvalid_lasso"]] - drop(yvalid_hat))^2)
 
                                   # nzcoef <- coef(fit, s = lambda.min)[nonzeroCoef(coef(fit, s = lambda.min)),,drop=F]
 
                                   tc <- coef(fitGL, lambdaIndex = lambda.min.index)
-                                  mains <- colnames(draw[["xtrain_lasso"]])[tc[[1]]$mainEffects$cont]
-                                  inters <- paste0(colnames(draw[["xtrain_lasso"]])[tc[[1]]$interactions$contcont[,2]],":E")
+                                  # mains <- colnames(draw[["xtrain_lasso"]])[tc[[1]]$mainEffects$cont]
+                                  # inters <- paste0(colnames(draw[["xtrain_lasso"]])[tc[[1]]$interactions$contcont[,2]],":E")
+
+                                  mains <- c(colnames(draw[["xtrain_lasso"]])[tc[[1]]$mainEffects$cont],
+                                              colnames(draw[["xtrain_lasso"]])[tc[[1]]$mainEffects$cat])
+
+                                  inters <- c(paste(colnames(draw[["xtrain_lasso"]])[tc[[1]]$interactions$catcont[,1]],
+                                                     colnames(draw[["xtrain_lasso"]])[tc[[1]]$interactions$catcont[,2]], sep=":"),
+                                               paste(colnames(draw[["xtrain_lasso"]])[tc[[1]]$interactions$contcont[,1]],
+                                                     colnames(draw[["xtrain_lasso"]])[tc[[1]]$interactions$contcont[,2]], sep=":"),
+                                               paste(colnames(draw[["xtrain_lasso"]])[tc[[1]]$interactions$catcat[,1]],
+                                                     colnames(draw[["xtrain_lasso"]])[tc[[1]]$interactions$catcat[,2]], sep=":"))
+
+
 
                                   return(list(beta = NULL,
                                               vnames = draw[["vnames_lasso"]],
@@ -644,12 +673,12 @@ GLinternetsplit <- new_method("GLinternet", "GLinternet",
                                               msevalid = msevalid,
                                               causal = draw[["causal"]],
                                               not_causal = draw[["not_causal"]],
-                                              yvalid = draw[["yvalid"]]))
-                                # },
-                                # error = function(err) {
-                                #   return(error_return)
-                                # }
-                                # )
+                                              yvalid = draw[["yvalid_lasso"]]))
+                                },
+                                error = function(err) {
+                                  return(error_return)
+                                }
+                                )
                               })
 
 
@@ -665,17 +694,17 @@ Hiersplit <- new_method("HierBasis", "HierBasis",
                           tryCatch({
 
                             fitHier <- AdditiveHierBasis(x = draw[["xtrain_lasso"]],
-                                                         y = draw[["ytrain"]],
+                                                         y = draw[["ytrain_lasso"]],
                                                          type = "gaussian",
                                                          nlam = 100)
 
                             ytest_hat <- predict(fitHier, new.x = draw[["xtest_lasso"]])
-                            msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
+                            msetest <- colMeans((draw[["ytest_lasso"]] - ytest_hat)^2)
                             lambda.min.index <- as.numeric(which.min(msetest))
                             lambda.min <- fitHier$lam[which.min(msetest),]
 
                             yvalid_hat <- predict(fitHier, new.x = draw[["xvalid_lasso"]])[,lambda.min.index]
-                            msevalid <- mean((draw[["yvalid"]] - drop(yvalid_hat))^2)
+                            msevalid <- mean((draw[["yvalid_lasso"]] - drop(yvalid_hat))^2)
 
                             components <- view.model.addHierBasis(fitHier, lam.index = lambda.min.index)
                             nonzeroInd <- sapply(components, function(i) if (i[1]=="zero function") FALSE else TRUE)
@@ -690,7 +719,7 @@ Hiersplit <- new_method("HierBasis", "HierBasis",
                                         msevalid = msevalid,
                                         causal = draw[["causal"]],
                                         not_causal = draw[["not_causal"]],
-                                        yvalid = draw[["yvalid"]]))
+                                        yvalid = draw[["yvalid_lasso"]]))
                           },
                           error = function(err) {
                             return(error_return)
@@ -706,17 +735,17 @@ Hiersplit <- new_method("HierBasis", "HierBasis",
 
 SPAMsplit <- new_method("SPAM", "SPAM",
                         method = function(model, draw) {
-                          # tryCatch({
-                            fitspam <- samQL(X = draw[["xtrain_lasso"]],
-                                             y = draw[["ytrain"]], p = 5, nlambda = 100)
+                          tryCatch({
+                            fitspam <- samQL(X = draw[["xtrain_lasso"]][, -which(colnames(draw[["xtrain_lasso"]]) %in% c("E", "APOE_bin"))],
+                                             y = draw[["ytrain_lasso"]], p = 5, nlambda = 100)
 
-                            ytest_hat <- predict(fitspam, newdata = draw[["xtest_lasso"]])$values
-                            msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
+                            ytest_hat <- predict(fitspam, newdata = draw[["xtest_lasso"]][, -which(colnames(draw[["xtest_lasso"]]) %in% c("E", "APOE_bin"))])$values
+                            msetest <- colMeans((draw[["ytest_lasso"]] - ytest_hat)^2)
                             lambda.min.index <- as.numeric(which.min(msetest))
                             lambda.min <- fitspam$lambda[which.min(msetest)]
 
-                            yvalid_hat <- predict(fitspam, newdata = draw[["xvalid_lasso"]])$values[,lambda.min.index]
-                            msevalid <- mean((draw[["yvalid"]] - drop(yvalid_hat))^2)
+                            yvalid_hat <- predict(fitspam, newdata = draw[["xvalid_lasso"]][, -which(colnames(draw[["xvalid_lasso"]]) %in% c("E", "APOE_bin"))])$values[,lambda.min.index]
+                            msevalid <- mean((draw[["yvalid_lasso"]] - drop(yvalid_hat))^2)
 
                             coefs <- fitspam$w[,lambda.min.index,drop=FALSE]
                             dimnames(coefs)[[1]] <- paste(rep(draw[["vnames_lasso"]], each = fitspam$p),
@@ -730,17 +759,17 @@ SPAMsplit <- new_method("SPAM", "SPAM",
                                         vnames = draw[["vnames"]],
                                         nonzero_coef = NULL,
                                         active = active,
-                                        not_active = setdiff(colnames(draw[["xtrain_lasso"]]), active),
+                                        not_active = setdiff(colnames(draw[["xtrain_lasso"]][, -which(colnames(draw[["xtrain_lasso"]]) %in% c("E", "APOE_bin"))]), active),
                                         yvalid_hat = yvalid_hat,
                                         msevalid = msevalid,
                                         causal = draw[["causal"]],
                                         not_causal = draw[["not_causal"]],
-                                        yvalid = draw[["yvalid"]]))
-                          # },
-                          # error = function(err) {
-                          #   return(error_return)
-                          # }
-                          # )
+                                        yvalid = draw[["yvalid_lasso"]]))
+                          },
+                          error = function(err) {
+                            return(error_return)
+                          }
+                          )
                         })
 
 
@@ -750,20 +779,20 @@ SPAMsplit <- new_method("SPAM", "SPAM",
 
 gamselsplit <- new_method("gamsel", "gamsel",
                           method = function(model, draw) {
-                            tryCatch({
+                            # tryCatch({
                               bases <- pseudo.bases(draw[["xtrain_lasso"]])
                               fitgamsel <- gamsel(draw[["xtrain_lasso"]],
-                                                  draw[["ytrain"]],
+                                                  draw[["ytrain_lasso"]],
                                                   bases = bases, num_lambda = 100, family = "gaussian")
 
                               ytest_hat <- predict(fitgamsel, newdata = draw[["xtest_lasso"]], type = "response")
-                              msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
+                              msetest <- colMeans((draw[["ytest_lasso"]] - ytest_hat)^2)
                               lambda.min.index <- as.numeric(which.min(msetest))
                               lambda.min <- fitgamsel$lambda[which.min(msetest)]
 
                               yvalid_hat <- predict(fitgamsel, newdata = draw[["xvalid_lasso"]], index = lambda.min.index,
                                                     type = "response")
-                              msevalid <- mean((draw[["yvalid"]] - drop(yvalid_hat))^2)
+                              msevalid <- mean((draw[["yvalid_lasso"]] - drop(yvalid_hat))^2)
 
                               active <- colnames(draw[["xtrain_lasso"]])[predict(fitgamsel,
                                                                                  index = lambda.min.index, type = "nonzero")[[1]]]
@@ -778,12 +807,12 @@ gamselsplit <- new_method("gamsel", "gamsel",
                                           msevalid = msevalid,
                                           causal = draw[["causal"]],
                                           not_causal = draw[["not_causal"]],
-                                          yvalid = draw[["yvalid"]]))
-                            },
-                            error = function(err) {
-                              return(error_return)
-                            }
-                            )
+                                          yvalid = draw[["yvalid_lasso"]]))
+                            # },
+                            # error = function(err) {
+                            #   return(error_return)
+                            # }
+                            # )
                           })
 
 # pacman::p_load(mgcv)

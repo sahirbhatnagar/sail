@@ -263,3 +263,61 @@ design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, cen
     design = design, ncols = if (expand) ncols else sapply(Phi_j_list, ncol)
   ))
 }
+
+
+
+
+partition_data <- function(x, y, e, p, partition_on, type = c("train_test_val", "train_test")) {
+
+  type <- match.arg(type)
+
+  if (type == "train_test_val") {
+    ex <- cbind(E = e, x)
+    train_test_ind <- caret::createDataPartition(partition_on, p = p)[[1]]
+
+    validate_ind <- seq(length(y))[-train_test_ind]
+    train_ind <- sample(train_test_ind, floor(length(train_test_ind)/2))
+    test_ind <- setdiff(train_test_ind, train_ind)
+
+    xtrain <- x[train_ind, , drop=FALSE]
+    xtest <- x[test_ind, , drop=FALSE]
+    xvalid <- x[validate_ind, , drop=FALSE]
+
+    xtrain_lasso <- ex[train_ind, , drop=FALSE]
+    xtest_lasso <- ex[test_ind, , drop=FALSE]
+    xvalid_lasso <- ex[validate_ind, , drop=FALSE]
+
+    etrain <- e[train_ind]
+    etest <- e[test_ind]
+    evalid <- e[validate_ind]
+
+    ytrain <- y[train_ind]
+    ytest <- y[test_ind]
+    yvalid <- y[validate_ind]
+
+    return(list(xtrain = xtrain, etrain = etrain, ytrain = ytrain, xtrain_lasso = xtrain_lasso,
+                xtest = xtest, etest = etest, ytest = ytest, xtest_lasso = xtest_lasso,
+                xvalid = xvalid, evalid = evalid, yvalid = yvalid, xvalid_lasso = xvalid_lasso,
+                train_ind = train_ind, test_ind = test_ind, validate_ind = validate_ind))
+  } else if (type == "train_test"){
+    ex <- cbind(E = e, x)
+    train_ind <- caret::createDataPartition(partition_on, p = p)[[1]]
+
+    xtrain <- x[train_ind, , drop=FALSE]
+    xtest <- x[-train_ind, , drop=FALSE]
+
+    xtrain_lasso <- ex[train_ind, , drop=FALSE]
+    xtest_lasso <- ex[-train_ind, , drop=FALSE]
+
+    etrain <- e[train_ind]
+    etest <- e[-train_ind]
+
+    ytrain <- y[train_ind]
+    ytest <- y[-train_ind]
+
+    return(list(xtrain = xtrain, etrain = etrain, ytrain = ytrain, xtrain_lasso = xtrain_lasso,
+                xtest = xtest, etest = etest, ytest = ytest, xtest_lasso = xtest_lasso,
+                train_ind = train_ind))
+  }
+
+  }
