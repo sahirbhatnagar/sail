@@ -99,6 +99,12 @@ sim <- new_simulation(name = "rda_may_11_2018_p1k",
 simulator::save_simulation(sim)
 sim
 
+sim <- load_simulation("rda_may_11_2018_p1k")
+sim <- sim %>% evaluate(list(msevalid, nactive, r2))
+sim %>% plot_eval(metric_name = "mse")
+sim %>% plot_eval(metric_name = "nactive")
+
+
 sim <- new_simulation(name = "rda_may_11_2018_AAL",
                       label = "rda_may_11_2018_AAL",
                       dir = ".") %>%
