@@ -192,10 +192,10 @@ knitr::read_chunk("../bin/intro.R")
 knitr::read_chunk("../bin/simulation.R")
 @
 
-<<packages, eval=T>>=
+<<packages, eval=F>>=
 @
 
-<<globals, eval=T>>=
+<<globals, eval=F>>=
 @
 
 \maketitle
@@ -332,15 +332,15 @@ We begin with a toy example to better illustrate our method. We sample $p=20$ co
 \end{equation}
 where $f_1(x) = -3x$, $f_2(x) = 2(2x-1)^3$ and the error term $\varepsilon$ is generated from a normal distribution with variance chosen such that the signal-to-noise ratio (SNR) is 2. We run the strong heredity \sail method with cubic b-splines and 10-fold CV to choose the optimal value of $\lambda$. We used $\alpha=0.5$ and default values were used for all other arguments. We plot the solution path for both main effects and interactions in Figure~\ref{fig:toy-solution-path} and we color the lines corresponding to the selected model. We see that our method is able to correctly identify the true model. We can also visually see the effect of the penalty and strong heredity principle working in tandem, i.e., the interaction term $E \cdot f_2(X_2)$ (orange lines in the bottom panel) can only be nonzero if the main effects $E$ and $f_2(X_2)$ (black and orange lines respectively in the top panel) are nonzero, while nonzero main effects doesn't necessarily imply a nonzero interaction. 
 
-<<toy-example, eval = T>>=
+<<toy-example, eval = F>>=
 @
 
-<<toy-solution-path, fig.cap="Toy example solution path", fig.asp=0.8, fig.pos = "H", eval = T>>=
+<<toy-solution-path, fig.cap="Toy example solution path", fig.asp=0.8, fig.pos = "H", eval = F>>=
 @
 
 In Figure~\ref{fig:toy-effects}, we plot the true and estimated component functions $\hat{f}_1(X_1)$ and $E \cdot \hat{f}_2(X_2)$. Our method is able to capture the correct functional form for the nonlinear interaction. The lack-of-fit for $f_1(X_1)$ can be explained by the fact that \sail is trying to fit a cubic spline to a linear function. Nevertheless, this example demonstrates that it can still identify linear associations. 
 
-<<toy-effects, fig.cap="Estimated smooth functions by \\texttt{sail} method based on $\\lambda_{min}$.", fig.pos = "H", eval = T>>=
+<<toy-effects, fig.cap="Estimated smooth functions by \\texttt{sail} method based on $\\lambda_{min}$.", fig.pos = "H", eval = F>>=
 @
 
 
