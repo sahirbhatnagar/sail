@@ -299,7 +299,11 @@ model_mat <- model.matrix(fmla, data = as.data.frame(Xnorm))
 # ind <- which(DT$diag_3bl.x==2)
 # X <- X[ind,,drop = F]
 
+
 # E <- DT[train,] %>% pull(APOE_bin) %>% as.numeric
+E <- DT[train,] %>% pull(APOE_bin) %>% as.numeric
+# E <- DT %>% pull(APOE_bin) %>% as.numeric
+
 # E <- E[ind]
 # E <- DT %>% pull(EDUCAT) %>% as.numeric
 # E <- Xnorm[, "EDUCAT"]
@@ -501,6 +505,10 @@ f.basis <- function(i) i
 fit <- sail(x = X, y = Y, e = E, basis = f.basis, alpha = 0.5, thresh = 1e-02, strong = FALSE,
             verbose = 2)
 plot(fit)
+=======
+system.time(
+  fit <- sail(x = X, y = Y, e = E, basis = f.basis, alpha = 0.1, strong = FALSE)
+)
 
 fit <- sail(
   x = model_mat,
@@ -508,6 +516,8 @@ fit <- sail(
   y = Y, e = E,
   expand = FALSE,
   thresh = 5e-3,
+  strong = FALSE,
+  # expand = FALSE,
   # center.e = FALSE,
   alpha = 0.2,
   # fdev = 1e-8,

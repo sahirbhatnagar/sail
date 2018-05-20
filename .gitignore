@@ -11,7 +11,6 @@ data-nogit
 .Rproj.user
 .Rhistory
 .RData
-#*.pdf
 my_sims/files/
 files/
 goals2.png
@@ -21,3 +20,4 @@ mcgillsims/
 log/
 manuscript/source/cache/*
 .nfs*
+sail.Rproj
