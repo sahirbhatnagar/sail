@@ -24,6 +24,10 @@ error_return <- list(beta = NA,
                      not_causal = NA,
                      yvalid = NA)
 
+
+# sail --------------------------------------------------------------------
+
+
 sail <- new_method("sail", "Sail",
                    method = function(model, draw) {
                      tryCatch({
@@ -53,6 +57,11 @@ sail <- new_method("sail", "Sail",
                      }
                      )
                    })
+
+
+# sail split --------------------------------------------------------------
+
+
 
 sailsplit <- new_method("sail", "Sail",
                    method = function(model, draw) {
@@ -89,31 +98,14 @@ sailsplit <- new_method("sail", "Sail",
                    })
 
 
-sailsplitadaptive <- new_method("Adaptivesail", "Adaptive Sail",
+# sail split linear -------------------------------------------------------
+
+
+sailsplitlinear <- new_method("linearsail", "Linear Sail",
                         method = function(model, draw) {
                           tryCatch({
                             fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
-                                        basis = function(i) splines::bs(i, degree = 5))
-
-                            ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
-                            msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
-                            lambda.min.index <- as.numeric(which.min(msetest))
-                            lambda.min <- fit$lambda[which.min(msetest)]
-
-                            pfs <- coef(fit, s = lambda.min)[-1,]
-                            pfe <- 1/abs(pfs["E"])
-
-                            pfmain <- pfs[fit$main.effect.names]
-                            pfmain <- 1/sapply(split(pfmain, fit$group), sail:::l2norm)
-                            pfmain[which(pfmain==Inf)] <- 50
-
-                            pfinter <- pfs[fit$interaction.names]
-                            pfinter <- 1/sapply(split(pfinter, fit$group), sail:::l2norm)
-                            pfinter[which(pfinter==Inf)] <- 50
-
-                            fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
-                                        basis = function(i) splines::bs(i, degree = 5),
-                                        penalty.factor = c(pfe, pfmain, pfinter))
+                                        basis = function(i) i)
 
                             ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
                             msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
@@ -142,6 +134,79 @@ sailsplitadaptive <- new_method("Adaptivesail", "Adaptive Sail",
                           }
                           )
                         })
+
+
+
+# sail split adaptive -----------------------------------------------------
+
+
+sailsplitadaptive <- new_method("Adaptivesail", "Adaptive Sail",
+                        method = function(model, draw) {
+                          tryCatch({
+                            fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
+                                        basis = function(i) splines::bs(i, degree = 5),
+                                        thresh = 5e-03,
+                                        dfmax = 50)
+
+                            ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
+                            msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
+                            lambda.min.index <- as.numeric(which.min(msetest))
+                            lambda.min <- fit$lambda[which.min(msetest)]
+
+                            pfs <- coef(fit, s = lambda.min)[-1,]
+                            pfe <- 1/abs(pfs["E"])
+                            pfe <- min(pfe, 30)
+
+
+                            pfmain <- pfs[fit$main.effect.names]
+                            pfmain <- 1/sapply(split(pfmain, fit$group), sail:::l2norm)
+                            pfmain[which(pfmain==Inf)] <- 30
+                            pfmain <- pmin(pfmain, 30)
+
+
+                            pfinter <- pfs[fit$interaction.names]
+                            pfinter <- 1/sapply(split(pfinter, fit$group), sail:::l2norm)
+                            pfinter[which(pfinter==Inf)] <- 30
+                            pfinter <- pmin(pfinter, 30)
+
+
+                            fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
+                                        basis = function(i) splines::bs(i, degree = 5),
+                                        penalty.factor = c(pfe, pfmain, pfinter),
+                                        thresh = 5e-03,
+                                        dfmax = 50)
+
+                            ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
+                            msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
+                            lambda.min.index <- as.numeric(which.min(msetest))
+                            lambda.min <- fit$lambda[which.min(msetest)]
+
+                            yvalid_hat <- predict(fit, newx = draw[["xvalid"]], newe = draw[["evalid"]], s = lambda.min)
+                            msevalid <- mean((draw[["yvalid"]] - drop(yvalid_hat))^2)
+
+                            nzcoef <- predict(fit, s = lambda.min, type = "nonzero")
+
+                            return(list(beta = coef(fit, s = lambda.min)[-1,,drop=F],
+                                        # fit = fit,
+                                        vnames = draw[["vnames"]],
+                                        nonzero_coef = nzcoef,
+                                        active = fit$active[[lambda.min.index]],
+                                        not_active = setdiff(draw[["vnames"]], fit$active[[lambda.min.index]]),
+                                        yvalid_hat = yvalid_hat,
+                                        msevalid = msevalid,
+                                        causal = draw[["causal"]],
+                                        not_causal = draw[["not_causal"]],
+                                        yvalid = draw[["yvalid"]]))
+                          },
+                          error = function(err) {
+                            return(error_return)
+                          }
+                          )
+                        })
+
+
+# sail split weak ---------------------------------------------------------
+
 
 
 sailsplitweak <- new_method("sailweak", "Sail Weak",
@@ -178,12 +243,19 @@ sailsplitweak <- new_method("sailweak", "Sail Weak",
                           )
                         })
 
+
+# sail split adaptive weak ------------------------------------------------
+
+
+
 sailsplitadaptiveweak <- new_method("Adaptivesailweak", "Adaptive Sail Weak",
                                 method = function(model, draw) {
                                   tryCatch({
                                     fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
                                                 strong = FALSE,
-                                                basis = function(i) splines::bs(i, degree = 5))
+                                                basis = function(i) splines::bs(i, degree = 5),
+                                                thresh = 5e-03,
+                                                dfmax = 50)
 
                                     ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
                                     msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
@@ -192,19 +264,27 @@ sailsplitadaptiveweak <- new_method("Adaptivesailweak", "Adaptive Sail Weak",
 
                                     pfs <- coef(fit, s = lambda.min)[-1,]
                                     pfe <- 1/abs(pfs["E"])
+                                    pfe <- min(pfe, 30)
+
 
                                     pfmain <- pfs[fit$main.effect.names]
                                     pfmain <- 1/sapply(split(pfmain, fit$group), sail:::l2norm)
-                                    pfmain[which(pfmain==Inf)] <- 50
+                                    pfmain[which(pfmain==Inf)] <- 30
+                                    pfmain <- pmin(pfmain, 30)
+
 
                                     pfinter <- pfs[fit$interaction.names]
                                     pfinter <- 1/sapply(split(pfinter, fit$group), sail:::l2norm)
-                                    pfinter[which(pfinter==Inf)] <- 50
+                                    pfinter[which(pfinter==Inf)] <- 30
+                                    pfinter <- pmin(pfinter, 30)
+
 
                                     fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
                                                 strong = FALSE,
                                                 basis = function(i) splines::bs(i, degree = 5),
-                                                penalty.factor = c(pfe, pfmain, pfinter))
+                                                penalty.factor = c(pfe, pfmain, pfinter),
+                                                thresh = 5e-03,
+                                                dfmax = 50)
 
                                     ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
                                     msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
@@ -234,6 +314,9 @@ sailsplitadaptiveweak <- new_method("Adaptivesailweak", "Adaptive Sail Weak",
                                   )
                                 })
 
+
+
+# gbm ---------------------------------------------------------------------
 
 
 gbm <- new_method("gbm", "GBM",
@@ -273,6 +356,11 @@ gbm <- new_method("gbm", "GBM",
                    })
 
 
+
+# lasso -------------------------------------------------------------------
+
+
+
 lasso <- new_method("lasso", "Lasso",
                     method = function(model, draw) {
 
@@ -300,6 +388,11 @@ lasso <- new_method("lasso", "Lasso",
                       }
                       )
                     })
+
+
+
+# lasso split -------------------------------------------------------------
+
 
 
 lassosplit <- new_method("lasso", "Lasso",
@@ -336,6 +429,12 @@ lassosplit <- new_method("lasso", "Lasso",
                       }
                       )
                     })
+
+
+
+
+# lasso split adaptive ----------------------------------------------------
+
 
 
 lassosplitadaptive <- new_method("Adaptivelasso", "Adaptive Lasso",
@@ -382,6 +481,10 @@ lassosplitadaptive <- new_method("Adaptivelasso", "Adaptive Lasso",
                            }
                            )
                          })
+
+
+
+# lasso backtracking ------------------------------------------------------
 
 
 # lassoBT only gives the minimum CV error.. doesnt have lambda.1se
@@ -434,6 +537,9 @@ lassoBT <- new_method("lassoBT", "LassoBT",
                         }
                         )
                       })
+
+
+# lasso back tracking split -----------------------------------------------
 
 
 
@@ -495,6 +601,11 @@ lassoBTsplit <- new_method("lassoBT", "LassoBT",
                              )
                            })
 
+
+# glinternet --------------------------------------------------------------
+
+
+
 GLinternet <- new_method("GLinternet", "GLinternet",
                          method = function(model, draw) {
 
@@ -535,6 +646,11 @@ GLinternet <- new_method("GLinternet", "GLinternet",
                            }
                            )
                          })
+
+
+# glinternet split --------------------------------------------------------
+
+
 
 
 GLinternetsplit <- new_method("GLinternet", "GLinternet",
@@ -579,6 +695,9 @@ GLinternetsplit <- new_method("GLinternet", "GLinternet",
 
 
 
+# hierbasis split ---------------------------------------------------------
+
+
 
 
 Hiersplit <- new_method("HierBasis", "HierBasis",
@@ -621,6 +740,9 @@ Hiersplit <- new_method("HierBasis", "HierBasis",
                          })
 
 
+# spam split --------------------------------------------------------------
+
+
 
 SPAMsplit <- new_method("SPAM", "SPAM",
                         method = function(model, draw) {
@@ -660,6 +782,11 @@ SPAMsplit <- new_method("SPAM", "SPAM",
                           }
                           )
                         })
+
+
+
+# gamsel split ------------------------------------------------------------
+
 
 
 gamselsplit <- new_method("gamsel", "gamsel",

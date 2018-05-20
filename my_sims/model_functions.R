@@ -129,7 +129,7 @@ make_gendata_Paper_data_split <- function(n, p, corr, betaE, SNR, lambda.type, p
   # used for glmnet and lasso backtracking
   # f.identity <- function(i) i
 
-  new_model(name = "gendata_thesis_split_v3",
+  new_model(name = "gendata_thesis_split_v4",
             label = sprintf("n = %s, p = %s, corr = %s, betaE = %s, SNR = %s, index = %s, lambda = %s",
                             n, p, corr, betaE, SNR, parameterIndex, lambda.type),
             params = list(n = n, p = p, corr = corr, betaE = betaE, SNR = SNR,
@@ -298,6 +298,219 @@ make_gendata_Paper_not_simulator <- function(n, p, corr, betaE, SNR, lambda.type
 
 }
 
+
+
+
+source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/rda/rda_NIHPD_data_cleaning.R")
+
+make_nihpd_data_split <- function(nprobes, phenoVariable, exposure, filter, data) {
+
+  new_model(name = "nihpd_split",
+            label = sprintf("p = %s, pheno = %s, exposure = %s, filter = %s, data = %s",
+                            nprobes, phenoVariable, exposure, filter, data),
+            params = list(nprobes = nprobes,
+                          phenoVariable = phenoVariable,
+                          exposure = exposure,
+                          filter = filter,
+                          data = data),
+            simulate = function(nprobes, phenoVariable, exposure, filter, data, nsim) {
+
+              DT <- nihdata(nprobes = nprobes,
+                            phenoVariable = phenoVariable,
+                            exposure = exposure,
+                            filter = filter,
+                            data = data)
+
+              models <- list()
+
+              for(i in seq(nsim)) {
+
+                train_test_ind <- caret::createDataPartition(DT$ytrain, p = 200/338)[[1]]
+
+                validate_ind <- seq(length(DT$ytrain))[-train_test_ind]
+                train_ind <- sample(train_test_ind, floor(length(train_test_ind)/2))
+                test_ind <- setdiff(train_test_ind, train_ind)
+
+                xtrain <- DT$xtrain[train_ind, , drop=FALSE]
+                xtest <- DT$xtrain[test_ind, , drop=FALSE]
+                xvalid <- DT$xtrain[validate_ind, , drop=FALSE]
+
+                xtrain_lasso <- DT$xtrain_lasso[train_ind, , drop=FALSE]
+                xtest_lasso <- DT$xtrain_lasso[test_ind, , drop=FALSE]
+                xvalid_lasso <- DT$xtrain_lasso[validate_ind, , drop=FALSE]
+
+                etrain <- DT$etrain[train_ind]
+                etest <- DT$etrain[test_ind]
+                evalid <- DT$etrain[validate_ind]
+
+                ytrain <- DT$ytrain[train_ind]
+                ytest <- DT$ytrain[test_ind]
+                yvalid <- DT$ytrain[validate_ind]
+
+                # main <- colnames(DT$x)
+                # vnames <- c(main, "E", paste0(main,":E"))
+                # vnames_lasso <- c("E", main) # needs to be in this order for glinternet
+
+                models[[i]] <- list(xtrain = xtrain, etrain = etrain, ytrain = ytrain, xtrain_lasso = xtrain_lasso,
+                                    xtest = xtest, etest = etest, ytest = ytest, xtest_lasso = xtest_lasso,
+                                    xvalid = xvalid, evalid = evalid, yvalid = yvalid, xvalid_lasso = xvalid_lasso)
+              }
+              return(models)
+            })
+
+}
+
+
+
+make_ADNI_data_split <- function(phenoVariable = "MMSCORE_bl", exposure = "diag_3bl.x", n_train_test = 200) {
+
+  amy_mat <- read.csv("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/rda/csf_amyloid_final.csv", stringsAsFactors = FALSE)
+  covr <- read.csv("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/rda/covariates.csv", stringsAsFactors = FALSE, sep = ";")
+  DT <- dplyr::inner_join(amy_mat, covr, by = c("PTID" = "IID")) %>%
+    select(-AV45_path_bl)
+
+  brain_regions <- grep("X", colnames(DT), value=T)
+
+  fmla <- reformulate(c(sapply(brain_regions, function(i) sprintf("bs(%s,3)",i)),
+                        "APOE_bin"), intercept = FALSE)
+
+  X <- DT %>% select(starts_with("X"), diag_3bl.x, APOE_bin) %>%
+    mutate(diag_3bl.x = diag_3bl.x - 1) %>%
+    as.matrix()
+
+  Xnorm <- sail:::standardize(X, center = TRUE, normalize = TRUE)$x
+
+  model_mat <- model.matrix(fmla, data = as.data.frame(Xnorm))
+  group = attr(model_mat, "assign")
+
+  E <- Xnorm[, "diag_3bl.x"]
+  Y <- DT %>% pull(MMSCORE_bl) %>% as.numeric
+
+
+  new_model(name = "ADNI_split",
+            label = sprintf("traintest = %s, pheno = %s, exposure = %s",
+                            n_train_test, phenoVariable, exposure),
+            params = list(Xnorm = Xnorm,
+                          phenoVariable = phenoVariable,
+                          exposure = exposure,
+                          E = E,
+                          Y = Y,
+                          X = X,
+                          model_mat = model_mat,
+                          group = group,
+                          n_train_test = n_train_test),
+            simulate = function(Xnorm, phenoVariable, exposure, E, Y, X, model_mat, group, n_train_test, nsim) {
+
+              models <- list()
+
+              for(i in seq(nsim)) {
+
+                #need to do it seperately, because for sail we need to normalize externally
+                dat_lasso <- partition_data(x = X[,-which(colnames(X) %in% c("diag_3bl.x"))],
+                                                   y = Y, e = X[,"diag_3bl.x"], p = n_train_test/length(Y),
+                                                   partition_on = Xnorm[, "diag_3bl.x"], type = "train_test_val")
+                dat <- partition_data(x = model_mat, y = Y, e = E, p = n_train_test/length(Y),
+                                             partition_on = Xnorm[,"diag_3bl.x"], type = "train_test_val")
+
+                xtrain <- dat[["xtrain"]]
+                xtest <- dat[["xtest"]]
+                xvalid <- dat[["xvalid"]]
+
+                xtrain_lasso <- dat_lasso[["xtrain_lasso"]]
+                xtest_lasso <- dat_lasso[["xtest_lasso"]]
+                xvalid_lasso <- dat_lasso[["xvalid_lasso"]]
+
+                etrain <- dat[["etrain"]]
+                etest <- dat[["etest"]]
+                evalid <- dat[["evalid"]]
+
+                etrain_lasso <- dat_lasso[["etrain"]]
+                etest_lasso <- dat_lasso[["etest"]]
+                evalid_lasso <- dat_lasso[["evalid"]]
+
+                ytrain <- dat[["ytrain"]]
+                ytest <- dat[["ytest"]]
+                yvalid <- dat[["yvalid"]]
+
+                ytrain_lasso <- dat_lasso[["ytrain"]]
+                ytest_lasso <- dat_lasso[["ytest"]]
+                yvalid_lasso <- dat_lasso[["yvalid"]]
+
+                # main <- colnames(DT$x)
+                # vnames <- c(main, "E", paste0(main,":E"))
+                # vnames_lasso <- c("E", main) # needs to be in this order for glinternet
+
+                models[[i]] <- list(xtrain = xtrain, xtrain_lasso = xtrain_lasso,
+                                    etrain = etrain, etrain_lasso = etrain_lasso,
+                                    ytrain = ytrain, ytrain_lasso = ytrain_lasso,
+                                    xtest = xtest, xtest_lasso = xtest_lasso,
+                                    etest = etest, etest_lasso = etest_lasso,
+                                    ytest = ytest, ytest_lasso = ytest_lasso,
+                                    xvalid = xvalid, xvalid_lasso = xvalid_lasso,
+                                    evalid = evalid, evalid_lasso = evalid_lasso,
+                                    yvalid = yvalid, yvalid_lasso = yvalid_lasso, group = group)
+              }
+              return(models)
+            })
+
+}
+
+
+
+partition_data <- function(x, y, e, p, partition_on, type = c("train_test_val", "train_test")) {
+
+  type <- match.arg(type)
+
+  if (type == "train_test_val") {
+    ex <- cbind(E = e, x)
+    train_test_ind <- caret::createDataPartition(partition_on, p = p)[[1]]
+
+    validate_ind <- seq(length(y))[-train_test_ind]
+    train_ind <- sample(train_test_ind, floor(length(train_test_ind)/2))
+    test_ind <- setdiff(train_test_ind, train_ind)
+
+    xtrain <- x[train_ind, , drop=FALSE]
+    xtest <- x[test_ind, , drop=FALSE]
+    xvalid <- x[validate_ind, , drop=FALSE]
+
+    xtrain_lasso <- ex[train_ind, , drop=FALSE]
+    xtest_lasso <- ex[test_ind, , drop=FALSE]
+    xvalid_lasso <- ex[validate_ind, , drop=FALSE]
+
+    etrain <- e[train_ind]
+    etest <- e[test_ind]
+    evalid <- e[validate_ind]
+
+    ytrain <- y[train_ind]
+    ytest <- y[test_ind]
+    yvalid <- y[validate_ind]
+
+    return(list(xtrain = xtrain, etrain = etrain, ytrain = ytrain, xtrain_lasso = xtrain_lasso,
+                xtest = xtest, etest = etest, ytest = ytest, xtest_lasso = xtest_lasso,
+                xvalid = xvalid, evalid = evalid, yvalid = yvalid, xvalid_lasso = xvalid_lasso,
+                train_ind = train_ind, test_ind = test_ind, validate_ind = validate_ind))
+  } else if (type == "train_test"){
+    ex <- cbind(E = e, x)
+    train_ind <- caret::createDataPartition(partition_on, p = p)[[1]]
+
+    xtrain <- x[train_ind, , drop=FALSE]
+    xtest <- x[-train_ind, , drop=FALSE]
+
+    xtrain_lasso <- ex[train_ind, , drop=FALSE]
+    xtest_lasso <- ex[-train_ind, , drop=FALSE]
+
+    etrain <- e[train_ind]
+    etest <- e[-train_ind]
+
+    ytrain <- y[train_ind]
+    ytest <- y[-train_ind]
+
+    return(list(xtrain = xtrain, etrain = etrain, ytrain = ytrain, xtrain_lasso = xtrain_lasso,
+                xtest = xtest, etest = etest, ytest = ytest, xtest_lasso = xtest_lasso,
+                train_ind = train_ind))
+  }
+
+}
 
 
 # nsim = 10;n=100;SNR=3
