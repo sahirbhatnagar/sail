@@ -1,3 +1,224 @@
+######################################
+# R Source code file for real data analysis of ADNI data
+# Notes:
+# I used the simulator framework to run this real data analysis
+# the method functions were slightly modified for this
+# because the real data input are slightly different
+# see my_sims/method_functions_rda.R for details
+# we didnt fit spam or gamsel because it wouldnt let expansion of binary predictors
+# see my_sims/plot_functions_rda_ADNI.R for functions used for plotting
+# Author: Sahir Bhatnagar
+# Created: 2016
+# Updated: May 17, 2018
+#####################################
+
+
+# load packages ---------------------------------------------------------
+
+# rm(list=ls())
+pacman::p_load(simulator) # this file was created under simulator version 0.2.1
+devtools::load_all()
+pacman::p_load(data.table)
+pacman::p_load(magrittr)
+pacman::p_load(genefilter)
+pacman::p_load(tidyverse)
+pacman::p_load(doParallel)
+pacman::p_load(splines)
+pacman::p_load(foreach)
+pacman::p_load(doMC)
+pacman::p_load(glmnet)
+pacman::p_load_current_gh('sahirbhatnagar/glinternet')
+pacman::p_load(LassoBacktracking)
+pacman::p_load(SAM)
+pacman::p_load(gamsel)
+pacman::p_load_gh('asadharis/HierBasis')
+pacman::p_load(psych) # for error.crosses plot
+pacman::p_load(ggplot2)
+
+
+
+# load source code helper files -------------------------------------------
+
+source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/model_functions.R")
+source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/method_functions_rda.R")
+source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/eval_functions.R")
+source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/plot_functions_rda_ADNI.R")
+
+
+# load ADNI data and merge covariates with phenotypes ---------------------
+
+amy_mat <- read.csv("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/rda/csf_amyloid_final.csv", stringsAsFactors = FALSE)
+covr <- read.csv("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/rda/covariates.csv", stringsAsFactors = FALSE, sep = ";")
+
+# these are used for plotting. we use the entire data set for the plots --------------------
+DT <- dplyr::inner_join(amy_mat, covr, by = c("PTID" = "IID")) %>%
+  select(-AV45_path_bl)
+X <- DT %>% select(starts_with("X"), diag_3bl.x, APOE_bin) %>%
+  mutate(diag_3bl.x = diag_3bl.x - 1) %>%
+  as.matrix()
+Xnorm <- sail:::standardize(X, center = TRUE, normalize = TRUE)$x
+E <- Xnorm[, "diag_3bl.x"]
+
+
+# Run real data analysis --------------------------------------------------
+
+sim <- new_simulation(name = "rda_ADNI_may_17_2018v2",
+                      label = "rda_ADNI_may_17_2018v2",
+                      dir = ".") %>%
+  generate_model(make_ADNI_data_split, seed = 12345,
+                 phenoVariable = "MMSCORE_bl",
+                 exposure = "diag_3bl.x",n_train_test = 250) %>%
+  simulate_from_model(nsim = 6, index = 1:35)  %>%
+  run_method(list(lassosplit, sailsplit, GLinternetsplit,lassoBTsplit, Hiersplit),
+             parallel = list(socket_names = 35,
+                             libraries = c("LassoBacktracking", "glinternet","glmnet","splines",
+                                           "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
+
+simulator::save_simulation(sim)
+
+
+# load simulator object for plots -----------------------------------------
+
+sim <- simulator::load_simulation("rda_ADNI_may_17_2018v2")
+sim <- sim %>% evaluate(list(msevalid, nactive, r2))
+df <- as.data.frame(evals(sim))
+saveRDS(df, file = "my_sims/rda_results/rda_ADNI_may_17_2018v2.rds")
+
+
+
+# plot results ------------------------------------------------------------
+
+sim %>% plot_eval(metric_name = "nactive")
+sim %>% plot_eval(metric_name = "mse")
+sim %>% plot_eval(metric_name = "r2")
+
+
+## ---- load-results-adni ----
+df <- readRDS("my_sims/rda_results/rda_ADNI_may_17_2018v2.rds")
+DT_res <- df %>% as.data.table()
+
+
+## ---- get-best-sail-model ----
+
+draw_ind <- DT_res[Method=="sail"][which.min(mse)]$Draw
+dat <- draws(sim)@draws[[draw_ind]]
+fit <- sail(x = dat$xtrain, y = dat$ytrain, e = dat$etrain,
+            expand = FALSE,
+            center.x = F,
+            center.e = T,
+            group = dat$group,
+            alpha = 0.1,
+            maxit = 250,
+            strong = TRUE,
+            verbose = 1)
+ytest_hat <- predict(fit, newx = dat$xtest, newe = dat$etest)
+msetest <- colMeans((dat$ytest - ytest_hat)^2)
+lambda.min.index <- as.numeric(which.min(msetest))
+lambda.min <- fit$lambda[which.min(msetest)]
+yvalid_hat <- predict(fit, newx = dat$xvalid, newe = dat$evalid, s = lambda.min)
+msevalid <- mean((dat$yvalid - drop(yvalid_hat))^2)
+nzcoef <- predict(fit, s = lambda.min, type = "nonzero")
+
+design <- do.call(rbind, list(dat$xtrain, dat$xtest, dat$xvalid))
+
+
+
+## ---- plot-main-adni ----
+
+# names taken from email from lai (search for ADNI in gmail)
+plotMainADNI(fit, x = DT[as.numeric(as.character(rownames(design))), "X175"],
+             xvar = paste0("bs(X175, 3)",1:3),design = design, s = lambda.min,
+             ylab = "f(X175)", xlab = "Cuneus right")
+plotMainADNI(fit, x = DT[as.numeric(as.character(rownames(design))), "X196"],
+             xvar = paste0("bs(X196, 3)",1:3),design = design, s = lambda.min,
+             ylab = "f(X196)", xlab = "Lateral occipitotemporal gyrus left")
+plotMainADNI(fit, x = DT[as.numeric(as.character(rownames(design))), "X154"],
+             xvar = paste0("bs(X154, 3)",1:3),design = design, s = lambda.min,
+             ylab = "f(X154)", xlab =  "Middle occipital gyrus left")
+plotMainADNI(fit, x = DT[as.numeric(as.character(rownames(design))), "X24"],
+             xvar = paste0("bs(X24, 3)",1:3),design = design, s = lambda.min,
+             ylab = "f(X24)", xlab =  "Middle occipital gyrus left")
+
+## ---- plot-inter-adni-175 ----
+
+par(mfrow=c(1,2), tcl=-0.5, family="serif",
+    omi=c(0.2,0.2,0,0))
+plotInterADNI(fit, x = DT[as.numeric(as.character(rownames(design))), "X175"],
+              xvar = paste0("bs(X175, 3)",1:3), design = design, s = lambda.min,
+              e = E, apoe = FALSE, legend = T, legend.position = "bottomleft",
+              ylab = "f(X175)", xlab = "Cuneus right", main = "APOE e4 = 0")
+plotInterADNI(fit, x = DT[as.numeric(as.character(rownames(design))), "X175"],
+              xvar = paste0("bs(X175, 3)",1:3), design = design, s = lambda.min,
+              e = E, apoe = TRUE, legend = F,
+              ylab = "f(X175)", xlab = "Cuneus right", main = "APOE e4 = 1")
+
+
+## ---- plot-inter-adni-154 ----
+
+par(mfrow=c(1,2), tcl=-0.5, family="serif",
+    omi=c(0.2,0.2,0,0))
+plotInterADNI(fit, x = DT[as.numeric(as.character(rownames(design))), "X154"],
+              xvar = paste0("bs(X154, 3)",1:3), design = design, s = lambda.min,
+              e = E, apoe = FALSE, legend = F,
+              ylab = "f(X154)", xlab = "Middle occipital gyrus left", main = "APOE e4 = 0")
+plotInterADNI(fit, x = DT[as.numeric(as.character(rownames(design))), "X154"],
+              xvar = paste0("bs(X154, 3)",1:3), design = design, s = lambda.min,
+              e = E, apoe = TRUE, legend = T,
+              ylab = "f(X154)", xlab = "Middle occipital gyrus left", main = "APOE e4 = 1")
+
+
+## ----error-crosses ----
+
+affect.mat2 <- describeBy(DT_res[, c("mse","nactive")], DT_res$Method, mat = TRUE)
+
+par(family="serif")
+error.crosses(affect.mat2[c(6:10),],
+              affect.mat2[c(1:5),],
+              labels=unique(affect.mat2$group1),
+              xlab="Number of Active Variables",
+              main = "ADNI Data: Means (+/- 1 SD) from 200 Train/Validate/Test Splits",
+              sd = TRUE,
+              cex.lab = 1.4,
+              cex.axis = 1.4,
+              cex.main = 1.5,
+              xlim = c(0, 34),
+              ylab="Test Set MSE",
+              colors = sail:::cbbPalette[c(1,3,4,7,2)],
+              pch=16,cex=2)
+
+# error.crosses(affect.mat2[c(1:5),],
+#               affect.mat2[c(6:10),],
+#               labels=unique(affect.mat2$group1),
+#               ylab="Number of active variables",
+#               sd = TRUE,
+#               # xlim = c(0, 35),
+#               xlab="Test set MSE",
+#               colors = sail:::cbbPalette[c(1,3,4,7,2)],
+#               pch=16,cex=2)
+
+
+## ---- not used under this line ----
+
+
+
+# sim <- new_simulation(name = "rda_ADNI_may_17_2018",
+#                       label = "rda_ADNI_may_17_2018",
+#                       dir = ".") %>%
+#   generate_model(make_ADNI_data_split, seed = 12345,
+#                  phenoVariable = "MMSCORE_bl",
+#                  exposure = "diag_3bl.x",n_train_test = 200) %>%
+#   simulate_from_model(nsim = 1, index = 1:2)  %>%
+#   run_method(list(lassosplit,lassosplitadaptive, sailsplitweak, #lassoBTsplit, sailsplitweak, sailsplitadaptiveweak
+#                   sailsplit, sailsplitadaptive),
+#              parallel = list(socket_names = 20,
+#                              libraries = c("LassoBacktracking", "glinternet","glmnet","splines",
+#                                            "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
+
+#
+# draws(sim)@draws$r2.1$xtrain_lasso[, -which(colnames(draws(sim)@draws$r2.1$xtrain_lasso) %in% c("APOE_bin", "E"))]
+# draws(sim)@draws$r2.1$group
+
+
 rm(list=ls())
 # devtools::document()
 devtools::load_all()
@@ -155,212 +376,6 @@ plotInterADNI(fit, x = X[,"X243"], xvar = paste0("bs(X243, 3)",1:3), s = lambda.
 
 View(plotInter)
 
-# this extrapolates to the entire sample. not just the training set
-plotMainADNI <- function(object, x, design, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
-                         legend.position = "bottomleft", rug = TRUE, ...) {
-
-  # browser()
-
-  if (length(s) > 1) {
-    s <- s[[1]]
-    warning("More than 1 s value provided. Only first element will be used for the estimated coefficients.")
-  }
-
-  ind <- which(object$vnames %in% xvar)
-  allCoefs <- coef(object, s = s)
-  a0 <- allCoefs[1, ]
-  betas <- as.matrix(allCoefs[object$main.effect.names[ind], , drop = FALSE])
-  design.mat <- design[, object$main.effect.names[ind], drop = FALSE]
-  originalX <- x
-
-  # f.hat <- drop(a0 + design.mat %*% betas)
-  f.hat <- drop(design.mat %*% betas)
-  if (!missing(f.truth)) {
-    seqs <- seq(range(originalX)[1], range(originalX)[2], length.out = 100)
-    f.truth.eval <- f.truth(seqs)
-    ylims <- range(f.truth.eval, f.hat)
-  } else {
-    ylims <- range(f.hat)
-  }
-
-  plot.args <- list(
-    x = originalX[order(originalX)],
-    y = f.hat[order(originalX)],
-    ylim = ylims,
-    xlab = xvar,
-    ylab = sprintf("f(%s)", xvar),
-    type = "n",
-    # xlim = rev(range(l)),
-    # las = 1,
-    cex.lab = 1.5,
-    cex.axis = 1.5,
-    cex = 1.5,
-    # bty = "n",
-    # mai=c(1,1,0.1,0.2),
-    # tcl = -0.5,
-    # omi = c(0.2,1,0.2,0.2),
-    family = "serif"
-  )
-  new.args <- list(...)
-  if (length(new.args)) {
-    new.plot.args <- new.args[names(new.args) %in% c(
-      names(par()),
-      names(formals(plot.default))
-    )]
-    plot.args[names(new.plot.args)] <- new.plot.args
-  }
-  do.call("plot", plot.args)
-  abline(h = 0, lwd = 1, col = "gray")
-  lines(originalX[order(originalX)], f.hat[order(originalX)], col = col[1], lwd = 3)
-  if (rug) graphics::rug(originalX, side = 1)
-  if (!missing(f.truth)) {
-    lines(seqs[order(seqs)], f.truth.eval[order(seqs)], col = col[2], lwd = 3)
-  }
-  if (!missing(f.truth)) {
-    legend(legend.position,
-           c("Estimated", "Truth"),
-           col = col, cex = 1, bty = "n", lwd = 3
-    )
-  }
-}
-
-
-# this extrapolates to the entire sample. not just the training set
-plotInterADNI <- function(object, x, xvar, s,
-                          design, # this contains user defined expand matrix
-                          e, # this is E vector for whole sample
-                          apoe = TRUE,
-                          xlab = "supramarginal gyrus right", ylab = "Mini-Mental State Examination",
-                          legend.position = "bottomleft", main = "", rug = TRUE,
-                          color = sail:::cbbPalette[c(6,4,7)], legend = TRUE) {
-
-  # cv_obj = cvfit; original_name = "X60"; sail_name = "X19"; xlab =  "supramarginal gyrus right";
-  # lambda_type = "lambda.min";ylab = "Mini-Mental State Examination";
-  # color = RColorBrewer::brewer.pal(9,"Set1"); legend = TRUE; ylim =  c(15,30)
-  # ==================
-  # browser()
-  ind <- which(object$vnames %in% xvar)
-  allCoefs <- coef(object, s = s)
-  a0 <- allCoefs[1, ]
-  betas <- as.matrix(allCoefs[object$main.effect.names[ind], , drop = FALSE])
-  alphas <- as.matrix(allCoefs[object$interaction.names[ind], , drop = FALSE])
-  betaE <- as.matrix(allCoefs["E", , drop = FALSE])
-  betaAPOE <- as.matrix(allCoefs["APOE_bin", , drop = FALSE])
-  betaAPOEinter <- as.matrix(allCoefs["APOE_bin:E", , drop = FALSE])
-  # if you dont want to extrapolate, un-comment the following lines
-  # design.mat.main <- object$design[, object$main.effect.names[ind], drop = FALSE]
-  # design.mat.int <- object$design[, object$interaction.names[ind], drop = FALSE]
-
-  design.mat.main <- design[, object$main.effect.names[ind], drop = FALSE]
-  design.mat.int <- design[, object$main.effect.names[ind], drop = FALSE] * e
-  apoee4 <- design[, "APOE_bin"]
-  apoee4inter <- design[, "APOE_bin"] * e
-
-  # originalE <- object$design[, "E", drop = FALSE] # this is the centered E
-  # originalX <- x
-
-  originalE <- e # this is the centered E
-  originalX <- x
-
-
-  # f.hat <- drop(a0 + design.mat %*% betas)
-  f.hat <- drop(originalE * as.vector(betaE) + apoee4 * as.vector(betaAPOE) +
-                  design.mat.main %*% betas + design.mat.int %*% alphas +
-                  apoee4inter * as.vector(betaAPOEinter))
-  # f.hat <- drop(originalE * as.vector(betaE)  + design.mat.int %*% alphas)
-  # f.hat <- drop(design.mat.int %*% alphas)
-  ylims <- range(f.hat)
-
-  # dfs <- cv_obj$sail.fit$df
-  # lin_pred <- coef(cv_obj, s = lambda_type)["(Intercept)",,drop=T] +
-  #   # cv_obj$sail.fit$design[,paste("X97",seq_len(dfs), sep = "_")] %*%
-  #   # coef(cv_obj, s = lambda_type)[paste("X97",seq_len(dfs), sep = "_"),,drop=F] +
-  #   cv_obj$sail.fit$design[,paste(sail_name,seq_len(dfs), sep = "_")] %*%
-  #   coef(cv_obj, s = lambda_type)[paste(sail_name,seq_len(dfs), sep = "_"),,drop=F] +
-  #   cv_obj$sail.fit$design[,"X_E"] %*%
-  #   coef(cv_obj, s = lambda_type)["X_E",,drop=F] +
-  #   cv_obj$sail.fit$design[,paste0(paste(sail_name,seq_len(dfs), sep = "_"),":X_E")] %*%
-  #   coef(cv_obj, s = lambda_type)[paste0(paste(sail_name,seq_len(dfs), sep = "_"),":X_E"),,drop=F] +
-  #   cv_obj$sail.fit$design[,paste("X98",seq_len(dfs), sep = "_")] %*%
-  #   coef(cv_obj, s = lambda_type)[paste("X98",seq_len(dfs), sep = "_"),,drop=F] +
-  #   cv_obj$sail.fit$design[,paste0(paste("X98",seq_len(dfs), sep = "_"),":X_E")] %*%
-  #   coef(cv_obj, s = lambda_type)[paste0(paste("X98",seq_len(dfs), sep = "_"),":X_E"),,drop=F]
-
-  # all(rownames(coef(cv_obj, s = lambda_type))[-1] ==  colnames(cv_obj$sail.fit$design))
-  # lin_pred <- cbind(1,cv_obj$sail.fit$design) %*% coef(cv_obj, s = lambda_type)
-
-
-  control = drop(unique(originalE))[1]
-  mci = drop(unique(originalE))[2]
-  ad = drop(unique(originalE))[3]
-
-  apoe_no <- drop(unique(apoee4))[1]
-  apoe_yes <- drop(unique(apoee4))[2]
-
-  cont_index0 <- which(apoee4==apoe_no & originalE==control)
-  cont_index1 <- which(apoee4==apoe_yes & originalE==control)
-  mci_index0 <- which(apoee4==apoe_no & originalE==mci)
-  mci_index1 <- which(apoee4==apoe_yes & originalE==mci)
-  ad_index0 <- which(apoee4==apoe_no & originalE==ad)
-  ad_index1 <- which(apoee4==apoe_yes & originalE==ad)
-
-
-  # browser()
-  # 1=control, 2=MCI (Mild Cognitive Impairment) and 3=Alzeimer Disease
-  # cont_index <- which(originalE==control)
-  # mci_index <- which(originalE==mci)
-  # ad_index <- which(originalE==ad)
-  #
-  # cont_pred <- f.hat[cont_index]
-  # mci_pred <- f.hat[mci_index]
-  # ad_pred <- f.hat[ad_index]
-
-  cont_pred0 <- f.hat[cont_index0]
-  cont_pred1 <- f.hat[cont_index1]
-  mci_pred0 <- f.hat[mci_index0]
-  mci_pred1 <- f.hat[mci_index1]
-  ad_pred0 <- f.hat[ad_index0]
-  ad_pred1 <- f.hat[ad_index1]
-
-  min.length.top <- range(f.hat)[1] ; max.length.top <- range(f.hat)[2]
-  par(mai=c(1,1,1,0.2))
-  plot(originalX, f.hat,
-       pch = 19,
-       ylab = ylab,
-       xlab = xlab,
-       col = color[1],
-       bty="n",
-       xaxt="n",
-       type = "n",
-       cex.lab = 2,
-       cex.axis = 2,
-       cex = 2,
-       main = main,
-       cex.main = 2.5,
-       # ylim = c(min.length.top-3, max.length.top+3),
-       ylim = ylims)
-  axis(1, labels = T, cex.axis = 2)
-
-  if (apoe) {
-    # points(X[exposed_index,original_name], e1, pch = 19, col = color[2], cex = 1.5)
-    # points(X[unexposed_index,original_name], e0, pch = 19, col = color[1], cex = 1.5)
-    lines(originalX[cont_index1][order(originalX[cont_index1])], cont_pred1[order(originalX[cont_index1])], col = color[1], lwd = 3)
-    lines(originalX[mci_index1][order(originalX[mci_index1])], mci_pred1[order(originalX[mci_index1])], col = color[2], lwd = 3)
-    lines(originalX[ad_index1][order(originalX[ad_index1])], ad_pred1[order(originalX[ad_index1])], col = color[3], lwd = 3)
-  } else {
-    lines(originalX[cont_index0][order(originalX[cont_index0])], cont_pred0[order(originalX[cont_index0])], col = color[1], lwd = 3)
-    lines(originalX[mci_index0][order(originalX[mci_index0])], mci_pred0[order(originalX[mci_index0])], col = color[2], lwd = 3)
-    lines(originalX[ad_index0][order(originalX[ad_index0])], ad_pred0[order(originalX[ad_index0])], col = color[3], lwd = 3)
-  }
-
-  # if (legend) legend("bottomright", c("APOE = 1","APOE = 0"), col = color[2:1], pch = 19, cex = 2, bty = "n")
-  # text(3, main, cex = 2)
-  if (legend) legend(legend.position, c("Control", "Mild Cognitive Impairment","Alzeimer Disease"),
-                     col = color[1:3], pch = 19, cex = 2, bty = "n")
-
-  if (rug) graphics::rug(originalX, side = 1)
-}
-
 
 
 
@@ -463,173 +478,7 @@ nzcoef <- coef(fit, s = lambda.min)[nonzeroCoef(coef(fit, s = lambda.min)),,drop
 
 
 
-# simulator style ---------------------------------------------------------
 
-rm(list=ls())
-pacman::p_load(simulator) # this file was created under simulator version 0.2.1
-devtools::load_all()
-pacman::p_load(data.table)
-pacman::p_load(magrittr)
-pacman::p_load(genefilter)
-pacman::p_load(tidyverse)
-pacman::p_load(doParallel)
-pacman::p_load(splines)
-pacman::p_load(foreach)
-pacman::p_load(doMC)
-pacman::p_load(glmnet)
-pacman::p_load_current_gh('sahirbhatnagar/glinternet')
-pacman::p_load(LassoBacktracking)
-pacman::p_load(SAM)
-pacman::p_load(gamsel)
-pacman::p_load_gh('asadharis/HierBasis')
-
-source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/model_functions.R")
-source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/method_functions_rda.R")
-source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/eval_functions.R")
-
-amy_mat <- read.csv("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/rda/csf_amyloid_final.csv", stringsAsFactors = FALSE)
-covr <- read.csv("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/rda/covariates.csv", stringsAsFactors = FALSE, sep = ";")
-# used for plotting
-DT <- dplyr::inner_join(amy_mat, covr, by = c("PTID" = "IID")) %>%
-  select(-AV45_path_bl)
-X <- DT %>% select(starts_with("X"), diag_3bl.x, APOE_bin) %>%
-  mutate(diag_3bl.x = diag_3bl.x - 1) %>%
-  as.matrix()
-Xnorm <- sail:::standardize(X, center = TRUE, normalize = TRUE)$x
-E <- Xnorm[, "diag_3bl.x"]
-
-# we didnt fit spam or gamsel because it wouldnt let expansion of binary predictors
-# sim <- new_simulation(name = "rda_ADNI_may_17_2018",
-#                       label = "rda_ADNI_may_17_2018",
-#                       dir = ".") %>%
-#   generate_model(make_ADNI_data_split, seed = 12345,
-#                  phenoVariable = "MMSCORE_bl",
-#                  exposure = "diag_3bl.x",n_train_test = 200) %>%
-#   simulate_from_model(nsim = 1, index = 1:2)  %>%
-#   run_method(list(lassosplit,lassosplitadaptive, sailsplitweak, #lassoBTsplit, sailsplitweak, sailsplitadaptiveweak
-#                   sailsplit, sailsplitadaptive),
-#              parallel = list(socket_names = 20,
-#                              libraries = c("LassoBacktracking", "glinternet","glmnet","splines",
-#                                            "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
-
-#
-# draws(sim)@draws$r2.1$xtrain_lasso[, -which(colnames(draws(sim)@draws$r2.1$xtrain_lasso) %in% c("APOE_bin", "E"))]
-# draws(sim)@draws$r2.1$group
-
-sim <- new_simulation(name = "rda_ADNI_may_17_2018v2",
-                      label = "rda_ADNI_may_17_2018v2",
-                      dir = ".") %>%
-  generate_model(make_ADNI_data_split, seed = 12345,
-                 phenoVariable = "MMSCORE_bl",
-                 exposure = "diag_3bl.x",n_train_test = 250) %>%
-  simulate_from_model(nsim = 6, index = 1:35)  %>%
-  run_method(list(lassosplit, sailsplit, GLinternetsplit,lassoBTsplit, Hiersplit),
-             parallel = list(socket_names = 35,
-             libraries = c("LassoBacktracking", "glinternet","glmnet","splines",
-             "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
-simulator::save_simulation(sim)
-
-sim <- simulator::load_simulation("rda_ADNI_may_17_2018v2")
-
-sim <- sim %>% evaluate(list(msevalid, nactive, r2))
-sim %>% plot_eval(metric_name = "nactive")
-sim %>% plot_eval(metric_name = "mse")
-sim %>% plot_eval(metric_name = "r2")
-DT <- as.data.frame(evals(sim)) %>% as.data.table()
-
-draw_ind <- DT[Method=="sail"][which.min(mse)]$Draw
-# DT[Method=="sail"][order(mse)]$mse
-# draw_ind <- DT[Method=="sail"][which(mse >= mean(mse)-.0036 & mse <= mean(mse)+.002)]$Draw
-dat <- draws(sim)@draws[[draw_ind]]
-simulator::output(sim)[[2]]@out[[draw_ind]]
-dat$xtrain
-
-fit <- sail(x = dat$xtrain, y = dat$ytrain, e = dat$etrain,
-            # basis = f.basis,
-            expand = FALSE,
-            center.x = F,
-            center.e = T,
-            group = dat$group,
-            alpha = 0.1,
-            maxit = 250,
-            # thresh = 1e-02,
-            strong = TRUE,
-            verbose = 2)
-plot(fit)
-ytest_hat <- predict(fit, newx = dat$xtest, newe = dat$etest)
-msetest <- colMeans((dat$ytest - ytest_hat)^2)
-plot(log(fit$lambda), msetest)
-lambda.min.index <- as.numeric(which.min(msetest))
-lambda.min <- fit$lambda[which.min(msetest)]
-
-yvalid_hat <- predict(fit, newx = dat$xvalid, newe = dat$evalid, s = lambda.min)
-(msevalid <- mean((dat$yvalid - drop(yvalid_hat))^2))
-
-(nzcoef <- predict(fit, s = lambda.min, type = "nonzero"))
-
-X <- do.call(rbind, list(dat$xtrain_lasso, dat$xtest_lasso, dat$xvalid_lasso))
-design <- do.call(rbind, list(dat$xtrain, dat$xtest, dat$xvalid))
-
-# names taken from email from lai (search for ADNI in gmail)
-plotMainADNI(fit, x = DT[as.numeric(as.character(rownames(design))), "X175"],
-             xvar = paste0("bs(X175, 3)",1:3),design = design, s = lambda.min,
-             ylab = "f(X175)", xlab = "Cuneus right")
-plotMainADNI(fit, x = DT[as.numeric(as.character(rownames(design))), "X196"],
-             xvar = paste0("bs(X196, 3)",1:3),design = design, s = lambda.min,
-             ylab = "f(X196)", xlab = "Lateral occipitotemporal gyrus left")
-plotMainADNI(fit, x = DT[as.numeric(as.character(rownames(design))), "X154"],
-             xvar = paste0("bs(X154, 3)",1:3),design = design, s = lambda.min,
-             ylab = "f(X154)", xlab =  "Middle occipital gyrus left")
-plotMainADNI(fit, x = DT[as.numeric(as.character(rownames(design))), "X24"],
-             xvar = paste0("bs(X24, 3)",1:3),design = design, s = lambda.min,
-             ylab = "f(X24)", xlab =  "Middle occipital gyrus left")
-
-par(mfrow=c(1,2), tcl=-0.5, family="serif",
-    omi=c(0.2,0.2,0,0))
-# mai = c(1,1,2,0))
-# oma = c(1,1,2,1))
-# plot_apoe_inter(cv_obj = cvfit, X = X, original_name = "X60", sail_name = "X19", xlab =  "supramarginal gyrus right", legend = T,
-#                 apoe = FALSE)
-# plot_apoe_inter(cv_obj = cvfit, X = X, original_name = "X60", sail_name = "X19", xlab =  "supramarginal gyrus right", legend = F,
-#                 apoe = TRUE, ylab = "", main = "APOE e4 = 1")
-plotInterADNI(fit, x = DT[as.numeric(as.character(rownames(design))), "X175"],
-              xvar = paste0("bs(X175, 3)",1:3), design = design, s = lambda.min,
-              e = E, apoe = FALSE, legend = T, legend.position = "bottomleft",
-              ylab = "f(X175)", xlab = "Cuneus right", main = "APOE e4 = 0")
-plotInterADNI(fit, x = DT[as.numeric(as.character(rownames(design))), "X175"],
-              xvar = paste0("bs(X175, 3)",1:3), design = design, s = lambda.min,
-              e = E, apoe = TRUE, legend = F,
-              ylab = "f(X175)", xlab = "Cuneus right", main = "APOE e4 = 1")
-dev.off()
-
-
-par(mfrow=c(1,2), tcl=-0.5, family="serif",
-    omi=c(0.2,0.2,0,0))
-# mai = c(1,1,2,0))
-# oma = c(1,1,2,1))
-# plot_apoe_inter(cv_obj = cvfit, X = X, original_name = "X60", sail_name = "X19", xlab =  "supramarginal gyrus right", legend = T,
-#                 apoe = FALSE)
-# plot_apoe_inter(cv_obj = cvfit, X = X, original_name = "X60", sail_name = "X19", xlab =  "supramarginal gyrus right", legend = F,
-#                 apoe = TRUE, ylab = "", main = "APOE e4 = 1")
-plotInterADNI(fit, x = DT[as.numeric(as.character(rownames(design))), "X154"],
-              xvar = paste0("bs(X154, 3)",1:3), design = design, s = lambda.min,
-              e = E, apoe = FALSE, legend = F,
-              ylab = "f(X154)", xlab = "Middle occipital gyrus left", main = "APOE e4 = 0")
-plotInterADNI(fit, x = DT[as.numeric(as.character(rownames(design))), "X154"],
-              xvar = paste0("bs(X154, 3)",1:3), design = design, s = lambda.min,
-              e = E, apoe = TRUE, legend = T,
-              ylab = "f(X154)", xlab = "Middle occipital gyrus left", main = "APOE e4 = 1")
-dev.off()
-
-
-
-DT[, mean(mse), by = Method]
-DT[, median(mse), by = Method]
-DT[, sd(mse), by = Method]
-sim
-simulator::output(sim)[[2]]@out$r1.1$active
-simulator::output(sim)[[3]]@out$r1.1$active
-simulator::output(sim)[[3]]@out$r2.1$active
 # not-used ----------------------------------------------------------------
 
 
