@@ -4,10 +4,12 @@ if (!requireNamespace("pacman", quietly = TRUE)) {
   install.packages("pacman")
 }
 
-pacman::p_load_current_gh("sahirbhatnagar/sail")
+# pacman::p_load_gh("sahirbhatnagar/sail", dependencies = FALSE)
+# devtools::load_all("/home/sahir/git_repositories/sail/")
+devtools::load_all("C:/Users/sahir/Documents/git_repositories/sail")
 pacman::p_load(ggplot2)
-pacman::p_load(doMC)
-registerDoMC(cores = 8)
+#pacman::p_load(doMC)
+#registerDoMC(cores = 8)
 pacman::p_load(latex2exp)
 pacman::p_load(truncnorm)
 pacman::p_load(lemon)

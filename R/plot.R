@@ -296,6 +296,9 @@ plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
 #' @param npoints number of points in the grid to calculate the perspective
 #'   plot. Default: 30
 #' @param title_z title for the plot, Default: ''
+#' @param xlab chracter for xlabel. if missing, variable name is used
+#' @param ylab chracter for ylabel. if missing, variable name is used
+#' @param zlab chracter for zlabel. if missing, variable name is used
 #' @param ... currently ignored
 #' @return A plot is produced and nothing is returned
 #' @examples

@@ -6,7 +6,7 @@
 \usage{
 plotInter(object, x, xvar, s, f.truth, interation.only = TRUE,
   truthonly = FALSE, npoints = 30, col = c("#56B4E9", "#D55E00"),
-  title_z = "", ...)
+  title_z = "", xlab, ylab, zlab, ...)
 }
 \arguments{
 \item{object}{a fitted \code{sail} object as produced by \code{sail()} or
@@ -47,6 +47,12 @@ for the estimated function and the second element is for the true function
 (if \code{f.truth} is specified). Default: c("#D55E00", "#009E73")}
 
 \item{title_z}{title for the plot, Default: ''}
+
+\item{xlab}{chracter for xlabel. if missing, variable name is used}
+
+\item{ylab}{chracter for ylabel. if missing, variable name is used}
+
+\item{zlab}{chracter for zlabel. if missing, variable name is used}
 
 \item{...}{currently ignored}
 }

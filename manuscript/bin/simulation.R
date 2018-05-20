@@ -1,6 +1,7 @@
 ## ---- simulation-results ----
 
-df <- readRDS("/home/sahir/git_repositories/sail/my_sims/simulation_results/apr_25_2018_results.rds")
+# df <- readRDS("/home/sahir/git_repositories/sail/my_sims/simulation_results/apr_25_2018_results.rds")
+df <- readRDS("C:/Users/sahir/Documents/git_repositories/sail/my_sims/simulation_results/apr_25_2018_results.rds")
 df <- df %>% separate(Model, into = c("simnames","betaE","corr","lambda.type","n","p","parameterIndex","SNR_2"),
                       sep = "/")
 
@@ -53,7 +54,7 @@ p1_mse <- ggplot(DT, aes(method, mse, fill = method)) +
          caption="") +
     # panel_border()+
     # background_grid()+
-    theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 20, hjust = 1))
+    theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1))
 
 # , legend.text=element_text(size=18)
 
@@ -62,3 +63,74 @@ reposition_legend(p1_mse, 'center', panel='panel-2-3')
 
 
 
+## ---- simulation-results-time ----
+
+DT[, table(time)]
+p1_time <- ggplot(DT, aes(method, nactive, fill = method)) +
+  ggplot2::geom_boxplot() +
+  # gg_sy +
+  # facet_rep_wrap(~scen, scales = "free", ncol = 2,
+  #                repeat.tick.labels = 'left',
+  #                labeller = as_labeller(appender,
+  #                                       default = label_parsed)) +
+  facet_rep_wrap(~scen, scales = "free", ncol = 2,
+                 repeat.tick.labels = 'left',
+                 labeller = as_labeller(appender,
+                                        default = label_parsed)) +
+  scale_fill_manual(values=RColorBrewer::brewer.pal(11, "Paired"), guide=guide_legend(ncol=3)) +
+  # ggplot2::labs(y = "Test Set MSE", title = "") + xlab("") +
+  labs(x="", y="Test Set MSE",
+       title="Simulation Study Results: Test Set MSE",
+       subtitle="Based on 200 simulations",
+       caption="") +
+  # panel_border()+
+  # background_grid()+
+  theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1))
+
+# , legend.text=element_text(size=18)
+
+
+reposition_legend(p1_time, 'center', panel='panel-2-3')
+
+
+## ---- simulation-results-tpr ----
+
+head(DT)
+DT_tpr_fpr <- melt(DT[, .(method, tpr, fpr, scen)], id.vars = c("method","scen"))
+colnames(DT)
+p1_tpr <- ggplot(DT_tpr_fpr, aes(x = method, y = value, fill = variable)) +
+  ggplot2::geom_boxplot() +
+  # gg_sy +
+  # facet_rep_wrap(~scen, scales = "free", ncol = 2,
+  #                repeat.tick.labels = 'left',
+  #                labeller = as_labeller(appender,
+  #                                       default = label_parsed)) +
+  facet_rep_wrap(~scen, scales = "free", ncol = 2,
+                 repeat.tick.labels = 'left',
+                 labeller = as_labeller(appender,
+                                        default = label_parsed)) +
+  scale_fill_manual(values=RColorBrewer::brewer.pal(11, "Paired"), guide=guide_legend(ncol=3)) +
+  # ggplot2::labs(y = "Test Set MSE", title = "") + xlab("") +
+  labs(x="", y="Test Set MSE",
+       title="Simulation Study Results: Test Set MSE",
+       subtitle="Based on 200 simulations",
+       caption="") +
+  # panel_border()+
+  # background_grid()+
+  theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1))
+
+# , legend.text=element_text(size=18)
+
+
+reposition_legend(p1_tpr, 'center', panel='panel-2-3')
+
+
+# create a data frame
+variety=rep(LETTERS[1:7], each=40)
+treatment=rep(c("high","low"),each=20)
+note=seq(1:280)+sample(1:150, 280, replace=T)
+data=data.frame(variety, treatment ,  note)
+
+# grouped boxplot
+ggplot(data, aes(x=variety, y=note, fill=treatment)) +
+  geom_boxplot()
