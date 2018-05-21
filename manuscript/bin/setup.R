@@ -5,8 +5,8 @@ if (!requireNamespace("pacman", quietly = TRUE)) {
 }
 
 # pacman::p_load_gh("sahirbhatnagar/sail", dependencies = FALSE)
-# devtools::load_all("/home/sahir/git_repositories/sail/")
-devtools::load_all("C:/Users/sahir/Documents/git_repositories/sail")
+devtools::load_all("/home/sahir/git_repositories/sail/")
+# devtools::load_all("C:/Users/sahir/Documents/git_repositories/sail")
 pacman::p_load(ggplot2)
 #pacman::p_load(doMC)
 #registerDoMC(cores = 8)
@@ -19,6 +19,7 @@ pacman::p_load(tidyr)
 pacman::p_load(data.table)
 # pacman::p_load(cowplot)
 pacman::p_load_gh("hrbrmstr/hrbrthemes")
+pacman::p_load(ggrepel)
 pacman::p_load(Cairo)
 pacman::p_load(extrafont)
 extrafont::loadfonts()

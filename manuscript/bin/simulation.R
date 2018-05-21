@@ -1,32 +1,44 @@
 ## ---- simulation-results ----
 
-# df <- readRDS("/home/sahir/git_repositories/sail/my_sims/simulation_results/apr_25_2018_results.rds")
-df <- readRDS("C:/Users/sahir/Documents/git_repositories/sail/my_sims/simulation_results/apr_25_2018_results.rds")
+df <- readRDS("/home/sahir/git_repositories/sail/my_sims/simulation_results/may_15_2018_results.rds")
+# df <- readRDS("C:/Users/sahir/Documents/git_repositories/sail/my_sims/simulation_results/apr_25_2018_results.rds")
 df <- df %>% separate(Model, into = c("simnames","betaE","corr","lambda.type","n","p","parameterIndex","SNR_2"),
                       sep = "/")
 
 DT <- as.data.table(df, stringsAsFactors = FALSE)
-
+DT <- DT[parameterIndex != "parameterIndex_4"]
 # DT[parameterIndex=="parameterIndex_1", table(Method)] %>% names %>% dput
 # DT[, table(Method)]
 
-DT[Method=="Adaptivesail", Method := "Asail"]
-DT[Method=="Adaptivesailweak", Method := "Asail weak"]
-DT[Method=="Adaptivelasso", Method := "Alasso"]
+DT[Method=="Adaptivesail", Method := "adaptive sail"]
+# DT[Method=="Adaptivesailweak", Method := "Asail weak"]
+DT[Method=="Adaptivelasso", Method := "adaptive lasso"]
 DT[Method=="sailweak", Method := "sail weak"]
-DT[Method=="sail", Method := "sail strong"]
-DT[Method=="Asail", Method := "Asail strong"]
-
+# DT[Method=="sail", Method := "sail strong"]
+# DT[Method=="Asail", Method := "Asail strong"]
+DT[Method=="linearsail", Method := "linear sail"]
+DT[, Method := droplevels(Method)]
 # DT[, table(Method)]
-
+# DT[, table(Method)] %>% names %>% dput
 appender <- function(string) TeX(paste(string))
 
-DT[, method := factor(Method, levels = c("lasso","Alasso","lassoBT", "GLinternet", "HierBasis", "SPAM", "gamsel",
-                                       "sail strong", "Asail strong", "sail weak", "Asail weak"))]
+# DT[, method := factor(Method, levels = c("lasso","Alasso","lassoBT", "GLinternet", "HierBasis", "SPAM", "gamsel",
+#                                        "sail strong", "Asail strong", "sail weak", "Asail weak"))]
+
+DT[, method := factor(Method, levels = c("lasso","adaptive lasso","lassoBT", "GLinternet", "HierBasis", "SPAM", "gamsel",
+                                         "sail", "adaptive sail",  "sail weak", "linear sail"))]
+
 # DT[, table(method)]
+# DT[, table(parameterIndex)]
 DT[, scenario:= as.numeric(as.character(stringr::str_extract_all(parameterIndex, "\\d", simplify = T)))]
-DT[, scen:=ifelse(scenario==1,"Strong Hierarchy",ifelse(scenario==2, "Weak Hierarchy", ifelse(scenario==3,"Interactions Only",ifelse(scenario==4, "Linear Effects", "Main Effects Only"))))]
-DT[, scen:=factor(scen, levels = c("Strong Hierarchy", "Weak Hierarchy","Interactions Only","Linear Effects", "Main Effects Only"))]
+# DT[, table(scenario)]
+DT[, scenario := replace(scenario, which(scenario==6), 4)]
+DT[, scen := case_when(scenario==1 ~ "Strong Hierarchy",
+                       scenario==2 ~ "Weak Hierarchy",
+                       scenario==3 ~ "Interactions Only",
+                       scenario==4 ~ "Linear Effects",
+                       scenario==5 ~ "Main Effects Only")]
+DT[, scen := factor(scen, levels = c("Strong Hierarchy", "Weak Hierarchy","Interactions Only","Linear Effects", "Main Effects Only"))]
 # DT$scen %>% table
 #Truth obeys strong hierarchy (parameterIndex = 1)
 #Truth obeys weak hierarchy (parameterIndex = 2)
@@ -34,6 +46,8 @@ DT[, scen:=factor(scen, levels = c("Strong Hierarchy", "Weak Hierarchy","Interac
 #Truth is linear (parameterIndex = 4)
 #Truth only has main effects (parameterIndex = 5)
 
+
+## ---- plot-mse-sim ----
 
 p1_mse <- ggplot(DT, aes(method, mse, fill = method)) +
     ggplot2::geom_boxplot() +
@@ -46,7 +60,7 @@ p1_mse <- ggplot(DT, aes(method, mse, fill = method)) +
                    repeat.tick.labels = 'left',
                    labeller = as_labeller(appender,
                                           default = label_parsed)) +
-    scale_fill_manual(values=RColorBrewer::brewer.pal(11, "Paired"), guide=guide_legend(ncol=3)) +
+    scale_fill_manual(values=RColorBrewer::brewer.pal(12, "Paired")[-11], guide=guide_legend(ncol=3)) +
     # ggplot2::labs(y = "Test Set MSE", title = "") + xlab("") +
     labs(x="", y="Test Set MSE",
          title="Simulation Study Results: Test Set MSE",
@@ -61,41 +75,126 @@ p1_mse <- ggplot(DT, aes(method, mse, fill = method)) +
 
 reposition_legend(p1_mse, 'center', panel='panel-2-3')
 
+## ---- plot-mse-nactive-sim ----
 
 
-## ---- simulation-results-time ----
+df_mse_nactive <- DT[, c("method","scen","mse","nactive")] %>%
+  group_by(method, scen) %>%
+  summarise(mean.mse = mean(mse, na.rm = TRUE), sd.mse = sd(mse, na.rm = TRUE),
+         mean.nactive = mean(nactive, na.rm = TRUE), sd.nactive = sd(nactive, na.rm = TRUE)) %>%
+  mutate(scen = case_when(scen == "Strong Hierarchy" ~ "Strong Hierarchy (|S_0| = 7)",
+                          scen == "Weak Hierarchy" ~ "Weak Hierarchy (|S_0| = 5)",
+                          scen == "Interactions Only" ~ "Interactions Only (|S_0| = 2)",
+                          scen == "Linear Effects" ~ "Linear Effects (|S_0| = 7)",
+                          scen == "Main Effects Only" ~ "Main Effects Only (|S_0| = 5)")) %>%
+  mutate(scen = factor(scen, levels = c("Strong Hierarchy (|S_0| = 7)",
+                                        "Weak Hierarchy (|S_0| = 5)",
+                                        "Interactions Only (|S_0| = 2)",
+                                        "Linear Effects (|S_0| = 7)",
+                                        "Main Effects Only (|S_0| = 5)")))
 
-DT[, table(time)]
-p1_time <- ggplot(DT, aes(method, nactive, fill = method)) +
-  ggplot2::geom_boxplot() +
-  # gg_sy +
-  # facet_rep_wrap(~scen, scales = "free", ncol = 2,
-  #                repeat.tick.labels = 'left',
-  #                labeller = as_labeller(appender,
-  #                                       default = label_parsed)) +
+p1_mse_nactive <- ggplot(data = df_mse_nactive, aes(x = mean.nactive, y = mean.mse, color = method, label = method)) +
+  geom_point(size = 2.1) +
+  # geom_text_repel() +
+  geom_text_repel(
+    nudge_x      = 0.15,
+    direction    = "y",
+    hjust        = 0,
+    segment.size = 0.2
+  ) +
+  geom_errorbar(aes(ymin = mean.mse - sd.mse, ymax = mean.mse + sd.mse), size = 1.1) +
+  geom_errorbarh(aes(xmin = mean.nactive - sd.nactive, xmax = mean.nactive + sd.nactive), size = 1.1) +
   facet_rep_wrap(~scen, scales = "free", ncol = 2,
                  repeat.tick.labels = 'left',
                  labeller = as_labeller(appender,
                                         default = label_parsed)) +
-  scale_fill_manual(values=RColorBrewer::brewer.pal(11, "Paired"), guide=guide_legend(ncol=3)) +
-  # ggplot2::labs(y = "Test Set MSE", title = "") + xlab("") +
-  labs(x="", y="Test Set MSE",
-       title="Simulation Study Results: Test Set MSE",
+  # scale_color_brewer(palette = "Dark2")+
+  scale_color_manual(values=RColorBrewer::brewer.pal(12, "Paired")[-11], guide=guide_legend(ncol=3)) +
+  labs(x="Number of active variables", y="Test Set MSE",
+       title="Test Set MSE vs. Number of Active Variable (Mean +/- 1 SD)",
        subtitle="Based on 200 simulations",
        caption="") +
-  # panel_border()+
-  # background_grid()+
+  theme_ipsum_rc(axis_title_just = "bt") +
+  theme(legend.position = "right")
+
+reposition_legend(p1_mse_nactive, 'center', panel='panel-2-3')
+
+# pacman::p_load(psych)
+# affect.mat2 <- describeBy(DT[, c("mse","nactive")], group = list(DT$method, DT$scen), mat = TRUE)
+# dev.off()
+# par(family="serif")
+# error.crosses(affect.mat2[c(56:66),],
+#               affect.mat2[c(1:11),],
+#               labels=unique(affect.mat2$group1),
+#               xlab="Number of Active Variables",
+#               main = "ADNI Data: Means (+/- 1 SD) from 200 Train/Validate/Test Splits",
+#               sd = TRUE,
+#               cex.lab = 1.4,
+#               cex.axis = 1.4,
+#               cex.main = 1.5,
+#               # xlim = c(0, 34),
+#               ylab="Test Set MSE",
+#               colors = RColorBrewer::brewer.pal(11, "Paired"),
+#               pch=16,cex=2)
+
+## ---- plot-tpr-sim ----
+
+p1_tpr <- ggplot(DT, aes(method, tpr, fill = method)) +
+  ggplot2::geom_boxplot() +
+  facet_rep_wrap(~scen, scales = "free", ncol = 2,
+                 repeat.tick.labels = 'left',
+                 labeller = as_labeller(appender,
+                                        default = label_parsed)) +
+  scale_fill_manual(values=RColorBrewer::brewer.pal(12, "Paired")[-11], guide=guide_legend(ncol=3)) +
+  labs(x="", y="True Positive Rate",
+       title="Simulation Study Results: True Positive Rate",
+       subtitle="Based on 200 simulations",
+       caption="") +
   theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1))
 
-# , legend.text=element_text(size=18)
+reposition_legend(p1_tpr, 'center', panel='panel-2-3')
 
 
-reposition_legend(p1_time, 'center', panel='panel-2-3')
+## ---- plot-fpr-sim ----
+
+# DT[, table(time)]
+DT[fpr==1, fpr:=NA] # this is skewing the plots, so we remove them and set to NA
+p1_fpr <- ggplot(DT, aes(method, fpr, fill = method)) +
+  ggplot2::geom_boxplot() +
+  facet_rep_wrap(~scen, scales = "free", ncol = 2,
+                 repeat.tick.labels = 'left',
+                 labeller = as_labeller(appender,
+                                        default = label_parsed)) +
+  scale_fill_manual(values=RColorBrewer::brewer.pal(12, "Paired")[-11], guide=guide_legend(ncol=3)) +
+  labs(x="", y="False Positive Rate",
+       title="Simulation Study Results: False Positive Rate",
+       subtitle="Based on 200 simulations",
+       caption="") +
+   theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1))
 
 
-## ---- simulation-results-tpr ----
+reposition_legend(p1_fpr, 'center', panel='panel-2-3')
 
-head(DT)
+## ---- plot-nactive-sim ----
+
+p1_nactive <- ggplot(DT, aes(method, nactive, fill = method)) +
+  ggplot2::geom_boxplot() +
+  facet_rep_wrap(~scen, scales = "free", ncol = 2,
+                 repeat.tick.labels = 'left',
+                 labeller = as_labeller(appender,
+                                        default = label_parsed)) +
+  scale_fill_manual(values=RColorBrewer::brewer.pal(12, "Paired")[-11], guide=guide_legend(ncol=3)) +
+  labs(x="", y="Number of active variables",
+       title="Simulation Study Results: Number of active variables",
+       subtitle="Based on 200 simulations",
+       caption="") +
+  theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1))
+
+
+reposition_legend(p1_nactive, 'center', panel='panel-2-3')
+
+## ---- plot-fpr-tpr-sim ----
+
 DT_tpr_fpr <- melt(DT[, .(method, tpr, fpr, scen)], id.vars = c("method","scen"))
 colnames(DT)
 p1_tpr <- ggplot(DT_tpr_fpr, aes(x = method, y = value, fill = variable)) +
@@ -125,12 +224,3 @@ p1_tpr <- ggplot(DT_tpr_fpr, aes(x = method, y = value, fill = variable)) +
 reposition_legend(p1_tpr, 'center', panel='panel-2-3')
 
 
-# create a data frame
-variety=rep(LETTERS[1:7], each=40)
-treatment=rep(c("high","low"),each=20)
-note=seq(1:280)+sample(1:150, 280, replace=T)
-data=data.frame(variety, treatment ,  note)
-
-# grouped boxplot
-ggplot(data, aes(x=variety, y=note, fill=treatment)) +
-  geom_boxplot()
