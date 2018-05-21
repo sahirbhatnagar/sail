@@ -859,7 +859,7 @@ The true component functions are the same as in~\citep{lin2006component,huang201
 
 
 
-\begin{comment}
+%\begin{comment}
 \begin{figure}[H]
 	\centering
 	\includegraphics[scale=0.61]{/home/sahir/git_repositories/sail/my_sims/figures/sail_main_eff_paramIndex1_200sims.pdf}
@@ -893,7 +893,7 @@ The true component functions are the same as in~\citep{lin2006component,huang201
 	\includegraphics[scale=0.61]{/home/sahir/git_repositories/sail/my_sims/figures/upset_selection_sail_paramIndex1-2-2.pdf}
 	\caption{text}\label{fig:upset}
 \end{figure}
-\end{comment}
+%\end{comment}
 
 
 \section{Real Data Application}
