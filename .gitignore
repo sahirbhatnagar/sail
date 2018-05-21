@@ -19,5 +19,5 @@ goals3.png
 mcgillsims/
 log/
 manuscript/source/cache/*
+.nfs*
 sail.Rproj
-

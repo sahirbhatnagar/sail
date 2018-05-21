@@ -81,12 +81,27 @@ gendataPaper <- function(n, p, corr = 0,
     f4.inter = function(x, e) e * f4(x)
 
   } else {
-    f1 <- function(x) -1.5 * (x - 2)
-    f2 <- function(x)  1 * (x + 1)
-    f3 <- function(x)  1.5 * x
-    f4 <- function(x)  -2 * x
+    # f1 <- function(x) -1.5 * (x - 2)
+    # f2 <- function(x)  1 * (x + 1)
+    # f3 <- function(x)  1.5 * x
+    # f4 <- function(x)  -2 * x
+    # f3.inter <- function(x, e) e * f3(x)
+    # f4.inter <- function(x, e) -1.5 * e * f4(x)
+
+    # f1 <- function(x) 2 * x
+    # f2 <- function(x)  -2 * (x + 1)
+    # f3 <- function(x)  2.5 * x
+    # f4 <- function(x)  -2.5 * (x - 2)
+    # f3.inter <- function(x, e) e * f3(x)
+    # f4.inter <- function(x, e) e * f4(x)
+
+    f1 <- function(x) 5 * x
+    f2 <- function(x)  3 * (x + 1)
+    f3 <- function(x)  4 * x
+    f4 <- function(x)  6 * (x - 2)
     f3.inter <- function(x, e) e * f3(x)
-    f4.inter <- function(x, e) -1.5 * e * f4(x)
+    f4.inter <- function(x, e) e * f4(x)
+
   }
   # error
   error <- stats::rnorm(n)
@@ -268,7 +283,7 @@ gendata <- function(n, p, corr, E = truncnorm::rtruncnorm(n, a = -1, b = 1),
     nonlinear <- TRUE
     interactions <- TRUE
     causal <- c("X3:E", "X4:E")
-  } else if (parameterIndex == 4) { # 2
+  } else if (parameterIndex %in% c(4,6)) { # 2
     hierarchy <- "strong"
     nonlinear <- FALSE
     interactions <- TRUE

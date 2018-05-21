@@ -10,29 +10,127 @@ pacman::p_load(splines)
 pacman::p_load(foreach)
 pacman::p_load(doMC)
 pacman::p_load(glmnet)
+pacman::p_load_current_gh('sahirbhatnagar/glinternet')
 pacman::p_load(DataExplorer)
+pacman::p_load(LassoBacktracking)
 # pacman::p_load(mice)
 
 
 # DT <- xlsx::read.xlsx("rda/For Sahir.xlsx", sheetIndex = 1)
-DT <- readRDS("rda/scott.rds") %>% as.data.table()
+DT <- readRDS("rda/scott/scott.rds") %>% as.data.table()
+rm_vars <- paste0("std2_",c("com_100m","com_200m","com_300m",
+             "gov_100m",
+             "ind_100m",
+             "highway_100m", "highway_200m", "highway_300m",
+             "water_100m", "water_200m", "water_300m",
+             "rail_100m","rail_200m"))
 DT[, hist(ros_summer)]
 DT[, hist(ros_annual)]
 x_vars <- DT %>% colnames() %>% grep("std2", . , value = TRUE)
+x_vars <- setdiff(x_vars, rm_vars)
 X <- DT[, ..x_vars]
 # str(X)
 Xc <- X[complete.cases(X),] %>% as.matrix()
-Y <- DT[complete.cases(X)]$bc_ngm3_s
 
-cvfitlasso <- cv.glmnet(Xc, Y, alpha = 0.5, nfolds = 5)
+Y <- DT[complete.cases(X)]$ros_annual
+# Y <- DT[complete.cases(X)]$ros_summer
+
+help(glmnet)
+set.seed(123456)
+cvfitlasso <- cv.glmnet(Xc, Y, alpha = 1, nfolds = 10)
 plot(cvfitlasso)
-coef(cvfitlasso, s = "lambda.min")
-cvfitlasso$cvm[which(cvfitlasso$lambda.min==cvfitlasso$lambda)]
+# coef(cvfitlasso, s = "lambda.min")
+sprintf("%.2f (%.2f, %.2f)",
+        cvfitlasso$cvm[which(cvfitlasso$lambda.min==cvfitlasso$lambda)],
+        cvfitlasso$cvlo[which(cvfitlasso$lambda.min==cvfitlasso$lambda)],
+        cvfitlasso$cvup[which(cvfitlasso$lambda.min==cvfitlasso$lambda)])
+
+cor(predict(cvfitlasso, s="lambda.min", newx = Xc), Y)^2
+
+set.seed(123456)
+which(colnames(Xc)=="std2_pop_100m")
+cvglinternet <- glinternet.cv(X = Xc, Y = Y,nFolds = 10,
+                              numLevels = rep(1, ncol(Xc)),
+                              family = "gaussian",
+                              interactionCandidates = c(71),
+                              verbose = T)
+tc <- coef(cvglinternet, lambdaType = "lambdaHat")
+
+(mains <- colnames(Xc)[tc$mainEffects$cont])
+(inters <- paste0(colnames(Xc)[tc$interactions$contcont[,2]],":E"))
+(cvmse <- cvglinternet$cvErr[which(cvglinternet$lambdaHat==cvglinternet$lambda)])
+plot(cvglinternet)
+
+sprintf("%.2f (%.2f, %.2f)",
+cvglinternet$cvErr[which(cvglinternet$lambdaHat==cvglinternet$lambda)],
+cvglinternet$cvErr[which(cvglinternet$lambdaHat==cvglinternet$lambda)]-cvglinternet$cvErrStd[which(cvglinternet$lambdaHat==cvglinternet$lambda)],
+cvglinternet$cvErr[which(cvglinternet$lambdaHat==cvglinternet$lambda)]+cvglinternet$cvErrStd[which(cvglinternet$lambdaHat==cvglinternet$lambda)])
+abline(h=310.96)
 
 
+plot((predict(cvglinternet, X = Xc) - Y)^2)
+abline(h=0)
+plot(cvglinternet)
+abline(h=78.255)
+plot(predict(cvglinternet, X = Xc), Y)
+abline(a=0,b=1)
+cor(predict(cvglinternet, X = Xc), Y)^2
+
+
+
+
+
+set.seed(123456)
+fitBT <- cvLassoBT(x = Xc,
+                   y = Y, iter_max=10, nperms=1, nfolds = 5, nlambda = 100)
+coefBT <- as.matrix(predict(fitBT$BT_fit, type = "coef",
+                            s = fitBT$lambda[fitBT$cv_opt[1]], iter = fitBT$cv_opt[2]))
+nzcoef <- coefBT[sail:::nonzero(coefBT),,drop=F]
+fitBT$cv_opt_err
+
+cor(predict(fitBT$BT_fit, type = "resp",
+            s = fitBT$lambda[fitBT$cv_opt[1]], iter = fitBT$cv_opt[2]), Y)^2
+plot(predict(fitBT$BT_fit, type = "resp",
+            s = fitBT$lambda[fitBT$cv_opt[1]], iter = fitBT$cv_opt[2]), Y)
+abline(a=0,b=1)
+
+# f.basis <- function(i) splines::bs(i, degree = 3)
+f.basis <- function(i) i
+devtools::load_all()
+
+E <- DT[complete.cases(X)]$std2_pop_100m
+Xcc <- Xc[, -which(colnames(Xc)=="std2_pop_100m")]
+registerDoMC(cores = 10)
+set.seed(123456)
+cvfit03 <- cv.sail(x = Xcc, y = Y, e = E, basis = f.basis, alpha = 0.5,
+                   maxit = 1000,
+                   # thresh = 5e-03,
+                   # fdev = 1e-10,
+                   # dfmax = 20,
+                   grouped = FALSE,
+                   strong = TRUE,
+                   verbose = 2, nfolds = 10, parallel = TRUE)
+# saveRDS(cvfit03, file = "rda/scott/cvfit_alpha01_groupedFalse_strongFalse_nfolds5_bs3_Estd2_pop_100m.rds")
+plot(cvfit03)
+plot(cvfit03$sail.fit)
+predict(cvfit03, type="non", s = "lambda.min")
+
+sprintf("%.2f (%.2f, %.2f)",
+        cvfit03$cvm[which(cvfit03$lambda.min==cvfit03$lambda)],
+        cvfit03$cvlo[which(cvfit03$lambda.min==cvfit03$lambda)],
+        cvfit03$cvup[which(cvfit03$lambda.min==cvfit03$lambda)])
+
+cor(predict(cvfit03, s="lambda.min"), Y)^2
+plot(predict(cvfit03, s="lambda.min"), Y)
+mean((predict(cvfit03, s="lambda.min")- Y)^2)
+
+abline(a=0,b=1)
+
+tf <- readRDS("rda/scott/cvfit_alpha03_groupedFalse_strongFalse_nfolds5_bs3_Estd2_pop_100m.rds")
+plot(tf)
+tf$cvm[which(tf$lambda.min==tf$lambda)]
+cor(predict(tf, s="lambda.min"), Y)^2
 # E=population density ----------------------------------------------------
-
-
 
 # E <- DT[complete.cases(X)]$std2_d_airport_yyz
 # Xcc <- Xc[, -which(colnames(Xc)=="std2_d_airport_yyz")]
@@ -40,8 +138,10 @@ cvfitlasso$cvm[which(cvfitlasso$lambda.min==cvfitlasso$lambda)]
 # Xcc <- Xc[, -which(colnames(Xc)=="std2_highway_300m")]
 # E <- DT[complete.cases(X)]$std2_pop_100m
 # Xcc <- Xc[, -which(colnames(Xc)=="std2_pop_100m")]
-E <- DT[complete.cases(X)]$std2_highway_100m
-Xcc <- Xc[, -which(colnames(Xc)=="std2_highway_100m")]
+E <- DT[complete.cases(X)]$std2_majrd_100m
+Xcc <- Xc[, -which(colnames(Xc)=="std2_majrd_100m")]
+# E <- DT[complete.cases(X)]$std2_build_height_1000m
+# Xcc <- Xc[, -which(colnames(Xc)=="std2_build_height_1000m")]
 # pacman::p_load(DataExplorer)
 # DataExplorer::HistogramContinuous(DT[, grep("build_heigh", colnames(DT), value = T), with=F])
 # apply(as.matrix(DT[, grep("build_heigh", colnames(DT), value = T), with=F]), 2, sd, na.rm=TRUE)
@@ -49,10 +149,10 @@ Xcc <- Xc[, -which(colnames(Xc)=="std2_highway_100m")]
 f.basis <- function(i) splines::bs(i, degree = 3)
 # f.basis <- function(i) i
 fit <- sail(x = Xcc, y = Y, e = E, basis = f.basis, alpha = 0.5,
-            strong = TRUE, verbose = 2, nlambda = 100)
+            strong = FALSE, verbose = 2, nlambda = 100)
 plot(fit)
 coef(fit)[nonzero(coef(fit)),]
-registerDoMC(cores = 5)
+
 cvfit02 <- cv.sail(x = Xcc, y = Y, e = E, basis = f.basis, alpha = 0.2,
                    strong = FALSE, verbose = 2, nfolds = length(Y), parallel = TRUE)
 cvfit03 <- cv.sail(x = Xcc, y = Y, e = E, basis = f.basis, alpha = 0.3,
