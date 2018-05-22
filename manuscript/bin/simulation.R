@@ -63,7 +63,7 @@ p1_mse <- ggplot(DT, aes(method, mse, fill = method)) +
     scale_fill_manual(values=RColorBrewer::brewer.pal(12, "Paired")[-11], guide=guide_legend(ncol=3)) +
     # ggplot2::labs(y = "Test Set MSE", title = "") + xlab("") +
     labs(x="", y="Test Set MSE",
-         title="Simulation Study Results: Test Set MSE",
+         title="Test Set MSE",
          subtitle="Based on 200 simulations",
          caption="") +
     # panel_border()+
@@ -95,9 +95,16 @@ df_mse_nactive <- DT[, c("method","scen","mse","nactive")] %>%
 
 p1_mse_nactive <- ggplot(data = df_mse_nactive, aes(x = mean.nactive, y = mean.mse, color = method, label = method)) +
   geom_point(size = 2.1) +
-  # geom_text_repel() +
   geom_text_repel(
-    nudge_x      = 0.15,
+    data = subset(df_mse_nactive, mean.nactive < 100),
+    nudge_x      = 40,
+    direction    = "y",
+    hjust        = 0,
+    segment.size = 0.2
+  ) +
+  geom_text_repel(
+    data = subset(df_mse_nactive, mean.nactive >= 100),
+    nudge_x      = 5,
     direction    = "y",
     hjust        = 0,
     segment.size = 0.2
@@ -147,7 +154,7 @@ p1_tpr <- ggplot(DT, aes(method, tpr, fill = method)) +
                                         default = label_parsed)) +
   scale_fill_manual(values=RColorBrewer::brewer.pal(12, "Paired")[-11], guide=guide_legend(ncol=3)) +
   labs(x="", y="True Positive Rate",
-       title="Simulation Study Results: True Positive Rate",
+       title="True Positive Rate",
        subtitle="Based on 200 simulations",
        caption="") +
   theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1))
@@ -167,7 +174,7 @@ p1_fpr <- ggplot(DT, aes(method, fpr, fill = method)) +
                                         default = label_parsed)) +
   scale_fill_manual(values=RColorBrewer::brewer.pal(12, "Paired")[-11], guide=guide_legend(ncol=3)) +
   labs(x="", y="False Positive Rate",
-       title="Simulation Study Results: False Positive Rate",
+       title="False Positive Rate",
        subtitle="Based on 200 simulations",
        caption="") +
    theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1))
@@ -185,7 +192,7 @@ p1_nactive <- ggplot(DT, aes(method, nactive, fill = method)) +
                                         default = label_parsed)) +
   scale_fill_manual(values=RColorBrewer::brewer.pal(12, "Paired")[-11], guide=guide_legend(ncol=3)) +
   labs(x="", y="Number of active variables",
-       title="Simulation Study Results: Number of active variables",
+       title="Number of active variables",
        subtitle="Based on 200 simulations",
        caption="") +
   theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1))
@@ -193,34 +200,76 @@ p1_nactive <- ggplot(DT, aes(method, nactive, fill = method)) +
 
 reposition_legend(p1_nactive, 'center', panel='panel-2-3')
 
-## ---- plot-fpr-tpr-sim ----
 
-DT_tpr_fpr <- melt(DT[, .(method, tpr, fpr, scen)], id.vars = c("method","scen"))
-colnames(DT)
-p1_tpr <- ggplot(DT_tpr_fpr, aes(x = method, y = value, fill = variable)) +
-  ggplot2::geom_boxplot() +
-  # gg_sy +
-  # facet_rep_wrap(~scen, scales = "free", ncol = 2,
-  #                repeat.tick.labels = 'left',
-  #                labeller = as_labeller(appender,
-  #                                       default = label_parsed)) +
+
+
+## ---- plot-tpr-fpr-sim ----
+
+DT[fpr==1, fpr:=NA] # this is skewing the plots, so we remove them and set to NA
+df_tpr_fpr <- DT[, c("method","scen","tpr","fpr")] %>%
+  group_by(method, scen) %>%
+  summarise(mean.tpr = mean(tpr, na.rm = TRUE), sd.tpr = sd(tpr, na.rm = TRUE),
+            mean.fpr = mean(fpr, na.rm = TRUE), sd.fpr = sd(fpr, na.rm = TRUE)) %>%
+  mutate(scen = case_when(scen == "Strong Hierarchy" ~ "Strong Hierarchy (|S_0| = 7)",
+                          scen == "Weak Hierarchy" ~ "Weak Hierarchy (|S_0| = 5)",
+                          scen == "Interactions Only" ~ "Interactions Only (|S_0| = 2)",
+                          scen == "Linear Effects" ~ "Linear Effects (|S_0| = 7)",
+                          scen == "Main Effects Only" ~ "Main Effects Only (|S_0| = 5)")) %>%
+  mutate(scen = factor(scen, levels = c("Strong Hierarchy (|S_0| = 7)",
+                                        "Weak Hierarchy (|S_0| = 5)",
+                                        "Interactions Only (|S_0| = 2)",
+                                        "Linear Effects (|S_0| = 7)",
+                                        "Main Effects Only (|S_0| = 5)")))
+
+p1_tpr_fpr <- ggplot(data = df_tpr_fpr, aes(x = mean.fpr, y = mean.tpr, color = method, label = method)) +
+  geom_point(size = 2.1) +
+  # geom_text_repel() +
+  geom_text_repel(
+    data = subset(df_tpr_fpr, mean.fpr < 0.05),
+    nudge_x      = 0.02,
+    direction    = "y",
+    hjust        = 0,
+    segment.size = 0.2
+  ) +
+  geom_text_repel(
+    data = subset(df_tpr_fpr, mean.fpr > 0.05),
+    nudge_x      = 0.00,
+    direction    = "y",
+    hjust        = 0,
+    segment.size = 0.2
+  ) +
+  geom_errorbar(aes(ymin = mean.tpr - sd.tpr, ymax = mean.tpr + sd.tpr), size = 1.1) +
+  geom_errorbarh(aes(xmin = mean.fpr - sd.fpr, xmax = mean.fpr + sd.fpr), size = 1.1) +
   facet_rep_wrap(~scen, scales = "free", ncol = 2,
                  repeat.tick.labels = 'left',
                  labeller = as_labeller(appender,
                                         default = label_parsed)) +
-  scale_fill_manual(values=RColorBrewer::brewer.pal(11, "Paired"), guide=guide_legend(ncol=3)) +
-  # ggplot2::labs(y = "Test Set MSE", title = "") + xlab("") +
-  labs(x="", y="Test Set MSE",
-       title="Simulation Study Results: Test Set MSE",
+  scale_color_manual(values=RColorBrewer::brewer.pal(12, "Paired")[-11], guide=guide_legend(ncol=3)) +
+  labs(x="False positive rate", y="True positive rate",
+       title="True Positive Rate vs. False Positive Rate (Mean +/- 1 SD)",
        subtitle="Based on 200 simulations",
        caption="") +
-  # panel_border()+
-  # background_grid()+
-  theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1))
+  theme_ipsum_rc(axis_title_just = "bt") +
+  theme(legend.position = "right")
 
-# , legend.text=element_text(size=18)
+reposition_legend(p1_tpr_fpr, 'center', panel='panel-2-3')
 
 
-reposition_legend(p1_tpr, 'center', panel='panel-2-3')
+## ---- plot-fpr-tpr-boxplot-sim ----
+
+# DT_tpr_fpr <- melt(DT[, .(method, tpr, fpr, scen)], id.vars = c("method","scen"))
+# p1_tpr <- ggplot(DT_tpr_fpr, aes(x = method, y = value, fill = variable)) +
+#   ggplot2::geom_boxplot() +
+#   facet_rep_wrap(~scen, scales = "free", ncol = 2,
+#                  repeat.tick.labels = 'left',
+#                  labeller = as_labeller(appender,
+#                                         default = label_parsed)) +
+#   scale_fill_manual(values=RColorBrewer::brewer.pal(11, "Paired"), guide=guide_legend(ncol=3)) +
+#   labs(x="", y="Test Set MSE",
+#        title="Simulation Study Results: Test Set MSE",
+#        subtitle="Based on 200 simulations",
+#        caption="") +
+#   theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1))
+# reposition_legend(p1_tpr, 'center', panel='panel-2-3')
 
 

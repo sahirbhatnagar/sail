@@ -190,6 +190,7 @@ knitr::opts_knit$set(eval.after = 'fig.cap') # for captions to be evaluated afte
 knitr::read_chunk("../bin/setup.R")
 knitr::read_chunk("../bin/intro.R")
 knitr::read_chunk("../bin/simulation.R")
+#knitr::read_chunk("../../rda/rda_ADNI_v2")
 @
 
 <<packages, eval=T>>=
@@ -854,6 +855,10 @@ The true component functions are the same as in~\citep{lin2006component,huang201
 <<plot-fpr-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="False positive rate results.", eval=T>>=
 @
 
+
+<<plot-tpr-fpr-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="True positive rate vs. false positive rate.", eval=T>>=
+@
+
 <<plot-nactive-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Number of active variables results.", eval=T>>=
 @
 
@@ -897,6 +902,14 @@ The true component functions are the same as in~\citep{lin2006component,huang201
 
 
 \section{Real Data Application}
+
+\subsection{ADNI}
+
+<<load-ADNI-data, eval=T, results = 'hide'>>=
+@
+
+<<get-best-sail-model, eval=T, results = 'hide'>>=
+@
 
 
 
