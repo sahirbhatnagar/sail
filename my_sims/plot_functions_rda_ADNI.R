@@ -72,7 +72,9 @@ plotMainADNI <- function(object, x, design, xvar, s, f.truth, col = c("#D55E00",
 plotInterADNI <- function(object, x, xvar, s,
                           design, # this contains user defined expand matrix
                           e, # this is E vector for whole sample
+                          stratify = FALSE, # stratify by APOE?
                           apoe = TRUE,
+                          ...,
                           xlab = "supramarginal gyrus right", ylab = "Mini-Mental State Examination",
                           legend.position = "bottomleft", main = "", rug = TRUE,
                           color = sail:::cbbPalette[c(6,4,7)], legend = TRUE) {
@@ -107,9 +109,14 @@ plotInterADNI <- function(object, x, xvar, s,
 
 
   # f.hat <- drop(a0 + design.mat %*% betas)
-  f.hat <- drop(originalE * as.vector(betaE) + apoee4 * as.vector(betaAPOE) +
-                  design.mat.main %*% betas + design.mat.int %*% alphas +
-                  apoee4inter * as.vector(betaAPOEinter))
+  f.hat <- if (!stratify) {
+    drop(originalE * as.vector(betaE) +
+           design.mat.main %*% betas + design.mat.int %*% alphas)
+  } else {
+    drop(originalE * as.vector(betaE) + apoee4 * as.vector(betaAPOE) +
+           design.mat.main %*% betas + design.mat.int %*% alphas +
+           apoee4inter * as.vector(betaAPOEinter))
+  }
   # f.hat <- drop(originalE * as.vector(betaE)  + design.mat.int %*% alphas)
   # f.hat <- drop(design.mat.int %*% alphas)
   ylims <- range(f.hat)
@@ -147,16 +154,15 @@ plotInterADNI <- function(object, x, xvar, s,
   ad_index0 <- which(apoee4==apoe_no & originalE==ad)
   ad_index1 <- which(apoee4==apoe_yes & originalE==ad)
 
-
   # browser()
   # 1=control, 2=MCI (Mild Cognitive Impairment) and 3=Alzeimer Disease
-  # cont_index <- which(originalE==control)
-  # mci_index <- which(originalE==mci)
-  # ad_index <- which(originalE==ad)
-  #
-  # cont_pred <- f.hat[cont_index]
-  # mci_pred <- f.hat[mci_index]
-  # ad_pred <- f.hat[ad_index]
+  cont_index <- which(originalE==control)
+  mci_index <- which(originalE==mci)
+  ad_index <- which(originalE==ad)
+
+  cont_pred <- f.hat[cont_index]
+  mci_pred <- f.hat[mci_index]
+  ad_pred <- f.hat[ad_index]
 
   cont_pred0 <- f.hat[cont_index0]
   cont_pred1 <- f.hat[cont_index1]
@@ -166,7 +172,7 @@ plotInterADNI <- function(object, x, xvar, s,
   ad_pred1 <- f.hat[ad_index1]
 
   min.length.top <- range(f.hat)[1] ; max.length.top <- range(f.hat)[2]
-  par(mai=c(1,1,1,0.2))
+  # par(mai=c(1,1,1,0.2))
   plot(originalX, f.hat,
        pch = 19,
        ylab = ylab,
@@ -175,25 +181,33 @@ plotInterADNI <- function(object, x, xvar, s,
        bty="n",
        xaxt="n",
        type = "n",
-       cex.lab = 2,
-       cex.axis = 2,
-       cex = 2,
+       # cex.lab = 2,
+       # cex.axis = 2,
+       # cex = 2,
        main = main,
-       cex.main = 2.5,
+       # cex.main = 2.5,
        # ylim = c(min.length.top-3, max.length.top+3),
-       ylim = ylims)
-  axis(1, labels = T, cex.axis = 2)
+       # ylim = ylims,
+       ...)
+  # axis(1, labels = T, cex.axis = 2)
+  axis(1, labels = T)
 
-  if (apoe) {
-    # points(X[exposed_index,original_name], e1, pch = 19, col = color[2], cex = 1.5)
-    # points(X[unexposed_index,original_name], e0, pch = 19, col = color[1], cex = 1.5)
-    lines(originalX[cont_index1][order(originalX[cont_index1])], cont_pred1[order(originalX[cont_index1])], col = color[1], lwd = 3)
-    lines(originalX[mci_index1][order(originalX[mci_index1])], mci_pred1[order(originalX[mci_index1])], col = color[2], lwd = 3)
-    lines(originalX[ad_index1][order(originalX[ad_index1])], ad_pred1[order(originalX[ad_index1])], col = color[3], lwd = 3)
+  if (!stratify) {
+    lines(originalX[cont_index][order(originalX[cont_index])], cont_pred[order(originalX[cont_index])], col = color[1], lwd = 3)
+    lines(originalX[mci_index][order(originalX[mci_index])], mci_pred[order(originalX[mci_index])], col = color[2], lwd = 3)
+    lines(originalX[ad_index][order(originalX[ad_index])], ad_pred[order(originalX[ad_index])], col = color[3], lwd = 3)
   } else {
-    lines(originalX[cont_index0][order(originalX[cont_index0])], cont_pred0[order(originalX[cont_index0])], col = color[1], lwd = 3)
-    lines(originalX[mci_index0][order(originalX[mci_index0])], mci_pred0[order(originalX[mci_index0])], col = color[2], lwd = 3)
-    lines(originalX[ad_index0][order(originalX[ad_index0])], ad_pred0[order(originalX[ad_index0])], col = color[3], lwd = 3)
+    if (apoe) {
+      # points(X[exposed_index,original_name], e1, pch = 19, col = color[2], cex = 1.5)
+      # points(X[unexposed_index,original_name], e0, pch = 19, col = color[1], cex = 1.5)
+      lines(originalX[cont_index1][order(originalX[cont_index1])], cont_pred1[order(originalX[cont_index1])], col = color[1], lwd = 3)
+      lines(originalX[mci_index1][order(originalX[mci_index1])], mci_pred1[order(originalX[mci_index1])], col = color[2], lwd = 3)
+      lines(originalX[ad_index1][order(originalX[ad_index1])], ad_pred1[order(originalX[ad_index1])], col = color[3], lwd = 3)
+    } else {
+      lines(originalX[cont_index0][order(originalX[cont_index0])], cont_pred0[order(originalX[cont_index0])], col = color[1], lwd = 3)
+      lines(originalX[mci_index0][order(originalX[mci_index0])], mci_pred0[order(originalX[mci_index0])], col = color[2], lwd = 3)
+      lines(originalX[ad_index0][order(originalX[ad_index0])], ad_pred0[order(originalX[ad_index0])], col = color[3], lwd = 3)
+    }
   }
 
   # if (legend) legend("bottomright", c("APOE = 1","APOE = 0"), col = color[2:1], pch = 19, cex = 2, bty = "n")

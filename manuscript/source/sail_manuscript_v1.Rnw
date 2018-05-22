@@ -190,7 +190,7 @@ knitr::opts_knit$set(eval.after = 'fig.cap') # for captions to be evaluated afte
 knitr::read_chunk("../bin/setup.R")
 knitr::read_chunk("../bin/intro.R")
 knitr::read_chunk("../bin/simulation.R")
-#knitr::read_chunk("../../rda/rda_ADNI_v2")
+knitr::read_chunk("../bin/ADNI.R")
 @
 
 <<packages, eval=T>>=
@@ -912,6 +912,15 @@ The true component functions are the same as in~\citep{lin2006component,huang201
 @
 
 
+<<plot-main-adni, fig.asp=1, fig.width=12, fig.heigh=8, fig.pos = 'H', fig.cap="Estimated main effect component functions by \\texttt{sail} for ADNI data.", eval=T>>=
+@
+
+<<plot-inter-adni, fig.asp=1, fig.width=10, fig.heigh=7, fig.pos = 'H', fig.cap="Estimated interaction effects by \texttt{sail} for ADNI data.", eval=T>>=
+@
+
+
+<<error-crosses-adni, fig.asp=1, fig.width=9, fig.heigh=7, fig.pos = 'H', fig.cap="Estimated interaction effects by \texttt{sail} for ADNI data.", eval=T>>=
+@
 
 %\section{Application}
 
