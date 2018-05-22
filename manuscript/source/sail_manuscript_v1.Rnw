@@ -45,6 +45,7 @@
 %\usepackage[ruled,vlined,linesnumbered,noresetcount]{algorithm2e}
 %\usepackage[ruled,vlined,noresetcount]{algorithm2e}
 \usepackage{algorithm}
+%\usepackage[ruled,vlined,noresetcount]{algorithm2e}
 \usepackage[noend]{algpseudocode}
 \algrenewcommand\textproc{}% Used to be \textsc
 \algdef{SE}[SUBALG]{Indent}{EndIndent}{}{\algorithmicend\ }%
@@ -193,10 +194,10 @@ knitr::read_chunk("../bin/simulation.R")
 knitr::read_chunk("../bin/ADNI.R")
 @
 
-<<packages, eval=T>>=
+<<packages, eval=F>>=
 @
 
-<<globals, eval=T>>=
+<<globals, eval=F>>=
 @
 
 \maketitle
@@ -333,15 +334,15 @@ We begin with a toy example to better illustrate our method. We sample $p=20$ co
 \end{equation}
 where $f_1(x) = -3x$, $f_2(x) = 2(2x-1)^3$ and the error term $\varepsilon$ is generated from a normal distribution with variance chosen such that the signal-to-noise ratio (SNR) is 2. We run the strong heredity \sail method with cubic b-splines and 10-fold CV to choose the optimal value of $\lambda$. We used $\alpha=0.5$ and default values were used for all other arguments. We plot the solution path for both main effects and interactions in Figure~\ref{fig:toy-solution-path} and we color the lines corresponding to the selected model. We see that our method is able to correctly identify the true model. We can also visually see the effect of the penalty and strong heredity principle working in tandem, i.e., the interaction term $E \cdot f_2(X_2)$ (orange lines in the bottom panel) can only be nonzero if the main effects $E$ and $f_2(X_2)$ (black and orange lines respectively in the top panel) are nonzero, while nonzero main effects doesn't necessarily imply a nonzero interaction. 
 
-<<toy-example, eval = T>>=
+<<toy-example, eval=F>>=
 @
 
-<<toy-solution-path, fig.cap="Toy example solution path", fig.asp=0.8, fig.pos = "H", eval = T>>=
+<<toy-solution-path, fig.cap="Toy example solution path", fig.asp=0.8, fig.pos = "H", eval=F>>=
 @
 
 In Figure~\ref{fig:toy-effects}, we plot the true and estimated component functions $\hat{f}_1(X_1)$ and $E \cdot \hat{f}_2(X_2)$. Our method is able to capture the correct functional form for the nonlinear interaction. The lack-of-fit for $f_1(X_1)$ can be explained by the fact that \sail is trying to fit a cubic spline to a linear function. Nevertheless, this example demonstrates that it can still identify linear associations. 
 
-<<toy-effects, fig.cap="Estimated smooth functions by \\texttt{sail} method based on $\\lambda_{min}$.", fig.pos = "H", eval = T>>=
+<<toy-effects, fig.cap="Estimated smooth functions by \\texttt{sail} method based on $\\lambda_{min}$.", fig.pos = "H", eval=F>>=
 @
 
 
@@ -354,6 +355,7 @@ There are many fewer methods avaliable for non-linear interactions. For example,
 \[Y = \beta_0 + \sum_{j=1}^{p} f_j(X_j) + \sum_{j>k}f_{jk}(X_j, X_k) + \varepsilon\]
 where $f(\cdot)$ are smooth component functions. This method is computationally expensive however, as it involves a complex penalty function and considers all pairwise interactions. 
 Furthermore, it's effectiveness in both simulations and real-data applications is unknown as there is no software implementation.  
+
 While working on this paper, we were made aware of the recently proposed pliable lasso~\citep{tibshirani2017pliable} which considers the interactions between $\bX_{n \times p}$ and another matrix $\mathbf{Z}_{n\times K}$ and takes the form
 \[Y = \beta_0 + \sum_{j=1}^{p}\beta_j X_j + \sum_{j=1}^{K}\theta_j Z_j + \sum_{j=1}^{p} (X_j \circ \mathbf{Z}) \balpha_j + \varepsilon  \] where $\alpha_j$ is a $K$-dimensional vector. Our proposal is most closely related to this method with $\mathbf{Z}$ being a single column matrix; the key difference being the non-linearity of the predictor variables. 
 As pointed out by the authors of the pliable lasso, these methods can be seen as a varying coefficient model, i.e., the effect of the predictors vary as a function of the exposure variable $E$. 
@@ -388,7 +390,50 @@ Type      & Method   & Software \ML
 
 
 
+\section{Algorithm}
+\begin{comment}
+\begin{algorithm}[H]
+	\SetAlgoLined
+	%	\KwResult{Write here the result }
+	Set the iteration counter $k \leftarrow 0$, initial values for the parameter vector $\bTheta^{(0)}$\;
+	\For{ each pair ($\lambda_\beta, \lambda_\gamma$)}{
+		\Repeat{convergence criterion is satisfied}{
+			\begin{align*}
+			\bgamma^{(k+1)} &\leftarrow \underset{\bgamma }{\mathrm{argmin}} \quad Q_{\lambda_\beta, \lambda_\gamma}\left(\boldsymbol{\gamma},\beta_E^{(k)}, \boldsymbol{\theta}^{(k)}\right) \\
+			\btheta^{(k+1)} &\leftarrow \underset{\boldsymbol{\btheta} }{\mathrm{argmin}} \quad Q_{\lambda_\beta, \lambda_\gamma} \left(\btheta, \beta_E^{(k)}, \bgamma^{(k+1)}\right)\\
+			\beta_E^{(k+1)} &\leftarrow \underset{\boldsymbol{\beta_E} }{\mathrm{argmin}} \quad Q_{\lambda_\beta, \lambda_\gamma} \left(\btheta^{(k+1)}, \beta_E, \bgamma^{(k+1)}\right)
+			\end{align*}
+			
+			$k \leftarrow k +1$
+		}
+	}
+	\caption{Block Relaxation Algorithm} \label{alg:cgd2}
+\end{algorithm}
+\end{comment}
 
+
+\begin{algorithm}
+	\begin{enumerate}
+		\item For $k=1,\ldots,K$, compute $\gamma_k$, the largest eigenvalue of $\beta^{(k)}$.
+		\item Initialize $\widetilde \bbeta$.
+		\item Repeat the following cyclic groupwise updates until convergence:
+		\begin{enumerate}
+			\item[---] for $k=1,\ldots,K$, do step (3.1)--(3.3)
+			\begin{enumerate}
+				\item[3.1]
+				Compute $U(\widetilde \bbeta )=-\nabla L(\widetilde \bbeta | \bD)$.
+				\item[3.2]
+				Compute
+				$
+				\widetilde \bbeta^{(k)}(\textrm{new}) = \frac{1}{\gamma_k}\left( U^{(k)}+\gamma_k \widetilde \bbeta^{(k)} \right)\left(1-\frac{\lambda w_k}{\Vert U^{(k)}+\gamma_k \widetilde \bbeta^{(k)} \Vert_2}\right)_{+} .
+				$
+				\item[3.3]
+				Set $\widetilde \bbeta^{(k)}=\widetilde \bbeta^{(k)}(\textrm{new})$.
+			\end{enumerate}
+		\end{enumerate}
+	\end{enumerate}
+	\caption{The GMD algorithm for general group-lasso learning. \label{alg1}}
+\end{algorithm}
 
 %\newpage
 
@@ -803,7 +848,16 @@ where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operato
 
 
 
-\section{Simulations}
+\section{Simulation Study}
+In this section, we use simulated data to understand the performance of  \texttt{sail} in different scenarios. Since there is no software that directly addresses our problem, we selected comparator methods based on the following criteria: 1) is a penalized regression method that can handle high-dimensional data ($n<p$) 2) considers linear,  non-linear or interaction effects and 3) has a software implementation in \texttt{R}. The selected methods can be grouped into three categories:
+\begin{enumerate}
+	\item Linear main effects: \texttt{lasso}~\citep{tibshirani1996regression}, \texttt{adaptive lasso}~\citep{zou2006adaptive}
+	\item Linear interactions: \texttt{lassoBT}~\citep{shah2016modelling}, \texttt{GLinternet}~\citep{lim2015learning}
+	\item Non-linear main effects: \texttt{HierBasis}~\citep{haris2016nonparametric}, \texttt{SPAM}~\citep{ravikumar2009sparse}, \texttt{gamsel}~\citep{chouldechova2015generalized}
+\end{enumerate}
+
+We compare the above listed methods with our main proposal \texttt{sail}, as well as \texttt{adaptive sail}, \texttt{sail weak} which has the weak heredity property and \texttt{linear sail}. 
+
 The covariates are simulated as follows. First, we generate $w_1,\ldots, w_p, u,v$ independently from a standard normal distribution truncated to the interval [0,1] for $i=1,\ldots,n$. Then we set $x_j = (w_j + t\cdot u)/(1 + t)$ for $j = 1,\ldots, 4$ and $x_j = (w_j + t\cdot v)/(1 + t)$ for $j = 5,\ldots, p$, where the parameter $t$ controls the amount of correlation among predictors. This leads to a compound symmetry correlation structure where $Corr(x_j,x_k) = t^2/(1+t^2)$, for $1 \leq j \leq 4, 1 \leq k \leq 4$, and $Corr(x_j,x_k) = t^2/(1+t^2)$, for $5 \leq j \leq p, 5 \leq k \leq p$, but the covariates of the nonzero and zero components are independent~\citep{lin2006component,huang2010variable}
 
 
@@ -837,34 +891,34 @@ We evaluate the performance of our method on three of its defining characteristi
 The true component functions are the same as in~\citep{lin2006component,huang2010variable}. Using this setup, we generated a training set of $n=200$, a validation set of $n=200$ and a test set of $n=800$. The training set was used to fit the model and the validation set was used to select the optimal tuning parameter corresponding to the minimum prediction mean-squared error. Performance was assessed on the test set. Results are shown in Figure~\ref{fig:simulation-results}.
 
 
-<<simulation-results, eval=T, results = 'hide'>>=
+<<simulation-results, eval=F, results = 'hide'>>=
 @
 
 
-<<plot-mse-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Test set MSE results.", eval=T>>=
+<<plot-mse-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Test set MSE results.", eval=F>>=
 @
 
 
-<<plot-mse-nactive-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Test set MSE vs number of active variables results.", eval=T>>=
+<<plot-mse-nactive-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Test set MSE vs number of active variables results.", eval=F>>=
 @
 
 
-<<plot-tpr-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="True positive rate results.", eval=T>>=
+<<plot-tpr-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="True positive rate results.", eval=F>>=
 @
 
-<<plot-fpr-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="False positive rate results.", eval=T>>=
-@
-
-
-<<plot-tpr-fpr-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="True positive rate vs. false positive rate.", eval=T>>=
-@
-
-<<plot-nactive-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Number of active variables results.", eval=T>>=
+<<plot-fpr-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="False positive rate results.", eval=F>>=
 @
 
 
+<<plot-tpr-fpr-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="True positive rate vs. false positive rate.", eval=F>>=
+@
 
-%\begin{comment}
+<<plot-nactive-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Number of active variables results.", eval=F>>=
+@
+
+
+
+\begin{comment}
 \begin{figure}[H]
 	\centering
 	\includegraphics[scale=0.61]{/home/sahir/git_repositories/sail/my_sims/figures/sail_main_eff_paramIndex1_200sims.pdf}
@@ -898,28 +952,28 @@ The true component functions are the same as in~\citep{lin2006component,huang201
 	\includegraphics[scale=0.61]{/home/sahir/git_repositories/sail/my_sims/figures/upset_selection_sail_paramIndex1-2-2.pdf}
 	\caption{text}\label{fig:upset}
 \end{figure}
-%\end{comment}
+\end{comment}
 
 
 \section{Real Data Application}
 
 \subsection{ADNI}
 
-<<load-ADNI-data, eval=T, results = 'hide'>>=
+<<load-ADNI-data, eval=F, results = 'hide'>>=
 @
 
-<<get-best-sail-model, eval=T, results = 'hide'>>=
-@
-
-
-<<plot-main-adni, fig.asp=1, fig.width=12, fig.heigh=8, fig.pos = 'H', fig.cap="Estimated main effect component functions by \\texttt{sail} for ADNI data.", eval=T>>=
-@
-
-<<plot-inter-adni, fig.asp=1, fig.width=10, fig.heigh=7, fig.pos = 'H', fig.cap="Estimated interaction effects by \texttt{sail} for ADNI data.", eval=T>>=
+<<get-best-sail-model, eval=F, results = 'hide'>>=
 @
 
 
-<<error-crosses-adni, fig.asp=1, fig.width=9, fig.heigh=7, fig.pos = 'H', fig.cap="Estimated interaction effects by \texttt{sail} for ADNI data.", eval=T>>=
+<<plot-main-adni, fig.asp=1, fig.width=12, fig.heigh=8, fig.pos = 'H', fig.cap="Estimated main effect component functions by \\texttt{sail} for ADNI data.", eval=F>>=
+@
+
+<<plot-inter-adni, fig.asp=1, fig.width=10, fig.heigh=7, fig.pos = 'H', fig.cap="Estimated interaction effects by \texttt{sail} for ADNI data.", eval=F>>=
+@
+
+
+<<error-crosses-adni, fig.asp=1, fig.width=9, fig.heigh=7, fig.pos = 'H', fig.cap="Estimated interaction effects by \texttt{sail} for ADNI data.", eval=F>>=
 @
 
 %\section{Application}
@@ -934,6 +988,12 @@ The true component functions are the same as in~\citep{lin2006component,huang201
 %\addcontentsline{toc}{chapter}{References}
 \bibliographystyle{unsrt}
 \bibliography{GEbib}
+
+
+\appendix
+
+\section{Algorithm Details}
+
 
 
 \end{document}
