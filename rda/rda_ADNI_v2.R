@@ -101,7 +101,9 @@ DT_res <- df %>% as.data.table()
 ## ---- get-best-sail-model ----
 
 draw_ind <- DT_res[Method=="sail"][which.min(mse)]$Draw
-dat <- draws(sim)@draws[[draw_ind]]
+# dat <- draws(sim)@draws[[draw_ind]]
+# saveRDS(dat, "my_sims/rda_results/rda_ADNI_may_17_2018v2_data.rds")
+dat <- readRDS("my_sims/rda_results/rda_ADNI_may_17_2018v2_data.rds")
 fit <- sail(x = dat$xtrain, y = dat$ytrain, e = dat$etrain,
             expand = FALSE,
             center.x = F,
