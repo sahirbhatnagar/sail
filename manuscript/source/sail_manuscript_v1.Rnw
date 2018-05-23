@@ -248,7 +248,7 @@ where $\bTheta \coloneqq (\beta_0, \beta_E,\btheta_1, \ldots, \btheta_p, \btau_1
 
 Due to the large number of parameters to estimate with respect to the number of observations, one
 commonly-used approach is to shrink the regression coefficients by placing a constraint on the values
-of $(\beta_E, \btheta_j, \btau_j)$. Certain constraints have the added benefit of producing a sparse model in the sense that many of the coefficients will be set exactly to 0. This reduced predictor set can lead to a more interpretable model with smaller prediction variance, albeit at the cost of having biased parameter estimates. In light of these goals, we consider the following penalized least squares criterion:
+of $(\beta_E, \btheta_j, \btau_j)$. Certain constraints have the added benefit of producing a sparse model in the sense that many of the coefficients will be set exactly to 0. This reduced predictor set can lead to a more interpretable model with smaller prediction variance, albeit at the cost of having biased parameter estimates. In light of these goals, we consider the following objective function:
 \begin{equation}
 	\argmin_{\bTheta }  	\mathcal{L}(\bTheta| \bD) + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \norm{\btau_{j}}_2 \label{eq:lassolikelihood3}
 \end{equation} 
@@ -274,9 +274,9 @@ Type      & Feature  & Reparametrization \ML
 }
 
 
-To perform variable selection in this new parametrization, we penalize $\bs{\gamma} = \left(\gamma_{1}, \ldots, \gamma_{p}\right)$ instead of penalizing $\btau$ as in~\eqref{eq:lassolikelihood3}, leading to the following penalized least squares criterion:
+To perform variable selection in this new parametrization, we penalize $\bs{\gamma} = \left(\gamma_{1}, \ldots, \gamma_{p}\right)$ instead of penalizing $\btau$ as in~\eqref{eq:lassolikelihood3}, leading to the following objective function:
 \begin{equation}
-	\argmin_{\bTheta }  	\mathcal{L}(\bTheta| \bD) + \lambda (1-\alpha)  \left( w_E \beta_E + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{j}} \label{eq:lassolikelihood4}
+	\argmin_{\bTheta }  	\mathcal{L}(\bTheta| \bD) + \lambda (1-\alpha)  \left( w_E \beta_E + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{j}} \label{eq:saillikelihood}
 \end{equation}
 %where
 %\begin{equation}
@@ -389,8 +389,11 @@ Type      & Method   & Software \ML
 \end{comment}
 
 
-
 \section{Algorithm}
+
+In this section we describe a blockwise coordinate descent algorithm for fitting both the least-squares and logistic version of the \texttt{sail} model in~\eqref{eq:saillikelihood}. We fix the value for $\alpha$ and minimize the objective function over a decreasing sequence of $\lambda$ values ($\lambda_{max}>\cdots>\lambda_{min}$). We use the subgradient equations to determine the maximal value $\lambda_{max}$ such that all estimates are zero. Due to the heredity principle, this reduces to finding the largest $\lambda$ such that all main effects ($\beta_E, \btheta_1, \ldots, \btheta_p$) are zero. Following Friedman et al.~\citep{friedman2010regularization}, we construct a $\lambda$-sequence of 100 values decreasing from $\lambda_{max}$ to $0.001 \lambda_{max}$ on the log scale, and use the warm start strategy where the solution for $\lambda_{\ell}$ is used as a starting value for $\lambda_{\ell + 1}$.  
+
+
 \begin{comment}
 \begin{algorithm}[H]
 	\SetAlgoLined
@@ -411,30 +414,13 @@ Type      & Method   & Software \ML
 \end{algorithm}
 \end{comment}
 
+\subsection{Blockwise coordinate descent for least-squares loss}
 
-\begin{algorithm}
-	\begin{enumerate}
-		\item For $k=1,\ldots,K$, compute $\gamma_k$, the largest eigenvalue of $\beta^{(k)}$.
-		\item Initialize $\widetilde \bbeta$.
-		\item Repeat the following cyclic groupwise updates until convergence:
-		\begin{enumerate}
-			\item[---] for $k=1,\ldots,K$, do step (3.1)--(3.3)
-			\begin{enumerate}
-				\item[3.1]
-				Compute $U(\widetilde \bbeta )=-\nabla L(\widetilde \bbeta | \bD)$.
-				\item[3.2]
-				Compute
-				$
-				\widetilde \bbeta^{(k)}(\textrm{new}) = \frac{1}{\gamma_k}\left( U^{(k)}+\gamma_k \widetilde \bbeta^{(k)} \right)\left(1-\frac{\lambda w_k}{\Vert U^{(k)}+\gamma_k \widetilde \bbeta^{(k)} \Vert_2}\right)_{+} .
-				$
-				\item[3.3]
-				Set $\widetilde \bbeta^{(k)}=\widetilde \bbeta^{(k)}(\textrm{new})$.
-			\end{enumerate}
-		\end{enumerate}
-	\end{enumerate}
-	\caption{The GMD algorithm for general group-lasso learning. \label{alg1}}
-\end{algorithm}
 
+
+
+
+The details of this algorithm are given in the Appendix. 
 %\newpage
 
 \section{Regularization Path}
@@ -531,6 +517,48 @@ where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operato
 For each function $f_j$, we use a cubic B-spline parameterization with 5 degrees of freedom implemented in the \texttt{bs} function in \texttt{R}~\citep{cran}. 
 
 \begin{algorithm}
+	For a decreasing sequence $\lambda = \lambda_{max}, \ldots,\lambda_{min}$ and fixed $\alpha$:
+	\begin{enumerate}
+		\item Initialize $\beta_0^{(0)}, \beta_E^{(0)}, \btheta_j^{(0)},\gamma_j^{(0)}$ for $j=1, \ldots, p$ and set iteration counter $k \gets 0$.
+		\item Repeat the following until convergence:
+		\begin{enumerate}
+			\item update $\boldsymbol{\gamma}=(\gamma_1, \ldots, \gamma_p)$
+			\begin{enumerate}
+				\item Compute the pseudo design: $\widetilde{X}_j \gets \beta_E^{(k)} (X_E \circ \bPsi_j) \btheta_j^{(k)} \qquad$ for $j = 1, \ldots, p$
+				%\item Compute the pseudo response $\widetilde{Y}$ by removing the contribution of the main effects from the response: $\widetilde{Y} \gets Y - \beta_0^{(k)} - \beta_E^{(k)} X_E - \sum_{j} \bPsi_{j}\btheta_{j}^{(k)}$
+				\item Compute the pseudo response $\widetilde{Y}$ by removing the contribution of every term not involving $\boldsymbol{\gamma}$ from $Y$
+				\item Solve
+\begin{equation}
+					\boldsymbol{\gamma}^{(k)(new)} \gets \argmin_{\boldsymbol{\gamma}} \frac{1}{2n} \norm{\widetilde{Y} - \sum_{j} \gamma_j \widetilde{X}_j}_2^2 + \lambda \alpha \sum_{j} w_{jE} \abs{\gamma_{j}} \label{eq:gammaupdate}
+\end{equation}
+				\item Set $\boldsymbol{\gamma}^{(k)}=\boldsymbol{\gamma}^{(k)(new)}$
+			\end{enumerate}
+			\item update $\btheta = (\btheta_1, \ldots, \btheta_p)$
+			\begin{enumerate}
+				\item[---] for $j=1, \ldots, p$
+				\item Compute the pseudo design: $\widetilde{X}_j \gets \bPsi_j + \gamma_j^{(k)} \beta_E^{(k)} (X_E \circ \bPsi_j)$
+				\item Compute the pseudo response ($\widetilde{Y}$) by removing the contribution of every term not involving $\btheta_j$ from $Y$
+				\item Solve \begin{equation}
+					\btheta_j^{(k)(new)} \gets \argmin_{\btheta_j} \frac{1}{2n} \norm{\widetilde{Y} -  \widetilde{X}_j \btheta_j}_2^2 + \lambda (1-\alpha) w_j \norm{\theta_j}_2 \label{eq:thetaupdate}
+				\end{equation}
+				\item Set $\btheta_j^{(k)} \gets \btheta_j^{(k)(new)}$
+			\end{enumerate}
+			\item update $\beta_E$
+			\begin{enumerate}
+				\item Compute the pseudo design: $\widetilde{X}_E \gets X_E + \sum_{j} \gamma_j^{(k)} \widetilde\bPsi_j \btheta_j^{(k)}$
+				\item Compute the pseudo response ($\widetilde{Y}$) by removing the contribution of every term not involving $\beta_E$ from $Y$
+				\item Soft-threshold update $S(x,t) = \textrm{sign}(x) (\abs{x} - t)_+$:
+				\begin{equation}
+					\beta_E^{(k)(new)} \gets S\left(\frac{1}{n \cdot w_E} \widetilde{X}_E^\top \widetilde{Y}, \lambda(1-\alpha)\right) \label{eq:betaeupdate}
+				\end{equation}
+				\item Set $\beta_E^{(k+1)} \gets \beta_E^{(k)(new)}$, $k \gets k + 1$
+			\end{enumerate}
+		\end{enumerate}
+	\end{enumerate}
+	\caption{The Blockwise Coordinate Descent for Least-Squares \texttt{sail}. \label{alg:lssail}}
+\end{algorithm}
+
+\begin{algorithm}
 	\caption{Coordinate descent for least-squares \texttt{sail} with strong heredity}\label{alg:sail}
 	\begin{algorithmic}[1]
 		\Function{\texttt{sail}}{$Y,\boldsymbol{X}, X_E, \tm{\texttt{df}},\tm{\texttt{degree}}, \epsilon$}\Comment{Algorithm for solving~\eqref{eq:objective_least-squares}}
@@ -594,7 +622,7 @@ For each function $f_j$, we use a cubic B-spline parameterization with 5 degrees
 \end{algorithm}
 
 
-\begin{comment}
+%\begin{comment}
 
 \newpage
 \begin{enumerate}
@@ -648,7 +676,7 @@ R_4 = Y - \beta_E^{(k)} X_E - \sum_{j=1}^p  \bPsi_{j} \btheta_{j}^{(k)} - \sum_{
 \end{itemize}
 \item Set $k=k+1$. Return to step 2 until convergence.	
 \end{enumerate}
-\end{comment}
+%\end{comment}
 
 \subsection{Details on update for $\btheta$} \label{subsec:Delta}
 
