@@ -53,7 +53,8 @@ colSums(abs(coef(fitnet)[-1,]), na.rm = TRUE)
 
 f.basis <- function(i) splines::bs(i, df = 3)
 system.time(
-  fit <- sail(x = X, y = Y, e = E, basis = f.basis, alpha = 0.5, verbose = 2)
+  fit <- sail(x = X, y = Y, e = E, basis = f.basis, alpha = 0.5, verbose = 2,
+              strong = FALSE)
 )
 
 X[, "Cards"] %>% splines::bs()
@@ -68,17 +69,20 @@ head(model_mat)
 registerDoMC(cores = 8)
 system.time(
   fit <- sail(x = model_mat, y = Y, e = E,
+              strong = FALSE,
               alpha = 0.5,
               verbose = 2,
               expand = FALSE,
               group = attr(model_mat,"assign"))
 )
 
-
+plot(fit)
 
 system.time(
   cvfit <- cv.sail(x = model_mat, y = Y, e = E,
                    parallel = TRUE,
+                   strong = TRUE,
+                   # dfmax = 30,
                    nfolds = 5,
                    alpha = 0.5,
                    verbose = 2,
@@ -87,7 +91,7 @@ system.time(
 )
 
 plot(cvfit)
-predict(cvfit, type = "nonzero")
+predict(cvfit, type = "nonzero", s="lambda.min")
 cvfit$cvm[which(cvfit$lambda.min==cvfit$lambda)]
 
 

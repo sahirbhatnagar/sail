@@ -1,6 +1,9 @@
 rm(list=ls())
 dev.off()
-devtools::load_all("/home/sahir/git_repositories/sail/")
+# devtools::load_all("/home/sahir/git_repositories/sail/")
+# pacman::p_load_current_gh('sahirbhatnagar/sail')
+devtools::load_all()
+# library(sail)
 # source("my_sims/model_functions.R")
 
 # set.seed(123)
@@ -10,7 +13,7 @@ devtools::load_all("/home/sahir/git_repositories/sail/")
 # DT$e
 #
 # DT <- gendata4(n = 100, p = 20, E = stats::rbinom(100, 2,0.5), betaE = 2, SNR = 4)
-DT <- sail::gendata(n = 200, p = 20, corr = 0, SNR = 2, betaE = 1, parameterIndex = 2)
+DT <- sail::gendata(n = 200, p = 20, corr = 0, SNR = 2, betaE = 1, parameterIndex = 4)
 DT$f1.f
 DT$x
 DT$not_causal
@@ -22,23 +25,27 @@ trainIndex <- drop(caret::createDataPartition(DT$y, p = 0.5, list = FALSE, times
 
 
 library(doMC)
-registerDoMC(cores = 8)
+registerDoMC(cores = 10)
 f.basis <- function(i) splines::bs(i, degree = 5)
+f.basis <- function(i) i
 fit <- sail(x = DT$x, y = DT$y, e = DT$e,
             # alpha = 0.5,
-            strong = FALSE,
-            verbose = 2,
+            # fdev = 1e-3,
+            strong = TRUE,
+            verbose = 1,
             basis = f.basis)
 
 plot(fit)
 
 # f.basis <- function(i) i
 cvfit <- cv.sail(x = DT$x, y = DT$y, e = DT$e,
-                 strong = FALSE,
+                 strong = TRUE,
                  # alpha = 0.5,
                  verbose = 1,
                  basis = f.basis, nfolds = 10, parallel = TRUE)
-
+plot(cvfit)
+coef(cvfit)
+coef(cvfit, s = "lambda.min")
 cvfit2 <- cv.sail(x = DT$x, y = DT$y, e = DT$e,
                  strong = TRUE,
                  # alpha = 0.5,

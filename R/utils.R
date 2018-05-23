@@ -263,3 +263,6 @@ design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, cen
     design = design, ncols = if (expand) ncols else sapply(Phi_j_list, ncol)
   ))
 }
+
+
+

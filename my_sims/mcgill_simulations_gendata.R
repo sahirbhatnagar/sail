@@ -56,8 +56,9 @@ draw <- make_gendata_Paper_data_split_not_simulator(n = n, p = p, corr = 0,
 
 message("simulated data")
 fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
+            strong = FALSE,
             basis = function(i) splines::bs(i, degree = 5))
-message("ran sail")
+message("ran sail weak hierarchy")
 ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
 msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
 lambda.min.index <- as.numeric(which.min(msetest))
@@ -124,7 +125,7 @@ res <- list(beta = coef(fit, s = lambda.min)[-1,,drop=F],
 
 if (parameterIndex != 6) {
   saveRDS(object = res,
-          file = tempfile(pattern = sprintf("fit_thesis_n200_p1000_SNR2_betaE2_df5_%s",parameterIndex),
+          file = tempfile(pattern = sprintf("weak_fit_thesis_n200_p1000_SNR2_betaE2_df5_%s",parameterIndex),
                           tmpdir = "/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/mcgillsims/thesis_p1000_1a",
                           fileext = ".rds")
   )

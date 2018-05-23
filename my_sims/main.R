@@ -1,29 +1,32 @@
+######################################
+# R Source code file for simulation of sail paper
+# Notes:
 # This is the main simulator file
-# I ran this on tmux by copy pasting into an rsession on hydra, and chaning the index argument
-# in simulate from model
-
+# I ran this on tmux by copy pasting into an rsession on hydra.
+# parallel doesnt work in rstudio
 # use this code to save the results. turns out you cant run simulator in parallel "by hand"
 # you need to load the simulator object prior to adding new simulations to the object.
-# so for now I just saved the evals object in separate .rds file in mcgillsims/sim_results
-# source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_lambda_branch/my_sims/eval_functions.R")
-# sim <- sim %>% evaluate(list(mse, cvmse, r2, tpr, fpr, correct_sparsity,nactive))
-# res <- as.data.frame(evals(sim))
-# saveRDS(res, file = "sail/sail_lambda_branch/mcgillsims/sim_results/res7.rds")
+#
+# Since the simulations take a long time to run, I save the results to a .rds file
+# and then create figures based on that
+# Author: Sahir Bhatnagar
+# Created: 2016
+# Updated: May 17, 2018
+#####################################
 
 
-# rm(list=ls())
+# load packages -----------------------------------------------------------
+
 pacman::p_load(simulator) # this file was created under simulator version 0.2.1
 pacman::p_load(splines)
 pacman::p_load(magrittr)
-# pacman::p_load(foreach)
 pacman::p_load(methods)
-# pacman::p_load(doMC)
 pacman::p_load(glmnet)
 pacman::p_load(LassoBacktracking)
-pacman::p_load(glinternet)
+pacman::p_load_current_gh('sahirbhatnagar/glinternet')
 pacman::p_load(gbm)
-pacman::p_load_gh('sahirbhatnagar/sail')
 pacman::p_load_gh('asadharis/HierBasis')
+devtools::load_all()
 pacman::p_load(SAM)
 pacman::p_load(gamsel)
 pacman::p_load(cowplot)
@@ -33,12 +36,10 @@ pacman::p_load(data.table)
 pacman::p_load(ggplot2)
 pacman::p_load(latex2exp)
 pacman::p_load(lemon)
-# registerDoMC(cores = 10)
-# Index <- as.numeric(as.character(commandArgs(trailingOnly = T)[1]))
 
-# source("/home/sahir/git_repositories/sail/my_sims/model_functions.R")
-# source("/home/sahir/git_repositories/sail/my_sims/method_functions.R")
-# source("/home/sahir/git_repositories/sail/my_sims/eval_functions.R")
+
+
+# source helper functions -------------------------------------------------
 
 source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/model_functions.R")
 source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/method_functions.R")
@@ -47,47 +48,73 @@ source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims
 
 # run simulation in parallel on tmux --------------------------------------
 
-sim <- new_simulation(name = "apr_25_2018",
-                      label = "apr_25_2018",
+sim <- new_simulation(name = "may_15_2018",
+                      label = "may_15_2018",
                       dir = ".") %>%
   generate_model(make_gendata_Paper_data_split, seed = 1234,
                  n = 400, p = 1000, corr = 0, betaE = 2, SNR = 2, lambda.type = "lambda.min",
                  parameterIndex = list(1,2,3,4,5),
                  vary_along = "parameterIndex") %>%
   simulate_from_model(nsim = 6, index = 1:35) %>%
-  run_method(list(sailsplit, lassosplit, lassoBTsplit, GLinternetsplit, Hiersplit, SPAMsplit, gamselsplit),
+  run_method(list(sailsplit, sailsplitlinear,sailsplitweak,lassosplitadaptive, sailsplitadaptive,
+                  lassosplit, lassoBTsplit, GLinternetsplit, Hiersplit, SPAMsplit, gamselsplit),
              parallel = list(socket_names = 35,
                              libraries = c("LassoBacktracking", "glinternet","glmnet","splines",
                                            "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
 simulator::save_simulation(sim)
+sim
 
-s2 <- new_simulation(name = "apr_29_2018",
-                      label = "apr_29_2018",
-                      dir = ".") %>%
-  generate_model(make_gendata_Paper_data_split, seed = 1234,
-                 n = 400, p = 25, corr = 0, betaE = 2, SNR = 2, lambda.type = "lambda.min",
-                 parameterIndex = list(1),
-                 vary_along = "parameterIndex") %>%
-  simulate_from_model(nsim = 2, index = 1:2) %>%
-  run_method(list(sailsplitadaptive))
+
+# s2 <- new_simulation(name = "may_1_2018",
+#                       label = "may_1_2018",
+#                       dir = ".") %>%
+#   generate_model(make_gendata_Paper_data_split, seed = 1234,
+#                  n = 400, p = 50, corr = 0, betaE = 2, SNR = 2, lambda.type = "lambda.min",
+#                  parameterIndex = list(1,2),
+#                  vary_along = "parameterIndex") %>%
+#   simulate_from_model(nsim = 2, index = 1:2) %>%
+#   run_method(list(sailsplitadaptive, sailsplit, sailsplitweak, sailsplitadaptiveweak))
+#
+#
 # s2 <- s2 %>% evaluate(list(msevalid, tpr, fpr, nactive, r2))
-# s2 %>% plot_eval(metric_name = "r2")
-# load simulation ---------------------------------------------------------
+# s2 %>% plot_eval_by(metric_name = "fpr", varying = "parameterIndex")
 
-sim <- load_simulation("apr_25_2018")
-sim <- sim %>% evaluate(list(msevalid, tpr, fpr, nactive, r2))
-# simulator::save_simulation(sim)
-sim <- sim %>% run_method(list(sailsplitadaptive),
-                          parallel = list(socket_names = 35,
-                                          libraries = c("LassoBacktracking", "glinternet","glmnet","splines",
-                                                        "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
+
+# Add to the above simulation ---------------------------------------------------------
+
+# we added an extra simulation scenario here. en effet, its a modificaiton of the linear component
+# functions from parameterIndex=4. So parameterIndex=4 and parameterIndex=6 are very similar, just different
+# effect sizes
+sim <- load_simulation("may_15_2018")
+sim
+mref <- generate_model(make_model = make_gendata_Paper_data_split, seed = 1234,
+                       n = 400, p = 1000, corr = 0, betaE = 2, SNR = 2, lambda.type = "lambda.min",
+                       parameterIndex = 6)
+dref <- simulate_from_model(mref, nsim = 6, index = 1:35)
+sim <- simulator::add(sim, mref)
+sim <- simulator::add(sim, dref)
+oref <- simulator::run_method(dref, list(sailsplit, sailsplitlinear,sailsplitweak,lassosplitadaptive, sailsplitadaptive,
+                                   lassosplit, lassoBTsplit, GLinternetsplit, Hiersplit, SPAMsplit, gamselsplit),
+                              parallel = list(socket_names = 35,
+                                              libraries = c("LassoBacktracking", "glinternet","glmnet","splines",
+                                                            "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
+sim <- simulator::add(sim, oref)
 simulator::save_simulation(sim)
-ls()
+sim
+
+sim@model_refs
+sim@draws_refs
+
+sim <- sim %>% evaluate(list(msevalid, tpr, fpr, nactive, r2))
+
 
 # analyze results ---------------------------------------------------------
 
 df <- as.data.frame(evals(sim))
-saveRDS(df, file = "my_sims/simulation_results/apr_25_2018_results.rds")
+# saveRDS(df, file = "my_sims/simulation_results/apr_25_2018_results.rds")
+saveRDS(df, file = "my_sims/simulation_results/may_15_2018_results.rds")
+# df <- readRDS("my_sims/simulation_results/apr_25_2018_results.rds")
+df <- readRDS("my_sims/simulation_results/may_15_2018_results.rds")
 df <- df %>% separate(Model, into = c("simnames","betaE","corr","lambda.type","n","p","parameterIndex","SNR_2"),
                       sep = "/")
 DT <- as.data.table(df)
@@ -95,7 +122,7 @@ DT <- as.data.table(df)
 trop <- RSkittleBrewer::RSkittleBrewer("trop")
 
 DT[parameterIndex=="parameterIndex_1", table(Method)]
-
+DT[, table(parameterIndex)]
 
 cbbPalette <- c("#8720B6","#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 trop <- RSkittleBrewer::RSkittleBrewer("trop")
@@ -106,8 +133,10 @@ gg_sy <- theme(legend.position = "bottom", axis.text = element_text(size = 20),
 appender <- function(string) TeX(paste(string))
 
 DT[, scenario:= as.numeric(as.character(stringr::str_extract_all(parameterIndex, "\\d", simplify = T)))]
-DT[, scen:=ifelse(scenario==1,"Strong Hierarchy",ifelse(scenario==2, "Weak Hierarchy", ifelse(scenario==3,"Interactions Only",ifelse(scenario==4, "Strong Hierarchy (Linear)", "Main Effects Only"))))]
-DT[, scen:=factor(scen, levels = c("Strong Hierarchy", "Weak Hierarchy","Interactions Only","Strong Hierarchy (Linear)", "Main Effects Only"))]
+DT$scenario %>% table
+DT[, scen:=ifelse(scenario==1,"Strong Hierarchy",ifelse(scenario==2, "Weak Hierarchy", ifelse(scenario==3,"Interactions Only",ifelse(scenario==4, "Strong Hierarchy (Linear)", ifelse(scenario==5, "Main Effects Only", "Linear v2")))))]
+DT$scen %>% table
+DT[, scen:=factor(scen, levels = c("Strong Hierarchy", "Weak Hierarchy","Interactions Only","Strong Hierarchy (Linear)","Linear v2","Main Effects Only"))]
 DT$scen %>% table
 #Truth obeys strong hierarchy (parameterIndex = 1)
 #Truth obeys weak hierarchy (parameterIndex = 2)
@@ -121,7 +150,7 @@ DT$scen %>% table
     facet_rep_wrap(~scen, scales = "free", ncol = 2,repeat.tick.labels = 'left',
                labeller = as_labeller(appender,
                                       default = label_parsed))+
-    scale_fill_manual(values=cbbPalette, guide=guide_legend(ncol=2)) +
+    scale_fill_manual(values=c(cbbPalette, "red","pink","darkblue","black"), guide=guide_legend(ncol=2)) +
     ggplot2::labs(y = "Test Set MSE", title = "") + xlab("") + panel_border()+background_grid()+
     theme(legend.position = "right", legend.text=element_text(size=18)) )
 
@@ -174,31 +203,40 @@ simulator::save_simulation(sim)
 # Data split simulation ---------------------------------------------------
 rm(sim)
 
-sim <- new_simulation(name = "sail_lasso_glinternet_lassoBT_gbm_split_testing",
-                      label = "sail v7_split",
+sim <- new_simulation(name = "sail_adaptivelasso",
+                      label = "sail v21_split",
                       dir = ".") %>%
   generate_model(make_gendata_Paper_data_split, seed = 1234,
-                 n = 400, p = 20, corr = 0, betaE = 2, SNR = 2, lambda.type = "lambda.min",
+                 n = 400, p = 50, corr = 0, betaE = 2, SNR = 2, lambda.type = "lambda.min",
                  parameterIndex = list(1),
                  vary_along = "parameterIndex") %>%
-  simulate_from_model(nsim = 2, index = 1:10) %>%
-  # run_method(list(SPAMsplit)) %>%
-  # run_method(list(sailsplit, lassosplit, lassoBTsplit, GLinternetsplit, Hiersplit, SPAMsplit, gamselsplit)) %>%
-  run_method(list(sailsplit, lassosplit, lassoBTsplit, GLinternetsplit, Hiersplit, SPAMsplit, gamselsplit),
-             parallel = list(socket_names = 10,
-                             libraries = c("LassoBacktracking", "glinternet","glmnet","splines","magrittr","sail","gamsel","SAM","HierBasis"))) %>%
-  evaluate(list(msevalid)) #%>%
+  simulate_from_model(nsim = 2, index = 1:2) #%>%
+  # # run_method(list(SPAMsplit)) %>%
+  # # run_method(list(sailsplit, lassosplit, lassoBTsplit, GLinternetsplit, Hiersplit, SPAMsplit, gamselsplit)) %>%
+  # run_method(list(sailsplit, lassosplit, lassoBTsplit, GLinternetsplit, Hiersplit, SPAMsplit, gamselsplit),
+  #            parallel = list(socket_names = 10,
+  #                            libraries = c("LassoBacktracking", "glinternet","glmnet","splines","magrittr","sail","gamsel","SAM","HierBasis"))) %>%
+  # evaluate(list(msevalid)) #%>%
 
 sim <- sim %>%
-  run_method(list(lassosplit, GLinternetsplit, lassoBTsplit)) %>%
-  evaluate(list(msevalid, tpr, fpr, nactive,r2))
+  run_method(list(lassosplitadaptive),
+             parallel = list(socket_names = 35,
+                             libraries = c("glmnet","splines",
+                                           "magrittr","simulator", "parallel")))
+
+save_simulation(sim)
+ls()
+
+
+#%>%
+  # evaluate(list(msevalid, tpr, fpr, nactive,r2))
 
 sim <- sim %>%
   run_method(list(gamselsplit)) %>%
   evaluate(list(msevalid, tpr, fpr, nactive,r2))
 
 sim %>%
-  plot_eval(metric_name = "r2")
+  plot_eval(metric_name = "mse")
 
 as.data.frame(evals(sim))
   # plot_eval(metric_name = "msevalid")
@@ -223,6 +261,60 @@ xvalid_lasso <- draws(sim)@draws$r2.2[["xvalid_lasso"]]
 evalid <- draws(sim)@draws$r2.2[["evalid"]]
 yvalid <- draws(sim)@draws$r2.2[["yvalid"]]
 vnames <- draws(sim)@draws$r2.2[["vnames_lasso"]]
+
+
+fit <- glmnet(x = xtrain_lasso, y = ytrain,
+              alpha = 1)
+
+ytest_hat <- predict(fit, newx = xtest_lasso)
+msetest <- colMeans((ytest - ytest_hat)^2)
+lambda.min.index <- as.numeric(which.min(msetest))
+lambda.min <- fit$lambda[which.min(msetest)]
+
+yvalid_hat <- predict(fit2, newx = xvalid_lasso, s = lambda.min)
+(msevalid <- mean((yvalid - drop(yvalid_hat))^2))
+
+
+
+head(xtrain_lasso)
+pfs <- coef(fit, s = lambda.min)[-1,]
+
+fit2 <- glmnet(x = xtrain_lasso, y = ytrain,
+              alpha = 1, penalty.factor = 1/abs(pfs))
+
+ytest_hat <- predict(fit2, newx = xtest_lasso)
+msetest <- colMeans((ytest - ytest_hat)^2)
+lambda.min.index <- as.numeric(which.min(msetest))
+lambda.min <- fit2$lambda[which.min(msetest)]
+
+yvalid_hat <- predict(fit2, newx = xvalid_lasso, s = lambda.min)
+(msevalid <- mean((yvalid - drop(yvalid_hat))^2))
+
+
+plot(fit)
+plot(fit2)
+
+pfe <- 1/abs(pfs["E"])
+
+pfmain <- pfs[fit$main.effect.names]
+pfmain <- 1/sapply(split(pfmain, fit$group), sail:::l2norm)
+pfmain[which(pfmain==Inf)] <- 50
+
+pfinter <- pfs[fit$interaction.names]
+pfinter <- 1/sapply(split(pfinter, fit$group), sail:::l2norm)
+pfinter[which(pfinter==Inf)] <- 50
+
+
+
+yvalid_hat <- predict(fit, newx = draw[["xvalid_lasso"]], s = lambda.min)
+msevalid <- mean((draw[["yvalid"]] - drop(yvalid_hat))^2)
+
+
+
+
+
+
+
 # no built-in tuning
 pacman::p_load_gh('asadharis/HierBasis')
 fitHier <- AdditiveHierBasis(x = xtrain_lasso,
