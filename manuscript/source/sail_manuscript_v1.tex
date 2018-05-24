@@ -128,7 +128,7 @@
 %            						CUSTOM COMMANDS
 %########################################################################################
 
-\newcommand{\sail}{\texttt{sail }}
+\newcommand{\sail}{\texttt{sail}}
 \newcommand{\tm}[1]{\textrm{{#1}}}
 \newcommand{\bx}{\textbf{\emph{x}}}
 \newcommand{\by}{\textbf{\emph{y}}}
@@ -504,7 +504,8 @@ From the subgradient equations~\eqref{eq:sub_b0}--\eqref{eq:sub_gammaj} we see t
 	\lambda (1-\alpha) w_j \dfrac{\btheta_j}{\norm{\btheta_j}_2} & =  \frac{1}{n} \left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R_{(-j)} \label{eq:thetaj} \\
 	\hat\gamma_j & = S \left(\frac{1}{n \cdot w_{jE}} \left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-jE)}, \lambda \alpha\right) \label{eq:gammaj}
 \end{align}
-where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operator. We see from~\eqref{eq:beta0} and~\eqref{eq:betaE} that there are closed form solutions for the intercept and $\beta_E$. From~\eqref{eq:gammaj}, each $\gamma_j$ also has a closed form solution and can be solved efficiently for $j=1, \ldots, p$ using the coordinate descent procedure implemented in the \texttt{glmnet} package~\citep{friedman2010regularization}. While there is no closed form solution for $\beta_j$, we can use a quadratic majorization technique implemented in the \texttt{gglasso} package~\citep{yang2015fast} to solve~\eqref{eq:thetaj}. We provide an overview of the computations in Algorithm~\ref{alg:psudeolssail}. A more detailed version of this algorithm is given in Section~\ref{ap:subsec:lssail} of the Appendix. 
+where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operator. We see from~\eqref{eq:beta0} and~\eqref{eq:betaE} that there are closed form solutions for the intercept and $\beta_E$. From~\eqref{eq:gammaj}, each $\gamma_j$ also has a closed form solution and can be solved efficiently for $j=1, \ldots, p$ using the coordinate descent procedure implemented in the \texttt{glmnet} package~\citep{friedman2010regularization}. While there is no closed form solution for $\beta_j$, we can use a quadratic majorization technique implemented in the \texttt{gglasso} package~\citep{yang2015fast} to solve~\eqref{eq:thetaj}. From these estimates, we can compute the interaction effects using the reparametrizations presented in Table~\ref{tab:reparam}, e.g.,  $\hat{\btau}_j = \hat{\gamma}_j \hat{\beta}_E \hat{\btheta}_j$, $j=1, \ldots, p$ for the strong heredity \sail model. 
+We provide an overview of the computations in Algorithm~\ref{alg:psudeolssail}. A more detailed version of this algorithm is given in Section~\ref{ap:subsec:lssail} of the Appendix. 
 
 
 
@@ -599,52 +600,35 @@ That is, an interaction term can only be present if at least one of it's corresp
 
 \subsection{Adaptive \sail}
 
-Recall that we consider the following penalized least squares criterion for this problem:
-
-\begin{equation}
-\arg\min_{\boldsymbol{\theta} }  \mathcal{L}(Y;\boldsymbol{\theta}) + \lambda (1-\alpha)  \left( w_E |\beta_E| + \sum_{j=1}^{p} w_j \lVert\boldsymbol{\theta}_j \rVert_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} |\gamma_{j}| 
-\end{equation} 
-
-The weights $w_E, w_j, w_{jE}$ are by default set to 1 as specified by the `penalty.factor` argument. This argument allows users to apply separate penalty factors to each coefficient.  In particular, any variable with `penalty.factor` equal to zero is not penalized at all. This feature can be applied mainly for two reasons:  
+The weights for the environment variable, main effects and interactions are given by $w_E, w_j$ and $w_{jE}$ respectively. These weights serve as a way of allowing a different penalty to be applied to each variable. In particular, any variable with a weight of zero is not penalized at all. This feature can be applied mainly for two reasons:  
 
 \begin{enumerate}
 	\item Prior knowledge about the importance of certain variables is known. Larger weights will penalize the variable more, while smaller weights will penalize the variable less  
-	\item Allows users to apply the Adaptive `sail`, similar to the adaptive lasso~\citep{zou2006adaptive}
+	\item Allows users to apply the adaptive \sail, similar to the adaptive lasso~\citep{zou2006adaptive}
 \end{enumerate}  
 
-In the following example, we want the environment variable to always be included so we set the first element of `p.fac` to zero. We also want to apply less of a penalty to the main effects for $X_2, X_3, X_4$:
+We describe the adaptive \sail in Algorithm~\ref{alg:adaptivesail}. This is a general procedure that can be applied to the weak and strong heredity settings, as well as both least squares and logistic loss functions. We provide this capability in the \sail \texttt{R} package using the \texttt{penalty.factor} argument. 
 
-\begin{knitrout}\scriptsize
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlcom{# the weights correspond to E, X1, X2, X3, ... X_p, X1:E, X2:E, ... X_p:E}
-\hlstd{p.fac} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,} \hlnum{1}\hlstd{,} \hlnum{0.4}\hlstd{,} \hlnum{0.6}\hlstd{,} \hlnum{0.7}\hlstd{,} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{2}\hlopt{*}\hlkwd{ncol}\hlstd{(sailsim}\hlopt{$}\hlstd{x)} \hlopt{-} \hlnum{4}\hlstd{))}
-\end{alltt}
-\end{kframe}
-\end{knitrout}
-
-
-\begin{knitrout}\scriptsize
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlstd{fit_pf} \hlkwb{<-} \hlkwd{sail}\hlstd{(}\hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{y} \hlstd{= sailsim}\hlopt{$}\hlstd{y,} \hlkwc{e} \hlstd{= sailsim}\hlopt{$}\hlstd{e,} \hlkwc{basis} \hlstd{= f.basis,}
-\hlkwc{penalty.factor} \hlstd{= p.fac)}
-\end{alltt}
-\end{kframe}
-\end{knitrout}
+\begin{algorithm}
+	\begin{enumerate}
+		\item For a decreasing sequence $\lambda = \lambda_{max}, \ldots,\lambda_{min}$ and fixed $\alpha$ run the \sail algorithm
+		\item Use cross-validation or a data splitting procedure to determine the optimal value for the tuning parameter: $\lambda^{[opt]} \in \left\lbrace \lambda_{max},\ldots, \lambda_{min} \right\rbrace$
+		\item Let $\widehat{\beta_E}^{[opt]}, \widehat{\btheta}_{j}^{[opt]}$ and $\widehat{\btau}_j^{[opt]}$ for $j=1, \ldots,p$ be the coefficient estimates corresponding to the model at $\lambda^{[opt]}$
+		\item Set the weights to be
+			\begin{enumerate}
+				\item[] $w_E = \left(\abs{\widehat{\beta_E}^{[opt]}}\right)^{-1}$, $w_j = \left(\Vert \widehat{\btheta}_{j}^{[opt]} \Vert_2\right)^{-1}$, 
+				$w_{jE} = \left(\Vert\widehat{\btau_j}^{[opt]}\Vert_2\right)^{-1}$ for $j=1, \ldots, p$
+		\end{enumerate}
+	\item Run the \sail algorithm with the weights defined in step 4), and use cross-validation or a data splitting procedure to choose the optimal value of $\lambda$
+	\end{enumerate}
+	\caption{Adaptive \sail algorithm \label{alg:adaptivesail}}
+\end{algorithm}
 
 
-\begin{knitrout}\scriptsize
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlkwd{plot}\hlstd{(fit_pf)}
-\end{alltt}
-\end{kframe}
-\end{knitrout}
 
+\subsection{Flexible design matrix}
 
-We see from the plot above that the black line (corresponding to the $X_E$ variable with \texttt{penalty.factor} equal to zero) is always included in the model. 
-
+The definition of the basis expansion functions in~\eqref{eq:smooth} is very flexible in the sense that our algorithms are independent of this choice. As a result, the user can apply any basis expansion they want. In the extreme case, we can apply the identity map, i.e., $f_j(X_j) = X_j$ which leads to a linear interaction model (referred to as linear \sail). When little information is known a priori about the relationship between the predictors and the response, by default, we choose to apply the same basis expansion to all columns of $\bX$. This is a reasonable approach when all the variables are continuous. However, there are often instances when our data contains a combination of categorical and continuous variables. In these situations it may be sub-optimal to apply a basis expansion to the categorical variables. Owing to the flexible nature of our algorithm, we can handle this scenario in our implementation by allowing a user-defined design matrix. The only extra information needed is the group membership of each column in the design matrix. We provide such an example in the \sail~\texttt{R} package showcase in the Appendix. 
 
 
 
