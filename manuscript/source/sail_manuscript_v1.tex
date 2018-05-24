@@ -57,6 +57,8 @@
 \usepackage{authblk} % for author affiliations
 \usepackage{float} % for H in figures and tables
 \usepackage{amsmath,amsthm,amssymb,bbm,mathrsfs,mathtools,xfrac} %math stuff
+%\usepackage{cleveref}
+%\newcommand{\crefrangeconjunction}{--}
 
 \usepackage[sort]{natbib}   % bibliography omit 'round' option if you prefer square brackets
 \usepackage{placeins} % for \FloatBarrier
@@ -190,8 +192,8 @@
 \usepackage{lastpage}
 \usepackage{fancyhdr}
 \cfoot{\thepage}
-%\lhead[\leftmark]{}
-%\rhead[]{\leftmark}
+\lhead[\leftmark]{}
+\rhead[]{\leftmark}
 \makeatletter
 \makeatother
 \lfoot{} \cfoot{ } \rfoot{{\small{\em Page \thepage \ of \pageref{LastPage}}}}
@@ -449,8 +451,64 @@ In this section we describe a blockwise coordinate descent algorithm for fitting
 
 \subsection{Blockwise coordinate descent for least-squares loss}
 
+%\section{Regularization Path}
+The strong heredity \texttt{sail} model with least-squares loss has the form
+\begin{equation}
+	\hat{Y}   =  \beta_0 \cdot \boldsymbol{1} + \sum_{j=1}^p \bPsi_j \btheta_j + \beta_E X_E + \sum_{j=1}^p \gamma_{j}  \beta_E (X_E \circ \bPsi_j) \btheta_j
+\end{equation}
+and the objective function is given by 
+\begin{equation}
+	Q(\bTheta) = \frac{1}{2n} \norm{Y - \hat{Y}}_2^2 + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{j}} \label{eq:objective_least-squares}
+\end{equation}
 
-\begin{algorithm}
+Solving~\eqref{eq:objective_least-squares} in a blockwise manner allows us to leverage computationally fast algorithms for $\ell_1$ and $\ell_2$ norm penalized regression. The objective function simplifies to a modified lasso problem when holding all $\theta_j$ fixed, and a modified group lasso problem when holding $\beta_E$ and all $\gamma_j$ fixed. 
+
+Denote the $n$-dimensional residual column vector $R = Y-\hat{Y}$. The subgradient equations are given by
+\begin{align}
+	\frac{\partial Q}{\partial \beta_0} & = \frac{1}{n} \left( Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p \gamma_{j}  \beta_E (X_E \circ \bPsi_j) \btheta_j\right)^\top \boldsymbol{1}  = 0 \label{eq:sub_b0} \\
+	\frac{\partial Q}{\partial \beta_E} & = -\frac{1}{n} \left(X_E + \sum_{j=1}^{p}\gamma_j (X_E \circ \bPsi_j)\btheta_j\right)^\top R  + \lambda (1-\alpha) w_E s_1 = 0 \label{eq:sub_bE}\\
+	\frac{\partial Q}{\partial \btheta_j} & = -\frac{1}{n} \left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R  + \lambda (1-\alpha) w_j s_2 = \boldsymbol{0} \label{eq:sub_thetaj}\\
+	\frac{\partial Q}{\partial \gamma_j} & = -\frac{1}{n} \left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)^\top R  + \lambda \alpha w_{jE} s_3 = 0 \label{eq:sub_gammaj}
+\end{align}
+where $s_1$ is in the subgradient of the $\ell_1$ norm:
+$$
+s_1 \in \begin{cases}
+\textrm{sign}\left(\beta_E\right) & \tm{if  } \beta_E \neq 0\\
+[-1, 1] &  \tm{if  } \beta_E = 0,\\
+\end{cases}
+$$
+$s_2$ is in the subgradient of the $\ell_2$ norm:
+$$
+s_2 \in \begin{cases}
+\dfrac{\btheta_j}{\norm{\btheta_j}_2} &  \tm{if  } \btheta_j \neq \boldsymbol{0}\\
+u \in \mathbb{R}^{m_j}: \norm{u}_2 \leq 1 & \tm{if  } \btheta_j = \boldsymbol{0},\\
+\end{cases}
+$$
+and $s_3$ is in the subgradient of the $\ell_1$ norm:
+$$
+s_3 \in \begin{cases}
+\textrm{sign}\left(\gamma_j\right) & \tm{if  } \gamma_j \neq 0\\
+[-1, 1] &  \tm{if  } \gamma_j = 0.\\
+\end{cases}
+$$
+Define the partial residuals, without the $j$th predictor for $j=1, \ldots, p$, as
+\[R_{(-j)} = Y - \beta_0 \cdot \boldsymbol{1} - \sum_{\ell \neq j} \bPsi_\ell \btheta_\ell - \beta_E X_E - \sum_{\ell\neq j} \gamma_{\ell}  \beta_E (X_E \circ \bPsi_\ell) \btheta_\ell \]
+the partial residual without $X_E$ as
+\[R_{(-E)} = Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j\]
+and the partial residual without the $j$th interaction for $j=1, \ldots, p$, as
+\[R_{(-jE)} = Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{\ell\neq j} \gamma_{\ell}  \beta_E (X_E \circ \bPsi_\ell) \btheta_\ell \]
+From the subgradient equations~\eqref{eq:sub_b0}--\eqref{eq:sub_gammaj} we see that 
+\begin{align}
+	\hat{\beta}_0 &=  \left( Y - \sum_{j=1}^p \bPsi_j \hat\btheta_j - \hat\beta_E X_E - \sum_{j=1}^p \hat\gamma_{j}  \hat\beta_E (X_E \circ \bPsi_j) \hat\btheta_j\right)^\top \boldsymbol{1} \label{eq:beta0} \\
+	\hat{\beta}_E & = S\left(\frac{1}{n \cdot w_E} \left(X_E + \sum_{j=1}^{p}\hat\gamma_j (X_E \circ \bPsi_j)\hat\btheta_j\right)^\top R_{(-E)}, \lambda(1-\alpha)\right) \label{eq:betaE} \\
+	\lambda (1-\alpha) w_j \dfrac{\btheta_j}{\norm{\btheta_j}_2} & =  \frac{1}{n} \left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R_{(-j)} \label{eq:thetaj} \\
+	\hat\gamma_j & = S \left(\frac{1}{n \cdot w_{jE}} \left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-jE)}, \lambda \alpha\right) \label{eq:gammaj}
+\end{align}
+where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operator. We see from~\eqref{eq:beta0} and~\eqref{eq:betaE} that there are closed form solutions for the intercept and $\beta_E$. From~\eqref{eq:gammaj}, each $\gamma_j$ also has a closed form solution and can be solved efficiently for $j=1, \ldots, p$ using the coordinate descent procedure implemented in the \texttt{glmnet} package~\citep{friedman2010regularization}. While there is no closed form solution for $\beta_j$, we can use a quadratic majorization technique implemented in the \texttt{gglasso} package~\citep{yang2015fast} to solve~\eqref{eq:thetaj}. We provide an overview of the computations in Algorithm~\ref{alg:psudeolssail}. A more detailed version of this algorithm is given in Section~\ref{ap:subsec:lssail} of the Appendix. 
+
+
+
+\begin{algorithm}[htbp]
 	For a decreasing sequence $\lambda = \lambda_{max}, \ldots,\lambda_{min}$ and fixed $\alpha$:
 	\begin{enumerate}
 		\item Initialize $\beta_0^{(0)}, \beta_E^{(0)}, \btheta_j^{(0)},\gamma_j^{(0)}$ for $j=1, \ldots, p$ and set iteration counter $k \gets 0$.
@@ -492,65 +550,16 @@ In this section we describe a blockwise coordinate descent algorithm for fitting
 	\caption{Blockwise Coordinate Descent for Least-Squares \texttt{sail} with Strong Heredity. \label{alg:psudeolssail}}
 \end{algorithm}
 
-More specific details of this algorithm are given in Section~\ref{ap:subsec:lssail} of the Appendix. 
+
 %\newpage
 
+\FloatBarrier
 
-\subsection{Weak Heredity}
-We can also enforce the weak heredity property:
-\begin{equation}
-\hat{\alpha}_{jE} \neq 0 \qquad \Rightarrow \qquad \hat{\beta}_j \neq 0 \qquad \tm{or} \qquad \hat{\beta}_E \neq 0   \label{eq:heredity2}
-\end{equation}
-That is, an interaction term can only be present if at least one of it's corresponding main effects is nonzero. To do so, we reparametrize the coefficients for the interaction terms in~\eqref{eq:linpred} as $\balpha_{j} = \gamma_{j}  (\beta_E \cdot \mb{1}_{m_j} + \btheta_j)$, where $\mb{1}_{m_j}$ is a vector of ones with dimension $m_j$ (i.e. the length of $\btheta_j$). 
 
-We defer the algorithm details for fitting the \sail model with weak heredity in Section~\ref{ap:subsec:lssailweak} of the Appendix, as it is very similar to the algorithm for the strong heredity \sail model. 
 
 \subsection{Lambda max}
 
-%\section{Regularization Path}
-The strong heredity \texttt{sail} model has the form
-\begin{equation}
-	\hat{Y}   =  \beta_0 \cdot \boldsymbol{1} + \sum_{j=1}^p \bPsi_j \btheta_j + \beta_E X_E + \sum_{j=1}^p \gamma_{j}  \beta_E (X_E \circ \bPsi_j) \btheta_j
-\end{equation}
-The objective function is given by 
-\begin{equation}
-	Q(\bTheta) = \frac{1}{2n} \norm{Y - \hat{Y}}_2^2 + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{j}} \label{eq:objective_least-squares}
-\end{equation}
-Denote the $n$-dimensional residual column vector $R = Y-\hat{Y}$. The subgradient equations are given by
-\begin{align}
-	\frac{\partial Q}{\partial \beta_0} & = \frac{1}{n} \left( Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p \gamma_{j}  \beta_E (X_E \circ \bPsi_j) \btheta_j\right)^\top \boldsymbol{1}  = 0 \label{eq:sub_b0} \\
-	\frac{\partial Q}{\partial \beta_E} & = -\frac{1}{n} \left(X_E + \sum_{j=1}^{p}\gamma_j (X_E \circ \bPsi_j)\btheta_j\right)^\top R  + \lambda (1-\alpha) w_E s_1 = 0 \label{eq:sub_bE}\\
-	\frac{\partial Q}{\partial \btheta_j} & = -\frac{1}{n} \left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R  + \lambda (1-\alpha) w_j s_2 = \boldsymbol{0} \label{eq:sub_thetaj}\\
-	\frac{\partial Q}{\partial \gamma_j} & = -\frac{1}{n} \left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)^\top R  + \lambda \alpha w_{jE} s_3 = 0 \label{eq:sub_gammaj}
-\end{align}
-where $s_1$ is in the subgradient of the $\ell_1$ norm:
-$$
-s_1 \in \begin{cases}
-\textrm{sign}\left(\beta_E\right) & \tm{if  } \beta_E \neq 0\\
-[-1, 1] &  \tm{if  } \beta_E = 0,\\
-\end{cases}
-$$
-$s_2$ is in the subgradient of the $\ell_2$ norm:
-$$
-s_2 \in \begin{cases}
-\dfrac{\btheta_j}{\norm{\btheta_j}_2} &  \tm{if  } \btheta_j \neq \boldsymbol{0}\\
-u \in \mathbb{R}^{m_j}: \norm{u}_2 \leq 1 & \tm{if  } \btheta_j = \boldsymbol{0},\\
-\end{cases}
-$$
-and $s_3$ is in the subgradient of the $\ell_1$ norm:
-$$
-s_3 \in \begin{cases}
-\textrm{sign}\left(\gamma_j\right) & \tm{if  } \gamma_j \neq 0\\
-[-1, 1] &  \tm{if  } \gamma_j = 0.\\
-\end{cases}
-$$
-Define the partial residuals, without the $j$th predictor for $j=1, \ldots, p$, as
-\[R_{(-j)} = Y - \beta_0 \cdot \boldsymbol{1} - \sum_{\ell \neq j} \bPsi_\ell \btheta_\ell - \beta_E X_E - \sum_{\ell\neq j} \gamma_{\ell}  \beta_E (X_E \circ \bPsi_\ell) \btheta_\ell \]
-the partial residual without $X_E$ as
-\[R_{(-E)} = Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j\]
-and the partial residual without the $j$th interaction for $j=1, \ldots, p$
-\[R_{(-jE)} = Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{\ell\neq j} \gamma_{\ell}  \beta_E (X_E \circ \bPsi_\ell) \btheta_\ell \]
-From the subgradient Equation~\eqref{eq:sub_bE}, we see that $\beta_E = 0$ is a solution if
+The subgradient equations~\eqref{eq:sub_bE}--\eqref{eq:sub_gammaj} can be used to determine the largest value of $\lambda$ such that all coefficients are 0. From the subgradient Equation~\eqref{eq:sub_bE}, we see that $\beta_E = 0$ is a solution if
 \begin{equation}
 	\frac{1}{w_E}\abs{\frac{1}{n} \left(X_E + \sum_{j=1}^{p}\gamma_j (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-E)}} \leq \lambda (1-\alpha)
 \end{equation}
@@ -562,11 +571,7 @@ From the subgradient Equation~\eqref{eq:sub_gammaj}, we see that $\gamma_j = 0$ 
 \begin{equation}
 	\frac{1}{w_{jE}}\abs{\frac{1}{n} \left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-jE)}} \leq \lambda \alpha
 \end{equation}
-
-%\subsection{Lambda Max}
-
 Due to the strong heredity property, the parameter vector $(\beta_E,\btheta_1, \ldots, \btheta_p, \gamma_1, \ldots, \gamma_p)$ will be equal to $\boldsymbol{0}$ if $(\beta_E,\btheta_1, \ldots, \btheta_p) = \boldsymbol{0}$. Therefore, the smallest value of $\lambda$ for which the entire parameter vector (excluding the intercept) is $\boldsymbol{0}$ is:
-
 \begin{multline}
 	\lambda_{max} = \frac{1}{n(1-\alpha)} \max \left\lbrace \frac{1}{w_E}\left(X_E + \sum_{j=1}^{p}\gamma_j (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-E)}, \right. \\
 	\left. \max_j \frac{1}{w_{j}}\norm{\left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R_{(-j)}}_2   \right\rbrace 
@@ -576,23 +581,19 @@ which reduces to
 	\lambda_{max} = \frac{1}{n(1-\alpha)} \max \left\lbrace \frac{1}{w_E}\left(X_E\right)^\top R_{(-E)}, \max_j \frac{1}{w_{j}}\norm{\left(\bPsi_j\right)^\top R_{(-j)}}_2   \right\rbrace 
 \end{align*}
 
-\subsection{Optimization of Parameters}
 
-From the subgradient equations we see that 
-\begin{align}
-	\hat{\beta}_0 &=  \left( Y - \sum_{j=1}^p \bPsi_j \hat\btheta_j - \hat\beta_E X_E - \sum_{j=1}^p \hat\gamma_{j}  \hat\beta_E (X_E \circ \bPsi_j) \hat\btheta_j\right)^\top \boldsymbol{1} \\
-	\hat{\beta}_E & = S\left(\frac{1}{n \cdot w_E} \left(X_E + \sum_{j=1}^{p}\hat\gamma_j (X_E \circ \bPsi_j)\hat\btheta_j\right)^\top R_{(-E)}, \lambda(1-\alpha)\right) \\
-	\lambda (1-\alpha) w_j \dfrac{\btheta_j}{\norm{\btheta_j}_2} & =  \frac{1}{n} \left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R_{(-j)} \\
-	\hat\gamma_j & = S \left(\frac{1}{n \cdot w_{jE}} \left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-jE)}, \lambda \alpha\right)
-\end{align}
-where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operator 
+\subsection{Weak Heredity}
+Our method can be easily adopted to enforce the weak heredity property:
+\begin{equation}
+	\hat{\alpha}_{jE} \neq 0 \qquad \Rightarrow \qquad \hat{\beta}_j \neq 0 \qquad \tm{or} \qquad \hat{\beta}_E \neq 0   \label{eq:heredity2} \nonumber
+\end{equation}
+That is, an interaction term can only be present if at least one of it's corresponding main effects is nonzero. To do so, we reparametrize the coefficients for the interaction terms in~\eqref{eq:linpred} as $\balpha_{j} = \gamma_{j}  (\beta_E \cdot \mb{1}_{m_j} + \btheta_j)$, where $\mb{1}_{m_j}$ is a vector of ones with dimension $m_j$ (i.e. the length of $\btheta_j$). We defer the algorithm details for fitting the \sail model with weak heredity in Section~\ref{ap:subsec:lssailweak} of the Appendix, as it is very similar to Algorithm~\ref{alg:psudeolssail} for the strong heredity \sail model. 
 
-%\subsection{Alternative Formulation for Penalty Parameter}
+%\begin{comment}
+%\subsection{Optimization of Parameters}
 
-%$$ 
-%\lambda  \left\lbrace (1 - \alpha) \left[ w_E |\beta_E| + \sum_{j=1}^{p} w_j \lVert  \theta_j \rVert_2 \right]  +  \alpha \sum_{j=1}^{p} w_{jE} |\gamma_{j}| \right\rbrace
-%$$ 
 
+%\end{comment}
 
 
 
@@ -861,17 +862,18 @@ The true component functions are the same as in~\citep{lin2006component,huang201
 In this section we provide more specific details about the algorithms used to solve the \sail objective function. 
 
 \subsection{Least-Squares \sail with Strong Heredity} \label{ap:subsec:lssail}
-
+A more detailed algorithm for fitting the least-squares \texttt{sail} model with strong heredity is given in Algorithm~\ref{alg:lssail}.
 \begin{algorithm}
 	\caption{Blockwise Coordinate Descent for Least-Squares \texttt{sail} with Strong Heredity}\label{alg:lssail}
 	\begin{algorithmic}[1]
 		 %\algsetup{linenosize=\tiny}
-		%\small
-		\Function{\texttt{sail}}{$Y,\boldsymbol{X}, X_E, \tm{\texttt{df}},\tm{\texttt{degree}}, \epsilon$}\Comment{Algorithm for solving~\eqref{eq:objective_least-squares}}
-		\State $\Psi_j \gets $ \texttt{splines::bs}($X_j$, \texttt{df}, \texttt{degree}) for $j=1, \ldots, p$
-		\State $\widetilde\Psi_j \gets X_E \circ \Psi_j$ for $j=1, \ldots, p$
+		\small
+		\Function{\texttt{sail}}{$\boldsymbol{X},Y, X_E,\texttt{basis},\lambda, \alpha,w_j, w_E, w_{jE}, \epsilon$}\Comment{Algorithm for solving~\eqref{eq:objective_least-squares}}
+		%\State $\Psi_j \gets $ \texttt{splines::bs}($X_j$, \texttt{df}, \texttt{degree}) for $j=1, \ldots, p$
+		%\State $\widetilde\Psi_j \gets X_E \circ \Psi_j$ for $j=1, \ldots, p$
+		\State $\Psi_j \gets $ \texttt{basis}($X_j$), $\widetilde\Psi_j \gets X_E \circ \Psi_j$ for $j=1, \ldots, p$
 		%\item[]
-		\State Initialize: $\beta_0^{(0)}\gets \bar{Y}$, $\beta_E^{(0)}=\btheta_j^{(0)} \gets 0$ for $j=1, \ldots, p$.
+		\State Initialize: $\beta_0^{(0)}\gets \bar{Y}$, $\beta_E^{(0)}=\btheta_j^{(0)}=\gamma_j^{(0)} \gets 0$ for $j=1, \ldots, p$.
 		%\State Initialize: $R^\ast \gets Y $ %\Comment{Initial partial residual used for $\btheta$ update}
 		\State Set iteration counter $k \gets 0$
 		\State $R^\ast \gets Y - \beta_0^{(k)} - \beta_E^{(k)} X_E - \sum_{j}  (\bPsi_{j} + \gamma_{j}^{(k)} \beta_E^{(k)}  \widetilde\bPsi_{j}) \btheta_{j}^{(k)}$
@@ -922,7 +924,8 @@ In this section we provide more specific details about the algorithms used to so
 		\State $R^\ast \gets R^\ast + \Delta$
 		\EndIndent
 		\State $k \gets k + 1$
-		\State \Until{convergence criterion is satisfied: $\norm{\bTheta^{(k)} - \bTheta^{(k-1)}}_2^2 < \epsilon$}
+		%\State \Until{convergence criterion is satisfied: $\norm{\bTheta^{(k)} - \bTheta^{(k-1)}}_2^2 < \epsilon$}
+		\State \Until{convergence criterion is satisfied: $\abs{Q(\bTheta^{(k-1)}) - Q(\bTheta^{(k)})} /Q(\bTheta^{(k-1)})  < \epsilon$}
 		\EndFunction
 \end{algorithmic}
 \end{algorithm}
@@ -970,10 +973,7 @@ Therefore $R_t = R_s + \Delta$, and the partial residual for updating the next p
 
 \subsection{Least-Squares \sail with Weak Heredity} \label{ap:subsec:lssailweak}
 
-\section{weak heredity old}
-
-\subsection{Regularization Path}
-The \texttt{sail} model with weak heredity has the form
+The least-squares \texttt{sail} model with weak heredity has the form
 \begin{equation}
 \hat{Y}   =  \beta_0 \cdot \boldsymbol{1} + \sum_{j=1}^p \bPsi_j \btheta_j + \beta_E X_E + \sum_{j=1}^p \gamma_{j}  (X_E \circ \bPsi_j) (\beta_E\cdot \mb{1}_{m_j} + \btheta_j)
 \end{equation}
@@ -1027,37 +1027,19 @@ From the subgradient Equation~\eqref{eq:sub_gammajweak}, we see that $\gamma_j =
 \begin{equation}
 \frac{1}{w_{jE}}\abs{\frac{1}{n} \left((X_E \circ \bPsi_j)(\beta_E \cdot \mb{1}_{m_j}+\btheta_j)\right)^\top R_{(-jE)}} \leq \lambda \alpha
 \end{equation}
-
-
-
-\subsection{Lambda Max}
-
-The smallest value of $\lambda$ for which the entire parameter vector $(\beta_E,\btheta_1, \ldots, \btheta_p, \gamma_1, \ldots, \gamma_p)$ is $\boldsymbol{0}$ is:
-
-\begin{multline}
-\lambda_{max} = \frac{1}{n} \max \left\lbrace \frac{1}{(1-\alpha)w_E}\left(X_E + \sum_{j=1}^{p}\gamma_j (X_E \circ \bPsi_j)\mb{1}_{m_j}\right)^\top R_{(-E)}, \right. \\
-\left. \max_j \frac{1}{(1-\alpha)w_{j}}\norm{\left(\bPsi_j + \gamma_j (X_E \circ \bPsi_j)\right)^\top R_{(-j)}}_2, \right. \\
-\left. \max_j \frac{1}{\alpha w_{jE}}\left((X_E \circ \bPsi_j)(\beta_E \cdot \mb{1}_{m_j}+\btheta_j)\right)^\top R_{(-jE)}  \right\rbrace 
-\end{multline}
-which reduces to
-\begin{align*}
-\lambda_{max} = \frac{1}{n(1-\alpha)} \max \left\lbrace \frac{1}{w_E}\left(X_E\right)^\top R_{(-E)}, \max_j \frac{1}{w_{j}}\norm{\left(\bPsi_j\right)^\top R_{(-j)}}_2   \right\rbrace 
-\end{align*}
-
-\subsection{Optimization of Parameters}
-
 From the subgradient equations we see that 
 \begin{align}
-\hat{\beta}_0 &=  \left( Y - \sum_{j=1}^p \bPsi_j \hat\btheta_j - \hat\beta_E X_E - \sum_{j=1}^p \hat\gamma_{j}   (X_E \circ \bPsi_j)(\hat\beta_E\cdot \mb{1}_{m_j}+ \hat\btheta_j)\right)^\top \boldsymbol{1} \\
-\hat{\beta}_E & = S\left(\frac{1}{n \cdot w_E} \left(X_E + \sum_{j=1}^{p}\hat\gamma_j (X_E \circ \bPsi_j)\mb{1}_{m_j}\right)^\top R_{(-E)}, \lambda(1-\alpha)\right) \\
-\lambda (1-\alpha) w_j \dfrac{\btheta_j}{\norm{\btheta_j}_2} & =  \frac{1}{n} \left(\bPsi_j + \gamma_j (X_E \circ \bPsi_j)\right)^\top R_{(-j)} \\
-\hat\gamma_j & = S \left(\frac{1}{n \cdot w_{jE}} \left((X_E \circ \bPsi_j)(\beta_E \cdot \mb{1}_{m_j}+\btheta_j)\right)^\top R_{(-jE)}, \lambda \alpha\right)
+	\hat{\beta}_0 &=  \left( Y - \sum_{j=1}^p \bPsi_j \hat\btheta_j - \hat\beta_E X_E - \sum_{j=1}^p \hat\gamma_{j}   (X_E \circ \bPsi_j)(\hat\beta_E\cdot \mb{1}_{m_j}+ \hat\btheta_j)\right)^\top \boldsymbol{1} \\
+	\hat{\beta}_E & = S\left(\frac{1}{n \cdot w_E} \left(X_E + \sum_{j=1}^{p}\hat\gamma_j (X_E \circ \bPsi_j)\mb{1}_{m_j}\right)^\top R_{(-E)}, \lambda(1-\alpha)\right) \\
+	\lambda (1-\alpha) w_j \dfrac{\btheta_j}{\norm{\btheta_j}_2} & =  \frac{1}{n} \left(\bPsi_j + \gamma_j (X_E \circ \bPsi_j)\right)^\top R_{(-j)} \label{eq:thetajweak} \\
+	\hat\gamma_j & = S \left(\frac{1}{n \cdot w_{jE}} \left((X_E \circ \bPsi_j)(\beta_E \cdot \mb{1}_{m_j}+\btheta_j)\right)^\top R_{(-jE)}, \lambda \alpha\right)
 \end{align}
-where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operator 
+where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operator. As was the case in the strong heredity \sail model, there are closed form solutions for the intercept and $\beta_E$, each $\gamma_j$ also has a closed form solution and can be solved efficiently for $j=1, \ldots, p$ using the coordinate descent procedure implemented in the \texttt{glmnet} package~\citep{friedman2010regularization}, while we use the quadratic majorization technique implemented in the \texttt{gglasso} package~\citep{yang2015fast} to solve~\eqref{eq:thetajweak}. Algorithm~\ref{alg:sailweak} details the procedure used to fit the least-squares weak heredity \sail model.
 
 \begin{algorithm}
 	\caption{Coordinate descent for least-squares \texttt{sail} with weak heredity}\label{alg:sailweak}
 	\begin{algorithmic}[1]
+		\small
 		\Function{\texttt{sail}}{$\boldsymbol{X},Y, X_E,\texttt{basis},\lambda, \alpha,w_j, w_E, w_{jE}, \epsilon$}\Comment{Algorithm for solving~\eqref{eq:objective_least-squares-weak}}
 		\State $\Psi_j \gets $ \texttt{basis}($X_j$), $\widetilde\Psi_j \gets X_E \circ \Psi_j$ for $j=1, \ldots, p$
 		%\State  for $j=1, \ldots, p$
@@ -1113,10 +1095,30 @@ where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operato
 		\State $R^\ast \gets R^\ast + \Delta$
 		\EndIndent
 		\State $k \gets k + 1$
-		\State \Until{convergence criterion is satisfied: $\norm{\bTheta^{(k)} - \bTheta^{(k-1)}}_2^2 < \epsilon$}
+		%\State \Until{convergence criterion is satisfied: $\norm{\bTheta^{(k)} - \bTheta^{(k-1)}}_2^2 < \epsilon$}
+		\State \Until{convergence criterion is satisfied: $\abs{Q(\bTheta^{(k-1)}) - Q(\bTheta^{(k)})} /Q(\bTheta^{(k-1)})  < \epsilon$}
 		\EndFunction
 	\end{algorithmic}
 \end{algorithm}
+
+
+\subsubsection{Lambda Max}
+
+The smallest value of $\lambda$ for which the entire parameter vector $(\beta_E,\btheta_1, \ldots, \btheta_p, \gamma_1, \ldots, \gamma_p)$ is $\boldsymbol{0}$ is:
+
+\begin{multline}
+\lambda_{max} = \frac{1}{n} \max \left\lbrace \frac{1}{(1-\alpha)w_E}\left(X_E + \sum_{j=1}^{p}\gamma_j (X_E \circ \bPsi_j)\mb{1}_{m_j}\right)^\top R_{(-E)}, \right. \\
+\left. \max_j \frac{1}{(1-\alpha)w_{j}}\norm{\left(\bPsi_j + \gamma_j (X_E \circ \bPsi_j)\right)^\top R_{(-j)}}_2, \right. \\
+\left. \max_j \frac{1}{\alpha w_{jE}}\left((X_E \circ \bPsi_j)(\beta_E \cdot \mb{1}_{m_j}+\btheta_j)\right)^\top R_{(-jE)}  \right\rbrace 
+\end{multline}
+which reduces to
+\begin{align*}
+\lambda_{max} = \frac{1}{n(1-\alpha)} \max \left\lbrace \frac{1}{w_E}\left(X_E\right)^\top R_{(-E)}, \max_j \frac{1}{w_{j}}\norm{\left(\bPsi_j\right)^\top R_{(-j)}}_2   \right\rbrace 
+\end{align*}
+
+This is the same $\lambda_{max}$ as the least-squares strong heredity \sail model. 
+
+
 
 
 
