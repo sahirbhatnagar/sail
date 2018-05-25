@@ -86,7 +86,7 @@ plotInterADNI(fit, x = DT[as.numeric(as.character(rownames(design))), "X175"],
               xvar = paste0("bs(X175, 3)",1:3), design = design, s = lambda.min,
               e = E, apoe = FALSE, legend = F, legend.position = "bottomleft",
               ylab = "", xlab = "Cuneus right", main = "", ylim = c(-3,2))
-legend(0.8, -1.6, c("Control", "Mild Cognitive Impairment","Alzeimer Disease"),
+legend(0.7, -1.6, c("Control", "Mild Cognitive Impairment","Alzeimer Disease"),
        col = cbbPalette[c(6,4,7)], pch = 19, bty = "n", cex = 1.6)
 
 

@@ -589,7 +589,7 @@ We describe the adaptive \sail ~in Algorithm~\ref{alg:adaptivesail}. This is a g
 
 \subsection{Flexible design matrix} \label{sec:linearsail}
 
-The definition of the basis expansion functions in~\eqref{eq:smooth} is very flexible in the sense that our algorithms are independent of this choice. As a result, the user can apply any basis expansion they want. In the extreme case, we can apply the identity map, i.e., $f_j(X_j) = X_j$ which leads to a linear interaction model (referred to as \texttt{linear} \sail). When little information is known a priori about the relationship between the predictors and the response, by default, we choose to apply the same basis expansion to all columns of $\bX$. This is a reasonable approach when all the variables are continuous. However, there are often instances when our data contains a combination of categorical and continuous variables. In these situations it may be sub-optimal to apply a basis expansion to the categorical variables. Owing to the flexible nature of our algorithm, we can handle this scenario in our implementation by allowing a user-defined design matrix. The only extra information needed is the group membership of each column in the design matrix. We provide such an example in the \sail ~package showcase in Section~\ref{ap:showcase} of the Appendix. 
+The definition of the basis expansion functions in~\eqref{eq:smooth} is very flexible in the sense that our algorithms are independent of this choice. As a result, the user can apply any basis expansion they want. In the extreme case, we can apply the identity map, i.e., $f_j(X_j) = X_j$ which leads to a linear interaction model (referred to as \texttt{linear} \sail). When little information is known a priori about the relationship between the predictors and the response, by default, we choose to apply the same basis expansion to all columns of $\bX$. This is a reasonable approach when all the variables are continuous. However, there are often instances when our data contains a combination of categorical and continuous variables. In these situations it may be sub-optimal to apply a basis expansion to the categorical variables. Owing to the flexible nature of our algorithm, we can handle this scenario in our implementation by allowing a user-defined design matrix. The only extra information needed is the group membership of each column in the design matrix. We provide such an example in the \sail ~package showcase in Section~\ref{ap:userdesign} of the Appendix. 
 
 
 
@@ -714,12 +714,14 @@ The test set MSE results for each of the five simulation scenarios are shown in 
 
 We see that \sail~,\texttt{adaptive sail} and \texttt{sail weak} have the best performance in terms of both MSE and yielding correct sparse models when the truth follows strong hierarchy (scenario 1a), as we would expect, since this is exactly the scenario that our method is trying to target. 
 
-<<plot-tpr-fpr-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Means $\\pm 1$ standard deviation of true positive rate vs. false positive rate from 200 simulations for each of the five scenarios.", eval=T>>=
+<<plot-tpr-fpr-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Means $\\pm 1$ standard deviation of true positive rate vs. false positive rate from 200 simulations for each of the five scenarios. $|S_0|$ is the number of truly associated variables.", eval=T>>=
 @
 
 Our method is also competitive when only main effects are present (scenario 3) and performs just as well as methods that only consider linear and non-linear main effects (\texttt{HierBasis}, \texttt{SPAM}), owing to the penalization applied to the interaction parameter. Due to the heredity property, our method is unable to capture any of the truly associated variables when only interactions are present (scenario 1c). However, the other methods also fail to capture any signal, with the exception of \texttt{GLinternet} which has a high TPR and FPR. When only linear effects and interactions are present (scenario 2), we see that \texttt{linear sail} has a high TPR and low FPR as compared to the other linear interaction methods (\texttt{lassoBT} and \texttt{GLinternet}) though the test set MSE isn't as good. The \texttt{lasso} and \texttt{adaptive lasso} have good test set MSE performance but poor sensitivity. Additional results are available in Section~\ref{ap:simulation} of the Appendix. Specifically, in Figure~\ref{fig:plot-mse-nactive-sim} we plot the mean MSE against the mean number of active variables $\pm 1$ standard deviation (SD). Figures~\ref{fig:plot-tpr-sim} and~\ref{fig:plot-fpr-sim} show the true positive and false positive rates, respectively. Figure~\ref{fig:plot-nactive-sim} shows the number of active variables. 
 
-We also wanted to see if our method could correctly capture the shape of the association between the predictors and the response for both main and interaction effects. To do so, we plotted the true and predicted curves for scenario 1a) only. Figure~\ref{fig:main_eff} shows each of the four main effects, while Figures~\ref{fig:X3} and~\ref{fig:X4} show the interaction effects of $X_E$ with $f_3(X_3)$ and $f_4(X_4)$, respectively.  
+We visually inspected whether our method could correctly capture the shape of the association between the predictors and the response for both main and interaction effects. To do so, we plotted the true and predicted curves for scenario 1a) only. Figure~\ref{fig:main_eff} shows each of the four main effects with the estimated curves from each of the 200 simulations along with the true curve. We can see the effect of the penalty on the parameters, i.e., decreasing prediction variance at the cost of increased bias. This is particularly well illustrated in the bottom right panel where \sail ~smooths out the very wiggly component function $f_4(x)$.
+
+To visualize the estimated interaction effects, we ordered the 200 simulation runs by the euclidean distance between the estimated and true regression functions. Following Radchenko et al.~\citep{radchenko2010variable}, we then identified the 25th, 50th, and 75th best simulations and plotted, in Figures~\ref{fig:X3} and~\ref{fig:X4}, their interaction effects of $X_E$ with $f_3(X_3)$ and $f_4(X_4)$, respectively. We see that \sail ~does a good job at capturing the true interaction surface for $X_E \cdot f_3(X_3)$. Again, the smoothing and shrinkage effect is apparent when looking at the interaction surfaces for $X_E \cdot f_4(X_4)$
 
 
 
@@ -733,22 +735,22 @@ We also wanted to see if our method could correctly capture the shape of the ass
 
 \begin{figure}[H]
 	\centering
-	\subfloat{\includegraphics[width=0.50\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_intertruth_X3_paramIndex1_200sims.pdf}}
-	\subfloat{\includegraphics[width=0.50\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter25_X3_paramIndex1_200sims.pdf}}\quad 
-	\subfloat{\includegraphics[width=0.50\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter50_X3_paramIndex1_200sims.pdf}}
-	\subfloat{\includegraphics[width=0.50\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter75_X3_paramIndex1_200sims.pdf}}
-	\caption{True and estimated interaction effects for $E \cdot f(X_3)$ in simulation scenario 1a).}
+	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_intertruth_X3_paramIndex1_200sims.pdf}}
+	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter25_X3_paramIndex1_200sims.pdf}}\quad 
+	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter50_X3_paramIndex1_200sims.pdf}}
+	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter75_X3_paramIndex1_200sims.pdf}}
+	\caption{True and estimated interaction effects for $X_E \cdot f_3(X_3)$ in simulation scenario 1a).}
 	\label{fig:X3}
 \end{figure}
 
 
 \begin{figure}[H]
 	\centering
-	\subfloat{\includegraphics[width=0.50\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_intertruth_X4_paramIndex1_200sims.pdf}}
-	\subfloat{\includegraphics[width=0.50\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter25_X4_paramIndex1_200sims.pdf}}\quad 
-	\subfloat{\includegraphics[width=0.50\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter50_X4_paramIndex1_200sims.pdf}}
-	\subfloat{\includegraphics[width=0.50\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter75_X4_paramIndex1_200sims.pdf}}
-	\caption{True and estimated interaction effects for $E \cdot f(X_4)$ in simulation scenario 1a).}
+	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_intertruth_X4_paramIndex1_200sims.pdf}}
+	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter25_X4_paramIndex1_200sims.pdf}}\quad 
+	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter50_X4_paramIndex1_200sims.pdf}}
+	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter75_X4_paramIndex1_200sims.pdf}}
+	\caption{True and estimated interaction effects for $X_E \cdot f_4(X_4)$ in simulation scenario 1a).}
 	\label{fig:X4}
 \end{figure}
 
@@ -757,31 +759,60 @@ We also wanted to see if our method could correctly capture the shape of the ass
 
 
 \section{Real Data Application}
+In this section we illustrate \sail ~on several real data examples.
 
-\subsection{ADNI}
 
-<<load-ADNI-data, eval=F, results = 'hide'>>=
+\subsection{Alzheimer's Disease Neuroimaging Initiative}
+
+Alzheimer's is an irreversible neurodegenerative disease that results in a loss of mental function due to the deterioration of brain tissue. The overall goal of the Alzheimer's Disease Neuroimaging Initiative (ADNI) is to validate biomarkers for use in
+Alzheimer's disease clinical treatment trials~\citep{petersen2010alzheimer}. The patients were selected into the study based on their clinical diagnosis: controls, mild cognitive impairment or Alzheimer's disease. PET amyloid imaging was used to asses amyloid beta (A$\beta$) protein load in 96 brain regions. The response was general cognitive decline measured by a continuous mini-mental state examination score. We applied \sail ~to this data to see if there were any non-linear interactions between clinical diagnosis and A$\beta$ protein in the 96 brain regions on mini-mental state examination. 
+
+There were a total of 343 patients who we divided randomly into equal sized training/validation/test splits. We ran the strong heredity \sail ~with cubic B-splines and $\alpha=0.1$. We also applied the \texttt{lasso, lassoBT, HierBasis} and \texttt{GLinternet} to this data. Using the same default settings and strategy as the simulation study, we ran each method on the training data, determined the optimal tuning parameter on the validation data, and assessed MSE on the test data. We repeated this process 200 times. 
+
+<<load-ADNI-data, eval=T, results = 'hide'>>=
 @
 
-<<get-best-sail-model, eval=F, results = 'hide'>>=
+<<get-best-sail-model, eval=T, results = 'hide'>>=
+@
+
+<<error-crosses-adni, fig.asp=1, fig.width=8, fig.heigh=6, fig.pos = 'H', fig.cap="Estimated interaction effects by \texttt{sail} for ADNI data.", eval=T>>=
+@
+
+In Figure~\ref{fig:error-crosses-adni} we plot the mean test set MSE vs. the mean number of active variables $\pm 1$ SD. We see that \sail ~produces the sparsest models but doesn't perform as well as \texttt{HierBasis} and \texttt{GLinternet} in terms of MSE. \sail ~achieves similar MSE to both the \texttt{lasso} and \texttt{lassoBT} with fewer variables on average. \texttt{GLinternet} produces the largest models. 
+
+To illustrate a feature of our method, we chose the train/validate/test split which led to the best test set MSE, and then plotted the selected main effects and interaction effects in Figures~\ref{fig:plot-main-adni} and~\ref{fig:plot-inter-adni}, respectively.
+<<plot-main-adni, fig.asp=1, fig.width=12, fig.heigh=8, fig.pos = 'H', fig.cap="Estimated main effect component functions by \\texttt{sail} for ADNI data.", eval=T>>=
 @
 
 
-<<plot-main-adni, fig.asp=1, fig.width=12, fig.heigh=8, fig.pos = 'H', fig.cap="Estimated main effect component functions by \\texttt{sail} for ADNI data.", eval=F>>=
-@
-
-<<plot-inter-adni, fig.asp=1, fig.width=10, fig.heigh=7, fig.pos = 'H', fig.cap="Estimated interaction effects by \texttt{sail} for ADNI data.", eval=F>>=
-@
 
 
-<<error-crosses-adni, fig.asp=1, fig.width=9, fig.heigh=7, fig.pos = 'H', fig.cap="Estimated interaction effects by \texttt{sail} for ADNI data.", eval=F>>=
+<<plot-inter-adni, fig.width=12, fig.heigh=8, fig.pos = 'H', fig.cap="Estimated interaction effects by \texttt{sail} for ADNI data.", eval=T>>=
 @
 
 
-\section{Software}
+
+
+
 
 
 \section{Discussion}
+
+\begin{itemize}
+	\item Strengths
+\begin{itemize}
+	\item Non-linear environment interactions with strong heredity
+property in p >> N
+\item sail allows for flexible modeling of input variables
+\end{itemize}
+\item Limitations
+\begin{itemize}
+	\item sail can currently only handle E · f(X) or f(E) · X
+Does not allow for f(X1 , E) or f(X1 , X2 )
+\item Memory footprint is an issue
+\end{itemize}
+\end{itemize}
+
 
 
 %\section{Application}
@@ -1068,6 +1099,9 @@ This is the same $\lambda_{max}$ as the least-squares strong heredity \sail ~mod
 
 \section{Simulation Results} \label{ap:simulation}
 
+<<simulation-results, eval=T, results = 'hide'>>=
+@
+
 <<plot-mse-nactive-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Test set MSE vs number of active variables results.", eval=T>>=
 @
 
@@ -1309,92 +1343,79 @@ We see from the plot above that the black line (corresponding to the $X_E$ varia
 
 \subsection{User-Defined Design Matrix} \label{ap:userdesign}
 
-A limitation of the `sail` method is that the same basis expansion function $f(\cdot)$ is applied to all columns of the predictor matrix $\mathbf{X}$. Being able to automatically select linear vs. nonlinear components was not a focus of our paper, but is an active area of reserch for main effects only e.g. [ref1](https://cran.r-project.org/package=gamsel
-) and [ref2](https://github.com/asadharis/HierBasis).   
+A limitation of the  \texttt{sail} method is that the same basis expansion function $f(\cdot)$ is applied to all columns of the predictor matrix $\mathbf{X}$. Being able to automatically select linear vs. nonlinear components was not a focus of our paper, but is an active area of research for main effects only e.g. \href{https://cran.r-project.org/package=gamsel}{\texttt{gamsel}} and \href{https://github.com/asadharis/HierBasis}{\texttt{HierBasis}}.   
 
 However, if the user has some prior knowledge on possible effect relationships, then they can supply their own design matrix. This can be useful for example, when one has a combination of categorical (e.g. gender, race) and continuous variables, but would only like to apply $f(\cdot)$ on the continuous variables. We provide an example below to illustrate this functionality.  
 
+We use the simulated dataset \texttt{sailsim} provided in our package. We first add a categorical variable \texttt{race} to the data:
 
-## User-defined design matrix
-
-We use the simulated dataset `sailsim` provided in our package. We first add a categorical variable `race` to the data:
-
-```{r}
+<<echo=T>>=
 set.seed(1234)
 library(sail)
 x_df <- as.data.frame(sailsim$x)
-x_df$race <- factor(sample(1:5, nrow(x_df), replace = TRUE))
+x_df$race <- factor(sample(1:2, nrow(x_df), replace = TRUE))
 table(x_df$race)
-```
+@
 
-We then use the `model.matrix` function to create the design matrix. Note that the intercept should not be included, as this is added internally in the `sail` function. This is why we add 0 to the formula. Notice also the flexibility we can have by including different basis expansions to each predictor:
+We then use the \texttt{model.matrix} function to create the design matrix. Note that the intercept should not be included, as this is computed internally in the \texttt{sail} function. This is why we add 0 to the formula. Notice also the flexibility we can have by including different basis expansions to each predictor:
 
-```{r}
+<<echo=T>>=
 library(splines)
 x <- stats::model.matrix(~ 0 +  bs(X1, degree = 5) + bs(X2, degree = 3) + ns(X3, df = 8) + 
 bs(X4, degree = 6) + X5 + poly(X6,2) + race, data = x_df)
 head(x)
-```
+@
 
-One benefit of using `stats::model.matrix` is that it returns the group membership as an attribute:
+One benefit of using \texttt{stats::model.matrix} is that it returns the group membership as an attribute:
 
-```{r}
+<<echo=T>>=
 attr(x, "assign")
-```
+@
 
-The group membership must be supplied to the `sail` function. This information is needed for the group lasso penalty, which will select the whole group as zero or non-zero.
+The group membership must be supplied to the \texttt{sail} function. This information is needed for the group lasso penalty, which will select the whole group as zero or non-zero.
 
-## Fit the `sail` model
+\subsubsection{Fit the \sail ~Model}
 
-We need to set the argument `expand = FALSE` and provide the group membership. The first element of the group membership corresponds to the first column of `x`, the second element to the second column of `x`, and so on. 
+We need to set the argument \texttt{expand = FALSE} and provide the group membership. The first element of the group membership corresponds to the first column of \texttt{x}, the second element to the second column of \texttt{x}, and so on. 
 
-```{r}
+<<ehco=T>>=
 fit_design <- sail(x = x, y = sailsim$y, e = sailsim$e, 
 expand = FALSE,
 group = attr(x, "assign"), verbose = 0)
-```
+@
 
-We can plot the solution path for both main effects and interactions using the `plot` method for objects of class `sail`:
+We can plot the solution path for both main effects and interactions using the \texttt{plot} method for objects of class \texttt{sail}:
 
-```{r}
+<<ehco=T>>=
 plot(fit_design)
-```
+@
 
 In this instance, since we provided a user-defined design matrix and `expand = FALSE`, the numbers at the top of the plot represent the total number of non-zero coefficients. 
 
 
-## Find the optimal value for lambda
+\subsubsection{Find the Optimal Value for $\lambda$}
 
 We can use cross-validation to find the optimal value of lambda:
 
-```{r}
-library(doMC)
-registerDoMC(cores = 2)
+<<ehco=T>>=
 cvfit_design <- cv.sail(x = x, y = sailsim$y, e = sailsim$e, 
 expand = FALSE,
-group = attr(x, "assign"), verbose = 0,
+group = attr(x, "assign"),
 nfolds = 10, parallel = TRUE)
-```
+@
 
 We can plot the cross-validated mean squared error as a function of lambda:
 
-```{r}
+<<ehco=T>>=
 plot(cvfit_design)
-```
-
-The estimated coefficients at `lambda.1se` and `lambda.min` are:
-
-```{r}
-cbind(coef(cvfit_design, s="lambda.1se"), # lambda.1se is the default
-coef(cvfit_design, s = "lambda.min"))
-```
+@
 
 
-The estimated non-zero coefficients at `lambda.1se`:
+The estimated non-zero coefficients at \texttt{lambda.1se}:
 
-```{r}
+<<ehco=T>>=
 predict(cvfit_design, type = "nonzero")
-```
+@
 
 
 
