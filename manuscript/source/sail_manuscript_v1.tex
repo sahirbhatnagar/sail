@@ -97,6 +97,7 @@
 %\usepackage[ruled,vlined,linesnumbered,noresetcount]{algorithm2e}
 %\usepackage[ruled,vlined,noresetcount]{algorithm2e}
 \usepackage{algorithm}
+\usepackage{chngcntr} % for figure labels in appendix
 %\usepackage[ruled,vlined,noresetcount]{algorithm2e}
 \usepackage[noend]{algpseudocode}
 \algrenewcommand\textproc{}% Used to be \textsc
@@ -702,7 +703,7 @@ We compare the above listed methods with our main proposal \texttt{sail}, as wel
 
 
 \subsection{Simulation Design}
-The covariates are simulated as follows. First, we generate $w_1,\ldots, w_p, u,v$ independently from a standard normal distribution truncated to the interval [0,1] for $i=1,\ldots,n$. Then we set $x_j = (w_j + t\cdot u)/(1 + t)$ for $j = 1,\ldots, 4$ and $x_j = (w_j + t\cdot v)/(1 + t)$ for $j = 5,\ldots, p$, where the parameter $t$ controls the amount of correlation among predictors. This leads to a compound symmetry correlation structure where $Corr(x_j,x_k) = t^2/(1+t^2)$, for $1 \leq j \leq 4, 1 \leq k \leq 4$, and $Corr(x_j,x_k) = t^2/(1+t^2)$, for $5 \leq j \leq p, 5 \leq k \leq p$, but the covariates of the nonzero and zero components are independent~\citep{lin2006component,huang2010variable}. We consider the case when $p=1000$ and $t=0,1,2$. 
+The covariates are simulated as follows. First, we generate $w_1,\ldots, w_p, u,v$ independently from a standard normal distribution truncated to the interval [0,1] for $i=1,\ldots,n$. Then we set $x_j = (w_j + t\cdot u)/(1 + t)$ for $j = 1,\ldots, 4$ and $x_j = (w_j + t\cdot v)/(1 + t)$ for $j = 5,\ldots, p$, where the parameter $t$ controls the amount of correlation among predictors. This leads to a compound symmetry correlation structure where $Corr(x_j,x_k) = t^2/(1+t^2)$, for $1 \leq j \leq 4, 1 \leq k \leq 4$, and $Corr(x_j,x_k) = t^2/(1+t^2)$, for $5 \leq j \leq p, 5 \leq k \leq p$, but the covariates of the nonzero and zero components are independent~\citep{lin2006component,huang2010variable}. We consider the case when $p=1000$ and $t=0$. 
 
 
 We evaluate the performance of our method on three of its defining characteristics: 1) the strong heredity property, 2) non-linearity of predictor effects and 3) interactions.
@@ -720,50 +721,65 @@ We evaluate the performance of our method on three of its defining characteristi
 	\item \textbf{Non-linearity}
 	\begin{enumerate}
 		% wording taken from Lim and Hastie
-		\item Truth is linear \[Y = \sum_{j=1}^{4}\beta_j X_{j} + \beta_E \cdot X_{E} +  X_{E} \cdot X_{3} + X_{E} \cdot X_{4} + \varepsilon\]
+		\item[---] Truth is linear \[Y = 5X_1 + 3(X_2 + 1) + 4X_3 + 6(X_4-2) + \beta_E \cdot X_{E} +  X_{E} \cdot 4X_3 + X_{E} \cdot 6(X_4-2) + \varepsilon\]
 	\end{enumerate}
 	
 	\item \textbf{Interactions}
 	\begin{enumerate}
 		
-		\item Truth only has main effects  \[Y = \sum_{j=1}^{4} f_j(X_{j}) + \beta_E \cdot X_{E} + \varepsilon\]
+		\item[---] Truth only has main effects  \[Y = \sum_{j=1}^{4} f_j(X_{j}) + \beta_E \cdot X_{E} + \varepsilon\]
 	\end{enumerate}
 	
 	
 \end{enumerate}
 
-The true component functions are the same as in~\citep{lin2006component,huang2010variable} and are given by $f_1(t) = 5t$, $f_2(t) = 3(2t-1)^2$, $f_3(t) = 4\sin(2\pi t) / (2-\sin(2\pi t))$, $f_4(t) = 6(0.1\sin(2\pi t) + 0.2 \cos(2\pi t)  + 0.3 \sin(2\pi t)^2 + 0.4\cos(2\pi t)^3+0.5\sin(2\pi t)^3)$. Using this setup, we generated a training set of $n=200$, a validation set of $n=200$ and a test set of $n=800$. The training set was used to fit the model and the validation set was used to select the optimal tuning parameter corresponding to the minimum prediction mean-squared error. Performance was assessed on the test set. 
+The true component functions are the same as in~\citep{lin2006component,huang2010variable} and are given by $f_1(t) = 5t$, $f_2(t) = 3(2t-1)^2$, $f_3(t) = 4\sin(2\pi t) / (2-\sin(2\pi t))$, $f_4(t) = 6(0.1\sin(2\pi t) + 0.2 \cos(2\pi t)  + 0.3 \sin(2\pi t)^2 + 0.4\cos(2\pi t)^3+0.5\sin(2\pi t)^3)$. We set $\beta_E = 2$ and draw $\varepsilon$ from a normal distribution with variance chosen such that the signal-to-noise ratio is 2. Using this setup, we generated 200 replications consisting of a training set of $n=200$, a validation set of $n=200$ and a test set of $n=800$. The training set was used to fit the model and the validation set was used to select the optimal tuning parameter corresponding to the minimum prediction mean squared error (MSE). Variable selection results including true positive rate, false positive rate and number of active variables (the number of variables with a non-zero coefficient estimate) were assessed on the training set and MSE was assessed on the test set. %In the case of the non-linear methods, one variable may have several non-zero estimated coefficients
 
 \subsection{Results}
 
-Results are shown in Figure~\ref{fig:simulation-results}.
+The test set MSE results for each of the five simulation scenarios are shown in Figure~\ref{fig:plot-mse-sim}, while Figure~\ref{fig:plot-tpr-fpr-sim} shows the mean true positive rate (TPR) vs. the mean false positive rate (FPR) $\pm 1$ standard deviation (SD). 
 
 
 
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-mse-sim-1} 
+
+}
+
+\caption[Boxplots of the test set mean squared error from 200 simulations for each of the five simulation scenarios]{Boxplots of the test set mean squared error from 200 simulations for each of the five simulation scenarios.}\label{fig:plot-mse-sim}
+\end{figure}
+
+
+\end{knitrout}
+
+We see that \sail~,\texttt{adaptive sail} and \texttt{sail weak} have the best performance in terms of both MSE and yielding correct sparse models when the truth follows strong hierarchy (scenario 1a), as we would expect, since this is exactly the scenario that our method is trying to target. 
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-tpr-fpr-sim-1} 
+
+}
+
+\caption[Means $\pm 1$ standard deviation of true positive rate vs]{Means $\pm 1$ standard deviation of true positive rate vs. false positive rate from 200 simulations for each of the five scenarios.}\label{fig:plot-tpr-fpr-sim}
+\end{figure}
+
+
+\end{knitrout}
+
+Our method is also competitive when only main effects are present (scenario 3) and performs just as well as methods that only consider linear and non-linear main effects (\texttt{HierBasis}, \texttt{SPAM}), owing to the penalization applied to the interaction parameter. Due to the heredity property, our method is unable to capture any of the truly associated variables when only interactions are present (scenario 1c). However, the other methods also fail to capture any signal, with the exception of \texttt{GLinternet} which has a high TPR and FPR. When only linear effects and interactions are present (scenario 2), we see that \texttt{linear sail} has a high TPR and low FPR as compared to the other linear interaction methods (\texttt{lassoBT} and \texttt{GLinternet}) though the test set MSE isn't as good. The \texttt{lasso} and \texttt{adaptive lasso} have good test set MSE performance but poor sensitivity. Additional results are available in Section~\ref{ap:simulation} of the Appendix. Specifically, in Figure~\ref{fig:plot-mse-nactive-sim} we plot the mean MSE against the mean number of active variables $\pm 1$ standard deviation (SD). Figures~\ref{fig:plot-tpr-sim} and~\ref{fig:plot-fpr-sim} show the true positive and false positive rates, respectively. Figure~\ref{fig:plot-nactive-sim} shows the number of active variables. 
+
+We also wanted to see if our method could correctly capture the shape of the association between the predictors and the response for both main and interaction effects. To do so, we plotted the true and predicted curves for scenario 1a) only. Figure~\ref{fig:main_eff} shows each of the four main effects, while Figures~\ref{fig:X3} and~\ref{fig:X4} show the interaction effects of $X_E$ with $f_3(X_3)$ and $f_4(X_4)$, respectively.  
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\begin{comment}
+%\begin{comment}
 \begin{figure}[H]
 	\centering
 	\includegraphics[scale=0.61]{/home/sahir/git_repositories/sail/my_sims/figures/sail_main_eff_paramIndex1_200sims.pdf}
-	\caption{text}\label{fig:main_eff}
+	\caption{True and estimated main effect component functions for scenario 1a). The estimated curves represent the results from each one of the 200 simulations conducted.}\label{fig:main_eff}
 \end{figure}
 
 
@@ -788,12 +804,8 @@ Results are shown in Figure~\ref{fig:simulation-results}.
 	\label{fig:X4}
 \end{figure}
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[scale=0.61]{/home/sahir/git_repositories/sail/my_sims/figures/upset_selection_sail_paramIndex1-2-2.pdf}
-	\caption{text}\label{fig:upset}
-\end{figure}
-\end{comment}
+
+%\end{comment}
 
 
 \section{Real Data Application}
@@ -835,6 +847,7 @@ Results are shown in Figure~\ref{fig:simulation-results}.
 \newpage
 
 \appendix
+\counterwithin{figure}{section}
 
 \section{Algorithm Details}
 
@@ -912,7 +925,7 @@ A more detailed algorithm for fitting the least-squares \texttt{sail} model with
 \newpage
 
 
-\subsection{Details on update for $\btheta$} \label{ap:subsec:Delta}
+\subsection{Details on Update for $\btheta$} \label{ap:subsec:Delta}
 
 Here we discuss a computational speedup in the updates for the $\btheta$ parameter. The partial residual ($R_{s}$) used for updating $\btheta_s$ ($s \in {1,\ldots, p}$) at the $k$th iteration is given by
 \begin{align}
@@ -1098,8 +1111,72 @@ which reduces to
 This is the same $\lambda_{max}$ as the least-squares strong heredity \sail model. 
 
 
+\FloatBarrier 
 
-\section{\sail package showcase} \label{ap:showcase}
+\section{Simulation Results} \label{ap:simulation}
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-mse-nactive-sim-1} 
+
+}
+
+\caption[Test set MSE vs number of active variables results]{Test set MSE vs number of active variables results.}\label{fig:plot-mse-nactive-sim}
+\end{figure}
+
+
+\end{knitrout}
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-tpr-sim-1} 
+
+}
+
+\caption[True positive rate results]{True positive rate results.}\label{fig:plot-tpr-sim}
+\end{figure}
+
+
+\end{knitrout}
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-fpr-sim-1} 
+
+}
+
+\caption[False positive rate results]{False positive rate results.}\label{fig:plot-fpr-sim}
+\end{figure}
+
+
+\end{knitrout}
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-nactive-sim-1} 
+
+}
+
+\caption[Number of active variables results]{Number of active variables results.}\label{fig:plot-nactive-sim}
+\end{figure}
+
+
+\end{knitrout}
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.61]{/home/sahir/git_repositories/sail/my_sims/figures/upset_selection_sail_paramIndex1-2-2.pdf}
+	\caption{Selection rates across 200 simulations of scenario 1a) for strong heredity \sail.}\label{fig:upset}
+\end{figure}
+
+
+\section{\sail ~Package Showcase} \label{ap:showcase}
 
 In this section we briefly introduce the freely available and open source \sail package in \texttt{R}. More comprehensive documentation is available at \url{https://sahirbhatnagar.com/sail}.
 

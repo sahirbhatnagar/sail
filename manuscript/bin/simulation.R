@@ -33,12 +33,12 @@ DT[, method := factor(Method, levels = c("lasso","adaptive lasso","lassoBT", "GL
 DT[, scenario:= as.numeric(as.character(stringr::str_extract_all(parameterIndex, "\\d", simplify = T)))]
 # DT[, table(scenario)]
 DT[, scenario := replace(scenario, which(scenario==6), 4)]
-DT[, scen := case_when(scenario==1 ~ "Strong Hierarchy",
-                       scenario==2 ~ "Weak Hierarchy",
-                       scenario==3 ~ "Interactions Only",
-                       scenario==4 ~ "Linear Effects",
-                       scenario==5 ~ "Main Effects Only")]
-DT[, scen := factor(scen, levels = c("Strong Hierarchy", "Weak Hierarchy","Interactions Only","Linear Effects", "Main Effects Only"))]
+DT[, scen := case_when(scenario==1 ~ "1a) Strong Hierarchy",
+                       scenario==2 ~ "1b) Weak Hierarchy",
+                       scenario==3 ~ "1c) Interactions Only",
+                       scenario==4 ~ "2) Linear Effects",
+                       scenario==5 ~ "3) Main Effects Only")]
+DT[, scen := factor(scen, levels = c("1a) Strong Hierarchy", "1b) Weak Hierarchy","1c) Interactions Only","2) Linear Effects", "3) Main Effects Only"))]
 # DT$scen %>% table
 #Truth obeys strong hierarchy (parameterIndex = 1)
 #Truth obeys weak hierarchy (parameterIndex = 2)
@@ -68,7 +68,9 @@ p1_mse <- ggplot(DT, aes(method, mse, fill = method)) +
          caption="") +
     # panel_border()+
     # background_grid()+
-    theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1))
+    theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1),
+                             legend.text=element_text(size=14),
+                             strip.text = element_text(size=14))
 
 # , legend.text=element_text(size=18)
 
@@ -82,16 +84,16 @@ df_mse_nactive <- DT[, c("method","scen","mse","nactive")] %>%
   group_by(method, scen) %>%
   summarise(mean.mse = mean(mse, na.rm = TRUE), sd.mse = sd(mse, na.rm = TRUE),
          mean.nactive = mean(nactive, na.rm = TRUE), sd.nactive = sd(nactive, na.rm = TRUE)) %>%
-  mutate(scen = case_when(scen == "Strong Hierarchy" ~ "Strong Hierarchy (|S_0| = 7)",
-                          scen == "Weak Hierarchy" ~ "Weak Hierarchy (|S_0| = 5)",
-                          scen == "Interactions Only" ~ "Interactions Only (|S_0| = 2)",
-                          scen == "Linear Effects" ~ "Linear Effects (|S_0| = 7)",
-                          scen == "Main Effects Only" ~ "Main Effects Only (|S_0| = 5)")) %>%
-  mutate(scen = factor(scen, levels = c("Strong Hierarchy (|S_0| = 7)",
-                                        "Weak Hierarchy (|S_0| = 5)",
-                                        "Interactions Only (|S_0| = 2)",
-                                        "Linear Effects (|S_0| = 7)",
-                                        "Main Effects Only (|S_0| = 5)")))
+  mutate(scen = case_when(scen == "1a) Strong Hierarchy" ~ "1a) Strong Hierarchy (|S_0| = 7)",
+                          scen == "1b) Weak Hierarchy" ~ "1b) Weak Hierarchy (|S_0| = 5)",
+                          scen == "1c) Interactions Only" ~ "1c) Interactions Only (|S_0| = 2)",
+                          scen == "2) Linear Effects" ~ "2) Linear Effects (|S_0| = 7)",
+                          scen == "3) Main Effects Only" ~ "3) Main Effects Only (|S_0| = 5)")) %>%
+  mutate(scen = factor(scen, levels = c("1a) Strong Hierarchy (|S_0| = 7)",
+                                        "1b) Weak Hierarchy (|S_0| = 5)",
+                                        "1c) Interactions Only (|S_0| = 2)",
+                                        "2) Linear Effects (|S_0| = 7)",
+                                        "3) Main Effects Only (|S_0| = 5)")))
 
 p1_mse_nactive <- ggplot(data = df_mse_nactive, aes(x = mean.nactive, y = mean.mse, color = method, label = method)) +
   geom_point(size = 2.1) +
@@ -122,7 +124,9 @@ p1_mse_nactive <- ggplot(data = df_mse_nactive, aes(x = mean.nactive, y = mean.m
        subtitle="Based on 200 simulations",
        caption="") +
   theme_ipsum_rc(axis_title_just = "bt") +
-  theme(legend.position = "right")
+  theme(legend.position = "right",
+        legend.text=element_text(size=14),
+        strip.text = element_text(size=14))
 
 reposition_legend(p1_mse_nactive, 'center', panel='panel-2-3')
 
@@ -157,7 +161,9 @@ p1_tpr <- ggplot(DT, aes(method, tpr, fill = method)) +
        title="True Positive Rate",
        subtitle="Based on 200 simulations",
        caption="") +
-  theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1))
+  theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1),
+                           legend.text=element_text(size=14),
+                           strip.text = element_text(size=14))
 
 reposition_legend(p1_tpr, 'center', panel='panel-2-3')
 
@@ -177,7 +183,9 @@ p1_fpr <- ggplot(DT, aes(method, fpr, fill = method)) +
        title="False Positive Rate",
        subtitle="Based on 200 simulations",
        caption="") +
-   theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1))
+   theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1),
+                            legend.text=element_text(size=14),
+                            strip.text = element_text(size=14))
 
 
 reposition_legend(p1_fpr, 'center', panel='panel-2-3')
@@ -195,7 +203,9 @@ p1_nactive <- ggplot(DT, aes(method, nactive, fill = method)) +
        title="Number of active variables",
        subtitle="Based on 200 simulations",
        caption="") +
-  theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1))
+  theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1),
+                           legend.text=element_text(size=14),
+                           strip.text = element_text(size=14))
 
 
 reposition_legend(p1_nactive, 'center', panel='panel-2-3')
@@ -210,16 +220,16 @@ df_tpr_fpr <- DT[, c("method","scen","tpr","fpr")] %>%
   group_by(method, scen) %>%
   summarise(mean.tpr = mean(tpr, na.rm = TRUE), sd.tpr = sd(tpr, na.rm = TRUE),
             mean.fpr = mean(fpr, na.rm = TRUE), sd.fpr = sd(fpr, na.rm = TRUE)) %>%
-  mutate(scen = case_when(scen == "Strong Hierarchy" ~ "Strong Hierarchy (|S_0| = 7)",
-                          scen == "Weak Hierarchy" ~ "Weak Hierarchy (|S_0| = 5)",
-                          scen == "Interactions Only" ~ "Interactions Only (|S_0| = 2)",
-                          scen == "Linear Effects" ~ "Linear Effects (|S_0| = 7)",
-                          scen == "Main Effects Only" ~ "Main Effects Only (|S_0| = 5)")) %>%
-  mutate(scen = factor(scen, levels = c("Strong Hierarchy (|S_0| = 7)",
-                                        "Weak Hierarchy (|S_0| = 5)",
-                                        "Interactions Only (|S_0| = 2)",
-                                        "Linear Effects (|S_0| = 7)",
-                                        "Main Effects Only (|S_0| = 5)")))
+  mutate(scen = case_when(scen == "1a) Strong Hierarchy" ~ "1a) Strong Hierarchy (|S_0| = 7)",
+                          scen == "1b) Weak Hierarchy" ~ "1b) Weak Hierarchy (|S_0| = 5)",
+                          scen == "1c) Interactions Only" ~ "1c) Interactions Only (|S_0| = 2)",
+                          scen == "2) Linear Effects" ~ "2) Linear Effects (|S_0| = 7)",
+                          scen == "3) Main Effects Only" ~ "3) Main Effects Only (|S_0| = 5)")) %>%
+  mutate(scen = factor(scen, levels = c("1a) Strong Hierarchy (|S_0| = 7)",
+                                        "1b) Weak Hierarchy (|S_0| = 5)",
+                                        "1c) Interactions Only (|S_0| = 2)",
+                                        "2) Linear Effects (|S_0| = 7)",
+                                        "3) Main Effects Only (|S_0| = 5)")))
 
 p1_tpr_fpr <- ggplot(data = df_tpr_fpr, aes(x = mean.fpr, y = mean.tpr, color = method, label = method)) +
   geom_point(size = 2.1) +
@@ -250,7 +260,9 @@ p1_tpr_fpr <- ggplot(data = df_tpr_fpr, aes(x = mean.fpr, y = mean.tpr, color = 
        subtitle="Based on 200 simulations",
        caption="") +
   theme_ipsum_rc(axis_title_just = "bt") +
-  theme(legend.position = "right")
+  theme(legend.position = "right",
+        legend.text=element_text(size=14),
+        strip.text = element_text(size=14))
 
 reposition_legend(p1_tpr_fpr, 'center', panel='panel-2-3')
 
