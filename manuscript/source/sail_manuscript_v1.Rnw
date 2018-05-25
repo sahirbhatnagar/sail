@@ -335,7 +335,7 @@ We begin with a toy example to better illustrate our method. We sample $p=20$ co
 \begin{equation}
 	Y = f_1(X_1) + f_2(X_2) + 1.75 E + 1.5 E \cdot f_2(X_2) + \varepsilon
 \end{equation}
-where $f_1(x) = -3x$, $f_2(x) = 2(2x-1)^3$ and the error term $\varepsilon$ is generated from a normal distribution with variance chosen such that the signal-to-noise ratio (SNR) is 2. We run the strong heredity \sail method with cubic b-splines and 10-fold CV to choose the optimal value of $\lambda$. We used $\alpha=0.5$ and default values were used for all other arguments. We plot the solution path for both main effects and interactions in Figure~\ref{fig:toy-solution-path} and we color the lines corresponding to the selected model. We see that our method is able to correctly identify the true model. We can also visually see the effect of the penalty and strong heredity principle working in tandem, i.e., the interaction term $E \cdot f_2(X_2)$ (orange lines in the bottom panel) can only be nonzero if the main effects $E$ and $f_2(X_2)$ (black and orange lines respectively in the top panel) are nonzero, while nonzero main effects doesn't necessarily imply a nonzero interaction. 
+where $f_1(x) = -3x$, $f_2(x) = 2(2x-1)^3$ and the error term $\varepsilon$ is generated from a normal distribution with variance chosen such that the signal-to-noise ratio (SNR) is 2. We run the strong heredity \sail ~method with cubic b-splines and 10-fold CV to choose the optimal value of $\lambda$. We used $\alpha=0.5$ and default values were used for all other arguments. We plot the solution path for both main effects and interactions in Figure~\ref{fig:toy-solution-path} and we color the lines corresponding to the selected model. We see that our method is able to correctly identify the true model. We can also visually see the effect of the penalty and strong heredity principle working in tandem, i.e., the interaction term $E \cdot f_2(X_2)$ (orange lines in the bottom panel) can only be nonzero if the main effects $E$ and $f_2(X_2)$ (black and orange lines respectively in the top panel) are nonzero, while nonzero main effects doesn't necessarily imply a nonzero interaction. 
 
 <<toy-example, eval=F>>=
 @
@@ -343,7 +343,7 @@ where $f_1(x) = -3x$, $f_2(x) = 2(2x-1)^3$ and the error term $\varepsilon$ is g
 <<toy-solution-path, fig.cap="Toy example solution path", fig.asp=0.8, fig.pos = "H", eval=F>>=
 @
 
-In Figure~\ref{fig:toy-effects}, we plot the true and estimated component functions $\hat{f}_1(X_1)$ and $E \cdot \hat{f}_2(X_2)$. Our method is able to capture the correct functional form for the nonlinear interaction. The lack-of-fit for $f_1(X_1)$ can be explained by the fact that \sail is trying to fit a cubic spline to a linear function. Nevertheless, this example demonstrates that it can still identify linear associations. 
+In Figure~\ref{fig:toy-effects}, we plot the true and estimated component functions $\hat{f}_1(X_1)$ and $E \cdot \hat{f}_2(X_2)$. Our method is able to capture the correct functional form for the nonlinear interaction. The lack-of-fit for $f_1(X_1)$ can be explained by the fact that \sail ~is trying to fit a cubic spline to a linear function. Nevertheless, this example demonstrates that it can still identify linear associations. 
 
 <<toy-effects, fig.cap="Estimated smooth functions by \\texttt{sail} method based on $\\lambda_{min}$.", fig.pos = "H", eval=F>>=
 @
@@ -472,7 +472,7 @@ From the subgradient equations~\eqref{eq:sub_b0}--\eqref{eq:sub_gammaj} we see t
 	\lambda (1-\alpha) w_j \dfrac{\btheta_j}{\norm{\btheta_j}_2} & =  \frac{1}{n} \left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R_{(-j)} \label{eq:thetaj} \\
 	\hat\gamma_j & = S \left(\frac{1}{n \cdot w_{jE}} \left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-jE)}, \lambda \alpha\right) \label{eq:gammaj}
 \end{align}
-where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operator. We see from~\eqref{eq:beta0} and~\eqref{eq:betaE} that there are closed form solutions for the intercept and $\beta_E$. From~\eqref{eq:gammaj}, each $\gamma_j$ also has a closed form solution and can be solved efficiently for $j=1, \ldots, p$ using the coordinate descent procedure implemented in the \texttt{glmnet} package~\citep{friedman2010regularization}. While there is no closed form solution for $\beta_j$, we can use a quadratic majorization technique implemented in the \texttt{gglasso} package~\citep{yang2015fast} to solve~\eqref{eq:thetaj}. From these estimates, we can compute the interaction effects using the reparametrizations presented in Table~\ref{tab:reparam}, e.g.,  $\hat{\btau}_j = \hat{\gamma}_j \hat{\beta}_E \hat{\btheta}_j$, $j=1, \ldots, p$ for the strong heredity \sail model. 
+where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operator. We see from~\eqref{eq:beta0} and~\eqref{eq:betaE} that there are closed form solutions for the intercept and $\beta_E$. From~\eqref{eq:gammaj}, each $\gamma_j$ also has a closed form solution and can be solved efficiently for $j=1, \ldots, p$ using the coordinate descent procedure implemented in the \texttt{glmnet} package~\citep{friedman2010regularization}. While there is no closed form solution for $\beta_j$, we can use a quadratic majorization technique implemented in the \texttt{gglasso} package~\citep{yang2015fast} to solve~\eqref{eq:thetaj}. From these estimates, we can compute the interaction effects using the reparametrizations presented in Table~\ref{tab:reparam}, e.g.,  $\hat{\btau}_j = \hat{\gamma}_j \hat{\beta}_E \hat{\btheta}_j$, $j=1, \ldots, p$ for the strong heredity \sail ~model. 
 We provide an overview of the computations in Algorithm~\ref{alg:psudeolssail}. A more detailed version of this algorithm is given in Section~\ref{ap:subsec:lssail} of the Appendix. 
 
 
@@ -556,7 +556,7 @@ Our method can be easily adopted to enforce the weak heredity property:
 \begin{equation}
 	\hat{\alpha}_{jE} \neq 0 \qquad \Rightarrow \qquad \hat{\beta}_j \neq 0 \qquad \tm{or} \qquad \hat{\beta}_E \neq 0   \label{eq:heredity2} \nonumber
 \end{equation}
-That is, an interaction term can only be present if at least one of it's corresponding main effects is nonzero. To do so, we reparametrize the coefficients for the interaction terms in~\eqref{eq:linpred} as $\balpha_{j} = \gamma_{j}  (\beta_E \cdot \mb{1}_{m_j} + \btheta_j)$, where $\mb{1}_{m_j}$ is a vector of ones with dimension $m_j$ (i.e. the length of $\btheta_j$). We defer the algorithm details for fitting the \sail model with weak heredity in Section~\ref{ap:subsec:lssailweak} of the Appendix, as it is very similar to Algorithm~\ref{alg:psudeolssail} for the strong heredity \sail model. 
+That is, an interaction term can only be present if at least one of it's corresponding main effects is nonzero. To do so, we reparametrize the coefficients for the interaction terms in~\eqref{eq:linpred} as $\balpha_{j} = \gamma_{j}  (\beta_E \cdot \mb{1}_{m_j} + \btheta_j)$, where $\mb{1}_{m_j}$ is a vector of ones with dimension $m_j$ (i.e. the length of $\btheta_j$). We defer the algorithm details for fitting the \sail ~model with weak heredity in Section~\ref{ap:subsec:lssailweak} of the Appendix, as it is very similar to Algorithm~\ref{alg:psudeolssail} for the strong heredity \sail ~model. 
 
 
 \subsection{Adaptive \sail}
@@ -568,11 +568,11 @@ The weights for the environment variable, main effects and interactions are give
 	\item Allows users to apply the adaptive \sail, similar to the adaptive lasso~\citep{zou2006adaptive}
 \end{enumerate}  
 
-We describe the adaptive \sail in Algorithm~\ref{alg:adaptivesail}. This is a general procedure that can be applied to the weak and strong heredity settings, as well as both least squares and logistic loss functions. We provide this capability in the \sail package using the \texttt{penalty.factor} argument. 
+We describe the adaptive \sail ~in Algorithm~\ref{alg:adaptivesail}. This is a general procedure that can be applied to the weak and strong heredity settings, as well as both least squares and logistic loss functions. We provide this capability in the \sail ~package using the \texttt{penalty.factor} argument and provide an example in Section~\ref{ap:pfac} of the Appendix.
 
 \begin{algorithm}
 	\begin{enumerate}
-		\item For a decreasing sequence $\lambda = \lambda_{max}, \ldots,\lambda_{min}$ and fixed $\alpha$ run the \sail algorithm
+		\item For a decreasing sequence $\lambda = \lambda_{max}, \ldots,\lambda_{min}$ and fixed $\alpha$ run the \sail ~algorithm
 		\item Use cross-validation or a data splitting procedure to determine the optimal value for the tuning parameter: $\lambda^{[opt]} \in \left\lbrace \lambda_{max},\ldots, \lambda_{min} \right\rbrace$
 		\item Let $\widehat{\beta_E}^{[opt]}, \widehat{\btheta}_{j}^{[opt]}$ and $\widehat{\btau}_j^{[opt]}$ for $j=1, \ldots,p$ be the coefficient estimates corresponding to the model at $\lambda^{[opt]}$
 		\item Set the weights to be
@@ -580,7 +580,7 @@ We describe the adaptive \sail in Algorithm~\ref{alg:adaptivesail}. This is a ge
 				\item[] $w_E = \left(\abs{\widehat{\beta_E}^{[opt]}}\right)^{-1}$, $w_j = \left(\Vert \widehat{\btheta}_{j}^{[opt]} \Vert_2\right)^{-1}$, 
 				$w_{jE} = \left(\Vert\widehat{\btau_j}^{[opt]}\Vert_2\right)^{-1}$ for $j=1, \ldots, p$
 		\end{enumerate}
-	\item Run the \sail algorithm with the weights defined in step 4), and use cross-validation or a data splitting procedure to choose the optimal value of $\lambda$
+	\item Run the \sail ~algorithm with the weights defined in step 4), and use cross-validation or a data splitting procedure to choose the optimal value of $\lambda$
 	\end{enumerate}
 	\caption{Adaptive \sail  ~algorithm \label{alg:adaptivesail}}
 \end{algorithm}
@@ -589,7 +589,7 @@ We describe the adaptive \sail in Algorithm~\ref{alg:adaptivesail}. This is a ge
 
 \subsection{Flexible design matrix} \label{sec:linearsail}
 
-The definition of the basis expansion functions in~\eqref{eq:smooth} is very flexible in the sense that our algorithms are independent of this choice. As a result, the user can apply any basis expansion they want. In the extreme case, we can apply the identity map, i.e., $f_j(X_j) = X_j$ which leads to a linear interaction model (referred to as \texttt{linear} \sail). When little information is known a priori about the relationship between the predictors and the response, by default, we choose to apply the same basis expansion to all columns of $\bX$. This is a reasonable approach when all the variables are continuous. However, there are often instances when our data contains a combination of categorical and continuous variables. In these situations it may be sub-optimal to apply a basis expansion to the categorical variables. Owing to the flexible nature of our algorithm, we can handle this scenario in our implementation by allowing a user-defined design matrix. The only extra information needed is the group membership of each column in the design matrix. We provide such an example in the \sail package showcase in Section~\ref{ap:showcase} of the Appendix. 
+The definition of the basis expansion functions in~\eqref{eq:smooth} is very flexible in the sense that our algorithms are independent of this choice. As a result, the user can apply any basis expansion they want. In the extreme case, we can apply the identity map, i.e., $f_j(X_j) = X_j$ which leads to a linear interaction model (referred to as \texttt{linear} \sail). When little information is known a priori about the relationship between the predictors and the response, by default, we choose to apply the same basis expansion to all columns of $\bX$. This is a reasonable approach when all the variables are continuous. However, there are often instances when our data contains a combination of categorical and continuous variables. In these situations it may be sub-optimal to apply a basis expansion to the categorical variables. Owing to the flexible nature of our algorithm, we can handle this scenario in our implementation by allowing a user-defined design matrix. The only extra information needed is the group membership of each column in the design matrix. We provide such an example in the \sail ~package showcase in Section~\ref{ap:showcase} of the Appendix. 
 
 
 
@@ -666,7 +666,7 @@ Since there is no software that directly addresses our problem, we selected comp
 
 For \texttt{GLinternet} we specified the \texttt{interactionCandidates} argument as to only consider interactions between the environment and all other $X$ variables. For all other methods we supplied ($\bX, X_E$) as the data matrix, 100 for the number of tuning parameters to fit, and used the default values otherwise\footnote[1]{\texttt{R} code for each method available at \url{https://github.com/sahirbhatnagar/sail/blob/master/my_sims/method_functions.R}}. \texttt{lassoBT} considers all pairwise interactions as there is no way for the user to restrict the search space. \texttt{SPAM} applies the same basis expansion to every column of the data matrix; we chose 5 basis spline functions. \texttt{HierBasis} and \texttt{gamsel} selects whether a term in an additive model is nonzero, linear, or a non-linear spline up to a specified max degrees of freedom per variable. 
 
-We compare the above listed methods with our main proposal \texttt{sail}, as well as \texttt{adaptive sail} (Algorithm~\ref{alg:adaptivesail}), \texttt{sail weak} which has the weak heredity property and \texttt{linear sail} as described in Section~\ref{sec:linearsail}. For each function $f_j$, we use a B-spline basis matrix with \texttt{degree=5} implemented in the \texttt{bs} function in \texttt{R}~\citep{cran}. We center the environment variable and the basis functions before running the \sail method.
+We compare the above listed methods with our main proposal \texttt{sail}, as well as \texttt{adaptive sail} (Algorithm~\ref{alg:adaptivesail}), \texttt{sail weak} which has the weak heredity property and \texttt{linear sail} as described in Section~\ref{sec:linearsail}. For each function $f_j$, we use a B-spline basis matrix with \texttt{degree=5} implemented in the \texttt{bs} function in \texttt{R}~\citep{cran}. We center the environment variable and the basis functions before running the \sail ~method.
 
 
 \subsection{Simulation Design}
@@ -804,9 +804,9 @@ We also wanted to see if our method could correctly capture the shape of the ass
 
 \section{Algorithm Details}
 
-In this section we provide more specific details about the algorithms used to solve the \sail objective function. 
+In this section we provide more specific details about the algorithms used to solve the \sail ~objective function. 
 
-\subsection{Least-Squares \sail with Strong Heredity} \label{ap:subsec:lssail}
+\subsection{Least-Squares \sail ~with Strong Heredity} \label{ap:subsec:lssail}
 A more detailed algorithm for fitting the least-squares \texttt{sail} model with strong heredity is given in Algorithm~\ref{alg:lssail}.
 \begin{algorithm}
 	\caption{Blockwise Coordinate Descent for Least-Squares \texttt{sail} with Strong Heredity}\label{alg:lssail}
@@ -916,7 +916,7 @@ Therefore $R_t = R_s + \Delta$, and the partial residual for updating the next p
 
 
 
-\subsection{Least-Squares \sail with Weak Heredity} \label{ap:subsec:lssailweak}
+\subsection{Least-Squares \sail ~with Weak Heredity} \label{ap:subsec:lssailweak}
 
 The least-squares \texttt{sail} model with weak heredity has the form
 \begin{equation}
@@ -979,7 +979,7 @@ From the subgradient equations we see that
 	\lambda (1-\alpha) w_j \dfrac{\btheta_j}{\norm{\btheta_j}_2} & =  \frac{1}{n} \left(\bPsi_j + \gamma_j (X_E \circ \bPsi_j)\right)^\top R_{(-j)} \label{eq:thetajweak} \\
 	\hat\gamma_j & = S \left(\frac{1}{n \cdot w_{jE}} \left((X_E \circ \bPsi_j)(\beta_E \cdot \mb{1}_{m_j}+\btheta_j)\right)^\top R_{(-jE)}, \lambda \alpha\right)
 \end{align}
-where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operator. As was the case in the strong heredity \sail model, there are closed form solutions for the intercept and $\beta_E$, each $\gamma_j$ also has a closed form solution and can be solved efficiently for $j=1, \ldots, p$ using the coordinate descent procedure implemented in the \texttt{glmnet} package~\citep{friedman2010regularization}, while we use the quadratic majorization technique implemented in the \texttt{gglasso} package~\citep{yang2015fast} to solve~\eqref{eq:thetajweak}. Algorithm~\ref{alg:sailweak} details the procedure used to fit the least-squares weak heredity \sail model.
+where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operator. As was the case in the strong heredity \sail ~model, there are closed form solutions for the intercept and $\beta_E$, each $\gamma_j$ also has a closed form solution and can be solved efficiently for $j=1, \ldots, p$ using the coordinate descent procedure implemented in the \texttt{glmnet} package~\citep{friedman2010regularization}, while we use the quadratic majorization technique implemented in the \texttt{gglasso} package~\citep{yang2015fast} to solve~\eqref{eq:thetajweak}. Algorithm~\ref{alg:sailweak} details the procedure used to fit the least-squares weak heredity \sail ~model.
 
 \begin{algorithm}
 	\caption{Coordinate descent for least-squares \texttt{sail} with weak heredity}\label{alg:sailweak}
@@ -1061,7 +1061,7 @@ which reduces to
 \lambda_{max} = \frac{1}{n(1-\alpha)} \max \left\lbrace \frac{1}{w_E}\left(X_E\right)^\top R_{(-E)}, \max_j \frac{1}{w_{j}}\norm{\left(\bPsi_j\right)^\top R_{(-j)}}_2   \right\rbrace 
 \end{align*}
 
-This is the same $\lambda_{max}$ as the least-squares strong heredity \sail model. 
+This is the same $\lambda_{max}$ as the least-squares strong heredity \sail ~model. 
 
 
 \FloatBarrier 
@@ -1088,14 +1088,313 @@ This is the same $\lambda_{max}$ as the least-squares strong heredity \sail mode
 	\caption{Selection rates across 200 simulations of scenario 1a) for strong heredity \sail.}\label{fig:upset}
 \end{figure}
 
+\FloatBarrier 
 
 \section{\sail ~Package Showcase} \label{ap:showcase}
 
-In this section we briefly introduce the freely available and open source \sail package in \texttt{R}. More comprehensive documentation is available at \url{https://sahirbhatnagar.com/sail}.
+In this section we briefly introduce the freely available and open source \sail ~package in \texttt{R}. More comprehensive documentation is available at \url{https://sahirbhatnagar.com/sail}. Note that this entire section is reproducible; the code and text are combined in an \texttt{.Rnw}\footnote[1]{scripts available at \url{https://github.com/sahirbhatnagar/sail/tree/master/manuscript}} file and compiled using \texttt{knitr}~\citep{xie2015dynamic}. 
 
-  
+\subsection{Installation}
+
+The package can be installed from \href{https://github.com/sahirbhatnagar/sail}{GitHub} via
 
 
+<<install-packages, eval=FALSE, echo=T>>=
+install.packages("pacman")
+pacman::p_load_gh('sahirbhatnagar/sail')
+@
+
+
+
+\subsection{Quick Start}
+
+We give a quick overview of the main functions and go into details in other vignettes. We will use the simulated data which ships with the package and can be loaded via:
+
+<<load-lib, echo=T>>=
+library(sail)
+data("sailsim")
+names(sailsim)
+@
+
+We first define a basis expansion. In this example we use B-splines with degree 5.
+
+<<echo=T>>=
+library(splines)
+f.basis <- function(x) splines::bs(x, degree = 5)
+@
+
+Next we fit the model using the most basic call to \sail
+
+<<fit-sail, echo=T>>=
+fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis)
+@
+
+\texttt{fit} is an object of class \sail ~that contains all the relevant information of the fitted model including the estimated coefficients at each value of $\lambda$ (by default the program chooses its own decreasing sequence of 100 $\lambda$ values). There are \texttt{print}, \texttt{plot}, \texttt{coef} and \texttt{predict} methods of objects of class \sail. We can call the \texttt{print} method:
+
+<<echo=T>>=
+fit
+@
+
+When \texttt{expand = TRUE} (i.e. the user did not provide their own design matrix), the \texttt{df\_main} and \texttt{df\_interaction} columns correspond to the number of non-zero predictors present in the model before basis expansion. This does not correspond to the number of non-zero coefficients in the model, but rather the number of unique variables. In this example we expanded each column of $\mathbf{X}$ to five columns. If  \texttt{df\_main=4}, \texttt{df\_interaction=2} and \texttt{df\_environment=1}, then the total number of non-zero coefficients would be $5 \times (4+2) + 1$.  
+
+The entire solution path can be plotted via the \texttt{plot} method for objects of class \sail. The y-axis is the value of the coefficient and the x-axis is the $\log(\lambda)$. Each line represents a coefficient in the model, and each color represents a variable (i.e. in this example a given variable will have 5 lines when it is non-zero). The numbers at the top of the plot represent the number of non-zero variables in the model: top panel (\texttt{df\_main} + \texttt{df\_environment}), bottom panel (\texttt{df\_interaction}). The black line is the coefficient path for the environment variable.  
+
+<<echo=T>>=
+plot(fit)
+@
+
+
+The estimated coefficients at each value of lambda is given by (matrix partially printed here for brevity)
+
+<<echo=T>>=
+coef(fit)[1:6,50:55]
+@
+
+
+
+The corresponding predicted response at each value of lambda (matrix partially printed here for brevity):
+
+<<echo=T>>=
+predict(fit)[1:5,50:55]
+@
+
+
+The predicted response at a specific value of lambda can be specified by the \texttt{s} argument:
+
+<<echo=T>>=
+predict(fit, s = 0.8)[1:5, ]
+@
+
+
+You can specify more than one value for `s`:
+
+<<echo=T>>=
+predict(fit, s = c(0.8, 0.2))[1:5, ]
+@
+
+
+You can also extract a list of active variables (i.e. variables with a non-zero estimated coefficient) for each value of lambda:
+
+<<echo=T>>=
+fit[["active"]][50:55]
+@
+
+
+\subsection{Cross-Validation}
+
+\texttt{cv.sail} is the main function to do cross-validation along with \texttt{plot}, \texttt{predict}, and \texttt{coef} methods for objects of class \texttt{cv.sail}. We run it in parallel:
+
+<<echo=T>>=
+set.seed(432) # to reproduce results (randomness due to CV folds)
+library(doMC)
+registerDoMC(cores = 8) 
+cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis,
+nfolds = 5, parallel = TRUE)
+@
+
+We plot the cross-validated error curve which has the mean-squared error on the y-axis and $\log(\lambda)$ on the x-axis. It includes the cross-validation curve (red dotted line), and upper and lower standard deviation curves along the $\lambda$ sequence (error bars). Two selected $\lambda$'s are indicated by the vertical dotted lines (see below). The numbers at the top of the plot represent the total number of non-zero variables at that value of $\lambda$ (\texttt{df\_main} + \texttt{df\_environment} + \texttt{df\_interaction}):
+
+
+<<echo=T>>=
+plot(cvfit)
+@
+
+\texttt{lambda.min} is the value of $\lambda$ that gives minimum mean cross-validated error. The other $\lambda$ saved is \texttt{lambda.1se},
+which gives the most regularized model such that error is within one standard error of the minimum. We can view the selected $\lambda$'s and the corresponding coefficients:
+
+<<echo=T>>=
+cvfit[["lambda.min"]]
+cvfit[["lambda.1se"]]
+@
+
+The estimated nonzero coefficients at \texttt{lambda.1se} and \texttt{lambda.min}:
+
+<<echo=T>>=
+predict(cvfit, type = "nonzero", s="lambda.1se") # lambda.1se is the default
+predict(cvfit, type = "nonzero", s = "lambda.min")
+@
+
+
+
+\subsection{Visualizing the Effect of the Non-linear Terms}
+
+B-splines are difficult to interpret. We provide a plotting function to visualize the effect of the non-linear function on the response.
+
+\subsubsection{Main Effects}
+
+Since we are using simulated data, we also plot the true curve:
+
+<<echo=T>>=
+plotMain(cvfit$sail.fit, x = sailsim$x, xvar = "X3",
+legend.position = "topright",
+s = cvfit$lambda.min, f.truth = sailsim$f3)
+@
+
+
+\subsubsection{Interaction Effects}
+
+Again, since we are using simulated data, we also plot the true interaction:
+
+<<fig.height=7, fig.width=8,echo=T >>=
+plotInter(cvfit$sail.fit, x = sailsim$x, xvar = "X4",
+f.truth = sailsim$f4.inter,
+s = cvfit$lambda.min,
+title_z = "Estimated")
+@
+
+
+
+\subsection{Linear Interactions}
+
+The \texttt{basis} argument in the \texttt{sail} function is very flexible in that it allows you to apply \textit{any} basis expansion to the columns of $\mathbf{X}$. Of course, there might be situations where you do not expect any non-linear main effects or interactions to be present in your data. You can still use the \sail ~method to search for linear main effects and interactions. This can be accomplished by specifying an identity map:
+
+<<echo=T>>=
+f.identity <- function(i) i
+@
+
+We then pass this function to the \texttt{basis} argument in \texttt{cv.sail}:
+
+<<echo=T>>=
+cvfit_linear <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
+basis = f.identity, nfolds = 5, parallel = TRUE)
+@
+
+
+Next we plot the cross-validated curve:
+
+<<echo=T>>=
+plot(cvfit_linear)
+@
+
+And extract the model at \texttt{lambda.min}:
+
+<<echo=T>>=
+predict(cvfit_linear, s = "lambda.min", type = "nonzero")
+@
+
+
+\subsection{Applying a different penalty to each predictor} \label{ap:pfac}
+
+Recall that we consider the following penalized least squares criterion for this problem:
+
+\begin{equation}
+\arg\min_{\boldsymbol{\theta} }  \mathcal{L}(Y;\boldsymbol{\theta}) + \lambda (1-\alpha)  \left( w_E |\beta_E| + \sum_{j=1}^{p} w_j \lVert\boldsymbol{\theta}_j \rVert_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} |\gamma_{j}| 
+\end{equation} 
+
+The weights $w_E, w_j, w_{jE}$ are by default set to 1 as specified by the \texttt{penalty.factor} argument. This argument allows users to apply separate penalty factors to each coefficient.  In particular, any variable with \texttt{penalty.factor} equal to zero is not penalized at all. This feature can be applied mainly for two reasons:  
+
+1. Prior knowledge about the importance of certain variables is known. Larger weights will penalize the variable more, while smaller weights will penalize the variable less  
+2. Allows users to apply the Adaptive \sail, ~similar to the \href{http://users.stat.umn.edu/~zouxx019/Papers/adalasso.pdf}{Adaptive Lasso}  
+
+In the following example, we want the environment variable to always be included so we set the first element of \texttt{p.fac} to zero. We also want to apply less of a penalty to the main effects for $X_2, X_3, X_4$:
+
+<<echo=T>>=
+# the weights correspond to E, X1, X2, X3, ... X_p, X1:E, X2:E, ... X_p:E
+p.fac <- c(0, 1, 0.4, 0.6, 0.7, rep(1, 2*ncol(sailsim$x) - 4))
+@
+
+
+<<echo=T>>=
+fit_pf <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis,
+penalty.factor = p.fac)
+@
+
+
+<<echo=T>>=
+plot(fit_pf)
+@
+
+
+We see from the plot above that the black line (corresponding to the $X_E$ variable with \texttt{penalty.factor} equal to zero) is always included in the model.   
+
+\subsection{User-Defined Design Matrix} \label{ap:userdesign}
+
+A limitation of the `sail` method is that the same basis expansion function $f(\cdot)$ is applied to all columns of the predictor matrix $\mathbf{X}$. Being able to automatically select linear vs. nonlinear components was not a focus of our paper, but is an active area of reserch for main effects only e.g. [ref1](https://cran.r-project.org/package=gamsel
+) and [ref2](https://github.com/asadharis/HierBasis).   
+
+However, if the user has some prior knowledge on possible effect relationships, then they can supply their own design matrix. This can be useful for example, when one has a combination of categorical (e.g. gender, race) and continuous variables, but would only like to apply $f(\cdot)$ on the continuous variables. We provide an example below to illustrate this functionality.  
+
+
+## User-defined design matrix
+
+We use the simulated dataset `sailsim` provided in our package. We first add a categorical variable `race` to the data:
+
+```{r}
+set.seed(1234)
+library(sail)
+x_df <- as.data.frame(sailsim$x)
+x_df$race <- factor(sample(1:5, nrow(x_df), replace = TRUE))
+table(x_df$race)
+```
+
+We then use the `model.matrix` function to create the design matrix. Note that the intercept should not be included, as this is added internally in the `sail` function. This is why we add 0 to the formula. Notice also the flexibility we can have by including different basis expansions to each predictor:
+
+```{r}
+library(splines)
+x <- stats::model.matrix(~ 0 +  bs(X1, degree = 5) + bs(X2, degree = 3) + ns(X3, df = 8) + 
+bs(X4, degree = 6) + X5 + poly(X6,2) + race, data = x_df)
+head(x)
+```
+
+One benefit of using `stats::model.matrix` is that it returns the group membership as an attribute:
+
+```{r}
+attr(x, "assign")
+```
+
+The group membership must be supplied to the `sail` function. This information is needed for the group lasso penalty, which will select the whole group as zero or non-zero.
+
+## Fit the `sail` model
+
+We need to set the argument `expand = FALSE` and provide the group membership. The first element of the group membership corresponds to the first column of `x`, the second element to the second column of `x`, and so on. 
+
+```{r}
+fit_design <- sail(x = x, y = sailsim$y, e = sailsim$e, 
+expand = FALSE,
+group = attr(x, "assign"), verbose = 0)
+```
+
+We can plot the solution path for both main effects and interactions using the `plot` method for objects of class `sail`:
+
+```{r}
+plot(fit_design)
+```
+
+In this instance, since we provided a user-defined design matrix and `expand = FALSE`, the numbers at the top of the plot represent the total number of non-zero coefficients. 
+
+
+## Find the optimal value for lambda
+
+We can use cross-validation to find the optimal value of lambda:
+
+```{r}
+library(doMC)
+registerDoMC(cores = 2)
+cvfit_design <- cv.sail(x = x, y = sailsim$y, e = sailsim$e, 
+expand = FALSE,
+group = attr(x, "assign"), verbose = 0,
+nfolds = 10, parallel = TRUE)
+```
+
+We can plot the cross-validated mean squared error as a function of lambda:
+
+```{r}
+plot(cvfit_design)
+```
+
+The estimated coefficients at `lambda.1se` and `lambda.min` are:
+
+```{r}
+cbind(coef(cvfit_design, s="lambda.1se"), # lambda.1se is the default
+coef(cvfit_design, s = "lambda.min"))
+```
+
+
+The estimated non-zero coefficients at `lambda.1se`:
+
+```{r}
+predict(cvfit_design, type = "nonzero")
+```
 
 
 

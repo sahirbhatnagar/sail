@@ -1175,12 +1175,572 @@ This is the same $\lambda_{max}$ as the least-squares strong heredity \sail mode
 	\caption{Selection rates across 200 simulations of scenario 1a) for strong heredity \sail.}\label{fig:upset}
 \end{figure}
 
+\FloatBarrier 
 
 \section{\sail ~Package Showcase} \label{ap:showcase}
 
-In this section we briefly introduce the freely available and open source \sail package in \texttt{R}. More comprehensive documentation is available at \url{https://sahirbhatnagar.com/sail}.
+In this section we briefly introduce the freely available and open source \sail package in \texttt{R}. More comprehensive documentation is available at \url{https://sahirbhatnagar.com/sail}. Note that this entire section is reproducible; the code and text are combined in an \texttt{.Rnw}\footnote[1]{scripts available at \url{https://github.com/sahirbhatnagar/sail/tree/master/manuscript}} and compiled using \texttt{knitr}~\citep{xie2015dynamic}. 
 
-  
+\subsection{Installation}
+
+The package can be installed from \href{https://github.com/sahirbhatnagar/sail}{GitHub} via
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{install.packages}\hlstd{(}\hlstr{"pacman"}\hlstd{)}
+\hlstd{pacman}\hlopt{::}\hlkwd{p_load_gh}\hlstd{(}\hlstr{'sahirbhatnagar/sail'}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+
+\subsection{Quick Start}
+
+We give a quick overview of the main functions and go into details in other vignettes. We will use the simulated data which ships with the package and can be loaded via:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(sail)}
+\hlkwd{data}\hlstd{(}\hlstr{"sailsim"}\hlstd{)}
+\hlkwd{names}\hlstd{(sailsim)}
+\end{alltt}
+\begin{verbatim}
+## [1] "x"        "y"        "e"        "f1"       "f2"       "f3"      
+## [7] "f4"       "f3.inter" "f4.inter"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+We first define a basis expansion. In this example we use B-splines with degree 5.
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(splines)}
+\hlstd{f.basis} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) splines}\hlopt{::}\hlkwd{bs}\hlstd{(x,} \hlkwc{degree} \hlstd{=} \hlnum{5}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+Next we fit the model using the most basic call to \sail
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fit} \hlkwb{<-} \hlkwd{sail}\hlstd{(}\hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{y} \hlstd{= sailsim}\hlopt{$}\hlstd{y,} \hlkwc{e} \hlstd{= sailsim}\hlopt{$}\hlstd{e,} \hlkwc{basis} \hlstd{= f.basis)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\texttt{fit} is an object of class \sail ~that contains all the relevant information of the fitted model including the estimated coefficients at each value of $\lambda$ (by default the program chooses its own decreasing sequence of 100 $\lambda$ values). There are \texttt{print}, \texttt{plot}, \texttt{coef} and \texttt{predict} methods of objects of class \sail. We can call the \texttt{print} method:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fit}
+\end{alltt}
+\begin{verbatim}
+## 
+## Call:  sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis) 
+## 
+##      df_main df_interaction df_environment     %Dev  Lambda
+## s1         0              0              0 0.000000 1.48800
+## s2         0              0              1 0.001701 1.42000
+## s3         0              0              1 0.003359 1.35600
+## s4         0              0              1 0.004899 1.29400
+## s5         0              0              1 0.006354 1.23500
+## s6         1              0              1 0.014750 1.17900
+## s7         2              0              1 0.045860 1.12600
+## s8         2              0              1 0.080070 1.07500
+## s9         2              0              1 0.111900 1.02600
+## s10        2              0              1 0.141500 0.97900
+## s11        2              0              1 0.169000 0.93450
+## s12        2              0              1 0.194500 0.89210
+## s13        2              0              1 0.218100 0.85150
+## s14        2              0              1 0.240100 0.81280
+## s15        2              0              1 0.260400 0.77590
+## s16        2              0              1 0.279200 0.74060
+## s17        3              1              1 0.465100 0.70690
+## s18        3              1              1 0.479500 0.67480
+## s19        3              1              1 0.493000 0.64410
+## s20        3              2              1 0.508300 0.61490
+## s21        3              2              1 0.524200 0.58690
+## s22        3              2              1 0.536600 0.56020
+## s23        3              2              1 0.548100 0.53480
+## s24        4              2              1 0.558000 0.51050
+## s25        5              2              1 0.568900 0.48730
+## s26        5              2              1 0.579900 0.46510
+## s27        5              2              1 0.590100 0.44400
+## s28        5              2              1 0.599500 0.42380
+## s29        5              3              1 0.609800 0.40450
+## s30        5              3              1 0.619200 0.38620
+## s31        5              3              1 0.628200 0.36860
+## s32        6              3              1 0.637200 0.35190
+## s33        6              3              1 0.646800 0.33590
+## s34        6              3              1 0.655000 0.32060
+## s35        6              3              1 0.663300 0.30600
+## s36        7              3              1 0.671600 0.29210
+## s37        7              3              1 0.679500 0.27880
+## s38        7              3              1 0.687400 0.26620
+## s39        7              3              1 0.694600 0.25410
+## s40        7              4              1 0.702700 0.24250
+## s41        7              4              1 0.734100 0.23150
+## s42        7              4              1 0.739300 0.22100
+## s43        7              5              1 0.745200 0.21090
+## s44        7              6              1 0.754400 0.20130
+## s45        7              6              1 0.760700 0.19220
+## s46        7              6              1 0.767300 0.18350
+## s47        7              6              1 0.771800 0.17510
+## s48        7              6              1 0.776100 0.16720
+## s49        8              6              1 0.780700 0.15960
+## s50        8              6              1 0.784500 0.15230
+## s51        9              6              1 0.788700 0.14540
+## s52       10              6              1 0.792700 0.13880
+## s53       12              6              1 0.797800 0.13250
+## s54       13              6              1 0.802600 0.12640
+## s55       13              6              1 0.807500 0.12070
+## s56       13              6              1 0.812200 0.11520
+## s57       14              6              1 0.816800 0.11000
+## s58       14              6              1 0.821400 0.10500
+## s59       15              6              1 0.826100 0.10020
+## s60       15              7              1 0.831200 0.09565
+## s61       13             10              1 0.871400 0.09131
+## s62       13             10              1 0.873800 0.08716
+## s63       13             10              1 0.876200 0.08319
+## s64       14             10              1 0.878600 0.07941
+## s65       14             10              1 0.881000 0.07580
+## s66       14             11              1 0.883400 0.07236
+## s67       14             11              1 0.885900 0.06907
+## s68       14             11              1 0.888400 0.06593
+## s69       14             11              1 0.890600 0.06293
+## s70       16             13              1 0.930600 0.06007
+## s71       16             13              1 0.932300 0.05734
+## s72       16             13              1 0.934200 0.05474
+## s73       16             13              1 0.936100 0.05225
+## s74       16             13              1 0.938500 0.04987
+## s75       16             13              1 0.940000 0.04761
+## s76       17             13              1 0.942100 0.04544
+## s77       17             13              1 0.943800 0.04338
+## s78       17             14              1 0.945600 0.04141
+## s79       17             14              1 0.947300 0.03952
+## s80       18             14              1 0.949000 0.03773
+## s81       18             14              1 0.950700 0.03601
+## s82       18             14              1 0.952400 0.03438
+## s83       18             14              1 0.954400 0.03281
+## s84       18             14              1 0.955800 0.03132
+## s85       18             14              1 0.957200 0.02990
+## s86       19             14              1 0.959100 0.02854
+## s87       19             15              1 0.960300 0.02724
+## s88       19             15              1 0.967900 0.02600
+## s89       19             15              1 0.968900 0.02482
+## s90       19             15              1 0.970100 0.02369
+## s91       19             15              1 0.971300 0.02262
+## s92       19             15              1 0.972400 0.02159
+## s93       19             15              1 0.973500 0.02061
+## s94       19             15              1 0.974600 0.01967
+## s95       20             19              1 0.977900 0.01878
+## s96       20             19              1 0.978600 0.01792
+## s97       20             19              1 0.979300 0.01711
+## s98       20             19              1 0.980000 0.01633
+## s99       20             19              1 0.980700 0.01559
+## s100      20             19              1 0.981400 0.01488
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+When \texttt{expand = TRUE} (i.e. the user did not provide their own design matrix), the \texttt{df\_main} and \texttt{df\_interaction} columns correspond to the number of non-zero predictors present in the model before basis expansion. This does not correspond to the number of non-zero coefficients in the model, but rather the number of unique variables. In this example we expanded each column of $\mathbf{X}$ to five columns. If  \texttt{df\_main=4}, \texttt{df\_interaction=2} and \texttt{df\_environment=1}, then the total number of non-zero coefficients would be $5 \times (4+2) + 1$.  
+
+The entire solution path can be plotted via the \texttt{plot} method for objects of class \sail. The y-axis is the value of the coefficient and the x-axis is the $\log(\lambda)$. Each line represents a coefficient in the model, and each color represents a variable (i.e. in this example a given variable will have 5 lines when it is non-zero). The numbers at the top of the plot represent the number of non-zero variables in the model: top panel (\texttt{df\_main} + \texttt{df\_environment}), bottom panel (\texttt{df\_interaction}). The black line is the coefficient path for the environment variable.  
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(fit)}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-3-1} 
+
+}
+
+
+
+\end{knitrout}
+
+
+The estimated coefficients at each value of lambda is given by (matrix partially printed here for brevity)
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{coef}\hlstd{(fit)[}\hlnum{1}\hlopt{:}\hlnum{6}\hlstd{,}\hlnum{50}\hlopt{:}\hlnum{55}\hlstd{]}
+\end{alltt}
+\begin{verbatim}
+## 6 x 6 sparse Matrix of class "dgCMatrix"
+##                    s50        s51        s52        s53        s54
+## (Intercept)  5.2908242  5.2837492  5.2803715  5.2753572  5.2717869
+## X1_1        -0.9792849 -0.9604046 -0.9449616 -0.9220738 -0.9171304
+## X1_2         1.6903252  1.7894886  1.8924485  1.9952094  2.1042358
+## X1_3         1.6463057  1.7049842  1.7722916  1.8251613  1.8951562
+## X1_4         1.5224653  1.5433528  1.5663095  1.5854332  1.6102159
+## X1_5         3.3386403  3.4183219  3.4908074  3.5763781  3.6633809
+##                    s55
+## (Intercept)  5.2695399
+## X1_1        -0.9270958
+## X1_2         2.2058453
+## X1_3         1.9642875
+## X1_4         1.6322047
+## X1_5         3.7453708
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+
+The corresponding predicted response at each value of lambda (matrix partially printed here for brevity):
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{predict}\hlstd{(fit)[}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,}\hlnum{50}\hlopt{:}\hlnum{55}\hlstd{]}
+\end{alltt}
+\begin{verbatim}
+##            s50       s51       s52       s53       s54       s55
+## [1,]  6.244693  6.199302  6.185402  6.177991  6.156173  6.124271
+## [2,]  3.002799  2.995418  3.038701  3.079700  3.143715  3.209065
+## [3,]  2.073305  2.043476  2.016319  1.997172  1.966900  1.957271
+## [4,] 13.488945 13.490766 13.360998 13.384370 13.350671 13.324117
+## [5,]  1.225516  1.210346  1.134420  1.156355  1.156696  1.156135
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+The predicted response at a specific value of lambda can be specified by the \texttt{s} argument:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{predict}\hlstd{(fit,} \hlkwc{s} \hlstd{=} \hlnum{0.8}\hlstd{)[}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{, ]}
+\end{alltt}
+\begin{verbatim}
+## [1] 5.624232 4.940944 3.847965 6.687777 3.058125
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+You can specify more than one value for `s`:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{predict}\hlstd{(fit,} \hlkwc{s} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{0.8}\hlstd{,} \hlnum{0.2}\hlstd{))[}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{, ]}
+\end{alltt}
+\begin{verbatim}
+##             1         2
+## [1,] 5.624232  6.523025
+## [2,] 4.940944  2.975046
+## [3,] 3.847965  2.326672
+## [4,] 6.687777 13.956092
+## [5,] 3.058125  1.568897
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+You can also extract a list of active variables (i.e. variables with a non-zero estimated coefficient) for each value of lambda:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fit[[}\hlstr{"active"}\hlstd{]][}\hlnum{50}\hlopt{:}\hlnum{55}\hlstd{]}
+\end{alltt}
+\begin{verbatim}
+## [[1]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X8"    "X10"   "X11"   "X20"  
+##  [9] "X1:E"  "X2:E"  "X3:E"  "X4:E"  "X8:E"  "X11:E" "E"    
+## 
+## [[2]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X6"    "X8"    "X10"   "X11"  
+##  [9] "X20"   "X1:E"  "X2:E"  "X3:E"  "X4:E"  "X8:E"  "X11:E" "E"    
+## 
+## [[3]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X6"    "X8"    "X10"   "X11"  
+##  [9] "X16"   "X20"   "X1:E"  "X2:E"  "X3:E"  "X4:E"  "X8:E"  "X11:E"
+## [17] "E"    
+## 
+## [[4]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X6"    "X8"    "X10"   "X11"  
+##  [9] "X15"   "X16"   "X19"   "X20"   "X1:E"  "X2:E"  "X3:E"  "X4:E" 
+## [17] "X8:E"  "X11:E" "E"    
+## 
+## [[5]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X5"    "X6"    "X8"    "X10"  
+##  [9] "X11"   "X15"   "X16"   "X19"   "X20"   "X1:E"  "X2:E"  "X3:E" 
+## [17] "X4:E"  "X8:E"  "X11:E" "E"    
+## 
+## [[6]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X5"    "X6"    "X8"    "X10"  
+##  [9] "X11"   "X15"   "X16"   "X19"   "X20"   "X1:E"  "X2:E"  "X3:E" 
+## [17] "X4:E"  "X8:E"  "X11:E" "E"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+\subsection{Cross-Validation}
+
+\texttt{cv.sail} is the main function to do cross-validation along with \texttt{plot}, \texttt{predict}, and \texttt{coef} methods for objects of class \texttt{cv.sail}. We run it in parallel:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{set.seed}\hlstd{(}\hlnum{432}\hlstd{)} \hlcom{# to reproduce results (randomness due to CV folds)}
+\hlkwd{library}\hlstd{(doMC)}
+\hlkwd{registerDoMC}\hlstd{(}\hlkwc{cores} \hlstd{=} \hlnum{8}\hlstd{)}
+\hlstd{cvfit} \hlkwb{<-} \hlkwd{cv.sail}\hlstd{(}\hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{y} \hlstd{= sailsim}\hlopt{$}\hlstd{y,} \hlkwc{e} \hlstd{= sailsim}\hlopt{$}\hlstd{e,} \hlkwc{basis} \hlstd{= f.basis,}
+\hlkwc{nfolds} \hlstd{=} \hlnum{5}\hlstd{,} \hlkwc{parallel} \hlstd{=} \hlnum{TRUE}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+We plot the cross-validated error curve which has the mean-squared error on the y-axis and $\log(\lambda)$ on the x-axis. It includes the cross-validation curve (red dotted line), and upper and lower standard deviation curves along the $\lambda$ sequence (error bars). Two selected $\lambda$'s are indicated by the vertical dotted lines (see below). The numbers at the top of the plot represent the total number of non-zero variables at that value of $\lambda$ (\texttt{df\_main} + \texttt{df\_environment} + \texttt{df\_interaction}):
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(cvfit)}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-10-1} 
+
+}
+
+
+
+\end{knitrout}
+
+\texttt{lambda.min} is the value of $\lambda$ that gives minimum mean cross-validated error. The other $\lambda$ saved is \texttt{lambda.1se},
+which gives the most regularized model such that error is within one standard error of the minimum. We can view the selected $\lambda$'s and the corresponding coefficients:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{cvfit[[}\hlstr{"lambda.min"}\hlstd{]]}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.2788355
+\end{verbatim}
+\begin{alltt}
+\hlstd{cvfit[[}\hlstr{"lambda.1se"}\hlstd{]]}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.4238052
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+The estimated nonzero coefficients at \texttt{lambda.1se} and \texttt{lambda.min}:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{cbind}\hlstd{(}\hlkwd{predict}\hlstd{(cvfit,} \hlkwc{type} \hlstd{=} \hlstr{"nonzero"}\hlstd{,} \hlkwc{s}\hlstd{=}\hlstr{"lambda.1se"}\hlstd{),} \hlcom{# lambda.1se is the default}
+\hlkwd{predict}\hlstd{(cvfit,} \hlkwc{type} \hlstd{=} \hlstr{"nonzero"}\hlstd{,} \hlkwc{s} \hlstd{=} \hlstr{"lambda.min"}\hlstd{))}
+\end{alltt}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in cbind(predict(cvfit, type = "{}nonzero"{}, s = "{}lambda.1se"{}), predict(cvfit, : number of rows of matrices must match (see arg 2)}}\end{kframe}
+\end{knitrout}
+
+
+
+\subsection{Visualizing the Effect of the Non-linear Terms}
+
+B-splines are difficult to interpret. We provide a plotting function to visualize the effect of the non-linear function on the response.
+
+\subsubsection{Main Effects}
+
+Since we are using simulated data, we also plot the true curve:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plotMain}\hlstd{(cvfit}\hlopt{$}\hlstd{sail.fit,} \hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{xvar} \hlstd{=} \hlstr{"X3"}\hlstd{,}
+\hlkwc{legend.position} \hlstd{=} \hlstr{"topright"}\hlstd{,}
+\hlkwc{s} \hlstd{= cvfit}\hlopt{$}\hlstd{lambda.min,} \hlkwc{f.truth} \hlstd{= sailsim}\hlopt{$}\hlstd{f3)}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-13-1} 
+
+}
+
+
+
+\end{knitrout}
+
+
+\subsubsection{Interaction Effects}
+
+Again, since we are using simulated data, we also plot the true interaction:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plotInter}\hlstd{(cvfit}\hlopt{$}\hlstd{sail.fit,} \hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{xvar} \hlstd{=} \hlstr{"X4"}\hlstd{,}
+\hlkwc{f.truth} \hlstd{= sailsim}\hlopt{$}\hlstd{f4.inter,}
+\hlkwc{s} \hlstd{= cvfit}\hlopt{$}\hlstd{lambda.min,}
+\hlkwc{title_z} \hlstd{=} \hlstr{"Estimated"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-14-1} 
+
+}
+
+
+
+\end{knitrout}
+
+
+
+\subsection{Linear Interactions}
+
+The \texttt{basis} argument in the \texttt{sail} function is very flexible in that it allows you to apply \textit{any} basis expansion to the columns of $\mathbf{X}$. Of course, there might be situations where you do not expect any non-linear main effects or interactions to be present in your data. You can still use the \sail ~method to search for linear main effects and interactions. This can be accomplished by specifying an identity map:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{f.identity} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{i}\hlstd{) i}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+We then pass this function to the \texttt{basis} argument in \texttt{cv.sail}:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{cvfit_linear} \hlkwb{<-} \hlkwd{cv.sail}\hlstd{(}\hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{y} \hlstd{= sailsim}\hlopt{$}\hlstd{y,} \hlkwc{e} \hlstd{= sailsim}\hlopt{$}\hlstd{e,}
+\hlkwc{basis} \hlstd{= f.identity,} \hlkwc{nfolds} \hlstd{=} \hlnum{5}\hlstd{,} \hlkwc{parallel} \hlstd{=} \hlnum{TRUE}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+Next we plot the cross-validated curve:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(cvfit_linear)}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-17-1} 
+
+}
+
+
+
+\end{knitrout}
+
+And extract the model at \texttt{lambda.min}:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{predict}\hlstd{(cvfit_linear,} \hlkwc{s} \hlstd{=} \hlstr{"lambda.min"}\hlstd{,} \hlkwc{type} \hlstd{=} \hlstr{"nonzero"}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+##                       1
+## (Intercept)   5.4385240
+## X1_1          2.4568930
+## X2_1         -1.6517024
+## X3_1         -5.1516226
+## X4_1         -7.1356296
+## X7_1         -1.1055458
+## X8_1         -0.8602620
+## X11_1        -2.1990021
+## X14_1        -1.9208459
+## X16_1         3.2004798
+## X18_1         1.0234994
+## X20_1        -0.2161983
+## E             2.4466403
+## X1_1:E       -4.3995787
+## X2_1:E       -2.7115733
+## X3_1:E       -4.7198552
+## X4_1:E      -12.9777976
+## X7_1:E        2.3705634
+## X11_1:E      -2.1462985
+## X14_1:E      -0.9788318
+## X16_1:E       6.9268058
+## X18_1:E       1.9005742
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+\subsection{Applying a different penalty to each predictor}
+
+Recall that we consider the following penalized least squares criterion for this problem:
+
+\begin{equation}
+\arg\min_{\boldsymbol{\theta} }  \mathcal{L}(Y;\boldsymbol{\theta}) + \lambda (1-\alpha)  \left( w_E |\beta_E| + \sum_{j=1}^{p} w_j \lVert\boldsymbol{\theta}_j \rVert_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} |\gamma_{j}| 
+\end{equation} 
+
+The weights $w_E, w_j, w_{jE}$ are by default set to 1 as specified by the \texttt{penalty.factor} argument. This argument allows users to apply separate penalty factors to each coefficient.  In particular, any variable with \texttt{penalty.factor} equal to zero is not penalized at all. This feature can be applied mainly for two reasons:  
+
+1. Prior knowledge about the importance of certain variables is known. Larger weights will penalize the variable more, while smaller weights will penalize the variable less  
+2. Allows users to apply the Adaptive \sail, ~similar to the \href{http://users.stat.umn.edu/~zouxx019/Papers/adalasso.pdf}{Adaptive Lasso}  
+
+In the following example, we want the environment variable to always be included so we set the first element of \texttt{p.fac} to zero. We also want to apply less of a penalty to the main effects for $X_2, X_3, X_4$:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# the weights correspond to E, X1, X2, X3, ... X_p, X1:E, X2:E, ... X_p:E}
+\hlstd{p.fac} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,} \hlnum{1}\hlstd{,} \hlnum{0.4}\hlstd{,} \hlnum{0.6}\hlstd{,} \hlnum{0.7}\hlstd{,} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{2}\hlopt{*}\hlkwd{ncol}\hlstd{(sailsim}\hlopt{$}\hlstd{x)} \hlopt{-} \hlnum{4}\hlstd{))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fit_pf} \hlkwb{<-} \hlkwd{sail}\hlstd{(}\hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{y} \hlstd{= sailsim}\hlopt{$}\hlstd{y,} \hlkwc{e} \hlstd{= sailsim}\hlopt{$}\hlstd{e,} \hlkwc{basis} \hlstd{= f.basis,}
+\hlkwc{penalty.factor} \hlstd{= p.fac)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(fit_pf)}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-21-1} 
+
+}
+
+
+
+\end{knitrout}
+
+
+We see from the plot above that the black line (corresponding to the $X_E$ variable with \texttt{penalty.factor} equal to zero) is always included in the model.   
 
 
 
