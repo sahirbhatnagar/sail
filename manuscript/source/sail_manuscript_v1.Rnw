@@ -211,11 +211,13 @@ knitr::read_chunk("../bin/ADNI.R")
 \section{Introduction}
 
 Computational approaches to variable selection have become increasingly important with the advent of high-throughput technologies in genomics and brain imaging studies, where the data has become massive, yet where it is believed that the number of truly important variables is small relative to the total number of variables. 
-Although many approaches have been developed for main effects, there are several applications where interaction models can reflect biological phenomena and improve prediction accuracy. 
-For example, genome wide association studies (GWAS) have been unable to explain a large proportion of heritability (the variance in phenotype attributable to genetic variants) and it has been suggested that this missing heritability may in part be due to gene-environment interactions~\citep{manolio2009finding}. 
-Furthermore, diseases are now thought to be the result of changes in entire biological networks whose states are affected by a complex interaction of genetic and environmental factors. 
-In high-dimensional settings ($p >> n$), power to estimate interactions is low, the number of possible interactions could be enormous and their effects may be non-linear. 
-In this paper, we propose a multivariable penalization procedure for detecting non-linear interactions between high dimensional data $\mb{X}$ and a single environmental factor $E$ on a response vector $Y$. 
+Although many approaches have been developed for main effects, there is a consistent interest in powerful methods for estimating interactions, since interactions may reflect important modulation of a genomic system by an external factor. Accurate capture of interactions may hold the potential to better understand  biological phenomena and improve prediction accuracy.
+
+%For example, genome wide association studies (GWAS) have been unable to explain a large proportion of heritability (the variance in phenotype attributable to genetic variants) and it has been suggested that this missing heritability may in part be due to gene-environment interactions~\citep{manolio2009finding}. 
+Furthermore, the manifestations of disease are often considered to be the result of changes in entire biological networks whose states are affected by a complex interaction of genetic and environmental factors. 
+Power to detect interactions is always lower than for  main effects, and in high-dimensional settings ($p >> n$), this lack of power to detect interactions is exacerbated, since the number of possible interactions could be enormous and their effects may be non-linear. Hence, analytic methods that may improve power are essential.  
+
+Interactions may occur in numerous types and of varying complexities. In this paper, we consider one specific type of interaction models, where one (exposure) variable is involved in possibly non-linear interactions with a high-dimensional set of measures $\mb{X}$ leading to effects on a response variable, $Y$. We propose a multivariable penalization procedure for detecting non-linear interactions $\mb{X}$ and $E$. 
 
 
 %Our approach improves on existing procedures for detecting such interactions in three ways; 1) it automatically enforces the strong heredity property, i.e., an interaction term can only be included in the model if the corresponding main effects are in the model 2) it reduces the dimensionality of the problem and leverages the high correlations by transforming the input feature space using network connectivity measures and 3) it leads to interpretable models which are biologically meaningful.
@@ -229,7 +231,7 @@ In this paper, we propose a multivariable penalization procedure for detecting n
 
 
 \subsection{Sparse additive interaction model}
-Let $Y=(Y_1, \ldots, Y_n) \in \mathbb{R}^n$ be a continuous or binary outcome variable, \mbox{$X_E=(E_1, \ldots, E_n) \in \mathbb{R}^n$} a binary or continuous environment vector, and \mbox{$\bX = (X_{1}, \ldots, X_{p}) \in \mathbb{R}^{n\times p}$} a matrix of predictors. Furthermore let $f_j: \mathbb{R} \rightarrow \mathbb{R}$ be a smoothing method for variable $X_j$ by a projection on to a set of basis functions:
+Let $Y=(Y_1, \ldots, Y_n) \in \mathbb{R}^n$ be a continuous or binary outcome variable, \mbox{$X_E=(E_1, \ldots, E_n) \in \mathbb{R}^n$} a binary or continuous environment vector, and \mbox{$\bX = (X_{1}, \ldots, X_{p}) \in \mathbb{R}^{n\times p}$} a matrix of predictors, possibly high-dimensional. Furthermore let $f_j: \mathbb{R} \rightarrow \mathbb{R}$ be a smoothing method for variable $X_j$ by a projection on to a set of basis functions:
 \begin{equation}
 	f_j(X_j) = \sum_{\ell = 1}^{m_j} \psi_{j\ell}(X_j) \beta_{j\ell} \label{eq:smooth}
 \end{equation}
@@ -331,21 +333,21 @@ where $\hat{\beta}_j$ and $\hat{\alpha}_{j}$ are the MLEs, from~\eqref{eq:linpre
 
 \subsection{Toy example}
 
-We begin with a toy example to better illustrate our method. We sample $p=20$ covariates independently from a $N(0,1)$ truncated to the interval [0,1] and sample size $n=100$. We generated data from a model which follows the strong heredity principle:
+We begin with a toy example to better illustrate our method. With a sample size of $n=100$, we sample $p=20$ covariates $X_1, \ldots X_p$ independently from a $N(0,1)$ truncated to the interval [0,1]. We generated data from a model which follows the strong heredity principle, but where only one covariates, $X_2$, is involved in the interaction with $E$:
 \begin{equation}
 	Y = f_1(X_1) + f_2(X_2) + 1.75 E + 1.5 E \cdot f_2(X_2) + \varepsilon
 \end{equation}
-where $f_1(x) = -3x$, $f_2(x) = 2(2x-1)^3$ and the error term $\varepsilon$ is generated from a normal distribution with variance chosen such that the signal-to-noise ratio (SNR) is 2. We run the strong heredity \sail ~method with cubic b-splines and 10-fold CV to choose the optimal value of $\lambda$. We used $\alpha=0.5$ and default values were used for all other arguments. We plot the solution path for both main effects and interactions in Figure~\ref{fig:toy-solution-path} and we color the lines corresponding to the selected model. We see that our method is able to correctly identify the true model. We can also visually see the effect of the penalty and strong heredity principle working in tandem, i.e., the interaction term $E \cdot f_2(X_2)$ (orange lines in the bottom panel) can only be nonzero if the main effects $E$ and $f_2(X_2)$ (black and orange lines respectively in the top panel) are nonzero, while nonzero main effects doesn't necessarily imply a nonzero interaction. 
+Function $f_1(\cdot)$ is assumed to be linear, whereas function $f_2(\cdot)$ is non-linear: $f_1(x) = -3x$, $f_2(x) = 2(2x-1)^3$. The error term $\varepsilon$ is generated from a normal distribution with variance chosen such that the signal-to-noise ratio (SNR) is 2.  We generated a single simulated dataset and used the strong heredity \sail ~method with cubic B-splines to estimate the functional forms. 10-fold CV was used to choose the optimal value of $\lambda$. We used $\alpha=0.5$ and default values were used for all other arguments. We plot the solution path for both main effects and interactions in Figure~\ref{fig:toy-solution-path} and we color the lines corresponding to the selected model. We see that our method is able to correctly identify the true model. We can also visually see the effect of the penalty and strong heredity principle working in tandem, i.e., the interaction term $E \cdot f_2(X_2)$ (orange lines in the bottom panel) can only be nonzero if the main effects $E$ and $f_2(X_2)$ (black and orange lines respectively in the top panel) are nonzero, while nonzero main effects doesn't necessarily imply a nonzero interaction. 
 
-<<toy-example, eval=F>>=
+<<toy-example, eval=T>>=
 @
 
-<<toy-solution-path, fig.cap="Toy example solution path", fig.asp=0.8, fig.pos = "H", eval=F>>=
+<<toy-solution-path, fig.cap="Toy example solution path", fig.asp=0.8, fig.pos = "H", eval=T>>=
 @
 
-In Figure~\ref{fig:toy-effects}, we plot the true and estimated component functions $\hat{f}_1(X_1)$ and $E \cdot \hat{f}_2(X_2)$. Our method is able to capture the correct functional form for the nonlinear interaction. The lack-of-fit for $f_1(X_1)$ can be explained by the fact that \sail ~is trying to fit a cubic spline to a linear function. Nevertheless, this example demonstrates that it can still identify linear associations. 
+In Figure~\ref{fig:toy-effects}, we plot the true and estimated component functions $\hat{f}_1(X_1)$ and $E \cdot \hat{f}_2(X_2)$, and their estimates with \texttt{sail}. We are able to capture the shape of the correct functional form, but our means are not well aligned with the data.  Lack-of-fit for $f_1(X_1)$ can be partially explained by acknowledging that \sail ~is trying to fit a cubic spline to a linear function. Nevertheless, this example demonstrates that it can still identify linear associations with reasonable sensitivity and specificity. 
 
-<<toy-effects, fig.cap="Estimated smooth functions by \\texttt{sail} method based on $\\lambda_{min}$.", fig.pos = "H", eval=F>>=
+<<toy-effects, fig.cap="Estimated smooth functions by \\texttt{sail} method based on $\\lambda_{min}$.", fig.pos = "H", eval=T>>=
 @
 
 
@@ -670,7 +672,7 @@ We compare the above listed methods with our main proposal \texttt{sail}, as wel
 
 
 \subsection{Simulation Design}
-The covariates are simulated as follows. First, we generate $w_1,\ldots, w_p, u,v$ independently from a standard normal distribution truncated to the interval [0,1] for $i=1,\ldots,n$. Then we set $x_j = (w_j + t\cdot u)/(1 + t)$ for $j = 1,\ldots, 4$ and $x_j = (w_j + t\cdot v)/(1 + t)$ for $j = 5,\ldots, p$, where the parameter $t$ controls the amount of correlation among predictors. This leads to a compound symmetry correlation structure where $Corr(x_j,x_k) = t^2/(1+t^2)$, for $1 \leq j \leq 4, 1 \leq k \leq 4$, and $Corr(x_j,x_k) = t^2/(1+t^2)$, for $5 \leq j \leq p, 5 \leq k \leq p$, but the covariates of the nonzero and zero components are independent~\citep{lin2006component,huang2010variable}. We consider the case when $p=1000$ and $t=0$. 
+The covariates are simulated as follows. First, we generate $w_1,\ldots, w_p, u,v$ independently from a standard normal distribution truncated to the interval [0,1] for $i=1,\ldots,n$. Then we set $x_j = (w_j + t\cdot u)/(1 + t)$ for $j = 1,\ldots, 4$ and $x_j = (w_j + t\cdot v)/(1 + t)$ for $j = 5,\ldots, p$, where the parameter $t$ controls the amount of correlation among predictors. The first four variables are nonzero (i.e. active in the response), while the rest of the variables are zero (i.e. are noise variables). This leads to a compound symmetry correlation structure where $Corr(x_j,x_k) = t^2/(1+t^2)$, for $1 \leq j \leq 4, 1 \leq k \leq 4$, and $Corr(x_j,x_k) = t^2/(1+t^2)$, for $5 \leq j \leq p, 5 \leq k \leq p$, but the covariates of the nonzero and zero components are independent~\citep{lin2006component,huang2010variable}. We consider the case when $p=1000$ and $t=0$. 
 
 
 We evaluate the performance of our method on three of its defining characteristics: 1) the strong heredity property, 2) non-linearity of predictor effects and 3) interactions.
@@ -765,7 +767,7 @@ In this section we illustrate \sail ~on several real data examples.
 \subsection{Alzheimer's Disease Neuroimaging Initiative}
 
 Alzheimer's is an irreversible neurodegenerative disease that results in a loss of mental function due to the deterioration of brain tissue. The overall goal of the Alzheimer's Disease Neuroimaging Initiative (ADNI) is to validate biomarkers for use in
-Alzheimer's disease clinical treatment trials~\citep{petersen2010alzheimer}. The patients were selected into the study based on their clinical diagnosis: controls, mild cognitive impairment or Alzheimer's disease. PET amyloid imaging was used to asses amyloid beta (A$\beta$) protein load in 96 brain regions. The response was general cognitive decline measured by a continuous mini-mental state examination score. We applied \sail ~to this data to see if there were any non-linear interactions between clinical diagnosis and A$\beta$ protein in the 96 brain regions on mini-mental state examination. 
+Alzheimer's disease clinical treatment trials~\citep{petersen2010alzheimer}. The patients were selected into the study based on their clinical diagnosis: controls, mild cognitive impairment (MCI) or Alzheimer's disease (AD). PET amyloid imaging was used to asses amyloid beta (A$\beta$) protein load in 96 brain regions. The response was general cognitive decline measured by a continuous mini-mental state examination score. We applied \sail ~to this data to see if there were any non-linear interactions between clinical diagnosis and A$\beta$ protein in the 96 brain regions on mini-mental state examination. 
 
 There were a total of 343 patients who we divided randomly into equal sized training/validation/test splits. We ran the strong heredity \sail ~with cubic B-splines and $\alpha=0.1$. We also applied the \texttt{lasso, lassoBT, HierBasis} and \texttt{GLinternet} to this data. Using the same default settings and strategy as the simulation study, we ran each method on the training data, determined the optimal tuning parameter on the validation data, and assessed MSE on the test data. We repeated this process 200 times. 
 
@@ -775,19 +777,17 @@ There were a total of 343 patients who we divided randomly into equal sized trai
 <<get-best-sail-model, eval=T, results = 'hide'>>=
 @
 
-<<error-crosses-adni, fig.asp=1, fig.width=8, fig.heigh=6, fig.pos = 'H', fig.cap="Estimated interaction effects by \texttt{sail} for ADNI data.", eval=T>>=
+<<error-crosses-adni, fig.width=8, fig.heigh=8, fig.pos = 'H', fig.cap="Estimated interaction effects by \\texttt{sail} for ADNI data.", eval=T>>=
 @
 
-In Figure~\ref{fig:error-crosses-adni} we plot the mean test set MSE vs. the mean number of active variables $\pm 1$ SD. We see that \sail ~produces the sparsest models but doesn't perform as well as \texttt{HierBasis} and \texttt{GLinternet} in terms of MSE. \sail ~achieves similar MSE to both the \texttt{lasso} and \texttt{lassoBT} with fewer variables on average. \texttt{GLinternet} produces the largest models. 
+In Figure~\ref{fig:error-crosses-adni} we plot the mean test set MSE vs. the mean number of active variables $\pm 1$ SD. We see that \sail ~produces the sparsest models but doesn't perform as well as \texttt{HierBasis} and \texttt{GLinternet} in terms of MSE. \sail ~achieves similar MSE to both the \texttt{lasso} and \texttt{lassoBT} with fewer variables on average. \texttt{GLinternet} produces the largest models and seems to be sensitive to the train/validate/test split as evidenced by the large standard deviations. 
 
-To illustrate a feature of our method, we chose the train/validate/test split which led to the best test set MSE, and then plotted the selected main effects and interaction effects in Figures~\ref{fig:plot-main-adni} and~\ref{fig:plot-inter-adni}, respectively.
-<<plot-main-adni, fig.asp=1, fig.width=12, fig.heigh=8, fig.pos = 'H', fig.cap="Estimated main effect component functions by \\texttt{sail} for ADNI data.", eval=T>>=
+To visualize the results from the \sail ~method, we chose the train/validate/test split which led to the best test set MSE, and then plotted the interaction effects in Figure~\ref{fig:plot-inter-adni}. The left panel shows the middle occipital gyrus left region in the occipital lobe known for visual object perception. We see that more A$\beta$ protein loads leads to a worse cognitive score for the MCI and AD group but not for the controls. The right panel shows the cuneus region known which is known to be involved in basic visual processing. We see that more A$\beta$ proteins leads to better cognitive scores for the MCI and AD group and poorer scores for the controls. 
+
+<<plot-main-adni, fig.asp=1, fig.width=12, fig.heigh=8, fig.pos = 'H', fig.cap="Estimated main effect component functions by \\texttt{sail} for ADNI data.", eval=F>>=
 @
 
-
-
-
-<<plot-inter-adni, fig.width=12, fig.heigh=8, fig.pos = 'H', fig.cap="Estimated interaction effects by \texttt{sail} for ADNI data.", eval=T>>=
+<<plot-inter-adni, fig.width=12, fig.heigh=8, fig.pos = 'H', fig.cap="Estimated interaction effects by \\texttt{sail} for ADNI data.", eval=T>>=
 @
 
 

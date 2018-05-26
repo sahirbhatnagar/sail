@@ -375,11 +375,33 @@ where $f_1(x) = -3x$, $f_2(x) = 2(2x-1)^3$ and the error term $\varepsilon$ is g
 
 
 
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
 
+{\centering \includegraphics[width=1\linewidth]{figure/toy-solution-path-1} 
+
+}
+
+\caption[Toy example solution path]{Toy example solution path}\label{fig:toy-solution-path}
+\end{figure}
+
+
+\end{knitrout}
 
 In Figure~\ref{fig:toy-effects}, we plot the true and estimated component functions $\hat{f}_1(X_1)$ and $E \cdot \hat{f}_2(X_2)$. Our method is able to capture the correct functional form for the nonlinear interaction. The lack-of-fit for $f_1(X_1)$ can be explained by the fact that \sail ~is trying to fit a cubic spline to a linear function. Nevertheless, this example demonstrates that it can still identify linear associations. 
 
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
 
+{\centering \includegraphics[width=1\linewidth]{figure/toy-effects-1} 
+
+}
+
+\caption[Estimated smooth functions by \texttt{sail} method based on $\lambda_{min}$]{Estimated smooth functions by \texttt{sail} method based on $\lambda_{min}$.}\label{fig:toy-effects}
+\end{figure}
+
+
+\end{knitrout}
 
 
 \subsection{Related Work}
@@ -817,48 +839,12 @@ In this section we illustrate \sail ~on several real data examples.
 \subsection{Alzheimer's Disease Neuroimaging Initiative}
 
 Alzheimer's is an irreversible neurodegenerative disease that results in a loss of mental function due to the deterioration of brain tissue. The overall goal of the Alzheimer's Disease Neuroimaging Initiative (ADNI) is to validate biomarkers for use in
-Alzheimer's disease clinical treatment trials~\citep{petersen2010alzheimer}. The patients were selected into the study based on their clinical diagnosis: controls, mild cognitive impairment or Alzheimer's disease. PET amyloid imaging was used to asses amyloid beta (A$\beta$) protein load in 96 brain regions. The response was general cognitive decline measured by a mini-mental state examination. We applied \sail ~to this data to see if there were any non-linear interactions between clinical diagnosis and A$\beta$ protein in the 96 brain regions   
+Alzheimer's disease clinical treatment trials~\citep{petersen2010alzheimer}. The patients were selected into the study based on their clinical diagnosis: controls, mild cognitive impairment (MCI) or Alzheimer's disease (AD). PET amyloid imaging was used to asses amyloid beta (A$\beta$) protein load in 96 brain regions. The response was general cognitive decline measured by a continuous mini-mental state examination score. We applied \sail ~to this data to see if there were any non-linear interactions between clinical diagnosis and A$\beta$ protein in the 96 brain regions on mini-mental state examination. 
 
-E: APOE4 allele increases the risk for Alzheimer's and
-lowers the age of onset
-X: PET amyloid imaging to assess Aβ protein load in 96
-brain regions
-Y: General cognitive decline measured by mini-mental
-state examination
-3 × 96 × 2 + 1 = 577 parameters to estimate
+There were a total of 343 patients who we divided randomly into equal sized training/validation/test splits. We ran the strong heredity \sail ~with cubic B-splines and $\alpha=0.1$. We also applied the \texttt{lasso, lassoBT, HierBasis} and \texttt{GLinternet} to this data. Using the same default settings and strategy as the simulation study, we ran each method on the training data, determined the optimal tuning parameter on the validation data, and assessed MSE on the test data. We repeated this process 200 times. 
 
 
 
-
-
-
-
-
-\begin{knitrout}\scriptsize
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
-
-{\centering \includegraphics[width=1\linewidth]{figure/plot-main-adni-1} 
-
-}
-
-\caption[Estimated main effect component functions by \texttt{sail} for ADNI data]{Estimated main effect component functions by \texttt{sail} for ADNI data.}\label{fig:plot-main-adni}
-\end{figure}
-
-
-\end{knitrout}
-
-\begin{knitrout}\scriptsize
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
-
-{\centering \includegraphics[width=1\linewidth]{figure/plot-inter-adni-1} 
-
-}
-
-\caption[Estimated interaction effects by 	exttt{sail} for ADNI data]{Estimated interaction effects by 	exttt{sail} for ADNI data.}\label{fig:plot-inter-adni}
-\end{figure}
-
-
-\end{knitrout}
 
 
 \begin{knitrout}\scriptsize
@@ -868,11 +854,33 @@ state examination
 
 }
 
-\caption[Estimated interaction effects by 	exttt{sail} for ADNI data]{Estimated interaction effects by 	exttt{sail} for ADNI data.}\label{fig:error-crosses-adni}
+\caption[Estimated interaction effects by \texttt{sail} for ADNI data]{Estimated interaction effects by \texttt{sail} for ADNI data.}\label{fig:error-crosses-adni}
 \end{figure}
 
 
 \end{knitrout}
+
+In Figure~\ref{fig:error-crosses-adni} we plot the mean test set MSE vs. the mean number of active variables $\pm 1$ SD. We see that \sail ~produces the sparsest models but doesn't perform as well as \texttt{HierBasis} and \texttt{GLinternet} in terms of MSE. \sail ~achieves similar MSE to both the \texttt{lasso} and \texttt{lassoBT} with fewer variables on average. \texttt{GLinternet} produces the largest models and seems to be sensitive to the train/validate/test split as evidenced by the large standard deviations. 
+
+To visualize the results from the \sail ~method, we chose the train/validate/test split which led to the best test set MSE, and then plotted the interaction effects in Figure~\ref{fig:plot-inter-adni}. The left panel shows the middle occipital gyrus left region in the occipital lobe known for visual object perception. We see that more A$\beta$ protein loads leads to a worse cognitive score for the MCI and AD group but not for the controls. The right panel shows the cuneus region known which is known to be involved in basic visual processing. We see that more A$\beta$ proteins leads to better cognitive scores for the MCI and AD group and poorer scores for the controls. 
+
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-inter-adni-1} 
+
+}
+
+\caption[Estimated interaction effects by \texttt{sail} for ADNI data]{Estimated interaction effects by \texttt{sail} for ADNI data.}\label{fig:plot-inter-adni}
+\end{figure}
+
+
+\end{knitrout}
+
+
+
 
 
 
