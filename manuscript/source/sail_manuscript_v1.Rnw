@@ -170,6 +170,7 @@
 \author[1,2]{Sahir R Bhatnagar}
 %\author[3]{Karim Oualkacha}
 \author[4]{Yi Yang}
+\author[2]{Amanda Lovato}
 \author[1,2,5]{\mbox{Celia MT Greenwood}}
 \affil[1]{Department of Epidemiology, Biostatistics and Occupational Health, McGill University}
 \affil[2]{Lady Davis Institute, Jewish General Hospital, Montr\'{e}al, QC}
