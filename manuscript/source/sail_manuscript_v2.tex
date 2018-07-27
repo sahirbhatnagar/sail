@@ -1,4 +1,54 @@
-\documentclass[12pt,letter]{article}    
+\documentclass[12pt,letter]{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}    
 
 %########################################################################################  
 %            						PACKAGES
@@ -180,31 +230,15 @@
 
 %########################################################################################  
 %            						START OF DOCUMENT
-%######################################################################################## 
-
+%########################################################################################
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \begin{document}
 
-<<setup, include=FALSE>>=
-rm(list = ls())
-knitr::opts_chunk$set(cache=FALSE, message = FALSE, tidy = FALSE, echo = FALSE, 
-						fig.width = 6, fig.asp = 0.618, warning = FALSE,
-						fig.align = 'center', out.width = "100%", size = 'scriptsize')
 
-knitr::opts_knit$set(eval.after = 'fig.cap') # for captions to be evaluated after R objects are available 
 
-knitr::read_chunk("../bin/setup.R")
-knitr::read_chunk("../bin/intro.R")
-knitr::read_chunk("../bin/simulation.R")
-knitr::read_chunk("../bin/ADNI.R")
-finalversion <- FALSE # set to FALSE if still in development and you dont want to run the R code
-#finalversion <- TRUE 
-@
 
-<<packages, eval=finalversion>>=
-@
 
-<<globals, eval=finalversion>>=
-@
+
 
 \maketitle
 \pagestyle{fancy}
@@ -298,7 +332,7 @@ To perform variable selection in this new parametrization, we penalize $\bs{\gam
 %	\mathcal{L}(\bTheta| \bD) = \frac{1}{n} \sum_i \log \left(1 + \exp \left\lbrace - Y_i \left( \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j \right) \right\rbrace   \right)
 %\end{equation}
 %for a binary response. 
-This penalty allows for the possibility of excluding the interaction term from the model even if the corresponding main effects are non-zero. Furthermore, smaller values for $\alpha$ would lead to more interactions being included in the final model while values approaching 1 would favor main effects. Similar to the elastic net~\citep{zou2005regularization}, we fix $\alpha$ and obtain a solution path over a sequence of $\lambda$ values. 
+This penalty allows for the possibility of excluding the interaction term from the model even if the corresponding main effects are non-zero. Smaller values for $\alpha$ would lead to more interactions being included in the final model while values approaching 1 would favor main effects. Similar to the elastic net~\citep{zou2005regularization}, we fix $\alpha$ and obtain a solution path over a sequence of $\lambda$ values. 
 
 \begin{comment}
 \subsection{Linear interaction model}
@@ -339,22 +373,19 @@ where $\hat{\beta}_j$ and $\hat{\alpha}_{j}$ are the MLEs, from~\eqref{eq:linpre
 
 \subsection{Toy example}
 
-We present here a toy example to better illustrate our method. With a sample size of $n=100$, we sample $p=20$ covariates $X_1, \ldots X_p$ independently from a $N(0,1)$ distribution truncated to the interval [0,1]. Data were generated from a model which follows the strong heredity principle, but where only one covariate, $X_2$, is involved in an interaction with a binary exposure variable $E$:
+We begin with a toy example to better illustrate our method. With a sample size of $n=100$, we sample $p=20$ covariates $X_1, \ldots X_p$ independently from a $N(0,1)$ truncated to the interval [0,1]. We generated data from a model which follows the strong heredity principle, but where only one covariates, $X_2$, is involved in the interaction with $E$:
 \begin{equation}
 	Y = f_1(X_1) + f_2(X_2) + 1.75 E + 1.5 E \cdot f_2(X_2) + \varepsilon
 \end{equation}
-For illustration, function $f_1(\cdot)$ is assumed to be linear, whereas function $f_2(\cdot)$ is non-linear: $f_1(x) = -3x$, $f_2(x) = 2(2x-1)^3$. The error term $\varepsilon$ is generated from a normal distribution with variance chosen such that the signal-to-noise ratio (SNR) is 2.  We generated a single simulated dataset and used the strong heredity \sail ~method with cubic B-splines to estimate the functional forms. 10-fold cross-validation (CV) was used to choose the optimal value of penalization. We used $\alpha=0.5$ and default values were used for all other arguments. We plot the solution path for both main effects and interactions in Figure~\ref{fig:toy-solution-path}, coloring lines to correspond to the selected model. We see that our method is able to correctly identify the true model. We can also visually see the effect of the penalty and strong heredity principle working in tandem, i.e., the interaction term $E \cdot f_2(X_2)$ (orange lines in the bottom panel) can only be nonzero if the main effects $E$ and $f_2(X_2)$ (black and orange lines respectively in the top panel) are nonzero, while nonzero main effects doesn't necessarily imply a nonzero interaction. 
+Function $f_1(\cdot)$ is assumed to be linear, whereas function $f_2(\cdot)$ is non-linear: $f_1(x) = -3x$, $f_2(x) = 2(2x-1)^3$. The error term $\varepsilon$ is generated from a normal distribution with variance chosen such that the signal-to-noise ratio (SNR) is 2.  We generated a single simulated dataset and used the strong heredity \sail ~method with cubic B-splines to estimate the functional forms. 10-fold CV was used to choose the optimal value of $\lambda$. We used $\alpha=0.5$ and default values were used for all other arguments. We plot the solution path for both main effects and interactions in Figure~\ref{fig:toy-solution-path} and we color the lines corresponding to the selected model. We see that our method is able to correctly identify the true model. We can also visually see the effect of the penalty and strong heredity principle working in tandem, i.e., the interaction term $E \cdot f_2(X_2)$ (orange lines in the bottom panel) can only be nonzero if the main effects $E$ and $f_2(X_2)$ (black and orange lines respectively in the top panel) are nonzero, while nonzero main effects doesn't necessarily imply a nonzero interaction. 
 
-<<toy-example, eval=finalversion>>=
-@
 
-<<toy-solution-path, fig.cap="Toy example solution path", fig.asp=0.8, fig.pos = "H", eval=finalversion>>=
-@
+
+
 
 In Figure~\ref{fig:toy-effects}, we plot the true and estimated component functions $\hat{f}_1(X_1)$ and $E \cdot \hat{f}_2(X_2)$, and their estimates with \texttt{sail}. We are able to capture the shape of the correct functional form, but our means are not well aligned with the data. Lack-of-fit for $f_1(X_1)$ can be partially explained by acknowledging that \sail ~is trying to fit a cubic spline to a linear function. Nevertheless, this example demonstrates that it can still identify linear associations with reasonable sensitivity and specificity. 
 
-<<toy-effects, fig.cap="Estimated smooth functions by \\texttt{sail} method based on $\\lambda_{min}$.", fig.pos = "H", eval=finalversion>>=
-@
+
 
 
 \subsection{Related Work}
@@ -713,16 +744,13 @@ The true component functions are the same as in~\citep{lin2006component,huang201
 
 The test set MSE results for each of the five simulation scenarios are shown in Figure~\ref{fig:plot-mse-sim}, while Figure~\ref{fig:plot-tpr-fpr-sim} shows the mean true positive rate (TPR) vs. the mean false positive rate (FPR) $\pm 1$ standard deviation (SD). 
 
-<<simulation-results, eval=finalversion, results = 'hide'>>=
-@
 
-<<plot-mse-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Boxplots of the test set mean squared error from 200 simulations for each of the five simulation scenarios.", eval=finalversion>>=
-@
+
+
 
 We see that \sail~,\texttt{adaptive sail} and \texttt{sail weak} have the best performance in terms of both MSE and yielding correct sparse models when the truth follows strong hierarchy (scenario 1a), as we would expect, since this is exactly the scenario that our method is trying to target. 
 
-<<plot-tpr-fpr-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Means $\\pm 1$ standard deviation of true positive rate vs. false positive rate from 200 simulations for each of the five scenarios. $|S_0|$ is the number of truly associated variables.", eval=finalversion>>=
-@
+
 
 Our method is also competitive when only main effects are present (scenario 3) and performs just as well as methods that only consider linear and non-linear main effects (\texttt{HierBasis}, \texttt{SPAM}), owing to the penalization applied to the interaction parameter. Due to the heredity property, our method is unable to capture any of the truly associated variables when only interactions are present (scenario 1c). However, the other methods also fail to capture any signal, with the exception of \texttt{GLinternet} which has a high TPR and FPR. When only linear effects and interactions are present (scenario 2), we see that \texttt{linear sail} has a high TPR and low FPR as compared to the other linear interaction methods (\texttt{lassoBT} and \texttt{GLinternet}) though the test set MSE isn't as good. The \texttt{lasso} and \texttt{adaptive lasso} have good test set MSE performance but poor sensitivity. Additional results are available in Section~\ref{ap:simulation} of the Appendix. Specifically, in Figure~\ref{fig:plot-mse-nactive-sim} we plot the mean MSE against the mean number of active variables $\pm 1$ standard deviation (SD). Figures~\ref{fig:plot-tpr-sim} and~\ref{fig:plot-fpr-sim} show the true positive and false positive rates, respectively. Figure~\ref{fig:plot-nactive-sim} shows the number of active variables. 
 
@@ -776,24 +804,19 @@ Alzheimer's disease clinical treatment trials~\citep{petersen2010alzheimer}. The
 
 There were a total of 343 patients who we divided randomly into equal sized training/validation/test splits. We ran the strong heredity \sail ~with cubic B-splines and $\alpha=0.1$. We also applied the \texttt{lasso, lassoBT, HierBasis} and \texttt{GLinternet} to this data. Using the same default settings and strategy as the simulation study, we ran each method on the training data, determined the optimal tuning parameter on the validation data, and assessed MSE on the test data. We repeated this process 200 times. 
 
-<<load-ADNI-data, eval=finalversion, results = 'hide'>>=
-@
 
-<<get-best-sail-model, eval=finalversion, results = 'hide'>>=
-@
 
-<<error-crosses-adni, fig.width=10, fig.height=8, fig.pos = 'H', fig.cap="Mean test set MSE vs. mean number of active variables ($\\pm 1$ SD).", eval=finalversion>>=
-@
+
+
+
 
 In Figure~\ref{fig:error-crosses-adni} we plot the mean test set MSE vs. the mean number of active variables $\pm 1$ SD. We see that \sail ~produces the sparsest models but doesn't perform as well as \texttt{HierBasis} and \texttt{GLinternet} in terms of MSE. \sail ~achieves similar MSE to both the \texttt{lasso} and \texttt{lassoBT} with fewer variables on average. \texttt{GLinternet} produces the largest models and seems to be sensitive to the train/validate/test split as evidenced by the large standard deviations. 
 
 To visualize the results from the \sail ~method, we chose the train/validate/test split which led to the best test set MSE, and then plotted the interaction effects in Figure~\ref{fig:plot-inter-adni}. The left panel shows the middle occipital gyrus left region in the occipital lobe known for visual object perception. We see that more A$\beta$ protein loads leads to a worse cognitive score for the MCI and AD group but not for the controls. The right panel shows the cuneus region known which is known to be involved in basic visual processing. We see that more A$\beta$ proteins leads to better cognitive scores for the MCI and AD group and poorer scores for the controls. 
 
-<<plot-main-adni, fig.asp=1, fig.width=12, fig.height=8, fig.pos = 'H', fig.cap="Estimated main effect component functions by \\texttt{sail} for ADNI data.", eval=F>>=
-@
 
-<<plot-inter-adni, fig.width=12, fig.height=8, fig.pos = 'H', fig.cap="Estimated interaction effects by \\texttt{sail} for ADNI data.", eval=finalversion>>=
-@
+
+
 
 
 
@@ -1102,21 +1125,16 @@ This is the same $\lambda_{max}$ as the least-squares strong heredity \sail ~mod
 
 \section{Simulation Results} \label{ap:simulation}
 
-<<simulation-results, eval=finalversion, results = 'hide'>>=
-@
-
-<<plot-mse-nactive-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Test set MSE vs number of active variables results.", eval=finalversion>>=
-@
 
 
-<<plot-tpr-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="True positive rate results.", eval=finalversion>>=
-@
 
-<<plot-fpr-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="False positive rate results.", eval=finalversion>>=
-@
 
-<<plot-nactive-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Number of active variables results.", eval=finalversion>>=
-@
+
+
+
+
+
+
 
 
 \begin{figure}[H]
@@ -1136,10 +1154,14 @@ In this section we briefly introduce the freely available and open source \sail 
 The package can be installed from \href{https://github.com/sahirbhatnagar/sail}{GitHub} via
 
 
-<<install-packages, eval=FALSE, echo=T>>=
-install.packages("pacman")
-pacman::p_load_gh('sahirbhatnagar/sail')
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{install.packages}\hlstd{(}\hlstr{"pacman"}\hlstd{)}
+\hlstd{pacman}\hlopt{::}\hlkwd{p_load_gh}\hlstd{(}\hlstr{'sahirbhatnagar/sail'}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 
@@ -1147,109 +1169,165 @@ pacman::p_load_gh('sahirbhatnagar/sail')
 
 We give a quick overview of the main functions and go into details in other vignettes. We will use the simulated data which ships with the package and can be loaded via:
 
-<<load-lib, echo=T, eval=finalversion>>=
-library(sail)
-data("sailsim")
-names(sailsim)
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(sail)}
+\hlkwd{data}\hlstd{(}\hlstr{"sailsim"}\hlstd{)}
+\hlkwd{names}\hlstd{(sailsim)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 We first define a basis expansion. In this example we use B-splines with degree 5.
 
-<<echo=T,eval=finalversion>>=
-library(splines)
-f.basis <- function(x) splines::bs(x, degree = 5)
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(splines)}
+\hlstd{f.basis} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) splines}\hlopt{::}\hlkwd{bs}\hlstd{(x,} \hlkwc{degree} \hlstd{=} \hlnum{5}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 Next we fit the model using the most basic call to \sail
 
-<<fit-sail, echo=T,eval=finalversion>>=
-fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis)
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fit} \hlkwb{<-} \hlkwd{sail}\hlstd{(}\hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{y} \hlstd{= sailsim}\hlopt{$}\hlstd{y,} \hlkwc{e} \hlstd{= sailsim}\hlopt{$}\hlstd{e,} \hlkwc{basis} \hlstd{= f.basis)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 \texttt{fit} is an object of class \sail ~that contains all the relevant information of the fitted model including the estimated coefficients at each value of $\lambda$ (by default the program chooses its own decreasing sequence of 100 $\lambda$ values). There are \texttt{print}, \texttt{plot}, \texttt{coef} and \texttt{predict} methods of objects of class \sail. We can call the \texttt{print} method:
 
-<<echo=T,eval=finalversion>>=
-fit
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fit}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 When \texttt{expand = TRUE} (i.e. the user did not provide their own design matrix), the \texttt{df\_main} and \texttt{df\_interaction} columns correspond to the number of non-zero predictors present in the model before basis expansion. This does not correspond to the number of non-zero coefficients in the model, but rather the number of unique variables. In this example we expanded each column of $\mathbf{X}$ to five columns. If  \texttt{df\_main=4}, \texttt{df\_interaction=2} and \texttt{df\_environment=1}, then the total number of non-zero coefficients would be $5 \times (4+2) + 1$.  
 
 The entire solution path can be plotted via the \texttt{plot} method for objects of class \sail. The y-axis is the value of the coefficient and the x-axis is the $\log(\lambda)$. Each line represents a coefficient in the model, and each color represents a variable (i.e. in this example a given variable will have 5 lines when it is non-zero). The numbers at the top of the plot represent the number of non-zero variables in the model: top panel (\texttt{df\_main} + \texttt{df\_environment}), bottom panel (\texttt{df\_interaction}). The black line is the coefficient path for the environment variable.  
 
-<<echo=T,eval=finalversion>>=
-plot(fit)
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(fit)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 The estimated coefficients at each value of lambda is given by (matrix partially printed here for brevity)
 
-<<echo=T,eval=finalversion>>=
-coef(fit)[1:6,50:55]
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{coef}\hlstd{(fit)[}\hlnum{1}\hlopt{:}\hlnum{6}\hlstd{,}\hlnum{50}\hlopt{:}\hlnum{55}\hlstd{]}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 
 The corresponding predicted response at each value of lambda (matrix partially printed here for brevity):
 
-<<echo=T,eval=finalversion>>=
-predict(fit)[1:5,50:55]
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{predict}\hlstd{(fit)[}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,}\hlnum{50}\hlopt{:}\hlnum{55}\hlstd{]}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 The predicted response at a specific value of lambda can be specified by the \texttt{s} argument:
 
-<<echo=T,eval=finalversion>>=
-predict(fit, s = 0.8)[1:5, ]
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{predict}\hlstd{(fit,} \hlkwc{s} \hlstd{=} \hlnum{0.8}\hlstd{)[}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{, ]}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 You can specify more than one value for `s`:
 
-<<echo=T,eval=finalversion>>=
-predict(fit, s = c(0.8, 0.2))[1:5, ]
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{predict}\hlstd{(fit,} \hlkwc{s} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{0.8}\hlstd{,} \hlnum{0.2}\hlstd{))[}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{, ]}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 You can also extract a list of active variables (i.e. variables with a non-zero estimated coefficient) for each value of lambda:
 
-<<echo=T,eval=finalversion>>=
-fit[["active"]][50:55]
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fit[[}\hlstr{"active"}\hlstd{]][}\hlnum{50}\hlopt{:}\hlnum{55}\hlstd{]}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 \subsection{Cross-Validation}
 
 \texttt{cv.sail} is the main function to do cross-validation along with \texttt{plot}, \texttt{predict}, and \texttt{coef} methods for objects of class \texttt{cv.sail}. We run it in parallel:
 
-<<echo=T,eval=finalversion>>=
-set.seed(432) # to reproduce results (randomness due to CV folds)
-library(doMC)
-registerDoMC(cores = 8) 
-cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis,
-nfolds = 5, parallel = TRUE)
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{set.seed}\hlstd{(}\hlnum{432}\hlstd{)} \hlcom{# to reproduce results (randomness due to CV folds)}
+\hlkwd{library}\hlstd{(doMC)}
+\hlkwd{registerDoMC}\hlstd{(}\hlkwc{cores} \hlstd{=} \hlnum{8}\hlstd{)}
+\hlstd{cvfit} \hlkwb{<-} \hlkwd{cv.sail}\hlstd{(}\hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{y} \hlstd{= sailsim}\hlopt{$}\hlstd{y,} \hlkwc{e} \hlstd{= sailsim}\hlopt{$}\hlstd{e,} \hlkwc{basis} \hlstd{= f.basis,}
+\hlkwc{nfolds} \hlstd{=} \hlnum{5}\hlstd{,} \hlkwc{parallel} \hlstd{=} \hlnum{TRUE}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 We plot the cross-validated error curve which has the mean-squared error on the y-axis and $\log(\lambda)$ on the x-axis. It includes the cross-validation curve (red dotted line), and upper and lower standard deviation curves along the $\lambda$ sequence (error bars). Two selected $\lambda$'s are indicated by the vertical dotted lines (see below). The numbers at the top of the plot represent the total number of non-zero variables at that value of $\lambda$ (\texttt{df\_main} + \texttt{df\_environment} + \texttt{df\_interaction}):
 
 
-<<echo=T,eval=finalversion>>=
-plot(cvfit)
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(cvfit)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 \texttt{lambda.min} is the value of $\lambda$ that gives minimum mean cross-validated error. The other $\lambda$ saved is \texttt{lambda.1se},
 which gives the most regularized model such that error is within one standard error of the minimum. We can view the selected $\lambda$'s and the corresponding coefficients:
 
-<<echo=T,eval=finalversion>>=
-cvfit[["lambda.min"]]
-cvfit[["lambda.1se"]]
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{cvfit[[}\hlstr{"lambda.min"}\hlstd{]]}
+\hlstd{cvfit[[}\hlstr{"lambda.1se"}\hlstd{]]}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 The estimated nonzero coefficients at \texttt{lambda.1se} and \texttt{lambda.min}:
 
-<<echo=T,eval=finalversion>>=
-predict(cvfit, type = "nonzero", s="lambda.1se") # lambda.1se is the default
-predict(cvfit, type = "nonzero", s = "lambda.min")
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{predict}\hlstd{(cvfit,} \hlkwc{type} \hlstd{=} \hlstr{"nonzero"}\hlstd{,} \hlkwc{s}\hlstd{=}\hlstr{"lambda.1se"}\hlstd{)} \hlcom{# lambda.1se is the default}
+\hlkwd{predict}\hlstd{(cvfit,} \hlkwc{type} \hlstd{=} \hlstr{"nonzero"}\hlstd{,} \hlkwc{s} \hlstd{=} \hlstr{"lambda.min"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 
@@ -1261,23 +1339,31 @@ B-splines are difficult to interpret. We provide a plotting function to visualiz
 
 Since we are using simulated data, we also plot the true curve:
 
-<<echo=T,eval=finalversion>>=
-plotMain(cvfit$sail.fit, x = sailsim$x, xvar = "X3",
-legend.position = "topright",
-s = cvfit$lambda.min, f.truth = sailsim$f3)
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plotMain}\hlstd{(cvfit}\hlopt{$}\hlstd{sail.fit,} \hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{xvar} \hlstd{=} \hlstr{"X3"}\hlstd{,}
+\hlkwc{legend.position} \hlstd{=} \hlstr{"topright"}\hlstd{,}
+\hlkwc{s} \hlstd{= cvfit}\hlopt{$}\hlstd{lambda.min,} \hlkwc{f.truth} \hlstd{= sailsim}\hlopt{$}\hlstd{f3)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 \subsubsection{Interaction Effects}
 
 Again, since we are using simulated data, we also plot the true interaction:
 
-<<fig.height=7, fig.width=8,echo=T,eval=finalversion>>=
-plotInter(cvfit$sail.fit, x = sailsim$x, xvar = "X4",
-f.truth = sailsim$f4.inter,
-s = cvfit$lambda.min,
-title_z = "Estimated")
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plotInter}\hlstd{(cvfit}\hlopt{$}\hlstd{sail.fit,} \hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{xvar} \hlstd{=} \hlstr{"X4"}\hlstd{,}
+\hlkwc{f.truth} \hlstd{= sailsim}\hlopt{$}\hlstd{f4.inter,}
+\hlkwc{s} \hlstd{= cvfit}\hlopt{$}\hlstd{lambda.min,}
+\hlkwc{title_z} \hlstd{=} \hlstr{"Estimated"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 
@@ -1285,29 +1371,45 @@ title_z = "Estimated")
 
 The \texttt{basis} argument in the \texttt{sail} function is very flexible in that it allows you to apply \textit{any} basis expansion to the columns of $\mathbf{X}$. Of course, there might be situations where you do not expect any non-linear main effects or interactions to be present in your data. You can still use the \sail ~method to search for linear main effects and interactions. This can be accomplished by specifying an identity map:
 
-<<echo=T, eval=finalversion>>=
-f.identity <- function(i) i
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{f.identity} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{i}\hlstd{) i}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 We then pass this function to the \texttt{basis} argument in \texttt{cv.sail}:
 
-<<echo=T, eval=finalversion>>=
-cvfit_linear <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-basis = f.identity, nfolds = 5, parallel = TRUE)
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{cvfit_linear} \hlkwb{<-} \hlkwd{cv.sail}\hlstd{(}\hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{y} \hlstd{= sailsim}\hlopt{$}\hlstd{y,} \hlkwc{e} \hlstd{= sailsim}\hlopt{$}\hlstd{e,}
+\hlkwc{basis} \hlstd{= f.identity,} \hlkwc{nfolds} \hlstd{=} \hlnum{5}\hlstd{,} \hlkwc{parallel} \hlstd{=} \hlnum{TRUE}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 Next we plot the cross-validated curve:
 
-<<echo=T, eval=finalversion>>=
-plot(cvfit_linear)
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(cvfit_linear)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 And extract the model at \texttt{lambda.min}:
 
-<<echo=T, eval=finalversion>>=
-predict(cvfit_linear, s = "lambda.min", type = "nonzero")
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{predict}\hlstd{(cvfit_linear,} \hlkwc{s} \hlstd{=} \hlstr{"lambda.min"}\hlstd{,} \hlkwc{type} \hlstd{=} \hlstr{"nonzero"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 \subsection{Applying a different penalty to each predictor} \label{ap:pfac}
@@ -1325,21 +1427,33 @@ The weights $w_E, w_j, w_{jE}$ are by default set to 1 as specified by the \text
 
 In the following example, we want the environment variable to always be included so we set the first element of \texttt{p.fac} to zero. We also want to apply less of a penalty to the main effects for $X_2, X_3, X_4$:
 
-<<echo=T, eval=finalversion>>=
-# the weights correspond to E, X1, X2, X3, ... X_p, X1:E, X2:E, ... X_p:E
-p.fac <- c(0, 1, 0.4, 0.6, 0.7, rep(1, 2*ncol(sailsim$x) - 4))
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# the weights correspond to E, X1, X2, X3, ... X_p, X1:E, X2:E, ... X_p:E}
+\hlstd{p.fac} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,} \hlnum{1}\hlstd{,} \hlnum{0.4}\hlstd{,} \hlnum{0.6}\hlstd{,} \hlnum{0.7}\hlstd{,} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{2}\hlopt{*}\hlkwd{ncol}\hlstd{(sailsim}\hlopt{$}\hlstd{x)} \hlopt{-} \hlnum{4}\hlstd{))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
-<<echo=T, eval=finalversion>>=
-fit_pf <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis,
-penalty.factor = p.fac)
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fit_pf} \hlkwb{<-} \hlkwd{sail}\hlstd{(}\hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{y} \hlstd{= sailsim}\hlopt{$}\hlstd{y,} \hlkwc{e} \hlstd{= sailsim}\hlopt{$}\hlstd{e,} \hlkwc{basis} \hlstd{= f.basis,}
+\hlkwc{penalty.factor} \hlstd{= p.fac)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
-<<echo=T, eval=finalversion>>=
-plot(fit_pf)
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(fit_pf)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 
 We see from the plot above that the black line (corresponding to the $X_E$ variable with \texttt{penalty.factor} equal to zero) is always included in the model.   
@@ -1352,28 +1466,40 @@ However, if the user has some prior knowledge on possible effect relationships, 
 
 We use the simulated dataset \texttt{sailsim} provided in our package. We first add a categorical variable \texttt{race} to the data:
 
-<<echo=T, eval=finalversion>>=
-set.seed(1234)
-library(sail)
-x_df <- as.data.frame(sailsim$x)
-x_df$race <- factor(sample(1:2, nrow(x_df), replace = TRUE))
-table(x_df$race)
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{set.seed}\hlstd{(}\hlnum{1234}\hlstd{)}
+\hlkwd{library}\hlstd{(sail)}
+\hlstd{x_df} \hlkwb{<-} \hlkwd{as.data.frame}\hlstd{(sailsim}\hlopt{$}\hlstd{x)}
+\hlstd{x_df}\hlopt{$}\hlstd{race} \hlkwb{<-} \hlkwd{factor}\hlstd{(}\hlkwd{sample}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{2}\hlstd{,} \hlkwd{nrow}\hlstd{(x_df),} \hlkwc{replace} \hlstd{=} \hlnum{TRUE}\hlstd{))}
+\hlkwd{table}\hlstd{(x_df}\hlopt{$}\hlstd{race)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 We then use the \texttt{model.matrix} function to create the design matrix. Note that the intercept should not be included, as this is computed internally in the \texttt{sail} function. This is why we add 0 to the formula. Notice also the flexibility we can have by including different basis expansions to each predictor:
 
-<<echo=T, eval=finalversion>>=
-library(splines)
-x <- stats::model.matrix(~ 0 +  bs(X1, degree = 5) + bs(X2, degree = 3) + ns(X3, df = 8) + 
-bs(X4, degree = 6) + X5 + poly(X6,2) + race, data = x_df)
-head(x)
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(splines)}
+\hlstd{x} \hlkwb{<-} \hlstd{stats}\hlopt{::}\hlkwd{model.matrix}\hlstd{(}\hlopt{~} \hlnum{0} \hlopt{+}  \hlkwd{bs}\hlstd{(X1,} \hlkwc{degree} \hlstd{=} \hlnum{5}\hlstd{)} \hlopt{+} \hlkwd{bs}\hlstd{(X2,} \hlkwc{degree} \hlstd{=} \hlnum{3}\hlstd{)} \hlopt{+} \hlkwd{ns}\hlstd{(X3,} \hlkwc{df} \hlstd{=} \hlnum{8}\hlstd{)} \hlopt{+}
+\hlkwd{bs}\hlstd{(X4,} \hlkwc{degree} \hlstd{=} \hlnum{6}\hlstd{)} \hlopt{+} \hlstd{X5} \hlopt{+} \hlkwd{poly}\hlstd{(X6,}\hlnum{2}\hlstd{)} \hlopt{+} \hlstd{race,} \hlkwc{data} \hlstd{= x_df)}
+\hlkwd{head}\hlstd{(x)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 One benefit of using \texttt{stats::model.matrix} is that it returns the group membership as an attribute:
 
-<<echo=T, eval=finalversion>>=
-attr(x, "assign")
-@
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{attr}\hlstd{(x,} \hlstr{"assign"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 The group membership must be supplied to the \texttt{sail} function. This information is needed for the group lasso penalty, which will select the whole group as zero or non-zero.
 
@@ -1381,17 +1507,11 @@ The group membership must be supplied to the \texttt{sail} function. This inform
 
 We need to set the argument \texttt{expand = FALSE} and provide the group membership. The first element of the group membership corresponds to the first column of \texttt{x}, the second element to the second column of \texttt{x}, and so on. 
 
-<<ehco=T, eval=finalversion>>=
-fit_design <- sail(x = x, y = sailsim$y, e = sailsim$e, 
-expand = FALSE,
-group = attr(x, "assign"), verbose = 0)
-@
+
 
 We can plot the solution path for both main effects and interactions using the \texttt{plot} method for objects of class \texttt{sail}:
 
-<<ehco=T, eval=finalversion>>=
-plot(fit_design)
-@
+
 
 In this instance, since we provided a user-defined design matrix and `expand = FALSE`, the numbers at the top of the plot represent the total number of non-zero coefficients. 
 
@@ -1400,25 +1520,16 @@ In this instance, since we provided a user-defined design matrix and `expand = F
 
 We can use cross-validation to find the optimal value of lambda:
 
-<<ehco=T, eval=finalversion>>=
-cvfit_design <- cv.sail(x = x, y = sailsim$y, e = sailsim$e, 
-expand = FALSE,
-group = attr(x, "assign"),
-nfolds = 10, parallel = TRUE)
-@
+
 
 We can plot the cross-validated mean squared error as a function of lambda:
 
-<<ehco=T, eval=finalversion>>=
-plot(cvfit_design)
-@
+
 
 
 The estimated non-zero coefficients at \texttt{lambda.1se}:
 
-<<ehco=T, eval=finalversion>>=
-predict(cvfit_design, type = "nonzero")
-@
+
 
 
 
