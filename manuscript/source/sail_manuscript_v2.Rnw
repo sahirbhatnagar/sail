@@ -196,8 +196,8 @@ knitr::read_chunk("../bin/setup.R")
 knitr::read_chunk("../bin/intro.R")
 knitr::read_chunk("../bin/simulation.R")
 knitr::read_chunk("../bin/ADNI.R")
-finalversion <- FALSE # set to FALSE if still in development and you dont want to run the R code
-#finalversion <- TRUE 
+#finalversion <- FALSE # set to FALSE if still in development and you dont want to run the R code
+finalversion <- TRUE 
 @
 
 <<packages, eval=finalversion>>=
@@ -743,7 +743,7 @@ To visualize the estimated interaction effects, we ordered the 200 simulation ru
 
 % this is only commented because i dont want to change the paths to figures
 % for carbon laptop
-\begin{comment}
+%\begin{comment}
 \begin{figure}[H]
 	\centering
 	\includegraphics[scale=0.61]{/home/sahir/git_repositories/sail/my_sims/figures/sail_main_eff_paramIndex1_200sims.pdf}
@@ -773,7 +773,7 @@ To visualize the estimated interaction effects, we ordered the 200 simulation ru
 \end{figure}
 
 
-\end{comment}
+%\end{comment}
 
 
 \section{Real Data Application} \label{sec:sail_rda}
