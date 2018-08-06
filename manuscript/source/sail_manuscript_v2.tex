@@ -244,7 +244,7 @@
 \pagestyle{fancy}
 
 \begin{abstract}
-Diseases are now thought to be the result of changes in entire biological networks whose states are affected by a complex interaction of genetic and environmental factors. In general, power to estimate interactions is low, the number of possible interactions could be enormous and their effects may be non-linear. Existing approaches such as the lasso might keep an interaction but remove a main effect, which is problematic for interpretation. We develop a model for linear and non-linear interactions in penalized regression models that automatically enforces the strong heredity property. A computationally efficient fitting algorithm combined with a non-parametric screening approach scales to high-dimensional datasets and has been implemented in an R package. We apply our method to identify gene-prenatal maternal depression interactions on negative emotionality in mother–infant dyads from the Maternal Adversity, Vulnerability, and Neurodevelopment (MAVAN) cohort.
+Diseases are now thought to be the result of changes in entire biological networks whose states are affected by a complex interaction of genetic and environmental factors. In general, power to estimate interactions is low, the number of possible interactions could be enormous and their effects may be non-linear. Existing approaches such as the lasso might keep an interaction but remove a main effect, which is problematic for interpretation. In this work, we introduce a sparse additive interaction learning model called \sail ~for detecting non-linear interactions with a key environmental or exposure variable in high-dimensional settings. Our method can accommodate either the strong or weak heredity constraints. We develop a computationally efficient fitting algorithm with automatic tuning parameter selection, which scales to high-dimensional datasets. Through an extensive simulation study, we show that \sail ~outperforms existing penalized regression methods in terms of prediction error, sensitivity and specificity when there are non-linear interactions with an exposure variable. We apply \sail ~to the Alzheimer's Disease Neuroimaging Initiative (ADNI) data to select non-linear interactions between clinical diagnosis and A$\beta$ protein in 96 brain regions on mini-mental state examination. Our algorithms are available in an R package (\url{https://github.com/greenwoodlab}).
 \end{abstract}
 
 \maketitle
@@ -870,7 +870,7 @@ There were a total of 343 patients who we divided randomly into equal sized trai
 
 }
 
-\caption[Mean test set MSE vs]{Mean test set MSE vs. mean number of active variables ($\pm 1$ SD).}\label{fig:error-crosses-adni}
+\caption[Mean test set MSE vs]{Mean test set MSE vs. mean number of active variables ($\pm 1$ SD) for ADNI data based on 200 train/validation/test splits.}\label{fig:error-crosses-adni}
 \end{figure}
 
 
@@ -907,7 +907,8 @@ In this article we have introduced the sparse additive interaction learning mode
 Using a simple reparametrization, we are able to achieve either the weak or strong heredity property without using a complex penalty function. We developed a blockwise coordinate descent algorithm to solve the \sail ~objective function for the least-squares loss function. 
 %We show that the \texttt{adaptive sail} has the oracle property. 
 All our algorithms are implemented in a computationally efficient, well-documented and freely available \texttt{R} package. 
-Furthermore, our method is flexible enough to handle any type of basis expansion including the identity map, which allows for linear interactions. Our implementation allows the user to selectively apply the basis expansions to the predictors, allowing for example, a combination of continuous and categorical predictors. 
+Furthermore, our method is flexible enough to handle any type of basis expansion including the identity map, which allows for linear interactions. 
+Our implementation allows the user to selectively apply the basis expansions to the predictors, allowing for example, a combination of continuous and categorical predictors. 
 An extensive simulation study shows that \sail, \texttt{adaptive sail} and \texttt{sail weak} outperform existing penalized regression methods in terms of prediction error, sensitivity and specificity when there are non-linear main effects only, as well as interactions with an exposure variable. 
 
 Our method however does have its limitations. \sail can currently only handle $X_E \cdot f(X)$ or $f(X_E) \cdot X$ and does not allow for $f(X, X_E)$, i.e., only one of the variables in the interaction can have a non-linear effect and we do not consider the tensor product. The reparametrization leads to a non-convex optimization problem which makes convergence rates difficult to assess, though we did not experience any major convergence issues in our simulations and real data analysis. The memory footprint can also be an issue depending on the degree of the basis expansion and the number of variables. 
@@ -1326,121 +1327,7 @@ Next we fit the model using the most basic call to \sail
 \end{kframe}
 \end{knitrout}
 
-\texttt{fit} is an object of class \sail ~that contains all the relevant information of the fitted model including the estimated coefficients at each value of $\lambda$ (by default the program chooses its own decreasing sequence of 100 $\lambda$ values). There are \texttt{print}, \texttt{plot}, \texttt{coef} and \texttt{predict} methods of objects of class \sail. We can call the \texttt{print} method:
-
-\begin{knitrout}\scriptsize
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
-\begin{alltt}
-\hlstd{fit}
-\end{alltt}
-\begin{verbatim}
-## 
-## Call:  sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis) 
-## 
-##      df_main df_interaction df_environment     %Dev  Lambda
-## s1         0              0              0 0.000000 1.48800
-## s2         0              0              1 0.001701 1.42000
-## s3         0              0              1 0.003359 1.35600
-## s4         0              0              1 0.004899 1.29400
-## s5         0              0              1 0.006354 1.23500
-## s6         1              0              1 0.014750 1.17900
-## s7         2              0              1 0.045860 1.12600
-## s8         2              0              1 0.080070 1.07500
-## s9         2              0              1 0.111900 1.02600
-## s10        2              0              1 0.141500 0.97900
-## s11        2              0              1 0.169000 0.93450
-## s12        2              0              1 0.194500 0.89210
-## s13        2              0              1 0.218100 0.85150
-## s14        2              0              1 0.240100 0.81280
-## s15        2              0              1 0.260400 0.77590
-## s16        2              0              1 0.279200 0.74060
-## s17        3              1              1 0.465100 0.70690
-## s18        3              1              1 0.479500 0.67480
-## s19        3              1              1 0.493000 0.64410
-## s20        3              2              1 0.508300 0.61490
-## s21        3              2              1 0.524200 0.58690
-## s22        3              2              1 0.536600 0.56020
-## s23        3              2              1 0.548100 0.53480
-## s24        4              2              1 0.558000 0.51050
-## s25        5              2              1 0.568900 0.48730
-## s26        5              2              1 0.579900 0.46510
-## s27        5              2              1 0.590100 0.44400
-## s28        5              2              1 0.599500 0.42380
-## s29        5              3              1 0.609800 0.40450
-## s30        5              3              1 0.619200 0.38620
-## s31        5              3              1 0.628200 0.36860
-## s32        6              3              1 0.637200 0.35190
-## s33        6              3              1 0.646800 0.33590
-## s34        6              3              1 0.655000 0.32060
-## s35        6              3              1 0.663300 0.30600
-## s36        7              3              1 0.671600 0.29210
-## s37        7              3              1 0.679500 0.27880
-## s38        7              3              1 0.687400 0.26620
-## s39        7              3              1 0.694600 0.25410
-## s40        7              4              1 0.702700 0.24250
-## s41        7              4              1 0.734100 0.23150
-## s42        7              4              1 0.739300 0.22100
-## s43        7              5              1 0.745200 0.21090
-## s44        7              6              1 0.754400 0.20130
-## s45        7              6              1 0.760700 0.19220
-## s46        7              6              1 0.767300 0.18350
-## s47        7              6              1 0.771800 0.17510
-## s48        7              6              1 0.776100 0.16720
-## s49        8              6              1 0.780700 0.15960
-## s50        8              6              1 0.784500 0.15230
-## s51        9              6              1 0.788700 0.14540
-## s52       10              6              1 0.792700 0.13880
-## s53       12              6              1 0.797800 0.13250
-## s54       13              6              1 0.802600 0.12640
-## s55       13              6              1 0.807500 0.12070
-## s56       13              6              1 0.812200 0.11520
-## s57       14              6              1 0.816800 0.11000
-## s58       14              6              1 0.821400 0.10500
-## s59       15              6              1 0.826100 0.10020
-## s60       15              7              1 0.831200 0.09565
-## s61       13             10              1 0.871400 0.09131
-## s62       13             10              1 0.873800 0.08716
-## s63       13             10              1 0.876200 0.08319
-## s64       14             10              1 0.878600 0.07941
-## s65       14             10              1 0.881000 0.07580
-## s66       14             11              1 0.883400 0.07236
-## s67       14             11              1 0.885900 0.06907
-## s68       14             11              1 0.888400 0.06593
-## s69       14             11              1 0.890600 0.06293
-## s70       16             13              1 0.930600 0.06007
-## s71       16             13              1 0.932300 0.05734
-## s72       16             13              1 0.934200 0.05474
-## s73       16             13              1 0.936100 0.05225
-## s74       16             13              1 0.938500 0.04987
-## s75       16             13              1 0.940000 0.04761
-## s76       17             13              1 0.942100 0.04544
-## s77       17             13              1 0.943800 0.04338
-## s78       17             14              1 0.945600 0.04141
-## s79       17             14              1 0.947300 0.03952
-## s80       18             14              1 0.949000 0.03773
-## s81       18             14              1 0.950700 0.03601
-## s82       18             14              1 0.952400 0.03438
-## s83       18             14              1 0.954400 0.03281
-## s84       18             14              1 0.955800 0.03132
-## s85       18             14              1 0.957200 0.02990
-## s86       19             14              1 0.959100 0.02854
-## s87       19             15              1 0.960300 0.02724
-## s88       19             15              1 0.967900 0.02600
-## s89       19             15              1 0.968900 0.02482
-## s90       19             15              1 0.970100 0.02369
-## s91       19             15              1 0.971300 0.02262
-## s92       19             15              1 0.972400 0.02159
-## s93       19             15              1 0.973500 0.02061
-## s94       19             15              1 0.974600 0.01967
-## s95       20             19              1 0.977900 0.01878
-## s96       20             19              1 0.978600 0.01792
-## s97       20             19              1 0.979300 0.01711
-## s98       20             19              1 0.980000 0.01633
-## s99       20             19              1 0.980700 0.01559
-## s100      20             19              1 0.981400 0.01488
-\end{verbatim}
-\end{kframe}
-\end{knitrout}
+\texttt{fit} is an object of class \sail ~that contains all the relevant information of the fitted model including the estimated coefficients at each value of $\lambda$ (by default the program chooses its own decreasing sequence of 100 $\lambda$ values). There are \texttt{print}, \texttt{plot}, \texttt{coef} and \texttt{predict} methods of objects of class \sail. 
 
 When \texttt{expand = TRUE} (i.e. the user did not provide their own design matrix), the \texttt{df\_main} and \texttt{df\_interaction} columns correspond to the number of non-zero predictors present in the model before basis expansion. This does not correspond to the number of non-zero coefficients in the model, but rather the number of unique variables. In this example we expanded each column of $\mathbf{X}$ to five columns. If  \texttt{df\_main=4}, \texttt{df\_interaction=2} and \texttt{df\_environment=1}, then the total number of non-zero coefficients would be $5 \times (4+2) + 1$.  
 
@@ -1453,7 +1340,7 @@ The entire solution path can be plotted via the \texttt{plot} method for objects
 \end{alltt}
 \end{kframe}
 
-{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-3-1} 
+{\centering \includegraphics[width=1\linewidth]{figure/sail-solution-path-1} 
 
 }
 
@@ -1609,7 +1496,7 @@ We plot the cross-validated error curve which has the mean-squared error on the 
 \end{alltt}
 \end{kframe}
 
-{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-10-1} 
+{\centering \includegraphics[width=1\linewidth]{figure/sail-cv-1} 
 
 }
 
@@ -1764,7 +1651,7 @@ Since we are using simulated data, we also plot the true curve:
 \end{alltt}
 \end{kframe}
 
-{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-13-1} 
+{\centering \includegraphics[width=1\linewidth]{figure/sail-main-eff-1} 
 
 }
 
@@ -1787,7 +1674,7 @@ Again, since we are using simulated data, we also plot the true interaction:
 \end{alltt}
 \end{kframe}
 
-{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-14-1} 
+{\centering \includegraphics[width=1\linewidth]{figure/sail-inter-eff-1} 
 
 }
 
@@ -1830,7 +1717,7 @@ Next we plot the cross-validated curve:
 \end{alltt}
 \end{kframe}
 
-{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-17-1} 
+{\centering \includegraphics[width=1\linewidth]{figure/sail-solution-path-linear-1} 
 
 }
 
@@ -1916,7 +1803,7 @@ In the following example, we want the environment variable to always be included
 \end{alltt}
 \end{kframe}
 
-{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-21-1} 
+{\centering \includegraphics[width=1\linewidth]{figure/sail-pf-path-1} 
 
 }
 
@@ -2042,7 +1929,7 @@ We can plot the solution path for both main effects and interactions using the \
 \begin{knitrout}\scriptsize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-26-1} 
+{\centering \includegraphics[width=1\linewidth]{figure/sail-expand-false-1} 
 
 }
 
@@ -2064,7 +1951,7 @@ We can plot the cross-validated mean squared error as a function of lambda:
 \begin{knitrout}\scriptsize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
-{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-28-1} 
+{\centering \includegraphics[width=1\linewidth]{figure/sail-plot-cv-design-1} 
 
 }
 

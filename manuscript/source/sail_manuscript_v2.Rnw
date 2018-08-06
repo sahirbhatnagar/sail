@@ -210,7 +210,7 @@ finalversion <- TRUE
 \pagestyle{fancy}
 
 \begin{abstract}
-Diseases are now thought to be the result of changes in entire biological networks whose states are affected by a complex interaction of genetic and environmental factors. In general, power to estimate interactions is low, the number of possible interactions could be enormous and their effects may be non-linear. Existing approaches such as the lasso might keep an interaction but remove a main effect, which is problematic for interpretation. We develop a model for linear and non-linear interactions in penalized regression models that automatically enforces the strong heredity property. A computationally efficient fitting algorithm combined with a non-parametric screening approach scales to high-dimensional datasets and has been implemented in an R package. We apply our method to identify gene-prenatal maternal depression interactions on negative emotionality in mother–infant dyads from the Maternal Adversity, Vulnerability, and Neurodevelopment (MAVAN) cohort.
+Diseases are now thought to be the result of changes in entire biological networks whose states are affected by a complex interaction of genetic and environmental factors. In general, power to estimate interactions is low, the number of possible interactions could be enormous and their effects may be non-linear. Existing approaches such as the lasso might keep an interaction but remove a main effect, which is problematic for interpretation. In this work, we introduce a sparse additive interaction learning model called \sail ~for detecting non-linear interactions with a key environmental or exposure variable in high-dimensional settings. Our method can accommodate either the strong or weak heredity constraints. We develop a computationally efficient fitting algorithm with automatic tuning parameter selection, which scales to high-dimensional datasets. Through an extensive simulation study, we show that \sail ~outperforms existing penalized regression methods in terms of prediction error, sensitivity and specificity when there are non-linear interactions with an exposure variable. We apply \sail ~to the Alzheimer's Disease Neuroimaging Initiative (ADNI) data to select non-linear interactions between clinical diagnosis and A$\beta$ protein in 96 brain regions on mini-mental state examination. Our algorithms are available in an R package (\url{https://github.com/greenwoodlab}).
 \end{abstract}
 
 \maketitle
@@ -793,7 +793,7 @@ There were a total of 343 patients who we divided randomly into equal sized trai
 <<get-best-sail-model, eval=finalversion, results = 'hide'>>=
 @
 
-<<error-crosses-adni, fig.width=10, fig.height=8, fig.pos = 'H', fig.cap="Mean test set MSE vs. mean number of active variables ($\\pm 1$ SD).", eval=finalversion>>=
+<<error-crosses-adni, fig.width=10, fig.height=8, fig.pos = 'H', fig.cap="Mean test set MSE vs. mean number of active variables ($\\pm 1$ SD) for ADNI data based on 200 train/validation/test splits.", eval=finalversion>>=
 @
 
 In Figure~\ref{fig:error-crosses-adni} we plot the mean test set MSE vs. the mean number of active variables $\pm 1$ SD. We see that \sail ~produces the sparsest models but doesn't perform as well as \texttt{HierBasis} and \texttt{GLinternet} in terms of MSE. \sail ~achieves a similar MSE to both the \texttt{lasso} and \texttt{lassoBT} with fewer variables on average. \texttt{GLinternet} produces the largest models and seems to be sensitive to the train/validate/test split as evidenced by the large standard deviations. 
@@ -818,7 +818,8 @@ In this article we have introduced the sparse additive interaction learning mode
 Using a simple reparametrization, we are able to achieve either the weak or strong heredity property without using a complex penalty function. We developed a blockwise coordinate descent algorithm to solve the \sail ~objective function for the least-squares loss function. 
 %We show that the \texttt{adaptive sail} has the oracle property. 
 All our algorithms are implemented in a computationally efficient, well-documented and freely available \texttt{R} package. 
-Furthermore, our method is flexible enough to handle any type of basis expansion including the identity map, which allows for linear interactions. Our implementation allows the user to selectively apply the basis expansions to the predictors, allowing for example, a combination of continuous and categorical predictors. 
+Furthermore, our method is flexible enough to handle any type of basis expansion including the identity map, which allows for linear interactions. 
+Our implementation allows the user to selectively apply the basis expansions to the predictors, allowing for example, a combination of continuous and categorical predictors. 
 An extensive simulation study shows that \sail, \texttt{adaptive sail} and \texttt{sail weak} outperform existing penalized regression methods in terms of prediction error, sensitivity and specificity when there are non-linear main effects only, as well as interactions with an exposure variable. 
 
 Our method however does have its limitations. \sail can currently only handle $X_E \cdot f(X)$ or $f(X_E) \cdot X$ and does not allow for $f(X, X_E)$, i.e., only one of the variables in the interaction can have a non-linear effect and we do not consider the tensor product. The reparametrization leads to a non-convex optimization problem which makes convergence rates difficult to assess, though we did not experience any major convergence issues in our simulations and real data analysis. The memory footprint can also be an issue depending on the degree of the basis expansion and the number of variables. 
@@ -1178,17 +1179,13 @@ Next we fit the model using the most basic call to \sail
 fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis)
 @
 
-\texttt{fit} is an object of class \sail ~that contains all the relevant information of the fitted model including the estimated coefficients at each value of $\lambda$ (by default the program chooses its own decreasing sequence of 100 $\lambda$ values). There are \texttt{print}, \texttt{plot}, \texttt{coef} and \texttt{predict} methods of objects of class \sail. We can call the \texttt{print} method:
-
-<<echo=T,eval=finalversion>>=
-fit
-@
+\texttt{fit} is an object of class \sail ~that contains all the relevant information of the fitted model including the estimated coefficients at each value of $\lambda$ (by default the program chooses its own decreasing sequence of 100 $\lambda$ values). There are \texttt{print}, \texttt{plot}, \texttt{coef} and \texttt{predict} methods of objects of class \sail. 
 
 When \texttt{expand = TRUE} (i.e. the user did not provide their own design matrix), the \texttt{df\_main} and \texttt{df\_interaction} columns correspond to the number of non-zero predictors present in the model before basis expansion. This does not correspond to the number of non-zero coefficients in the model, but rather the number of unique variables. In this example we expanded each column of $\mathbf{X}$ to five columns. If  \texttt{df\_main=4}, \texttt{df\_interaction=2} and \texttt{df\_environment=1}, then the total number of non-zero coefficients would be $5 \times (4+2) + 1$.  
 
 The entire solution path can be plotted via the \texttt{plot} method for objects of class \sail. The y-axis is the value of the coefficient and the x-axis is the $\log(\lambda)$. Each line represents a coefficient in the model, and each color represents a variable (i.e. in this example a given variable will have 5 lines when it is non-zero). The numbers at the top of the plot represent the number of non-zero variables in the model: top panel (\texttt{df\_main} + \texttt{df\_environment}), bottom panel (\texttt{df\_interaction}). The black line is the coefficient path for the environment variable.  
 
-<<echo=T,eval=finalversion>>=
+<<sail-solution-path,echo=T,eval=finalversion>>=
 plot(fit)
 @
 
@@ -1244,7 +1241,7 @@ nfolds = 5, parallel = TRUE)
 We plot the cross-validated error curve which has the mean-squared error on the y-axis and $\log(\lambda)$ on the x-axis. It includes the cross-validation curve (red dotted line), and upper and lower standard deviation curves along the $\lambda$ sequence (error bars). Two selected $\lambda$'s are indicated by the vertical dotted lines (see below). The numbers at the top of the plot represent the total number of non-zero variables at that value of $\lambda$ (\texttt{df\_main} + \texttt{df\_environment} + \texttt{df\_interaction}):
 
 
-<<echo=T,eval=finalversion>>=
+<<sail-cv, echo=T,eval=finalversion>>=
 plot(cvfit)
 @
 
@@ -1273,7 +1270,7 @@ B-splines are difficult to interpret. We provide a plotting function to visualiz
 
 Since we are using simulated data, we also plot the true curve:
 
-<<echo=T,eval=finalversion>>=
+<<sail-main-eff, echo=T,eval=finalversion>>=
 plotMain(cvfit$sail.fit, x = sailsim$x, xvar = "X3",
 legend.position = "topright",
 s = cvfit$lambda.min, f.truth = sailsim$f3)
@@ -1284,7 +1281,7 @@ s = cvfit$lambda.min, f.truth = sailsim$f3)
 
 Again, since we are using simulated data, we also plot the true interaction:
 
-<<fig.height=7, fig.width=8,echo=T,eval=finalversion>>=
+<<sail-inter-eff, fig.height=7, fig.width=8,echo=T,eval=finalversion>>=
 plotInter(cvfit$sail.fit, x = sailsim$x, xvar = "X4",
 f.truth = sailsim$f4.inter,
 s = cvfit$lambda.min,
@@ -1311,7 +1308,7 @@ basis = f.identity, nfolds = 5, parallel = TRUE)
 
 Next we plot the cross-validated curve:
 
-<<echo=T, eval=finalversion>>=
+<<sail-solution-path-linear, echo=T, eval=finalversion>>=
 plot(cvfit_linear)
 @
 
@@ -1349,7 +1346,7 @@ penalty.factor = p.fac)
 @
 
 
-<<echo=T, eval=finalversion>>=
+<<sail-pf-path, echo=T, eval=finalversion>>=
 plot(fit_pf)
 @
 
@@ -1401,7 +1398,7 @@ group = attr(x, "assign"), verbose = 0)
 
 We can plot the solution path for both main effects and interactions using the \texttt{plot} method for objects of class \texttt{sail}:
 
-<<ehco=T, eval=finalversion>>=
+<<sail-expand-false, ehco=T, eval=finalversion>>=
 plot(fit_design)
 @
 
@@ -1421,7 +1418,7 @@ nfolds = 10, parallel = TRUE)
 
 We can plot the cross-validated mean squared error as a function of lambda:
 
-<<ehco=T, eval=finalversion>>=
+<<sail-plot-cv-design, ehco=T, eval=finalversion>>=
 plot(cvfit_design)
 @
 
