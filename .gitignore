@@ -21,3 +21,4 @@ log/
 manuscript/source/cache/*
 .nfs*
 sail.Rproj
+rda/gen3g
