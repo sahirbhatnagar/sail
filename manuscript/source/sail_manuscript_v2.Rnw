@@ -126,6 +126,15 @@
 \DeclarePairedDelimiter\abs{\lvert}{\rvert}%
 \DeclarePairedDelimiter\norm{\lVert}{\rVert}%
 
+\global\long\def\ddd{,\ldots,}
+\global\long\def\Op{O_{P}}
+\global\long\def\op{o_{P}}
+
+\newcommand{\bthetastar}{\boldsymbol{\theta}^{*}}
+\newcommand{\bThetastar}{\boldsymbol{\Theta}^{*}}
+\newcommand{\bdelta}{\boldsymbol{\delta}}
+\newcommand{\A}{\mathcal{A}}
+
 % Swap the definition of \abs* and \norm*, so that \abs
 % and \norm resizes the size of the brackets, and the 
 % starred version does not.
@@ -196,8 +205,8 @@ knitr::read_chunk("../bin/setup.R")
 knitr::read_chunk("../bin/intro.R")
 knitr::read_chunk("../bin/simulation.R")
 knitr::read_chunk("../bin/ADNI.R")
-#finalversion <- FALSE # set to FALSE if still in development and you dont want to run the R code
-finalversion <- TRUE 
+finalversion <- FALSE # set to FALSE if still in development and you dont want to run the R code
+#finalversion <- TRUE 
 @
 
 <<packages, eval=finalversion>>=
@@ -246,24 +255,27 @@ Let $Y=(Y_1, \ldots, Y_n) \in \mathbb{R}^n$ be a continuous outcome variable, \m
 \end{equation}
 Here, the $\left\lbrace \psi_{j\ell} \right\rbrace_1^{m_j}$ are a family of basis functions in $X_j$~\citep{hastie2015statistical}. Let $\bPsi_j$ be the $n \times m_j$ matrix of evaluations of the $\psi_{j\ell}$ and \mbox{$\btheta_j = (\beta_{j1}, \ldots, \beta_{jm_j}) \in \mathbb{R}^{m_j}$} for $j = 1, \ldots, p$ ($\btheta_j$ is a $m_j$-dimensional column vector of basis coefficients for the $j$th main effect). In this article we consider an additive interaction regression model of the form 
 \begin{align}
-	g(\bmu)  & =  \beta_0 \cdot \boldsymbol{1} + \sum_{j=1}^p \bPsi_j \btheta_j + \beta_E X_E + \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_{j}    \label{eq:linpred}
+Y = \beta_0 \cdot \boldsymbol{1}_n + \sum_{j=1}^p \bPsi_j \btheta_j + \beta_E X_E + \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j + \varepsilon  \label{eq:linpred}
 \end{align}
-where $g(\cdot)$ is a known link function, $\bmu = \e\left[Y|\bPsi, X_E \right]$, $\beta_0$ is the intercept, $\beta_E$ is the coefficient for the environment variable, $\btau_j = (\tau_{j1}, \ldots, \tau_{jm_j})\in \mathbb{R}^{m_j}$ are the basis coefficients for the $j$th interaction term, and $(X_E \circ \bPsi_j)$ is the $n \times m_j$ matrix formed by the component-wise multiplication of the column vector $X_E$ by each column of $\bPsi_j$. For a continuous response, we use the squared-error loss to estimate the parameters:
-\begin{equation}
-	\mathcal{L}(\bTheta| \bD) = \frac{1}{2n}\norm{Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j }_2^2
-\end{equation}
-and for binary response $Y_i \in \left\lbrace -1, +1 \right\rbrace$ we use the logistic loss:
-\begin{equation}
-	\mathcal{L}(\bTheta| \bD) = \frac{1}{n} \sum_i \log \left(1 + \exp \left\lbrace - Y_i \left( \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j \right) \right\rbrace   \right)
-\end{equation}
-
-where $\bTheta \coloneqq (\beta_0, \beta_E,\btheta_1, \ldots, \btheta_p, \btau_1, \ldots, \btau_p)$ and $\bD \coloneqq (Y,\bPsi,X_E)$ is the working data. Here we assume that $p$ is large relative to $n$, and particularly that $\sum_{j=1}^{p}m_j / n$ is large.
+%\begin{align}
+%	g(\bmu)  & =  \beta_0 \cdot \boldsymbol{1} + \sum_{j=1}^p \bPsi_j \btheta_j + \beta_E X_E + \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_{j}    \label{eq:linpred}
+%\end{align}
+%where $g(\cdot)$ is a known link function, $\bmu = \e\left[Y|\bPsi, X_E \right]$, $\beta_0$ is the intercept, $\beta_E$ is the coefficient for the environment variable, $\btau_j = (\tau_{j1}, \ldots, \tau_{jm_j})\in \mathbb{R}^{m_j}$ are the basis coefficients for the $j$th interaction term, and $(X_E \circ \bPsi_j)$ is the $n \times m_j$ matrix formed by the component-wise multiplication of the column vector $X_E$ by each column of $\bPsi_j$. For a continuous response, we use the squared-error loss to estimate the parameters:
+where $\beta_0 \in \mathbb{R}$ is the intercept, $\beta_E \in \mathbb{R}$ is the coefficient for the environment variable, $\btau_j = (\tau_{j1}, \ldots, \tau_{jm_j})\in \mathbb{R}^{m_j}$ are the basis coefficients for the $j$th interaction term, $(X_E \circ \bPsi_j)$ is the $n \times m_j$ matrix formed by the component-wise multiplication of the column vector $X_E$ by each column of $\bPsi_j$, and $\varepsilon \in \mathbb{R}^n$ is a vector of iid errors with mean zero and finite variance. %For a continuous response, we use the squared-error loss to estimate the parameters:
+%\begin{equation}
+%	\mathcal{L}(\bTheta| \bD) = \frac{1}{2n}\norm{Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j }_2^2
+%\end{equation}
+%and for binary response $Y_i \in \left\lbrace -1, +1 \right\rbrace$ we use the logistic loss:
+%\begin{equation}
+%	\mathcal{L}(\bTheta| \bD) = \frac{1}{n} \sum_i \log \left(1 + \exp \left\lbrace - Y_i \left( \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j \right) \right\rbrace   \right)
+%\end{equation}
+Here we assume that $p$ is large relative to $n$, and particularly that $\sum_{j=1}^{p}m_j / n$ is large.
 Due to the large number of parameters to estimate with respect to the number of observations, one commonly-used approach is to shrink the regression coefficients by placing a constraint on the values
-of $(\beta_E, \btheta_j, \btau_j)$. Certain constraints have the added benefit of producing a sparse model in the sense that many of the coefficients will be set exactly to 0~\citep{buhlmann2011statistics}. Such a reduced predictor set can lead to a more interpretable model with smaller prediction variance, albeit at the cost of having biased parameter estimates~\citep{fan2014challenges}. In light of these goals, we consider the following objective function:
+of $(\beta_E, \btheta_j, \btau_j)$. Certain constraints have the added benefit of producing a sparse model in the sense that many of the coefficients will be set exactly to 0~\citep{buhlmann2011statistics}. Such a reduced predictor set can lead to a more interpretable model with smaller prediction variance, albeit at the cost of having biased parameter estimates~\citep{fan2014challenges}. In light of these goals, we consider the following penalized objective function:
 \begin{equation}
-	\argmin_{\bTheta }  	\mathcal{L}(\bTheta| \bD) + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \norm{\btau_{j}}_2 \label{eq:lassolikelihood3}
+	Q(\bTheta) =  	L(\bTheta) + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \norm{\btau_{j}}_2 \label{eq:lassolikelihood3}
 \end{equation} 
-where $\norm{\btheta_j}_2 = \sqrt{\sum_{k=1}^{m_j} \beta_{jk}^2}$, $\norm{\btau_j}_2 = \sqrt{\sum_{k=1}^{m_j} \tau_{jk}^2}$, $\lambda >0$ and $\alpha \in (0,1)$ are adjustable tuning parameters, $w_E, w_j, w_{jE}$ are non-negative penalty factors for $j=1, \ldots, p$ which serve as a way of allowing parameters to be penalized differently. The first term in the penalty penalizes the main effects while the second term penalizes the interactions. The parameter $\alpha$ controls the relative weight on the two penalties. Note that we do not penalize the intercept. 
+where $\bTheta = (\beta_0, \beta_E,\btheta_1, \ldots, \btheta_p, \btau_1, \ldots, \btau_p)$, $L(\bTheta)$ is the negative log-likelihood function of the observations $\bV_i = (Y_i,\bPsi_i,X_{iE})$ for $i=1\ddd n$, $\norm{\btheta_j}_2 = \sqrt{\sum_{k=1}^{m_j} \beta_{jk}^2}$, $\norm{\btau_j}_2 = \sqrt{\sum_{k=1}^{m_j} \tau_{jk}^2}$, $\lambda >0$ and $\alpha \in (0,1)$ are adjustable tuning parameters, $w_E, w_j, w_{jE}$ are non-negative penalty factors for $j=1, \ldots, p$ which serve as a way of allowing parameters to be penalized differently. The first term in the penalty penalizes the main effects while the second term penalizes the interactions. The parameter $\alpha$ controls the relative weight on the two penalties. Note that we do not penalize the intercept. 
 
 An issue with~\eqref{eq:lassolikelihood3} is that since no constraint is placed on the structure of the model, it is possible that an estimated interaction term is nonzero while the corresponding main effects are zero. While there may be certain situations where this is plausible, statisticians have generally argued that interactions should only be included if the corresponding main effects are also in the model~\citep{mccullagh1989generalized}. This is known as the strong heredity principle~\citep{chipman1996bayesian}. Indeed, large main effects are more likely to lead to detectable interactions~\citep{cox1984interaction}. In the next section we discuss how a simple reparametrization of the model~\eqref{eq:lassolikelihood3} can lead to this desirable property. 
 %Furthermore, adaptive weighting~\citep{zou2006adaptive} has been shown to construct oracle procedures~\citep{fan2001variable}, i.e., asymptotically, it performs as well as if the true model were given in advance. These weights are given by
@@ -274,20 +286,20 @@ An issue with~\eqref{eq:lassolikelihood3} is that since no constraint is placed 
 
 \subsection{Strong and weak heredity}
 
-The strong heredity principle states that an interaction term can only have a non-zero estimate if its corresponding main effects are estimated to be non-zero. The weak heredity principle allows for a non-zero interaction estimate as long as one of the corresponding main effects is estimated to be non-zero~\citep{chipman1996bayesian}. In the context of penalized regression methods, these principles can be formulated as structured sparsity \citep{bach2012structured} problems. Several authors have proposed to modify the type of penalty in order to achieve the heredity principle~\citep{radchenko2010variable,bien2013lasso,haris2014convex,lim2014learning}. We take an alternative approach. Following Choi et al.~\citep{choi2010variable}, we introduce a new set of parameters $\bgamma = (\gamma_1, \ldots, \gamma_p)\in \mathbb{R}^p$ and reparametrize the coefficients for the interaction terms $\btau_j$ in~\eqref{eq:linpred} as a function of $\gamma_j$ and the main effect parameters $\btheta_j$ and $\beta_E$. This reparametrization for both strong and weak heredity is summarized in Table~\ref{tab:reparam}.
+The strong heredity principle states that an interaction term can only have a non-zero estimate if its corresponding main effects are estimated to be non-zero. The weak heredity principle allows for a non-zero interaction estimate as long as one of the corresponding main effects is estimated to be non-zero~\citep{chipman1996bayesian}. In the context of penalized regression methods, these principles can be formulated as structured sparsity \citep{bach2012structured} problems. Several authors have proposed to modify the type of penalty in order to achieve the heredity principle~\citep{radchenko2010variable,bien2013lasso,lim2015learning,haris2016convex}. We take an alternative approach. Following Choi et al.~\citep{choi2010variable}, we introduce a new set of parameters $\bgamma = (\gamma_1, \ldots, \gamma_p)\in \mathbb{R}^p$ and reparametrize the coefficients for the interaction terms $\btau_j$ in~\eqref{eq:linpred} as a function of $\gamma_j$ and the main effect parameters $\btheta_j$ and $\beta_E$. This reparametrization for both strong and weak heredity is summarized in Table~\ref{tab:reparam}.
 
 \ctable[caption={Reparametrization for strong and weak heredity principle for \texttt{sail} model},label=tab:reparam,pos=h!,doinside=\footnotesize, ]{lll}{
 }{
 \FL
 Type      & Feature  & Reparametrization \ML
-\multicolumn{1}{m{3cm}}{Strong heredity}    & \multicolumn{1}{m{5cm}}{$\hat{\btau}_{j} \neq 0 \Rightarrow  \hat{\btheta}_j \neq 0  \tm{ and }  \hat{\beta}_E \neq 0$}        &   $\btau_{j} = \gamma_{j} \beta_E \btheta_j $    \\
-\multicolumn{1}{m{3cm}}{Weak heredity} & \multicolumn{1}{m{5cm}}{$\hat{\btau}_{j} \neq 0 \Rightarrow  \hat{\btheta}_j \neq 0  \tm{ or }  \hat{\beta}_E \neq 0$}        &   $\btau_{j} = \gamma_{j}(\beta_E \cdot \mb{1}_{m_j} +  \btheta_j)$    \LL
+\multicolumn{1}{m{3cm}}{Strong heredity}    & \multicolumn{1}{m{6cm}}{$\hat{\btau}_{j} \neq 0 \textrm{ only if }  \hat{\btheta}_j \neq 0  \tm{ and }  \hat{\beta}_E \neq 0$}        &   $\btau_{j} = \gamma_{j} \beta_E \btheta_j $    \\
+\multicolumn{1}{m{3cm}}{Weak heredity} & \multicolumn{1}{m{6cm}}{$\hat{\btau}_{j} \neq 0 \textrm{ only if }  \hat{\btheta}_j \neq 0  \tm{ or }  \hat{\beta}_E \neq 0$}        &   $\btau_{j} = \gamma_{j}(\beta_E \cdot \mb{1}_{m_j} +  \btheta_j)$    \LL
 }
 
 
-To perform variable selection in this new parametrization, we penalize $\bs{\gamma} = \left(\gamma_{1}, \ldots, \gamma_{p}\right)$ instead of penalizing $\btau$ as in~\eqref{eq:lassolikelihood3}, leading to the following objective function:
+To perform variable selection in this new parametrization, we penalize $\bs{\gamma} = \left(\gamma_{1}, \ldots, \gamma_{p}\right)$ instead of penalizing $\btau$ as in~\eqref{eq:lassolikelihood3}, leading to the following penalized objective function:
 \begin{equation}
-	\argmin_{\bTheta }  	\mathcal{L}(\bTheta| \bD) + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{j}} \label{eq:saillikelihood}
+	Q(\bTheta) = L(\bTheta) + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{j}} \label{eq:saillikelihood}
 \end{equation}
 %where
 %\begin{equation}
@@ -298,7 +310,7 @@ To perform variable selection in this new parametrization, we penalize $\bs{\gam
 %	\mathcal{L}(\bTheta| \bD) = \frac{1}{n} \sum_i \log \left(1 + \exp \left\lbrace - Y_i \left( \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j \right) \right\rbrace   \right)
 %\end{equation}
 %for a binary response. 
-This penalty allows for the possibility of excluding the interaction term from the model even if the corresponding main effects are non-zero. Furthermore, smaller values for $\alpha$ would lead to more interactions being included in the final model while values approaching 1 would favor main effects. 
+An estimate of the regression parameters is given by $\widehat{\bTheta} = \argmin_{\bTheta} Q(\bTheta)$. This penalty allows for the possibility of excluding the interaction term from the model even if the corresponding main effects are non-zero. Furthermore, smaller values for $\alpha$ would lead to more interactions being included in the final model while values approaching 1 would favor main effects. 
 Similar to the elastic net~\citep{zou2005regularization}, we fix $\alpha$ and obtain a solution path over a sequence of $\lambda$ values. 
 
 \begin{comment}
@@ -402,6 +414,119 @@ Type      & Method   & Software \ML
 }
 
 \end{comment}
+
+
+\section{Theory}
+
+In this section we study the asymptotic behaviour of the \sail ~estimator $\widehat{\bTheta}$, defined as the minimizer of~\eqref{eq:saillikelihood}, as well as the model selection properties. We show that $\texttt{{sail}}$ posesses the oracle property when the sample size approaches infinity and the number of predictors is fixed. That is, under certain regularity conditions, it performs as well as if the true model were known in advance and has the optimal estimation rate~\citep{zou2006adaptive}. Let $\bThetastar = (\beta_{E}^*,\btheta_{1}^*,\ldots,\btheta_{p}^*,\btau_{1}^*,\ldots,\btau_{p}^*)$ denote the unknown vector of true coefficients and $\mathcal{H}=\left\lbrace h : \bThetastar_h \neq 0 \right\rbrace$ the unknown sparsity pattern of $\bThetastar$. Note that our asymptotic results are stated for the main effects and interaction terms only, even though our formulation includes an unpenalized intercept. In the least-squares setting, 
+
+\[
+\mathcal{L}(\bTheta|\bD)=\frac{1}{2n}\left\Vert Y-\beta_{0}\cdot\boldsymbol{1}-\sum_{j=1}^{p}\bPsi_{j}\btheta_{j}-\beta_{E}X_{E}-\sum_{j=1}^{p}(X_{E}\circ\bPsi_{j})\btau_{j}\right\Vert _{2}^{2}
+\]
+
+where $\bTheta\coloneqq(\beta_{0},\beta_{E},\btheta_{1},\ldots,\btheta_{p},\btau_{1},\ldots,\btau_{p})$
+and $\bD\coloneqq(Y,\bPsi,X_{E})$ is the working data.
+
+\begin{align*}
+\begin{aligned}\widehat{\bTheta}= & \argmin_{\bTheta}Q(\bTheta)\end{aligned}
+& =\mathcal{L}(\bTheta|\bD)+\lambda(1-\alpha)\left(w_{E}\left|\beta_{E}\right|+\sum_{j=1}^{p}w_{j}\left\Vert \btheta_{j}\right\Vert _{2}\right)+\lambda\alpha\sum_{k=1}^{p}w_{kE}\left|\gamma_{k}\right|
+\end{align*}
+
+\[
+\begin{aligned}\widehat{\bTheta}= & \argmin_{\bTheta}Q(\bTheta)\end{aligned}
+=\mathcal{L}(\bTheta|\bD)+n\lambda_{E}\left|\beta_{E}\right|+n\sum_{j=1}^{p}\lambda_{j}^{\theta}\left\Vert \btheta_{j}\right\Vert _{2}+n\sum_{k=1}^{p}\lambda_{k}^{\gamma}\left|\gamma_{k}\right|
+\]
+where $\mathcal{L}(\bTheta|\bD)$ is the negative log-likelihood,
+$\lambda_{E}=\frac{{1}}{n}\lambda(1-\alpha)w_{E}$, $\lambda_{j}^{\theta}=\frac{{1}}{n}\lambda(1-\alpha)w_{j}$
+, and $\lambda_{k}^{\gamma}=\frac{{1}}{n}\lambda\alpha w_{kE}$. 
+
+Let $\eta_{n}=n^{-1/2}+a_{n}$ and $\{\bTheta^{*}+\eta_{n}\boldsymbol{\delta}:\|\boldsymbol{\delta}\|\leq d\}$
+be the ball around $\bTheta^{*}$, where $\boldsymbol{\delta}=(u_{E},\boldsymbol{u}_{1,}\ddd\boldsymbol{u}_{p},v_{1E},\ldots,v_{p,E})^{\top}=(\boldsymbol{u}^{\top},\boldsymbol{v}^{\top})^{\top}$.
+Define 
+\[
+D_{n}(\boldsymbol{\delta})\equiv Q_{n}(\bThetastar+\eta_{n}\bdelta)-Q_{n}(\bThetastar).
+\]
+Let $-L_{n}$ denote the first term of $Q_{n}$ in (8). For $\bdelta$
+that satisfies $\|\bdelta\|=d$, we have
+\begin{align*}
+D_{n}(\bdelta) & =-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)+n\lambda_{E}(|\beta_{E}^{*}+\eta_{n}u_{E}|-|\beta_{E}^{*}|)+n\sum_{j}\lambda_{j}^{\theta}\left(\left\Vert \btheta{}_{j}^{*}+\eta_{n}\boldsymbol{u}_{j}\right\Vert _{2}-\left\Vert \btheta_{j}^{*}\right\Vert _{2}\right)\\
+& +n\sum_{k}\lambda_{k}^{\gamma}(|\gamma_{k}^{*}+\eta_{n}v_{kE}|-|\gamma_{k}^{*}|)\\
+& \overset{(a)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)+n\lambda_{E}(|\beta_{E}^{*}+\eta_{n}u_{E}|-|\beta_{E}^{*}|)\cdot I(\beta_{E}^{*}\neq0)+n\sum_{j\in\mathcal{A}_{2}}\lambda_{j}^{\theta}\left(\left\Vert \btheta{}_{j}^{*}+\eta_{n}\boldsymbol{u}_{j}\right\Vert _{2}-\left\Vert \btheta_{j}^{*}\right\Vert _{2}\right)\\
+& +n\sum_{k\in\mathcal{A}_{3}}\lambda_{k}^{\gamma}(|\gamma_{k}^{*}+\eta_{n}v_{kE}|-|\gamma_{k}^{*}|)\\
+& \overset{(b)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)-n\eta_{n}\lambda_{E}|u_{E}|\cdot I(\beta_{E}^{*}\neq0)-n\eta_{n}\sum_{j\in\A_{2}}\lambda_{j}^{\theta}\left\Vert \boldsymbol{u}_{j}\right\Vert _{2}-n\eta_{n}\sum_{k\in\A_{3}}\lambda_{k}^{\gamma}|v_{kE}|\\
+& \overset{(c)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)-n\eta_{n}^{2}\left(\left|u_{E}\right|\cdot I(\beta_{E}^{*}\neq0)+\sum_{j\in\A_{2}}\left\Vert \boldsymbol{u}_{j}\right\Vert _{2}+\sum_{k\in\A_{3}}\lambda_{k}^{\gamma}|v_{kE}|\right)\\
+& \overset{(d)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)-n\eta_{n}^{2}\left(|\A_{1}|+|\A_{2}|+|\A_{3}|\right)d\\
+& \overset{(e)}{=}-[\nabla L_{n}(\bThetastar)]^{\top}(\eta_{n}\bdelta)-\frac{1}{2}(\eta_{n}\bdelta)^{\top}[\nabla^{2}L_{n}(\bThetastar)](\eta_{n}\bdelta)(1+o_{p}(1))\\
+& -n\eta_{n}^{2}\left(|\A_{1}|+|\A_{2}|+|\A_{2}|\right)d
+\end{align*}
+Inequality (a) is by the fact that $\sum_{j\notin\mathcal{A}}|\theta_{j}^{*}|=0$.
+(b) is due to reverse triangle inequality $|a|-|b|\geq-|a-b|$. (c)
+is by $\lambda_{E}\leq\eta_{n}$, $\lambda_{j}^{\theta}\leq\eta_{n}$
+and $\lambda_{k}^{\gamma}\leq\eta_{n}$. (d) is by Cauchy\textendash Schwarz
+inequality
+\[
+\sum_{j\in\A_{1}}|u_{j}|=|\mathbf{1}_{\A_{1}}^{\top}\mathbf{u}_{\A_{1}}|\leq\|\mathbf{1}_{\A_{1}}\|\|\mathbf{u}_{\A_{1}}\|=\sqrt{|\A_{1}}|\|\mathbf{u}_{\A_{1}}\|\leq|\A_{1}|d.
+\]
+By the standard argument on the Taylor expansion of the loss function,
+we have 
+\begin{align*}
+L_{n}(\bThetastar+\eta_{n}\bdelta) & =L_{n}(\bThetastar+\eta_{n}\cdot\mathbf{0})+\eta_{n}\nabla L_{n}(\bThetastar+\eta_{n}\cdot\mathbf{0})^{\top}(\bdelta-\mathbf{0})\\
+& \qquad+\frac{1}{2}(\bdelta-\mathbf{0})^{\top}\nabla^{2}L_{n}(\bThetastar+\eta_{n}\cdot\mathbf{0})(\bdelta-\mathbf{0})\{1+\op(1)\}\\
+& =L_{n}(\bThetastar)+\eta_{n}\nabla L_{n}(\bThetastar)^{\top}\bdelta+\frac{1}{2}\bdelta^{\top}\nabla^{2}L_{n}(\bThetastar)\bdelta\eta_{n}^{2}\{1+\op(1)\}
+\end{align*}
+We split (10) into three parts:
+\[
+\begin{aligned}A_{1} & =-\left[\nabla L_{n}\left(\boldsymbol{\theta}^{*}\right)\right]^{\mathrm{T}}\left(\eta_{n}\boldsymbol{\delta}\right)\\
+A_{2} & =-\frac{1}{2}\left(\eta_{n}\boldsymbol{\delta}\right)^{\top}\left[\nabla^{2}L_{n}\left(\boldsymbol{\theta}^{*}\right)\right]\left(\eta_{n}\boldsymbol{\delta}\right)\left(1+o_{p}(1)\right)\\
+A_{3} & =-n\eta_{n}^{2}\left(\left|\mathcal{A}_{1}\right|+\left|\mathcal{A}_{2}\right|\right)d
+\end{aligned}
+\]
+Then
+\[
+\begin{aligned}A_{1} & =-\eta_{n}\left[\nabla L_{n}\left(\boldsymbol{\theta}^{*}\right)\right]^{\top}\boldsymbol{\delta}\\
+& =-\sqrt{n}\eta_{n}\left(\frac{1}{\sqrt{n}}\nabla L_{n}\left(\boldsymbol{\theta}^{*}\right)\right)^{\top}\boldsymbol{\delta}\\
+& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\theta}\right)\right|_{\boldsymbol{\theta}=\boldsymbol{\theta}^{*}}\right)^{\top}\boldsymbol{\delta}\\
+& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\left[\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\theta}\right)\right|_{\boldsymbol{\theta}=\boldsymbol{\theta}^{*}}-\mathbf{0}\right]\right)^{\top}\boldsymbol{\delta}\\
+& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\left[\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\theta}\right)\right|_{\boldsymbol{\theta}=\boldsymbol{\theta}^{*}}-E_{\boldsymbol{\theta}^{*}}\nabla L\left(\boldsymbol{\theta}^{*}\right)\right]\right)^{\top}\boldsymbol{\delta}\\
+& =-\sqrt{n}\eta_{n}O_{p}\left(1\right)\boldsymbol{\delta}\\
+& =-O_{p}\left(\sqrt{n}\eta_{n}\right)\boldsymbol{\delta}\\
+& =-O_{p}\left(n\eta_{n}^{2}\right)\boldsymbol{\delta}
+\end{aligned}
+\]
+The last equation is due to
+\begin{align*}
+\Op(n^{1/2}\eta_{n}) & =\Op(n^{1/2}(n^{-1/2}+a_{n}))\\
+& =\Op(1+n^{1/2}a_{n})=\Op(1+n^{1/2}a_{n}\{1+\op(1)\})\\
+& =\Op(1+2n^{1/2}a_{n}+\op(n^{1/2}a_{n}))\\
+& =\Op(1+2n^{1/2}a_{n}+(n^{1/2}a_{n})^{2})\\
+& =\Op(1+2n^{1/2}a_{n}+na_{n}^{2}))\\
+& =\Op(n(n^{-1/2}+a_{n})^{2})=\Op(n\eta_{n}^{2})
+\end{align*}
+\[
+\begin{aligned}A_{2} & =\frac{1}{2}n\eta_{n}^{2}\left\{ \boldsymbol{\delta}^{\top}\left[-\frac{1}{n}\nabla^{2}L_{n}\left(\boldsymbol{\theta}^{*}\right)\right]\boldsymbol{\delta}\right\} \left(1+o_{p}(1)\right)\\
+& =\frac{1}{2}n\eta_{n}^{2}\left\{ \boldsymbol{\delta}^{\top}\left[I\left(\boldsymbol{\theta}^{*}\right)\right]\boldsymbol{\delta}\right\} \left(1+o_{p}(1)\right)\text{ by the weak law of large numbers. }
+\end{aligned}
+\]
+Thus,
+\[
+\begin{aligned}D_{n}(\boldsymbol{\delta}) & \geq A_{1}+A_{2}+A_{3}\\
+& =-n\eta_{n}^{2}O_{p}(1)\boldsymbol{\delta}+\frac{1}{2}n\eta_{n}^{2}\left\{ \boldsymbol{\delta}^{\top}\left[I\left(\boldsymbol{\theta}^{*}\right)\right]\boldsymbol{\delta}\right\} \left(1+o_{p}(1)\right)-n\eta_{n}^{2}\left(\left|\mathcal{A}_{1}\right|+\left|\mathcal{A}_{2}\right|\right)d
+\end{aligned}
+\]
+Notice that $A_{2}$ dominates the rest terms $A_{1}$ and $A_{3}$
+and is positive since $I(\boldsymbol{\theta})$ is positive definite
+at $\boldsymbol{\theta}=\bThetastar$ from (C2). Therefore, for any
+given $\varepsilon>0$, there exists a large enough constant $d$
+such that 
+\[
+P\left\{ \underset{\|\delta\|=d}{\inf}Q_{n}\left(\boldsymbol{\theta}^{*}+\eta_{n}\boldsymbol{\delta}\right)>Q_{n}\left(\boldsymbol{\theta}^{*}\right)\right\} \geq1-\varepsilon
+\]
+This implies with probability at least $1-\varepsilon$ that the empirical
+likelihood $Q_{n}$ has a local minimizer in the ball $\{\boldsymbol{\theta}^{*}+\eta_{n}\mathbf{\bdelta}:\|\mathbf{\bdelta}\|\leq d\}$
+(since $Q_{n}$ is bounded and $\{\boldsymbol{\theta}^{*}+\alpha_{n}\bdelta:\|\bdelta\|\leq d\}$
+is closed). In other words, there exists a local maximizer $\widehat{\btheta}_{n}$
+such that $\|\widehat{\boldsymbol{\theta}}_{n}-\boldsymbol{\theta}^{*}\|\leq\eta_{n}\|\bdelta\|\leq\eta_{n}d=\Op(\eta_{n})=\Op(n^{-1/2}+a_{n})$.
+Hence, $\left\Vert \widehat{\boldsymbol{\theta}}_{n}-\boldsymbol{\theta}^{*}\right\Vert =O_{p}\left(\eta_{n}\right).\square$
 
 
 \section{Algorithm and Computational Details} \label{sec:sail_algorithm}
