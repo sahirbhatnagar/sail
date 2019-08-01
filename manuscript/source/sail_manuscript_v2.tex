@@ -125,6 +125,10 @@
 %\usepackage{enumitem}
 % These packages are all incorporated in the memoir class to one degree or another...
 
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+
 %########################################################################################  
 %            						CUSTOM COMMANDS
 %########################################################################################
@@ -449,29 +453,48 @@ Type      & Method   & Software \ML
 
 \section{Theory}
 
-In this section we study the asymptotic behaviour of the \sail ~estimator $\widehat{\bTheta}$, defined as the minimizer of~\eqref{eq:saillikelihood}, as well as the model selection properties. We show that $\texttt{{sail}}$ posesses the oracle property when the sample size approaches infinity and the number of predictors is fixed. That is, under certain regularity conditions, it performs as well as if the true model were known in advance and has the optimal estimation rate~\citep{zou2006adaptive}. Let $\bThetastar = (\beta_{E}^*,\btheta_{1}^*,\ldots,\btheta_{p}^*,\btau_{1}^*,\ldots,\btau_{p}^*)$ denote the unknown vector of true coefficients and $\mathcal{H}=\left\lbrace h : \bThetastar_h \neq 0 \right\rbrace$ the unknown sparsity pattern of $\bThetastar$. Note that throughout this paper, we do include a non regularized constant term b but since we use a square loss it will optimized out in closed form by centering the data. Thus all
-our consistency statements will be stated only for the loading vector w; corresponding results for b
-then immediately follow
 
-\[
-\mathcal{L}(\bTheta|\bD)=\frac{1}{2n}\left\Vert Y-\beta_{0}\cdot\boldsymbol{1}-\sum_{j=1}^{p}\bPsi_{j}\btheta_{j}-\beta_{E}X_{E}-\sum_{j=1}^{p}(X_{E}\circ\bPsi_{j})\btau_{j}\right\Vert _{2}^{2}
-\]
+In this section we study the asymptotic behaviour of the \sail ~estimator $\widehat{\bTheta}$, defined as the minimizer of~\eqref{eq:saillikelihood}, as well as the model selection properties. We show that $\texttt{{sail}}$ posesses the oracle property when the sample size approaches infinity and the number of predictors is fixed. That is, under certain regularity conditions, it performs as well as if the true model were known in advance and has the optimal estimation rate~\citep{zou2006adaptive}.
 
-where $\bTheta\coloneqq(\beta_{0},\beta_{E},\btheta_{1},\ldots,\btheta_{p},\btau_{1},\ldots,\btau_{p})$
-and $\bD\coloneqq(Y,\bPsi,X_{E})$ is the working data.
+\subsection{Problem setup}
 
-\begin{align*}
-\begin{aligned}\widehat{\bTheta}= & \argmin_{\bTheta}Q(\bTheta)\end{aligned}
-& =\mathcal{L}(\bTheta|\bD)+\lambda(1-\alpha)\left(w_{E}\left|\beta_{E}\right|+\sum_{j=1}^{p}w_{j}\left\Vert \btheta_{j}\right\Vert _{2}\right)+\lambda\alpha\sum_{k=1}^{p}w_{kE}\left|\gamma_{k}\right|
-\end{align*}
+Let $\bThetastar = (\beta_{E}^*,\btheta_{1}^*,\ldots,\btheta_{p}^*,\gamma_{1}^*,\ldots,\gamma_{p}^*)$ denote the unknown vector of true coefficients in \eqref{eq:saillikelihood}, and $\mathcal{H}=\left\lbrace h : \bThetastar_h \neq 0 \right\rbrace$ the unknown sparsity pattern of $\bThetastar$. Here, we assume $\bThetastar$ is ordered such that the index $h=1$ corresponds to $\beta_E^*$, the indices $h=2, \ldots, p+1$ correspond to $\btheta_{1}^*,\ldots,\btheta_{p}^*$, and the indices $h=p+2, \ldots, 2p+1$ corresponds to $\gamma_{1}^*,\ldots,\gamma_{p}^*$. To simplify the notation, we redefine the penalty terms in~\eqref{eq:saillikelihood} and parameter indices, and consider the \sail ~estimates $\widehat{\bTheta}_n$ given by 
+%\begin{equation}
+%	\widehat{\bTheta}_n=  \argmin_{\bTheta}Q(\bTheta)
+%=L(\bTheta)+n\lambda_{E}\left|\beta_{E}\right|+n\sum_{j=1}^{p}\lambda_{j}^{\theta}\left\Vert \btheta_{j}\right\Vert _{2}+n\sum_{k=1}^{p}\lambda_{k}^{\gamma}\left|\gamma_{k}\right|
+%\end{equation}
+\begin{equation}
+\widehat{\bTheta}_n=  \argmin_{\bTheta}Q(\bTheta)
+=L(\bTheta)+n\sum_{h=1}^{p+1} \left( \lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}\right)  +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|
+\end{equation}
+where $\lambda_{h}^\beta=\frac{{1}}{n}\lambda(1-\alpha)w_{h}$ for $h=1$, $\lambda_{h}^{\theta}=\frac{{1}}{n}\lambda(1-\alpha)w_{h}$ for $h=2, \ldots, p+1$, and $\lambda_{h}^{\gamma}=\frac{{1}}{n}\lambda\alpha w_{h}$ for $h=p+2, \ldots, 2p+1$. Let $a_n = \max \left\lbrace \lambda_{h}^\beta, \lambda_{h}^\theta, \lambda_h^\gamma: h \in \mathcal{H}  \right\rbrace$ and $b_n = \min \left\lbrace \lambda_{h}^\beta, \lambda_{h}^\theta, \lambda_h^\gamma: h \notin \mathcal{H}  \right\rbrace$.
 
-\[
-\begin{aligned}\widehat{\bTheta}= & \argmin_{\bTheta}Q(\bTheta)\end{aligned}
-=\mathcal{L}(\bTheta|\bD)+n\lambda_{E}\left|\beta_{E}\right|+n\sum_{j=1}^{p}\lambda_{j}^{\theta}\left\Vert \btheta_{j}\right\Vert _{2}+n\sum_{k=1}^{p}\lambda_{k}^{\gamma}\left|\gamma_{k}\right|
-\]
-where $\mathcal{L}(\bTheta|\bD)$ is the negative log-likelihood,
-$\lambda_{E}=\frac{{1}}{n}\lambda(1-\alpha)w_{E}$, $\lambda_{j}^{\theta}=\frac{{1}}{n}\lambda(1-\alpha)w_{j}$
-, and $\lambda_{k}^{\gamma}=\frac{{1}}{n}\lambda\alpha w_{kE}$. 
+Note that our asymptotic results are stated for the main effects and interaction terms only, even though our formulation includes an unpenalized intercept. Consistency results immediately follow for $\beta_0$ since we assume the data has been centered, leading to a closed form solution for the intercept in the least-squares setting.
+
+%where $\bTheta\coloneqq(\beta_{0},\beta_{E},\btheta_{1},\ldots,\btheta_{p},\btau_{1},\ldots,\btau_{p})$
+%and $\bD\coloneqq(Y,\bPsi,X_{E})$ is the working data.
+
+%\begin{align*}
+%\begin{aligned}\widehat{\bTheta}= & \argmin_{\bTheta}Q(\bTheta)\end{aligned}
+%& =\mathcal{L}(\bTheta|\bD)+\lambda(1-\alpha)\left(w_{E}\left|\beta_{E}\right|+\sum_{j=1}^{p}w_{j}\left\Vert \btheta_{j}\right\Vert _{2}\right)+\lambda\alpha\sum_{k=1}^{p}w_{kE}\left|\gamma_{k}\right|
+%\end{align*}
+
+
+
+
+\begin{proposition}
+\begin{itemize}
+	\item 	proposition 3.1 of rinaldi paper says that model selection consistency property, i.e.,  
+	\[\mathbb{P}\left\{\widehat{\mathcal{H}}=\mathcal{H}_{0}\right\} \rightarrow 1, \quad \text { as } n \rightarrow \infty\]
+	holds only if \[\sqrt{n} \lambda \lambda_{h} \rightarrow \infty, \quad \forall h \notin \mathcal{H}_{0}\]. the issue is that you need knowledge of the true active set. So in theorem 3.2 they propose the adaptive group lasso
+	\item Theorem 3.2 of rinaldi shows the model selection consistency property and asymptotic normality using adaptive group lasso weights. 
+	\item Theorem 3.3 of rinaldi follows fan and li 2001 and shows existence of a local minimizer inside a ball around the truth. This is Lemma 1 of Choi and Theorem 1 of Fan and Li. It also shows that the penalty terms for the zero and non-zero blocks need to have a different asymptotic behavior. This is what Choi does in Lemma1+Theorem 1. 
+\end{itemize}
+\end{proposition}
+
+\begin{theorem}[Model Selection Consistency]
+	content...
+\end{theorem}
 
 Let $\eta_{n}=n^{-1/2}+a_{n}$ and $\{\bTheta^{*}+\eta_{n}\boldsymbol{\delta}:\|\boldsymbol{\delta}\|\leq d\}$
 be the ball around $\bTheta^{*}$, where $\boldsymbol{\delta}=(u_{E},\boldsymbol{u}_{1,}\ddd\boldsymbol{u}_{p},v_{1E},\ldots,v_{p,E})^{\top}=(\boldsymbol{u}^{\top},\boldsymbol{v}^{\top})^{\top}$.
