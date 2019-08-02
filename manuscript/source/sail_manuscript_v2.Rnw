@@ -492,6 +492,8 @@ The proof is in Appendix C. Together, Theorems~\eqref{th:theorem1} and~\eqref{th
 
 
 \subsection{Lemma 1 proof}
+Let $\eta_{n}=\frac{1}{\sqrt{n}}+a_{n}$ and $\{\bTheta^{*}+\eta_{n}\boldsymbol{\delta}:\|\boldsymbol{\delta}\|_2\leq C\}$
+be the ball around $\bTheta^{*}$ for $\boldsymbol{\delta} \in \mathbb{R}^d$, where $d$ is the dimension of the design matrix and $C$ is some constant.
 
 Define 
 \[
