@@ -423,22 +423,20 @@ Type      & Method   & Software \ML
 \section{Theory}
 
 
-In this section we study the asymptotic behaviour of the \sail ~estimator $\widehat{\bTheta}$, defined as the minimizer of~\eqref{eq:saillikelihood}, as well as the model selection properties. We show that $\texttt{{sail}}$ posesses the oracle property when the sample size approaches infinity and the number of predictors is fixed. That is, under certain regularity conditions, it performs as well as if the true model were known in advance and has the optimal estimation rate~\citep{zou2006adaptive}.
+In this section we study the asymptotic behaviour of the \sail ~estimator $\widehat{\bTheta}$, defined as the minimizer of~\eqref{eq:saillikelihood}, as well as the model selection properties. We show that $\texttt{{sail}}$ posesses the oracle property when the sample size approaches infinity and the number of predictors is fixed. That is, under certain regularity conditions, it performs as well as if the true model were known in advance and has the optimal estimation rate~\citep{zou2006adaptive}. The regularity conditions and proofs are given in the Supplementary Material. 
 
 \subsection{Problem setup}
 
-Let $\bThetastar = (\beta_{E}^*,\btheta_{1}^*,\ldots,\btheta_{p}^*,\gamma_{1}^*,\ldots,\gamma_{p}^*)$ denote the unknown vector of true coefficients in \eqref{eq:saillikelihood}, and $\mathcal{H}=\left\lbrace h : \bThetastar_h \neq 0 \right\rbrace$ the unknown sparsity pattern of $\bThetastar$. Here, we assume $\bThetastar$ is ordered such that the index $h=1$ corresponds to $\beta_E^*$, the indices $h=2, \ldots, p+1$ correspond to $\btheta_{1}^*,\ldots,\btheta_{p}^*$, and the indices $h=p+2, \ldots, 2p+1$ corresponds to $\gamma_{1}^*,\ldots,\gamma_{p}^*$. To simplify the notation, we redefine the penalty terms in~\eqref{eq:saillikelihood} and parameter indices, and consider the \sail ~estimates $\widehat{\bTheta}_n$ given by 
+Let $\bThetastar = (\beta_{E}^*,\btheta_{1}^*,\ldots,\btheta_{p}^*,\gamma_{1}^*,\ldots,\gamma_{p}^*)$ denote the unknown vector of true coefficients in \eqref{eq:saillikelihood}, $\mathcal{H}=\left\lbrace h : \bThetastar_h \neq 0 \right\rbrace$ the unknown sparsity pattern of $\bThetastar$, and $\widehat{\mathcal{H}} =\left\lbrace h : \widehat{\bTheta}_h \neq 0 \right\rbrace$ the estimated \sail ~model selector. Here, we assume $\bThetastar$ is ordered such that the index $h=1$ corresponds to $\beta_E^*$, the indices $h=2, \ldots, p+1$ correspond to $\btheta_{1}^*,\ldots,\btheta_{p}^*$, and the indices $h=p+2, \ldots, 2p+1$ corresponds to $\gamma_{1}^*,\ldots,\gamma_{p}^*$. To simplify the notation, we redefine the penalty terms in~\eqref{eq:saillikelihood} and parameter indices, and consider the \sail ~estimates $\widehat{\bTheta}_n$ given by 
 %\begin{equation}
 %	\widehat{\bTheta}_n=  \argmin_{\bTheta}Q(\bTheta)
 %=L(\bTheta)+n\lambda_{E}\left|\beta_{E}\right|+n\sum_{j=1}^{p}\lambda_{j}^{\theta}\left\Vert \btheta_{j}\right\Vert _{2}+n\sum_{k=1}^{p}\lambda_{k}^{\gamma}\left|\gamma_{k}\right|
 %\end{equation}
 \begin{equation}
-\widehat{\bTheta}_n=  \argmin_{\bTheta}Q(\bTheta)
+\widehat{\bTheta}_n=  \argmin_{\bTheta}Q_n(\bTheta)
 =L(\bTheta)+n\sum_{h=1}^{p+1} \left( \lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}\right)  +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|
 \end{equation}
-where $\lambda_{h}^\beta=\frac{{1}}{n}\lambda(1-\alpha)w_{h}$ for $h=1$, $\lambda_{h}^{\theta}=\frac{{1}}{n}\lambda(1-\alpha)w_{h}$ for $h=2, \ldots, p+1$, and $\lambda_{h}^{\gamma}=\frac{{1}}{n}\lambda\alpha w_{h}$ for $h=p+2, \ldots, 2p+1$. Let $a_n = \max \left\lbrace \lambda_{h}^\beta, \lambda_{h}^\theta, \lambda_h^\gamma: h \in \mathcal{H}  \right\rbrace$ and $b_n = \min \left\lbrace \lambda_{h}^\beta, \lambda_{h}^\theta, \lambda_h^\gamma: h \notin \mathcal{H}  \right\rbrace$.
-
-Note that our asymptotic results are stated for the main effects and interaction terms only, even though our formulation includes an unpenalized intercept. Consistency results immediately follow for $\beta_0$ since we assume the data has been centered, leading to a closed form solution for the intercept in the least-squares setting.
+where $\lambda_{h}^\beta=\frac{{1}}{n}\lambda(1-\alpha)w_{h}^\beta$ for $h=1$, $\lambda_{h}^{\theta}=\frac{{1}}{n}\lambda(1-\alpha)w_{h}^\theta$ for $h=2, \ldots, p+1$, and $\lambda_{h}^{\gamma}=\frac{{1}}{n}\lambda\alpha w_{h}^\gamma$ for $h=p+2, \ldots, 2p+1$. The superscripts $\beta,\theta, \gamma$ on the tuning parameters ($\lambda_h$) and adaptive weights ($w_h$) indicate which parameter (environment, main effect, interaction) they are being applied to. Let $a_n = \max \left\lbrace \lambda_{h}^\beta, \lambda_{h}^\theta, \lambda_h^\gamma: h \in \mathcal{H}  \right\rbrace$ and $b_n = \min \left\lbrace \lambda_{h}^\beta, \lambda_{h}^\theta, \lambda_h^\gamma: h \notin \mathcal{H}  \right\rbrace$. In words, $a_n$ is a sequence containing the largest tuning parameters such that all causal covariates are included in the model, and $b_n$ is a sequence containing the smallest tuning parameters such that all noise variables are excluded from the model. Note that our asymptotic results are stated for the main effects and interaction terms only, even though our formulation includes an unpenalized intercept. Consistency results immediately follow for $\beta_0$ since we assume the data has been centered, leading to a closed form solution for the intercept in the least-squares setting. 
 
 %where $\bTheta\coloneqq(\beta_{0},\beta_{E},\btheta_{1},\ldots,\btheta_{p},\btau_{1},\ldots,\btau_{p})$
 %and $\bD\coloneqq(Y,\bPsi,X_{E})$ is the working data.
@@ -450,7 +448,36 @@ Note that our asymptotic results are stated for the main effects and interaction
 
 
 
+\begin{lemma}[Existence of a local minimizer]\label{th:lemma1}
+	Assume $a_n = O_P(\frac{1}{\sqrt{n}})$. Let $\eta_{n}=\frac{1}{\sqrt{n}}+a_{n}$ and $\{\bTheta^{*}+\eta_{n}\boldsymbol{\delta}:\|\boldsymbol{\delta}\|_2\leq C\}$
+	be the ball around $\bTheta^{*}$ for $\boldsymbol{\delta} \in \mathbb{R}^d$, where $d$ is the dimension of the design matrix and $C$ is some constant. Under the regularity assumptions, there exists a local minimizer $\widehat{\bTheta}_n$ of $Q_n(\bTheta)$ such that $\|\widehat{\bTheta}_n - \bTheta^*  \|_2 = O_P(\eta_{n})$.
+\end{lemma}
 
+The proof is in Appendix A. Lemma \eqref{th:lemma1} states that if the tuning parameters corresponding to the nonzero coefficients converge to 0 at a speed faster than $\frac{1}{\sqrt{n}}$, then there exists a local minimizer of $Q_n(\bTheta)$ which is $\sqrt{n}$-consistent~\citep{wang2007regression, choi2010variable}. The following Theorem shows that this estimator is model selection consistent.
+
+
+
+\begin{theorem}[Model selection consistency] \label{th:theorem1}
+	Assume $\sqrt{n}b_n \to \infty$ and $\|\widehat{\bTheta}_n - \bTheta^*  \|_2 = O_P(\frac{1}{\sqrt{n}})$. Then \begin{equation}
+	\mathbb{P}\left\{\widehat{\mathcal{H}}=\mathcal{H}\right\} \rightarrow 1, \quad \text { as } n \rightarrow \infty \label{eq:modelselectionconsistency}
+	\end{equation}
+\end{theorem}
+
+The proof is in Appendix B. Theorem~\eqref{th:theorem1} shows that \sail ~can consistently remove the main effects and interaction terms which are not associated with the response with high probability. Together with Lemma~\eqref{th:lemma1}, we see that the asymptotic behaviour of the penalty terms for the zero and non-zero predictors must be different to satisfy the model selection consistency property~\eqref{eq:modelselectionconsistency}~\citep{nardi2008asymptotic}. Next, we obtain the asymptotic distribution of the \sail ~estimator.
+
+\begin{theorem}[Asymptotic normality] \label{th:theorem2}
+Assume that $a_n = O_P(\frac{1}{\sqrt{n}})$ and $\sqrt{n}b_n \to \infty$. Then, under the regularity conditions, 
+\begin{equation}
+\sqrt{n}\left(\widehat{\bTheta}-\bTheta^{*}\right) \stackrel{d}{\rightarrow} Z,
+\end{equation}
+where $Z_{\mathcal{H}} \sim \mathrm{N}\left(0, \mathbf{I}^{-1}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right) \right)$, $Z_{\mathcal{H}^{c}}=0$, and $\mathbf{I}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)$ is the Fisher information matrix for the causal predictors only. 
+\end{theorem}
+The proof is in Appendix C. Together, Theorems~\eqref{th:theorem1} and~\eqref{th:theorem2} establish that if the tuning parameters satisfy the conditions $a_n = O_P(\frac{1}{\sqrt{n}})$ and $\sqrt{n}b_n \to \infty$, then as the sample size grows large, \sail ~has the oracle property~\citep{fan2001variable}. In order for the conditions on the tuning parameters to be satisfied, we follow the strategies outlined for the adaptive lasso~\citep{zou2006adaptive}, the adaptive group lasso~\citep{nardi2008asymptotic} and the adaptive elastic-net~\citep{zou2009adaptive}. That is, we define the adaptive weights as $w_h = \| \widehat{\bTheta}_h^{ini} + 1/n \|_2^{-\xi}$ for $h=1, \ldots, 2p+1$, where $\xi$ is a positive constant and $\widehat{\bTheta}_h^{ini}$ is an initial $\sqrt{n}$-consistent estimate of $\bTheta^*$.
+%,  $w_h^\beta = \frac{1}{\|\widehat{\beta}_h \|_2^\xi}$ for $h=1$, $w_h^\theta = \frac{1}{\|\widehat{\btheta}_h \|_2^\xi}$ for $h=2, \ldots, p+1$, and $w_h^\gamma = \frac{1}{\|\widehat{\gamma}_h \|_2^\xi}$ for $h=p+1, \ldots, 2p+1$.
+
+
+
+\begin{comment}
 \begin{proposition}
 \begin{itemize}
 	\item 	proposition 3.1 of rinaldi paper says that model selection consistency property, i.e.,  
@@ -460,13 +487,12 @@ Note that our asymptotic results are stated for the main effects and interaction
 	\item Theorem 3.3 of rinaldi follows fan and li 2001 and shows existence of a local minimizer inside a ball around the truth. This is Lemma 1 of Choi and Theorem 1 of Fan and Li. It also shows that the penalty terms for the zero and non-zero blocks need to have a different asymptotic behavior. This is what Choi does in Lemma1+Theorem 1. 
 \end{itemize}
 \end{proposition}
+\end{comment}
 
-\begin{theorem}[Model Selection Consistency]
-	content...
-\end{theorem}
 
-Let $\eta_{n}=n^{-1/2}+a_{n}$ and $\{\bTheta^{*}+\eta_{n}\boldsymbol{\delta}:\|\boldsymbol{\delta}\|\leq d\}$
-be the ball around $\bTheta^{*}$, where $\boldsymbol{\delta}=(u_{E},\boldsymbol{u}_{1,}\ddd\boldsymbol{u}_{p},v_{1E},\ldots,v_{p,E})^{\top}=(\boldsymbol{u}^{\top},\boldsymbol{v}^{\top})^{\top}$.
+
+\subsection{Lemma 1 proof}
+
 Define 
 \[
 D_{n}(\boldsymbol{\delta})\equiv Q_{n}(\bThetastar+\eta_{n}\bdelta)-Q_{n}(\bThetastar).
