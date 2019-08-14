@@ -138,6 +138,7 @@
 \newcommand{\bThetastar}{\boldsymbol{\Theta}^{*}}
 \newcommand{\bdelta}{\boldsymbol{\delta}}
 \newcommand{\A}{\mathcal{A}}
+\newcommand{\mH}{\mathcal{H}}
 
 % Swap the definition of \abs* and \norm*, so that \abs
 % and \norm resizes the size of the brackets, and the 
@@ -277,9 +278,9 @@ Here we assume that $p$ is large relative to $n$, and particularly that $\sum_{j
 Due to the large number of parameters to estimate with respect to the number of observations, one commonly-used approach is to shrink the regression coefficients by placing a constraint on the values
 of $(\beta_E, \btheta_j, \btau_j)$. Certain constraints have the added benefit of producing a sparse model in the sense that many of the coefficients will be set exactly to 0~\citep{buhlmann2011statistics}. Such a reduced predictor set can lead to a more interpretable model with smaller prediction variance, albeit at the cost of having biased parameter estimates~\citep{fan2014challenges}. In light of these goals, we consider the following penalized objective function:
 \begin{equation}
-	Q(\bTheta) =  	L(\bTheta) + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \norm{\btau_{j}}_2 \label{eq:lassolikelihood3}
+	Q(\bTheta) =  	-L(\bTheta) + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \norm{\btau_{j}}_2 \label{eq:lassolikelihood3}
 \end{equation} 
-where $\bTheta = (\beta_0, \beta_E,\btheta_1, \ldots, \btheta_p, \btau_1, \ldots, \btau_p)$, $L(\bTheta)$ is the negative log-likelihood function of the observations $\bV_i = (Y_i,\bPsi_i,X_{iE})$ for $i=1\ddd n$, $\norm{\btheta_j}_2 = \sqrt{\sum_{k=1}^{m_j} \beta_{jk}^2}$, $\norm{\btau_j}_2 = \sqrt{\sum_{k=1}^{m_j} \tau_{jk}^2}$, $\lambda >0$ and $\alpha \in (0,1)$ are adjustable tuning parameters, $w_E, w_j, w_{jE}$ are non-negative penalty factors for $j=1, \ldots, p$ which serve as a way of allowing parameters to be penalized differently. The first term in the penalty penalizes the main effects while the second term penalizes the interactions. The parameter $\alpha$ controls the relative weight on the two penalties. Note that we do not penalize the intercept. 
+where $\bTheta = (\beta_0, \beta_E,\btheta_1, \ldots, \btheta_p, \btau_1, \ldots, \btau_p)$, $L(\bTheta)$ is the log-likelihood function of the observations $\bV_i = (Y_i,\bPsi_i,X_{iE})$ for $i=1\ddd n$, $\norm{\btheta_j}_2 = \sqrt{\sum_{k=1}^{m_j} \beta_{jk}^2}$, $\norm{\btau_j}_2 = \sqrt{\sum_{k=1}^{m_j} \tau_{jk}^2}$, $\lambda >0$ and $\alpha \in (0,1)$ are adjustable tuning parameters, $w_E, w_j, w_{jE}$ are non-negative penalty factors for $j=1, \ldots, p$ which serve as a way of allowing parameters to be penalized differently. The first term in the penalty penalizes the main effects while the second term penalizes the interactions. The parameter $\alpha$ controls the relative weight on the two penalties. Note that we do not penalize the intercept. 
 
 An issue with~\eqref{eq:lassolikelihood3} is that since no constraint is placed on the structure of the model, it is possible that an estimated interaction term is nonzero while the corresponding main effects are zero. While there may be certain situations where this is plausible, statisticians have generally argued that interactions should only be included if the corresponding main effects are also in the model~\citep{mccullagh1989generalized}. This is known as the strong heredity principle~\citep{chipman1996bayesian}. Indeed, large main effects are more likely to lead to detectable interactions~\citep{cox1984interaction}. In the next section we discuss how a simple reparametrization of the model~\eqref{eq:lassolikelihood3} can lead to this desirable property. 
 %Furthermore, adaptive weighting~\citep{zou2006adaptive} has been shown to construct oracle procedures~\citep{fan2001variable}, i.e., asymptotically, it performs as well as if the true model were given in advance. These weights are given by
@@ -303,7 +304,7 @@ Type      & Feature  & Reparametrization \ML
 
 To perform variable selection in this new parametrization, we penalize $\bs{\gamma} = \left(\gamma_{1}, \ldots, \gamma_{p}\right)$ instead of penalizing $\btau$ as in~\eqref{eq:lassolikelihood3}, leading to the following penalized objective function:
 \begin{equation}
-	Q(\bTheta) = L(\bTheta) + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{j}} \label{eq:saillikelihood}
+	Q(\bTheta) = -L(\bTheta) + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{j}} \label{eq:saillikelihood}
 \end{equation}
 %where
 %\begin{equation}
@@ -434,7 +435,7 @@ Let $\bThetastar = (\beta_{E}^*,\btheta_{1}^*,\ldots,\btheta_{p}^*,\gamma_{1}^*,
 %\end{equation}
 \begin{equation}
 \widehat{\bTheta}_n=  \argmin_{\bTheta}Q_n(\bTheta)
-=L(\bTheta)+n\sum_{h=1}^{p+1} \left( \lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}\right)  +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|
+=-L_n(\bTheta)+n\sum_{h=1}^{p+1} \left( \lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}\right)  +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|
 \end{equation}
 where $\lambda_{h}^\beta=\frac{{1}}{n}\lambda(1-\alpha)w_{h}^\beta$ for $h=1$, $\lambda_{h}^{\theta}=\frac{{1}}{n}\lambda(1-\alpha)w_{h}^\theta$ for $h=2, \ldots, p+1$, and $\lambda_{h}^{\gamma}=\frac{{1}}{n}\lambda\alpha w_{h}^\gamma$ for $h=p+2, \ldots, 2p+1$. The superscripts $\beta,\theta, \gamma$ on the tuning parameters ($\lambda_h$) and adaptive weights ($w_h$) indicate which parameter (environment, main effect, interaction) they are being applied to. Let $a_n = \max \left\lbrace \lambda_{h}^\beta, \lambda_{h}^\theta, \lambda_h^\gamma: h \in \mathcal{H}  \right\rbrace$ and $b_n = \min \left\lbrace \lambda_{h}^\beta, \lambda_{h}^\theta, \lambda_h^\gamma: h \notin \mathcal{H}  \right\rbrace$. In words, $a_n$ is a sequence containing the largest tuning parameters such that all causal covariates are included in the model, and $b_n$ is a sequence containing the smallest tuning parameters such that all noise variables are excluded from the model. Note that our asymptotic results are stated for the main effects and interaction terms only, even though our formulation includes an unpenalized intercept. Consistency results immediately follow for $\beta_0$ since we assume the data has been centered, leading to a closed form solution for the intercept in the least-squares setting. 
 
@@ -472,7 +473,7 @@ Assume that $a_n = O_P(\frac{1}{\sqrt{n}})$ and $\sqrt{n}b_n \to \infty$. Then, 
 \end{equation}
 where $Z_{\mathcal{H}} \sim \mathrm{N}\left(0, \mathbf{I}^{-1}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right) \right)$, $Z_{\mathcal{H}^{c}}=0$, and $\mathbf{I}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)$ is the Fisher information matrix for the causal predictors only. 
 \end{theorem}
-The proof is in Appendix C. Together, Theorems~\eqref{th:theorem1} and~\eqref{th:theorem2} establish that if the tuning parameters satisfy the conditions $a_n = O_P(\frac{1}{\sqrt{n}})$ and $\sqrt{n}b_n \to \infty$, then as the sample size grows large, \sail ~has the oracle property~\citep{fan2001variable}. In order for the conditions on the tuning parameters to be satisfied, we follow the strategies outlined for the adaptive lasso~\citep{zou2006adaptive}, the adaptive group lasso~\citep{nardi2008asymptotic} and the adaptive elastic-net~\citep{zou2009adaptive}. That is, we define the adaptive weights as $w_h = \| \widehat{\bTheta}_h^{ini} + 1/n \|_2^{-\xi}$ for $h=1, \ldots, 2p+1$, where $\xi$ is a positive constant and $\widehat{\bTheta}_h^{ini}$ is an initial $\sqrt{n}$-consistent estimate of $\bTheta^*$.
+The proof is in Appendix C. Together, Theorems~\eqref{th:theorem1} and~\eqref{th:theorem2} establish that if the tuning parameters satisfy the conditions $a_n = O_P(\frac{1}{\sqrt{n}})$ and $\sqrt{n}b_n \to \infty$, then as the sample size grows large, \sail ~has the oracle property~\citep{fan2001variable}. In order for the conditions on the tuning parameters to be satisfied, we follow the strategies outlined for the adaptive lasso~\citep{zou2006adaptive}, the adaptive group lasso~\citep{nardi2008asymptotic} and the adaptive elastic-net~\citep{zou2009adaptive}. That is, we define the adaptive weights as $w_h = \| \widehat{\bTheta}_h^{ini} + 1/n \|_2^{-\xi}$ for $h=1, \ldots, 2p+1$, where $\xi$ is a positive constant and $\widehat{\bTheta}_h^{ini}$ is an initial $\sqrt{n}$-consistent estimate of $\bTheta^*$. Here, the $1/n$ is to avoid division by zero. 
 %,  $w_h^\beta = \frac{1}{\|\widehat{\beta}_h \|_2^\xi}$ for $h=1$, $w_h^\theta = \frac{1}{\|\widehat{\btheta}_h \|_2^\xi}$ for $h=2, \ldots, p+1$, and $w_h^\gamma = \frac{1}{\|\widehat{\gamma}_h \|_2^\xi}$ for $h=p+1, \ldots, 2p+1$.
 
 
@@ -492,19 +493,37 @@ The proof is in Appendix C. Together, Theorems~\eqref{th:theorem1} and~\eqref{th
 
 
 \subsection{Lemma 1 proof}
-Let $\eta_{n}=\frac{1}{\sqrt{n}}+a_{n}$ and $\{\bTheta^{*}+\eta_{n}\boldsymbol{\delta}:\|\boldsymbol{\delta}\|_2\leq C\}$
-be the ball around $\bTheta^{*}$ for $\boldsymbol{\delta} \in \mathbb{R}^d$, where $d$ is the dimension of the design matrix and $C$ is some constant.
-
+For the first part of the proof, we follow~\citep{fan2001variable,choi2010variable,nardi2008asymptotic,wang2007regression} and extend it to our situation. Let $\eta_{n}=\frac{1}{\sqrt{n}}+a_{n}$ and $\{\bTheta^{*}+\eta_{n}\boldsymbol{\delta}:\|\boldsymbol{\delta}\|_2\leq C\}$
+be the ball around $\bTheta^{*}$ for $\boldsymbol{\delta}=(u_{1}, \textit{\textbf{u}}_2, \ddd \textit{\textbf{u}}_{p+1},v_{p+2},\ldots,v_{2p+1})^{\top} \in \mathbb{R}^d$, where $d$ is the dimension of the design matrix and $C$ is some constant. The objective function is given by
+\begin{equation*}
+Q_n(\bTheta)
+=-L_n(\bTheta)+n\sum_{h=1}^{p+1} \left( \lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}\right)  +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|
+\end{equation*}
 Define 
-\[
-D_{n}(\boldsymbol{\delta})\equiv Q_{n}(\bThetastar+\eta_{n}\bdelta)-Q_{n}(\bThetastar).
-\]
-Let $-L_{n}$ denote the first term of $Q_{n}$ in (8). For $\bdelta$
-that satisfies $\|\bdelta\|=d$, we have
+\[ D_{n}(\boldsymbol{\delta})\equiv Q_{n}(\bThetastar+\eta_{n}\bdelta)-Q_{n}(\bThetastar).\] Let $\mathcal{H}_1=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=1, \ldots, p+1 \right\rbrace$ and $\mathcal{H}_2=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=p+2, \ldots, 2p+1 \right\rbrace$ where $\mathcal{H} = \mathcal{H}_1 \cup \mathcal{H}_2$. Then for $\bdelta$ that satisfies $\|\bdelta\|_2=C$, we have
+\begin{align}
+D_{n}(\bdelta) & =-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  + n\sum_{h=1}^{p+1} \left( \lambda_{h}^{\beta}(\left|\beta_{h}^*+\eta_n u_h\right| - |\beta_h^*|) \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta} (\| \btheta_{h}^* + \eta_{n}\textit{\textbf{u}}_h\|_{2} - \|\btheta_{h}^* \|_2 )\right) \nonumber\\  
+& +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}( \left|\gamma_{h}^* + \eta_{n}v_h\right| -        \left|\gamma_{h}^*\right|) \nonumber\\
+%
+ & \overset{(a)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  + n\sum_{h \in \mathcal{H}_1} \left( \lambda_{h}^{\beta}(\left|\beta_{h}^*+\eta_n u_h\right| - |\beta_h^*|) \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta} (\| \btheta_{h}^* + \eta_{n}\textit{\textbf{u}}_h\|_{2} - \|\btheta_{h}^* \|_2 )\right)\nonumber\\  
+& +n\sum_{h \in \mathcal{H}_2}\lambda_{h}^{\gamma}( \left|\gamma_{h}^* + \eta_{n}v_h\right| -        \left|\gamma_{h}^*\right|)\nonumber \\
+%
+ & \overset{(b)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  - n \eta_{n}\sum_{h \in \mathcal{H}_1} \left( \lambda_{h}^{\beta}\left|u_h\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta} \| \textit{\textbf{u}}_h\|_{2} \right) - n \eta_n \sum_{h \in \mathcal{H}_2}\lambda_{h}^{\gamma} \left|v_h\right| \nonumber \\
+%
+& \overset{(c)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  - n \eta_{n}^2\sum_{h \in \mathcal{H}_1} \left( \left|u_h\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} +  \| \textit{\textbf{u}}_h\|_{2} \right) - n \eta_n^2 \sum_{h \in \mathcal{H}_2} \left|v_h\right| \nonumber \\
+%
+& \overset{(d)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar) - n \eta_{n}^2 ( |\mathcal{H}_1| + |\mathcal{H}_2| ) C \nonumber \\
+%
+& \overset{(e)}{=}-[\nabla L_{n}(\bThetastar)]^{\top}(\eta_{n}\bdelta)-\frac{1}{2}(\eta_{n}\bdelta)^{\top}[\nabla^{2}L_{n}(\bThetastar)](\eta_{n}\bdelta)(1+o_{p}(1)) \nonumber \\ 
+& - n \eta_{n}^2 ( |\mathcal{H}_1| + |\mathcal{H}_2| ) C \label{eq:lemma1}
+\end{align}
+\begin{comment}
 \begin{align*}
-D_{n}(\bdelta) & =-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)+n\lambda_{E}(|\beta_{E}^{*}+\eta_{n}u_{E}|-|\beta_{E}^{*}|)+n\sum_{j}\lambda_{j}^{\theta}\left(\left\Vert \btheta{}_{j}^{*}+\eta_{n}\boldsymbol{u}_{j}\right\Vert _{2}-\left\Vert \btheta_{j}^{*}\right\Vert _{2}\right)\\
+D_{n}(\bdelta) & =-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)+ n\sum_{h=1}^{p+1} \left( \lambda_{h}^{\beta}\left|\beta_{h}+\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}\right) + 
+n\lambda_{E}(|\beta_{E}^{*}+\eta_{n}u_{E}|-|\beta_{E}^{*}|)+n\sum_{j}\lambda_{j}^{\theta}\left(\left\Vert \btheta{}_{j}^{*}+\eta_{n}\boldsymbol{u}_{j}\right\Vert _{2}-\left\Vert \btheta_{j}^{*}\right\Vert _{2}\right)\\
 & +n\sum_{k}\lambda_{k}^{\gamma}(|\gamma_{k}^{*}+\eta_{n}v_{kE}|-|\gamma_{k}^{*}|)\\
-& \overset{(a)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)+n\lambda_{E}(|\beta_{E}^{*}+\eta_{n}u_{E}|-|\beta_{E}^{*}|)\cdot I(\beta_{E}^{*}\neq0)+n\sum_{j\in\mathcal{A}_{2}}\lambda_{j}^{\theta}\left(\left\Vert \btheta{}_{j}^{*}+\eta_{n}\boldsymbol{u}_{j}\right\Vert _{2}-\left\Vert \btheta_{j}^{*}\right\Vert _{2}\right)\\
+& \overset{(a)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)+n\lambda_{E}(|\beta_{E}^{*}+\eta_{n}u_{E}|-|\beta_{E}^{*}|)\cdot I(\beta_{E}^{*}\neq0)\\ 
+&+n\sum_{j\in\mathcal{A}_{2}}\lambda_{j}^{\theta}\left(\left\Vert \btheta{}_{j}^{*}+\eta_{n}\boldsymbol{u}_{j}\right\Vert _{2}-\left\Vert \btheta_{j}^{*}\right\Vert _{2}\right)\\
 & +n\sum_{k\in\mathcal{A}_{3}}\lambda_{k}^{\gamma}(|\gamma_{k}^{*}+\eta_{n}v_{kE}|-|\gamma_{k}^{*}|)\\
 & \overset{(b)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)-n\eta_{n}\lambda_{E}|u_{E}|\cdot I(\beta_{E}^{*}\neq0)-n\eta_{n}\sum_{j\in\A_{2}}\lambda_{j}^{\theta}\left\Vert \boldsymbol{u}_{j}\right\Vert _{2}-n\eta_{n}\sum_{k\in\A_{3}}\lambda_{k}^{\gamma}|v_{kE}|\\
 & \overset{(c)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)-n\eta_{n}^{2}\left(\left|u_{E}\right|\cdot I(\beta_{E}^{*}\neq0)+\sum_{j\in\A_{2}}\left\Vert \boldsymbol{u}_{j}\right\Vert _{2}+\sum_{k\in\A_{3}}\lambda_{k}^{\gamma}|v_{kE}|\right)\\
@@ -512,35 +531,33 @@ D_{n}(\bdelta) & =-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)+n\lambd
 & \overset{(e)}{=}-[\nabla L_{n}(\bThetastar)]^{\top}(\eta_{n}\bdelta)-\frac{1}{2}(\eta_{n}\bdelta)^{\top}[\nabla^{2}L_{n}(\bThetastar)](\eta_{n}\bdelta)(1+o_{p}(1))\\
 & -n\eta_{n}^{2}\left(|\A_{1}|+|\A_{2}|+|\A_{2}|\right)d
 \end{align*}
-Inequality (a) is by the fact that $\sum_{j\notin\mathcal{A}}|\theta_{j}^{*}|=0$.
-(b) is due to reverse triangle inequality $|a|-|b|\geq-|a-b|$. (c)
-is by $\lambda_{E}\leq\eta_{n}$, $\lambda_{j}^{\theta}\leq\eta_{n}$
-and $\lambda_{k}^{\gamma}\leq\eta_{n}$. (d) is by Cauchy\textendash Schwarz
-inequality
+\end{comment}
+Inequality (a) is by the fact that $\sum_{h\notin\mathcal{H}_1}|\bTheta_{h}^{*}|=0$ and $\sum_{h\notin\mathcal{H}_2}|\bTheta_{h}^{*}|=0$. 
+Inequality (b) is due to the reverse triangle inequality $|a|-|b|\geq-|a-b|$. Inequality (c) is by $\lambda_{h}^\beta\leq\eta_{n}$, $\lambda_{h}^{\theta}\leq\eta_{n}$ and $\lambda_{h}^{\gamma}\leq\eta_{n}$. Inequality (d) is by the Cauchy\textendash Schwarz
+inequality:
 \[
-\sum_{j\in\A_{1}}|u_{j}|=|\mathbf{1}_{\A_{1}}^{\top}\mathbf{u}_{\A_{1}}|\leq\|\mathbf{1}_{\A_{1}}\|\|\mathbf{u}_{\A_{1}}\|=\sqrt{|\A_{1}}|\|\mathbf{u}_{\A_{1}}\|\leq|\A_{1}|d.
+\sum_{j\in \mathcal{H}_{1}}|u_{j}|=|\mathbf{1}_{\mH_{1}}^{\top}\mathbf{u}_{\mH_{1}}|\leq\|\mathbf{1}_{\mH_{1}}\|\|\mathbf{u}_{\mH_{1}}\|=\sqrt{|\mH_{1}}|\|\mathbf{u}_{\mH_{1}}\|\leq|\mH_{1}|C.
 \]
-By the standard argument on the Taylor expansion of the loss function,
-we have 
+Equality (e) is by the standard argument on the Taylor expansion of the loss function:
 \begin{align*}
 L_{n}(\bThetastar+\eta_{n}\bdelta) & =L_{n}(\bThetastar+\eta_{n}\cdot\mathbf{0})+\eta_{n}\nabla L_{n}(\bThetastar+\eta_{n}\cdot\mathbf{0})^{\top}(\bdelta-\mathbf{0})\\
 & \qquad+\frac{1}{2}(\bdelta-\mathbf{0})^{\top}\nabla^{2}L_{n}(\bThetastar+\eta_{n}\cdot\mathbf{0})(\bdelta-\mathbf{0})\{1+\op(1)\}\\
 & =L_{n}(\bThetastar)+\eta_{n}\nabla L_{n}(\bThetastar)^{\top}\bdelta+\frac{1}{2}\bdelta^{\top}\nabla^{2}L_{n}(\bThetastar)\bdelta\eta_{n}^{2}\{1+\op(1)\}
 \end{align*}
-We split (10) into three parts:
+We split~\eqref{eq:lemma1} into three parts:
 \[
-\begin{aligned}A_{1} & =-\left[\nabla L_{n}\left(\boldsymbol{\theta}^{*}\right)\right]^{\mathrm{T}}\left(\eta_{n}\boldsymbol{\delta}\right)\\
-A_{2} & =-\frac{1}{2}\left(\eta_{n}\boldsymbol{\delta}\right)^{\top}\left[\nabla^{2}L_{n}\left(\boldsymbol{\theta}^{*}\right)\right]\left(\eta_{n}\boldsymbol{\delta}\right)\left(1+o_{p}(1)\right)\\
-A_{3} & =-n\eta_{n}^{2}\left(\left|\mathcal{A}_{1}\right|+\left|\mathcal{A}_{2}\right|\right)d
+\begin{aligned}A_{1} & =-\left[\nabla L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]^{\mathrm{T}}\left(\eta_{n}\boldsymbol{\delta}\right)\\
+A_{2} & =-\frac{1}{2}\left(\eta_{n}\boldsymbol{\delta}\right)^{\top}\left[\nabla^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]\left(\eta_{n}\boldsymbol{\delta}\right)\left(1+o_{p}(1)\right)\\
+A_{3} & =-n\eta_{n}^{2}\left(\left|\mathcal{H}_{1}\right|+\left|\mathcal{H}_{2}\right|\right)C
 \end{aligned}
 \]
 Then
 \[
-\begin{aligned}A_{1} & =-\eta_{n}\left[\nabla L_{n}\left(\boldsymbol{\theta}^{*}\right)\right]^{\top}\boldsymbol{\delta}\\
-& =-\sqrt{n}\eta_{n}\left(\frac{1}{\sqrt{n}}\nabla L_{n}\left(\boldsymbol{\theta}^{*}\right)\right)^{\top}\boldsymbol{\delta}\\
-& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\theta}\right)\right|_{\boldsymbol{\theta}=\boldsymbol{\theta}^{*}}\right)^{\top}\boldsymbol{\delta}\\
-& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\left[\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\theta}\right)\right|_{\boldsymbol{\theta}=\boldsymbol{\theta}^{*}}-\mathbf{0}\right]\right)^{\top}\boldsymbol{\delta}\\
-& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\left[\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\theta}\right)\right|_{\boldsymbol{\theta}=\boldsymbol{\theta}^{*}}-E_{\boldsymbol{\theta}^{*}}\nabla L\left(\boldsymbol{\theta}^{*}\right)\right]\right)^{\top}\boldsymbol{\delta}\\
+\begin{aligned}A_{1} & =-\eta_{n}\left[\nabla L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]^{\top}\boldsymbol{\delta}\\
+& =-\sqrt{n}\eta_{n}\left(\frac{1}{\sqrt{n}}\nabla L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right)^{\top}\boldsymbol{\delta}\\
+& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\Theta}\right)\right|_{\boldsymbol{\Theta}=\boldsymbol{\Theta}^{*}}\right)^{\top}\boldsymbol{\delta}\\
+& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\left[\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\Theta}\right)\right|_{\boldsymbol{\Theta}=\boldsymbol{\Theta}^{*}}-\mathbf{0}\right]\right)^{\top}\boldsymbol{\delta}\\
+& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\left[\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\Theta}\right)\right|_{\boldsymbol{\Theta}=\boldsymbol{\Theta}^{*}}-E_{\boldsymbol{\Theta}^{*}}\nabla L\left(\boldsymbol{\Theta}^{*}\right)\right]\right)^{\top}\boldsymbol{\delta}\\
 & =-\sqrt{n}\eta_{n}O_{p}\left(1\right)\boldsymbol{\delta}\\
 & =-O_{p}\left(\sqrt{n}\eta_{n}\right)\boldsymbol{\delta}\\
 & =-O_{p}\left(n\eta_{n}^{2}\right)\boldsymbol{\delta}
@@ -556,30 +573,30 @@ The last equation is due to
 & =\Op(n(n^{-1/2}+a_{n})^{2})=\Op(n\eta_{n}^{2})
 \end{align*}
 \[
-\begin{aligned}A_{2} & =\frac{1}{2}n\eta_{n}^{2}\left\{ \boldsymbol{\delta}^{\top}\left[-\frac{1}{n}\nabla^{2}L_{n}\left(\boldsymbol{\theta}^{*}\right)\right]\boldsymbol{\delta}\right\} \left(1+o_{p}(1)\right)\\
-& =\frac{1}{2}n\eta_{n}^{2}\left\{ \boldsymbol{\delta}^{\top}\left[I\left(\boldsymbol{\theta}^{*}\right)\right]\boldsymbol{\delta}\right\} \left(1+o_{p}(1)\right)\text{ by the weak law of large numbers. }
+\begin{aligned}A_{2} & =\frac{1}{2}n\eta_{n}^{2}\left\{ \boldsymbol{\delta}^{\top}\left[-\frac{1}{n}\nabla^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]\boldsymbol{\delta}\right\} \left(1+o_{p}(1)\right)\\
+& =\frac{1}{2}n\eta_{n}^{2}\left\{ \boldsymbol{\delta}^{\top}\left[I\left(\boldsymbol{\Theta}^{*}\right)\right]\boldsymbol{\delta}\right\} \left(1+o_{p}(1)\right)\text{ by the weak law of large numbers. }
 \end{aligned}
 \]
 Thus,
 \[
 \begin{aligned}D_{n}(\boldsymbol{\delta}) & \geq A_{1}+A_{2}+A_{3}\\
-& =-n\eta_{n}^{2}O_{p}(1)\boldsymbol{\delta}+\frac{1}{2}n\eta_{n}^{2}\left\{ \boldsymbol{\delta}^{\top}\left[I\left(\boldsymbol{\theta}^{*}\right)\right]\boldsymbol{\delta}\right\} \left(1+o_{p}(1)\right)-n\eta_{n}^{2}\left(\left|\mathcal{A}_{1}\right|+\left|\mathcal{A}_{2}\right|\right)d
+& =-n\eta_{n}^{2}O_{p}(1)\boldsymbol{\delta}+\frac{1}{2}n\eta_{n}^{2}\left\{ \boldsymbol{\delta}^{\top}\left[I\left(\boldsymbol{\Theta}^{*}\right)\right]\boldsymbol{\delta}\right\} \left(1+o_{p}(1)\right)-n\eta_{n}^{2}\left(\left|\mathcal{H}_{1}\right|+\left|\mathcal{H}_{2}\right|\right)C
 \end{aligned}
 \]
 Notice that $A_{2}$ dominates the rest terms $A_{1}$ and $A_{3}$
-and is positive since $I(\boldsymbol{\theta})$ is positive definite
-at $\boldsymbol{\theta}=\bThetastar$ from (C2). Therefore, for any
-given $\varepsilon>0$, there exists a large enough constant $d$
+and is positive since $I(\boldsymbol{\Theta})$ is positive definite
+at $\boldsymbol{\Theta}=\bThetastar$ from (C2). Therefore, for any
+given $\varepsilon>0$, there exists a large enough constant $C$
 such that 
 \[
-P\left\{ \underset{\|\delta\|=d}{\inf}Q_{n}\left(\boldsymbol{\theta}^{*}+\eta_{n}\boldsymbol{\delta}\right)>Q_{n}\left(\boldsymbol{\theta}^{*}\right)\right\} \geq1-\varepsilon
+P\left\{ \underset{\|\bdelta\|_2=C}{\inf}Q_{n}\left(\boldsymbol{\Theta}^{*}+\eta_{n}\boldsymbol{\delta}\right)>Q_{n}\left(\boldsymbol{\Theta}^{*}\right)\right\} \geq1-\varepsilon
 \]
 This implies with probability at least $1-\varepsilon$ that the empirical
-likelihood $Q_{n}$ has a local minimizer in the ball $\{\boldsymbol{\theta}^{*}+\eta_{n}\mathbf{\bdelta}:\|\mathbf{\bdelta}\|\leq d\}$
-(since $Q_{n}$ is bounded and $\{\boldsymbol{\theta}^{*}+\alpha_{n}\bdelta:\|\bdelta\|\leq d\}$
+likelihood $Q_{n}$ has a local minimizer in the ball $\{\boldsymbol{\Theta}^{*}+\eta_{n}\mathbf{\bdelta}:\|\mathbf{\bdelta}\|_2\leq C\}$
+(since $Q_{n}$ is bounded and $\{\boldsymbol{\Theta}^{*}+\alpha_{n}\bdelta:\|\bdelta\|_2\leq C\}$
 is closed). In other words, there exists a local maximizer $\widehat{\btheta}_{n}$
-such that $\|\widehat{\boldsymbol{\theta}}_{n}-\boldsymbol{\theta}^{*}\|\leq\eta_{n}\|\bdelta\|\leq\eta_{n}d=\Op(\eta_{n})=\Op(n^{-1/2}+a_{n})$.
-Hence, $\left\Vert \widehat{\boldsymbol{\theta}}_{n}-\boldsymbol{\theta}^{*}\right\Vert =O_{p}\left(\eta_{n}\right).\square$
+such that $\|\widehat{\boldsymbol{\Theta}}_{n}-\boldsymbol{\Theta}^{*}\|\leq\eta_{n}\|\bdelta\|\leq\eta_{n}C=\Op(\eta_{n})=\Op(n^{-1/2}+a_{n})$.
+Hence, $\left\Vert \widehat{\boldsymbol{\Theta}}_{n}-\boldsymbol{\Theta}^{*}\right\Vert =O_{p}\left(\eta_{n}\right).$ $\square$
 
 
 \section{Algorithm and Computational Details} \label{sec:sail_algorithm}
