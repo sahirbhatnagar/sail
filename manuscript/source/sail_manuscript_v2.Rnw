@@ -500,22 +500,26 @@ Q_n(\bTheta)
 =-L_n(\bTheta)+n\sum_{h=1}^{p+1} \left( \lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}\right)  +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|
 \end{equation*}
 Define 
-\[ D_{n}(\boldsymbol{\delta})\equiv Q_{n}(\bThetastar+\eta_{n}\bdelta)-Q_{n}(\bThetastar).\] Let $\mathcal{H}_1=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=1, \ldots, p+1 \right\rbrace$ and $\mathcal{H}_2=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=p+2, \ldots, 2p+1 \right\rbrace$ where $\mathcal{H} = \mathcal{H}_1 \cup \mathcal{H}_2$. Then for $\bdelta$ that satisfies $\|\bdelta\|_2=C$, we have
+\[ D_{n}(\boldsymbol{\delta})\equiv Q_{n}(\bThetastar+\eta_{n}\bdelta)-Q_{n}(\bThetastar).\] Let $\mathcal{H}_1=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=1 \right\rbrace$, $\mathcal{H}_2=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=2, \ldots, p+1 \right\rbrace$ \\and $\mathcal{H}_3=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=p+2, \ldots, 2p+1 \right\rbrace$ where $\mathcal{H} = \mathcal{H}_1 \cup \mathcal{H}_2 \cup \mathcal{H}_3$. Then for $\bdelta$ that satisfies $\|\bdelta\|_2=C$, we have
+
 \begin{align}
-D_{n}(\bdelta) & =-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  + n\sum_{h=1}^{p+1} \left( \lambda_{h}^{\beta}(\left|\beta_{h}^*+\eta_n u_h\right| - |\beta_h^*|) \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta} (\| \btheta_{h}^* + \eta_{n}\textit{\textbf{u}}_h\|_{2} - \|\btheta_{h}^* \|_2 )\right) \nonumber\\  
+D_{n}(\bdelta) & =-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  + n \lambda_{h}^{\beta}(\left|\beta_{h}^*+\eta_n u_h\right| - |\beta_h^*|) \cdot \textrm{I}_{\lbrace h=1 \rbrace} +  \sum_{h=2}^{p+1}  \lambda_{h}^{\theta} (\| \btheta_{h}^* + \eta_{n}\textit{\textbf{u}}_h\|_{2} - \|\btheta_{h}^* \|_2 ) \nonumber\\  
 & +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}( \left|\gamma_{h}^* + \eta_{n}v_h\right| -        \left|\gamma_{h}^*\right|) \nonumber\\
 %
- & \overset{(a)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  + n\sum_{h \in \mathcal{H}_1} \left( \lambda_{h}^{\beta}(\left|\beta_{h}^*+\eta_n u_h\right| - |\beta_h^*|) \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta} (\| \btheta_{h}^* + \eta_{n}\textit{\textbf{u}}_h\|_{2} - \|\btheta_{h}^* \|_2 )\right)\nonumber\\  
-& +n\sum_{h \in \mathcal{H}_2}\lambda_{h}^{\gamma}( \left|\gamma_{h}^* + \eta_{n}v_h\right| -        \left|\gamma_{h}^*\right|)\nonumber \\
+ & \overset{(a)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  
+ +   \lambda_{h}^{\beta}(\left|\beta_{h}^*+\eta_n u_h\right| - |\beta_h^*|) \cdot \textrm{I}_{\lbrace h \in \mathcal{H}_1 \rbrace} +  n \sum_{h \in \mathcal{H}_2} \lambda_{h}^{\theta} (\| \btheta_{h}^* + \eta_{n}\textit{\textbf{u}}_h\|_{2} - \|\btheta_{h}^* \|_2 ) \nonumber\\  
+& +n\sum_{h \in \mathcal{H}_3}\lambda_{h}^{\gamma}( \left|\gamma_{h}^* + \eta_{n}v_h\right| -        \left|\gamma_{h}^*\right|)\nonumber \\
 %
- & \overset{(b)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  - n \eta_{n}\sum_{h \in \mathcal{H}_1} \left( \lambda_{h}^{\beta}\left|u_h\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta} \| \textit{\textbf{u}}_h\|_{2} \right) - n \eta_n \sum_{h \in \mathcal{H}_2}\lambda_{h}^{\gamma} \left|v_h\right| \nonumber \\
+ & \overset{(b)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  - n \eta_{n}  \lambda_{h}^{\beta}\left|u_h\right| \cdot \textrm{I}_{\lbrace h \in \mathcal{H}_1 \rbrace}  -      n \eta_{n}\sum_{h \in \mathcal{H}_2}     \lambda_{h}^{\theta} \| \textit{\textbf{u}}_h\|_{2} - n \eta_n \sum_{h \in \mathcal{H}_3}\lambda_{h}^{\gamma} \left|v_h\right| \nonumber \\
 %
-& \overset{(c)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  - n \eta_{n}^2\sum_{h \in \mathcal{H}_1} \left( \left|u_h\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} +  \| \textit{\textbf{u}}_h\|_{2} \right) - n \eta_n^2 \sum_{h \in \mathcal{H}_2} \left|v_h\right| \nonumber \\
 %
-& \overset{(d)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar) - n \eta_{n}^2 ( |\mathcal{H}_1| + |\mathcal{H}_2| ) C \nonumber \\
+ & \overset{(c)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  - n \eta_{n}^2  \left|u_h\right| \cdot \textrm{I}_{\lbrace h \in \mathcal{H}_1 \rbrace}  -      n \eta_{n}^2 \sum_{h \in \mathcal{H}_2}    \| \textit{\textbf{u}}_h\|_{2} - n \eta_n^2 \sum_{h \in \mathcal{H}_3} \left|v_h\right| \nonumber \\
+%
+%
+& \overset{(d)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar) - n \eta_{n}^2 ( |\mathcal{H}_1| + |\mathcal{H}_2| + |\mathcal{H}_3|) C \nonumber \\
 %
 & \overset{(e)}{=}-[\nabla L_{n}(\bThetastar)]^{\top}(\eta_{n}\bdelta)-\frac{1}{2}(\eta_{n}\bdelta)^{\top}[\nabla^{2}L_{n}(\bThetastar)](\eta_{n}\bdelta)(1+o_{p}(1)) \nonumber \\ 
-& - n \eta_{n}^2 ( |\mathcal{H}_1| + |\mathcal{H}_2| ) C \label{eq:lemma1}
+& - n \eta_{n}^2 ( |\mathcal{H}_1| + |\mathcal{H}_2|+ |\mathcal{H}_3| ) C \label{eq:lemma1}
 \end{align}
 \begin{comment}
 \begin{align*}
@@ -548,7 +552,7 @@ We split~\eqref{eq:lemma1} into three parts:
 \[
 \begin{aligned}A_{1} & =-\left[\nabla L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]^{\mathrm{T}}\left(\eta_{n}\boldsymbol{\delta}\right)\\
 A_{2} & =-\frac{1}{2}\left(\eta_{n}\boldsymbol{\delta}\right)^{\top}\left[\nabla^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]\left(\eta_{n}\boldsymbol{\delta}\right)\left(1+o_{p}(1)\right)\\
-A_{3} & =-n\eta_{n}^{2}\left(\left|\mathcal{H}_{1}\right|+\left|\mathcal{H}_{2}\right|\right)C
+A_{3} & =-n\eta_{n}^{2}\left(\left|\mathcal{H}_{1}\right|+\left|\mathcal{H}_{2}\right|+\left|\mathcal{H}_{3}\right|\right)C
 \end{aligned}
 \]
 Then
@@ -580,7 +584,7 @@ The last equation is due to
 Thus,
 \[
 \begin{aligned}D_{n}(\boldsymbol{\delta}) & \geq A_{1}+A_{2}+A_{3}\\
-& =-n\eta_{n}^{2}O_{p}(1)\boldsymbol{\delta}+\frac{1}{2}n\eta_{n}^{2}\left\{ \boldsymbol{\delta}^{\top}\left[I\left(\boldsymbol{\Theta}^{*}\right)\right]\boldsymbol{\delta}\right\} \left(1+o_{p}(1)\right)-n\eta_{n}^{2}\left(\left|\mathcal{H}_{1}\right|+\left|\mathcal{H}_{2}\right|\right)C
+& =-n\eta_{n}^{2}O_{p}(1)\boldsymbol{\delta}+\frac{1}{2}n\eta_{n}^{2}\left\{ \boldsymbol{\delta}^{\top}\left[I\left(\boldsymbol{\Theta}^{*}\right)\right]\boldsymbol{\delta}\right\} \left(1+o_{p}(1)\right)-n\eta_{n}^{2}\left(\left|\mathcal{H}_{1}\right|+\left|\mathcal{H}_{2}+\left|\mathcal{H}_{3}\right|\right|\right)C
 \end{aligned}
 \]
 Notice that $A_{2}$ dominates the rest terms $A_{1}$ and $A_{3}$
