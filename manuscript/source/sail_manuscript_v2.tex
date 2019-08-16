@@ -466,7 +466,7 @@ Let $\bThetastar = (\beta_{E}^*,\btheta_{1}^*,\ldots,\btheta_{p}^*,\gamma_{1}^*,
 %\end{equation}
 \begin{equation}
 \widehat{\bTheta}_n=  \argmin_{\bTheta}Q_n(\bTheta)
-=-L_n(\bTheta)+n\sum_{h=1}^{p+1} \left( \lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}\right)  +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|
+=-L_n(\bTheta)+n\lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} + n\sum_{h=2}^{p+1}   \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}  +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|
 \end{equation}
 where $\lambda_{h}^\beta=\frac{{1}}{n}\lambda(1-\alpha)w_{h}^\beta$ for $h=1$, $\lambda_{h}^{\theta}=\frac{{1}}{n}\lambda(1-\alpha)w_{h}^\theta$ for $h=2, \ldots, p+1$, and $\lambda_{h}^{\gamma}=\frac{{1}}{n}\lambda\alpha w_{h}^\gamma$ for $h=p+2, \ldots, 2p+1$. The superscripts $\beta,\theta, \gamma$ on the tuning parameters ($\lambda_h$) and adaptive weights ($w_h$) indicate which parameter (environment, main effect, interaction) they are being applied to. Let $a_n = \max \left\lbrace \lambda_{h}^\beta, \lambda_{h}^\theta, \lambda_h^\gamma: h \in \mathcal{H}  \right\rbrace$ and $b_n = \min \left\lbrace \lambda_{h}^\beta, \lambda_{h}^\theta, \lambda_h^\gamma: h \notin \mathcal{H}  \right\rbrace$. In words, $a_n$ is a sequence containing the largest tuning parameters such that all causal covariates are included in the model, and $b_n$ is a sequence containing the smallest tuning parameters such that all noise variables are excluded from the model. Note that our asymptotic results are stated for the main effects and interaction terms only, even though our formulation includes an unpenalized intercept. Consistency results immediately follow for $\beta_0$ since we assume the data has been centered, leading to a closed form solution for the intercept in the least-squares setting. 
 
@@ -528,7 +528,7 @@ For this proof, we adopt the approaches outlined in~\citep{fan2001variable,choi2
 be the ball around $\bTheta^{*}$ for $\boldsymbol{\delta}=(u_{1}, \textit{\textbf{u}}_2, \ddd \textit{\textbf{u}}_{p+1},v_{p+2},\ldots,v_{2p+1})^{\top} \in \mathbb{R}^d$, where $d$ is the dimension of the design matrix and $C$ is some constant. The objective function is given by
 \begin{equation*}
 Q_n(\bTheta)
-=-L_n(\bTheta)+n\sum_{h=1}^{p+1} \left( \lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}\right)  +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|
+=-L_n(\bTheta)+n\lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} + n\sum_{h=2}^{p+1}      \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}  +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|
 \end{equation*}
 Define 
 \[ D_{n}(\boldsymbol{\delta})\equiv Q_{n}(\bThetastar+\eta_{n}\bdelta)-Q_{n}(\bThetastar).\] Let $\mathcal{H}_1=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=1 \right\rbrace$, $\mathcal{H}_2=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=2, \ldots, p+1 \right\rbrace$ \\and $\mathcal{H}_3=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=p+2, \ldots, 2p+1 \right\rbrace$ where $\mathcal{H} = \mathcal{H}_1 \cup \mathcal{H}_2 \cup \mathcal{H}_3$. Then for $\bdelta$ that satisfies $\|\bdelta\|_2=C$, we have
@@ -622,7 +622,7 @@ Combining \eqref{eq:lemma1A1} and \eqref{eq:lemma1A2} with \eqref{eq:lemma1} giv
 & =-\Op\left(\sqrt{n}\eta_{n} \|\bdelta\|_2 \right)+O(n \eta_n^2 \|\bdelta\|_2^2)-n\eta_{n}^{2}\left(\left|\mathcal{H}_{1}\right|+\left|\mathcal{H}_{2}+\left|\mathcal{H}_{3}\right|\right|\right)C
 \end{aligned}
 \]
-We can conclude that for a large enough constant $C=\|\bdelta\|_2$, the positive term $O(n \eta_n^2 \|\bdelta\|_2^2)$ dominates all the others.  
+We can conclude that for a large enough constant $C=\|\bdelta\|_2$, the positive term $O(n \eta_n^2 \|\bdelta\|_2^2)$ dominates all the others. Note that this is a positive term since $I(\bTheta)$ is positive definite at $\bTheta = \bTheta^*$ by regularity condition (C2).  
 %Notice that $A_{2}$ dominates the rest terms $A_{1}$ and $A_{3}$
 %and is positive since $I(\boldsymbol{\Theta})$ is positive definite
 %at $\boldsymbol{\Theta}=\bThetastar$ from (C2). 
@@ -637,9 +637,179 @@ This implies with probability at least $1-\varepsilon$ that the empirical
 likelihood $Q_{n}$ has a local minimizer in the ball $\{\boldsymbol{\Theta}^{*}+\eta_{n}\mathbf{\bdelta}:\|\mathbf{\bdelta}\|_2\leq C\}$
 (since $Q_{n}$ is bounded and $\{\boldsymbol{\Theta}^{*}+\alpha_{n}\bdelta:\|\bdelta\|_2\leq C\}$
 is closed). In other words, there exists a solution $\widehat{\bTheta}_{n}$
-such that $\|\widehat{\boldsymbol{\Theta}}_{n}-\boldsymbol{\Theta}^{*}\|\leq\eta_{n}\|\bdelta\|\leq\eta_{n}C=\Op(\eta_{n})=\Op(n^{-1/2}+a_{n})$.
+such that $\|\widehat{\boldsymbol{\Theta}}_{n}-\boldsymbol{\Theta}^{*}\|\leq\eta_{n}\|\bdelta\|_2\leq\eta_{n}C=\Op(\eta_{n})=\Op(n^{-1/2}+a_{n})$.
 Hence, $\left\Vert \widehat{\boldsymbol{\Theta}}_{n}-\boldsymbol{\Theta}^{*}\right\Vert =\Op\left(\eta_{n}\right).$ $\square$
 
+
+\subsection{Theorem 1 proof}
+We first recall the definitions of the active sets from Lemma 1. Let $\mathcal{H}_1=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=1 \right\rbrace$, $\mathcal{H}_2=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=2, \ldots, p+1 \right\rbrace$ and $\mathcal{H}_3=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=p+2, \ldots, 2p+1 \right\rbrace$ where $\mathcal{H} = \mathcal{H}_1 \cup \mathcal{H}_2 \cup \mathcal{H}_3$. We first consider consistency for the main effects: 
+\begin{align*}
+P&\left(\widehat{\bTheta}_{\mathcal{H}_{1}^{c}}=0\right)\rightarrow 1 \\
+P&\left(\widehat{\bTheta}_{\mathcal{H}_2^c}=0\right)\rightarrow 1
+\end{align*}
+Following \citep{fan2001variable,choi2010variable}, it is sufficient to show for any $h\in\mathcal{H}_{1}^{c} \cup \mathcal{H}_2^c$ 
+\begin{equation}
+\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}<0\quad\text{ for }-\varepsilon_{n}<\widehat{\bTheta}_{h}<0\label{eq:first_eq}
+\end{equation}
+\begin{equation}
+\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}>0\quad\text{ for }0<\widehat{\bTheta}_{h}<\varepsilon_{n}\label{eq:sec_eq}
+\end{equation}
+with probability tending to 1 where $\varepsilon_{n}=Cn^{-1/2}$ and
+$C>0$ is any constant. To show \eqref{eq:sec_eq}, notice that 
+\begin{itemize}
+	\item[for] $h=1$  
+\begin{align*}
+	\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}= & -\frac{\partial L_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}+n\lambda_{h}^{\beta}\textrm{sgn}\left(\widehat{\bTheta}_{h}\right)\\
+	= & -\frac{\partial L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}}-\sum_{k=2}^{2p+1}\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\\
+	& -\sum_{k=2}^{2p+1}\sum_{l=2}^{2p+1}  (2p+1)\frac{\partial^{3}L_{n}(\widetilde{\bTheta})}{\partial\bTheta_{h}\partial\bTheta_{k}\partial\bTheta_{l}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\left(\widehat{\bTheta}_{l}-\bTheta_{l}^{*}\right)+n\lambda_{h}^{\beta}\textrm{sgn}\left(\widehat{\bTheta}_{h}\right)
+\end{align*} 
+\item[for] $h=2, \ldots, p+1$ 
+%\begin{align*}
+%\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}= & -\frac{\partial L_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}+n\lambda_{h}^{\theta}\frac{\widehat{\bTheta}_{h}}{\|\widehat{\bTheta}_{h} \|_2}
+%\end{align*} 
+\begin{align*}
+\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}= & -\frac{\partial L_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}+n\lambda_{h}^{\theta}\frac{\widehat{\bTheta}_{h}}{\|\widehat{\bTheta}_{h} \|_2}\\
+= & -\frac{\partial L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}}-\sum_{k=2}^{2p+1}\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\\
+& -\sum_{k=2}^{2p+1}\sum_{l=2}^{2p+1}  (2p+1)\frac{\partial^{3}L_{n}(\widetilde{\bTheta})}{\partial\bTheta_{h}\partial\bTheta_{k}\partial\bTheta_{l}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\left(\widehat{\bTheta}_{l}-\bTheta_{l}^{*}\right)+n\lambda_{h}^{\theta}\frac{\widehat{\bTheta}_{h}}{\|\widehat{\bTheta}_{h} \|_2}
+\end{align*} 
+\end{itemize}
+
+\begin{comment}
+\[
+\begin{aligned}\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}= & -\frac{\partial L_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}+n\lambda_{h}^{\beta}\textrm{sgn}\left(\widehat{\bTheta}_{h}\right)\\
+= & -\frac{\partial L_{n}\left(\boldsymbol{\theta}^{*}\right)}{\partial\beta_{j}}-\sum_{k=1}^{\frac{p(p+1)}{2}}\frac{\partial^{2}L_{n}\left(\boldsymbol{\theta}^{*}\right)}{\partial\beta_{j}\partial\theta_{k}}\left(\hat{\theta}_{k}-\theta_{k}^{*}\right)\\
+& -\sum_{k=1}^{\frac{p(p+1)}{2}}\frac{p(p+1)}{2}\frac{\partial^{3}L_{n}(\widetilde{\btheta})}{\partial\beta_{j}\partial\theta_{k}\partial\theta_{l}}\left(\hat{\theta}_{k}-\theta_{k}^{*}\right)\left(\hat{\theta}_{l}-\theta_{l}^{*}\right)+n\lambda_{j}^{\beta}\textrm{sgn}\left(\hat{\beta}_{j}\right)
+\end{aligned}
+\]
+\end{comment}
+
+where $\widetilde{\bTheta}$ lies between $\widehat{\bTheta}_{n}$ and $\bTheta^{*}$. In both cases above, the first term is
+\[
+\frac{\partial L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}}=\sqrt{n}\sqrt{n}\frac{1}{n}\frac{\partial L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}}=\sqrt{n}O_{P}(1)=O_{P}(n^{1/2}).
+\]
+Since 
+\[
+\frac{1}{n}\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}=E\left\{ \frac{\partial^{2}\log f(\bTheta^{*})}{\partial\bTheta_{h}\partial\bTheta_{k}}\right\} +\op(1),
+\]
+then
+\[
+\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}=nE\left\{ \frac{\partial^{2}\log f(\bTheta^{*})}{\partial\bTheta_{h}\partial\bTheta_{k}}\right\} +\op(n),
+\]
+Then the second term
+\begin{align*}
+\sum_{k=2}^{2p+1}\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right) & =\left[nE\left\{ \frac{\partial^{2}\log f(\bTheta_{*})}{\partial\bTheta_{h}\partial\bTheta_{k}}\right\} +\op(n)\right]O_{p}\left(n^{-1/2}\right)\\
+& =O_{P}(n^{1/2})+o_{P}(n^{1/2})
+\end{align*}
+The third term is 
+\[
+-\sum_{k=2}^{2p+1}\sum_{l=2}^{2p+1}  (2p+1)\frac{\partial^{3}L_{n}(\widetilde{\bTheta})}{\partial\bTheta_{h}\partial\bTheta_{k}\partial\bTheta_{l}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\left(\widehat{\bTheta}_{l}-\bTheta_{l}^{*}\right)=O_{p}\left(n^{-1/2}\right)O_{p}\left(n^{-1/2}\right)=O_{p}\left(n^{-1}\right)
+\]
+By the regularity conditions and the condition $\left\Vert \widehat{\boldsymbol{\Theta}}_{n}-\boldsymbol{\Theta}^{*}\right\Vert =O_{p}\left(\frac{1}{\sqrt{n}}\right)$,
+\begin{itemize}
+	\item[for] $h=1$  
+	\begin{align}
+\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}=\sqrt{n}\left\{ O_{p}(1)+\sqrt{n}\lambda_{j}^{\beta}\textrm{sgn}\left(\hat{\beta}_{j}\right)\right\} . \label{eq:theorem1h1}
+\end{align}
+\item[for] $h=2, \ldots, p+1$ 
+	\begin{align}
+\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}=\sqrt{n}\left\{ O_{p}(1)+\sqrt{n}\lambda_{h}^{\theta}\frac{\widehat{\bTheta}_{h}}{\|\widehat{\bTheta}_{h} \|_2}\right\} .\label{eq:theorem1h2}
+\end{align}
+\end{itemize}
+As $\sqrt{n}\lambda_h^\beta\to\infty$ for $h\in\mathcal{H}_{1}^{c}$ from the assumption, the sign of $\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}$ in~\eqref{eq:theorem1h1} is dominated by $\textrm{sgn(\ensuremath{\widehat{\bTheta_{h}})}}$. Similarly, as $\sqrt{n}\lambda_h^\theta\to\infty$ for $h\in\mathcal{H}_{2}^{c}$, the sign of $\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}$ in~\eqref{eq:theorem1h2} is dominated by the norm of $\widehat{\bTheta_{h}}$. 
+
+Therefore,
+\[
+P\left[\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}>0\quad\text{ for }0<\widehat{\bTheta}_{h}<\varepsilon_{n}\right]\rightarrow1\quad\text{ as }n\rightarrow\infty.
+\]
+
+\eqref{eq:first_eq} can be shown in the same way. 
+
+Due to the strong heredity property and the proof above for the consistency of the main effects, it follows that $P\left(\widehat{\bTheta}_{\mathcal{H}_{3}^{c}}=0\right)\rightarrow1$. $\qed$
+
+\begin{comment}
+\begin{itemize}
+	\item For $(k,k^{\prime})$ where $(k,k^{\prime})\in\mathcal{A}_{2}^{c}$
+	and $k,k^{\prime}\in\mathcal{A}_{1}:$ we can prove $P\left(\hat{\gamma}_{kk^{\prime}}=0\right)\rightarrow1$
+	by a similar reasoning
+	\item For $(k,k^{\prime})$ where $(k,k^{\prime})\in\mathcal{A}_{2}^{c}$
+	and either $k$ or $k^{\prime}$ is in $\mathcal{A}_{1}^{c}$: without
+	loss of generality, assume that $\beta_{k}^{*}=0$. Notice that $\hat{\beta}_{k}=0$
+	implies $\hat{\gamma}_{kk^{\prime}}=0$, because if $\hat{\gamma}_{kk^{\prime}}\neq0$,
+	then the value of the loss function does not change but the value
+	of the penalty function will increase. Since we already have $P\left(\hat{\beta}_{k}=0\right)\rightarrow1$,
+	we can conclude $P\left(\hat{\gamma}_{kk^{\prime}}=0\right)\rightarrow1$
+	as well. $\qed$
+\end{itemize}
+\end{comment}
+
+
+\subsection{Theorem 2 proof}
+
+
+Let $Q_{n}(\btheta_{\mathcal{A}})$ denote the objective function
+$Q_{n}$ only on the $\mathcal{A}-$component of $\btheta$, that
+is, $Q_{n}(\btheta)$ with $\btheta_{\mathcal{A}^{c}}.$Based on Lemma
+1 and Theorem 1, we have $P\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}^{c}}=0\right)\rightarrow1$.
+Thus, 
+\[
+P\left[\arg\min_{\boldsymbol{\theta}_{\mathcal{A}}}Q_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)=\left(\mathcal{A}\text{ -component of }\arg\min_{\boldsymbol{\theta}}Q_{n}(\boldsymbol{\theta})\right)\right]\rightarrow1.
+\]
+
+It means that $\widehat{\btheta}_{\mathcal{A}}$ should satisfy 
+\begin{equation}
+\left.\frac{\partial Q_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)}{\partial\theta_{j}}\right|_{\boldsymbol{\theta}_{\mathcal{A}}=\hat{\boldsymbol{\theta}}_{\mathcal{A}}}=0,\quad\forall j\in\mathcal{A}\label{eq:eq_14}
+\end{equation}
+
+with probability tending to 1. 
+
+Let $L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)$ and $P_{\boldsymbol{\lambda}}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)$
+denote the log-likelihood function of $\btheta_{\mathcal{A}}$and
+the penalty function of $\btheta_{\mathcal{A}}$ respectively so that
+we have 
+\[
+Q_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)=-L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)+nP_{\boldsymbol{\lambda}}\left(\boldsymbol{\theta}_{\mathcal{A}}\right).
+\]
+
+From \eqref{eq:eq_14}, now we have 
+\begin{equation}
+\nabla_{\mathcal{A}}Q_{n}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}\right)=-\nabla_{\mathcal{A}}L_{n}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}\right)+n\nabla_{\mathcal{A}}P_{\boldsymbol{\lambda}}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}\right)=\mathbf{0},\label{eq:eq_15}
+\end{equation}
+
+with probability tending to 1. 
+\begin{itemize}
+	\item Consider the first term in \eqref{eq:eq_15}. By the Taylor expansion
+	of $-\nabla_{\mathcal{A}}L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)\text{ at }\boldsymbol{\theta}_{\mathcal{A}}=\boldsymbol{\theta}_{\mathcal{A}}^{*}$,
+	\[
+	\begin{aligned}-\nabla_{\mathcal{A}}L_{n}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}\right) & =-\nabla_{\mathcal{A}}L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)-\left[\nabla_{\mathcal{A}}^{2}L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)+o_{p}(1)\right]\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}-\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)\\
+	& =\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{A}}L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)+\left(-\frac{1}{n}\nabla_{\mathcal{A}}^{2}L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)-o_{p}(1)\right)\sqrt{n}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}-\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)\right]\\
+	& =\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{A}}L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)+\boldsymbol{I}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)\sqrt{n}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}-\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)+o_{p}(1)\right]
+	\end{aligned}
+	\]
+	\item Consider the second term in \eqref{eq:eq_15}. By the Taylor expansion
+	of $n\nabla_{\mathcal{A}}P_{\boldsymbol{\lambda}}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)\text{ at }\boldsymbol{\theta}_{\mathcal{A}}=\boldsymbol{\theta}_{\mathcal{A}}^{*}$,
+	\[
+	\begin{aligned}n\nabla_{\mathcal{A}}P_{\boldsymbol{\lambda}}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}\right) & =n\left\{ \left[\begin{array}{c}
+	{\lambda_{j}^{\beta}\textrm{sgn}\left(\beta_{j}\right)}\\
+	{\lambda_{kk^{\prime}}^{\gamma}\textrm{sgn}\left(\gamma_{kk^{\prime}}\right)}
+	\end{array}\right]_{j\in\mathcal{A}_{1},\left(k,k^{\prime}\right)\in\mathcal{A}_{2}}+o_{p}(1)\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}-\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)\right\} \\
+	& =\sqrt{n}o_{p}(1)
+	\end{aligned}
+	\]
+	because $\sqrt{n}a_{n}=$$o(1)$ and $\left\Vert \hat{\boldsymbol{\theta}}_{\mathcal{A}}-\boldsymbol{\theta}_{\mathcal{A}}^{*}\right\Vert =O_{p}\left(n^{-1/2}\right)$.
+\end{itemize}
+Thus, 
+\[
+0=\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{A}}L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)+\boldsymbol{I}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)\sqrt{n}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}-\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)+o_{p}(1)\right].
+\]
+It follows 
+\[
+\sqrt{n}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}-\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)=\boldsymbol{I}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)^{-1}\sqrt{n}\frac{1}{n}\sum_{i=1}^{n}\nabla_{\mathcal{A}}\log f\left(\boldsymbol{V}_{i},\boldsymbol{\theta}_{\mathcal{A}}\right)+o_{p}(1).
+\]
+Therefore, by the central limit theorem, 
+\[
+\sqrt{n}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}-\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)\rightarrow_{d}N\left(\mathbf{0},\boldsymbol{I}^{-1}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)\right).
+\]
+$\qed$
 
 \section{Algorithm and Computational Details} \label{sec:sail_algorithm}
 
