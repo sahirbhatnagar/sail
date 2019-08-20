@@ -745,7 +745,18 @@ Due to the strong heredity property and the proof above for the consistency of t
 
 \subsection{Theorem 2 proof}
 
+By Lemma~\eqref{th:lemma1} and Theorem~\eqref{th:theorem1}, there exists a $\widehat{\bTheta}_{\mathcal{H}}$ that is a $\sqrt{n}$-consistent local minimizer of $Q(\bTheta_{\mathcal{H}})$, and that satisfies (with probability tending to 1):
+\begin{equation}
+\left.\frac{\partial Q_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}\right)}{\partial\bTheta_{h}}\right|_{\boldsymbol{\Theta}_{\mathcal{H}}=\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}}=0,\quad\forall h\in\mathcal{H}\label{eq:eq_14}
+\end{equation}
+where
+\begin{align}
+Q_n(\bTheta_{\mathcal{H}})
+&=-L_n(\bTheta_{\mathcal{H}})+\underbrace{n\lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h \in \mathcal{H}_1 \rbrace} + n\sum_{h \in \mathcal{H}_2}      \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}  +n\sum_{h \in \mathcal{H}_3}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|}_{\equiv n P(\bTheta_{\mathcal{H}})} \nonumber \\
+& = -L_n(\bTheta_{\mathcal{H}})+n P(\bTheta_{\mathcal{H}}) \label{eq:eq_14.5}
+\end{align}
 
+\begin{comment}
 Let $Q_{n}(\btheta_{\mathcal{A}})$ denote the objective function
 $Q_{n}$ only on the $\mathcal{A}-$component of $\btheta$, that
 is, $Q_{n}(\btheta)$ with $\btheta_{\mathcal{A}^{c}}.$Based on Lemma
@@ -756,12 +767,7 @@ P\left[\arg\min_{\boldsymbol{\theta}_{\mathcal{A}}}Q_{n}\left(\boldsymbol{\theta
 \]
 
 It means that $\widehat{\btheta}_{\mathcal{A}}$ should satisfy 
-\begin{equation}
-\left.\frac{\partial Q_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)}{\partial\theta_{j}}\right|_{\boldsymbol{\theta}_{\mathcal{A}}=\hat{\boldsymbol{\theta}}_{\mathcal{A}}}=0,\quad\forall j\in\mathcal{A}\label{eq:eq_14}
-\end{equation}
-
 with probability tending to 1. 
-
 Let $L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)$ and $P_{\boldsymbol{\lambda}}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)$
 denote the log-likelihood function of $\btheta_{\mathcal{A}}$and
 the penalty function of $\btheta_{\mathcal{A}}$ respectively so that
@@ -769,45 +775,52 @@ we have
 \[
 Q_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)=-L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)+nP_{\boldsymbol{\lambda}}\left(\boldsymbol{\theta}_{\mathcal{A}}\right).
 \]
+\end{comment}
 
-From \eqref{eq:eq_14}, now we have 
+From \eqref{eq:eq_14} and~\eqref{eq:eq_14.5} we have
 \begin{equation}
-\nabla_{\mathcal{A}}Q_{n}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}\right)=-\nabla_{\mathcal{A}}L_{n}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}\right)+n\nabla_{\mathcal{A}}P_{\boldsymbol{\lambda}}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}\right)=\mathbf{0},\label{eq:eq_15}
+\nabla_{\mathcal{H}}Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right)=-\nabla_{\mathcal{H}}L_{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right)+n\nabla_{\mathcal{H}}P\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right)=\mathbf{0},\label{eq:eq_15}
 \end{equation}
 
 with probability tending to 1. 
-\begin{itemize}
-	\item Consider the first term in \eqref{eq:eq_15}. By the Taylor expansion
-	of $-\nabla_{\mathcal{A}}L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)\text{ at }\boldsymbol{\theta}_{\mathcal{A}}=\boldsymbol{\theta}_{\mathcal{A}}^{*}$,
+
+We then expand $-\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}\right)\text{ at }\boldsymbol{\Theta}_{\mathcal{H}}=\boldsymbol{\Theta}_{\mathcal{H}}^{*}$ in \eqref{eq:eq_15}:
 	\[
-	\begin{aligned}-\nabla_{\mathcal{A}}L_{n}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}\right) & =-\nabla_{\mathcal{A}}L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)-\left[\nabla_{\mathcal{A}}^{2}L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)+o_{p}(1)\right]\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}-\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)\\
-	& =\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{A}}L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)+\left(-\frac{1}{n}\nabla_{\mathcal{A}}^{2}L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)-o_{p}(1)\right)\sqrt{n}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}-\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)\right]\\
-	& =\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{A}}L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)+\boldsymbol{I}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)\sqrt{n}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}-\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)+o_{p}(1)\right]
+	\begin{aligned}-\nabla_{\mathcal{H}}L_{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right) & =-\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)-\left[\nabla_{\mathcal{H}}^{2}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+o_{p}(1)\right]\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\\
+	& =\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+\left(-\frac{1}{n}\nabla_{\mathcal{H}}^{2}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)-o_{p}(1)\right)\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\right]\\
+	& =\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+I\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+o_{p}(1)\right]
 	\end{aligned}
 	\]
-	\item Consider the second term in \eqref{eq:eq_15}. By the Taylor expansion
-	of $n\nabla_{\mathcal{A}}P_{\boldsymbol{\lambda}}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)\text{ at }\boldsymbol{\theta}_{\mathcal{A}}=\boldsymbol{\theta}_{\mathcal{A}}^{*}$,
+
+The third line follows by
+\[\frac{1}{n} \nabla_{\mathcal{H}}^{2} L_{n}\left(\boldsymbol{\bTheta}_{\mathcal{H}}^{*}\right)=E\left\{\nabla_{\mathcal{H}}^{2} L\left(\boldsymbol{\bTheta}_{\mathcal{H}}^{*}\right)\right\}+o_{P}(1)=-I\left(\boldsymbol{\bTheta}_{\mathcal{H}}^{*}\right)+o_{P}(1)\]
+
+We also expand $n\nabla_{\mathcal{H}}P\left(\boldsymbol{\Theta}_{\mathcal{H}}\right)\text{ at }\boldsymbol{\Theta}_{\mathcal{H}}=\boldsymbol{\Theta}_{\mathcal{H}}^{*}$ in \eqref{eq:eq_15}:
+	
 	\[
-	\begin{aligned}n\nabla_{\mathcal{A}}P_{\boldsymbol{\lambda}}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}\right) & =n\left\{ \left[\begin{array}{c}
-	{\lambda_{j}^{\beta}\textrm{sgn}\left(\beta_{j}\right)}\\
-	{\lambda_{kk^{\prime}}^{\gamma}\textrm{sgn}\left(\gamma_{kk^{\prime}}\right)}
-	\end{array}\right]_{j\in\mathcal{A}_{1},\left(k,k^{\prime}\right)\in\mathcal{A}_{2}}+o_{p}(1)\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}-\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)\right\} \\
+	\begin{aligned}n\nabla_{\mathcal{H}}P\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right) & =n\left\{ \left[\begin{array}{c}
+	{\lambda_{h}^{\beta}\textrm{sgn}\left(\beta_{h}\right)}\\
+	{\lambda_{h}^{\theta}  \frac{\btheta_{h}}{\| \btheta_{h} \|_2}    }\\
+	{\lambda_{h}^{\gamma}\textrm{sgn}\left(\gamma_{h}\right)}
+	\end{array}\right]_{h\in\mathcal{H}}+o_{p}(1)\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\right\} \\
 	& =\sqrt{n}o_{p}(1)
 	\end{aligned}
 	\]
-	because $\sqrt{n}a_{n}=$$o(1)$ and $\left\Vert \hat{\boldsymbol{\theta}}_{\mathcal{A}}-\boldsymbol{\theta}_{\mathcal{A}}^{*}\right\Vert =O_{p}\left(n^{-1/2}\right)$.
-\end{itemize}
+	because $\sqrt{n}a_{n}=$$o(1)$ and $\left\Vert \widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right\Vert =O_{p}\left(n^{-1/2}\right)$.
+
+
+
 Thus, 
 \[
-0=\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{A}}L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)+\boldsymbol{I}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)\sqrt{n}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}-\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)+o_{p}(1)\right].
+0=\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+\boldsymbol{I}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+o_{p}(1)\right].
 \]
 It follows 
 \[
-\sqrt{n}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}-\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)=\boldsymbol{I}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)^{-1}\sqrt{n}\frac{1}{n}\sum_{i=1}^{n}\nabla_{\mathcal{A}}\log f\left(\boldsymbol{V}_{i},\boldsymbol{\theta}_{\mathcal{A}}\right)+o_{p}(1).
+\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)=\boldsymbol{I}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)^{-1}\sqrt{n}\frac{1}{n}\sum_{i=1}^{n}\nabla_{\mathcal{H}}\log f\left(\boldsymbol{V}_{i},\boldsymbol{\Theta}_{\mathcal{H}}\right)+o_{p}(1).
 \]
 Therefore, by the central limit theorem, 
 \[
-\sqrt{n}\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}}-\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)\rightarrow_{d}N\left(\mathbf{0},\boldsymbol{I}^{-1}\left(\boldsymbol{\theta}_{\mathcal{A}}^{*}\right)\right).
+\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\rightarrow_{d}N\left(\mathbf{0},\boldsymbol{I}^{-1}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\right).
 \]
 $\qed$
 
