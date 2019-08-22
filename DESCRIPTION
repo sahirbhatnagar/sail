@@ -25,7 +25,6 @@ Suggests:
     doMC,
     testthat,
     covr,
-    vdiffr,
     knitr,
     rmarkdown
 License: MIT + file LICENSE
