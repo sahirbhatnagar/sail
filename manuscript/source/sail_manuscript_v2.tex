@@ -399,11 +399,33 @@ For illustration, function $f_1(\cdot)$ is assumed to be linear, whereas functio
 
 
 
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
 
+{\centering \includegraphics[width=1\linewidth]{figure/toy-solution-path-1} 
+
+}
+
+\caption[Toy example solution path for main effects (top) and interactions (bottom)]{Toy example solution path for main effects (top) and interactions (bottom). $\left\lbrace X1_1, X1_2, X1_3 \right\rbrace$ and $\left\lbrace X2_1, X2_2, X2_3 \right\rbrace$ are the three basis coefficients for $X_1$ and $X_2$, respectively. $\lambda_{1SE}$ is the largest value of penalization for which the CV error is within one standard error of the minimizing value $\lambda_{min}$.}\label{fig:toy-solution-path}
+\end{figure}
+
+
+\end{knitrout}
 
 In Figure~\ref{fig:toy-effects}, we plot the true and estimated component functions $\hat{f}_1(X_1)$ and $E \cdot \hat{f}_2(X_2)$, and their estimates from this analysis with \texttt{sail}. We are able to capture the shape of the correct functional form, but the means are not well aligned with the data. Lack-of-fit for $f_1(X_1)$ can be partially explained by acknowledging that \sail ~is trying to fit a cubic spline to a linear function. Nevertheless, this example demonstrates that \sail ~can still identify trends reasonably well. 
 
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
 
+{\centering \includegraphics[width=1\linewidth]{figure/toy-effects-1} 
+
+}
+
+\caption[Estimated smooth functions for $X_1$ and the $X_2 \cdot E$ interaction by the \texttt{sail} method based on $\lambda_{min}$]{Estimated smooth functions for $X_1$ and the $X_2 \cdot E$ interaction by the \texttt{sail} method based on $\lambda_{min}$.}\label{fig:toy-effects}
+\end{figure}
+
+
+\end{knitrout}
 
 
 \subsection{Related Work}
@@ -1145,11 +1167,33 @@ The test set MSE results for each of the five simulation scenarios are shown in 
 
 
 
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
 
+{\centering \includegraphics[width=1\linewidth]{figure/plot-mse-sim-1} 
+
+}
+
+\caption[Boxplots of the test set mean squared error from 200 simulations for each of the five simulation scenarios]{Boxplots of the test set mean squared error from 200 simulations for each of the five simulation scenarios.}\label{fig:plot-mse-sim}
+\end{figure}
+
+
+\end{knitrout}
 
 We see that \sail~,\texttt{adaptive sail} and \texttt{sail weak} have the best performance in terms of both MSE and yielding correct sparse models when the truth follows a strong hierarchy (scenario 1a), as we would expect, since this is exactly the scenario that our method is trying to target. 
 
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
 
+{\centering \includegraphics[width=1\linewidth]{figure/plot-tpr-fpr-sim-1} 
+
+}
+
+\caption[Means $\pm 1$ standard deviation of true positive rate vs]{Means $\pm 1$ standard deviation of true positive rate vs. false positive rate from 200 simulations for each of the five scenarios. $|S_0|$ is the number of truly associated variables.}\label{fig:plot-tpr-fpr-sim}
+\end{figure}
+
+
+\end{knitrout}
 
 Our method is also competitive when only main effects are present (scenario 3) and performs just as well as methods that only consider linear and non-linear main effects (\texttt{HierBasis}, \texttt{SPAM}), owing to the penalization applied to the interaction parameter. Due to the heredity property, our method is unable to capture any of the truly associated variables when only interactions are present (scenario 1c). However, the other methods also fail to capture any signal, with the exception of \texttt{GLinternet} which has a high TPR and FPR. When only linear effects and interactions are present (scenario 2), we see that \texttt{linear sail} has a high TPR and low FPR as compared to the other linear interaction methods (\texttt{lassoBT} and \texttt{GLinternet}) though the test set MSE is not as good. The \texttt{lasso} and \texttt{adaptive lasso} have good test set MSE performance but poor sensitivity. Additional results are available in Section~\ref{ap:simulation} of the Appendix. Specifically, in Figure~\ref{fig:plot-mse-nactive-sim} we plot the mean MSE against the mean number of active variables $\pm 1$ standard deviation (SD). Figures~\ref{fig:plot-tpr-sim} and~\ref{fig:plot-fpr-sim} show the true positive and false positive rates, respectively. Figure~\ref{fig:plot-nactive-sim} shows the number of active variables. 
 
@@ -1208,7 +1252,18 @@ There were a total of 343 patients who we divided randomly into equal sized trai
 
 
 
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
 
+{\centering \includegraphics[width=1\linewidth]{figure/error-crosses-adni-1} 
+
+}
+
+\caption[Mean test set MSE vs]{Mean test set MSE vs. mean number of active variables ($\pm 1$ SD) for ADNI data based on 200 train/validation/test splits.}\label{fig:error-crosses-adni}
+\end{figure}
+
+
+\end{knitrout}
 
 In Figure~\ref{fig:error-crosses-adni} we plot the mean test set MSE vs. the mean number of active variables $\pm 1$ SD. We see that \sail ~produces the sparsest models but doesn't perform as well as \texttt{HierBasis} and \texttt{GLinternet} in terms of MSE. \sail ~achieves a similar MSE to both the \texttt{lasso} and \texttt{lassoBT} with fewer variables on average. \texttt{GLinternet} produces the largest models and seems to be sensitive to the train/validate/test split as evidenced by the large standard deviations. 
 
@@ -1216,7 +1271,18 @@ To visualize the results from the \sail ~method, we chose the train/validate/tes
 
 
 
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
 
+{\centering \includegraphics[width=1\linewidth]{figure/plot-inter-adni-1} 
+
+}
+
+\caption[Estimated interaction effects by \texttt{sail} for ADNI data]{Estimated interaction effects by \texttt{sail} for ADNI data.}\label{fig:plot-inter-adni}
+\end{figure}
+
+
+\end{knitrout}
 
 
 
@@ -1529,14 +1595,58 @@ This is the same $\lambda_{max}$ as the least-squares strong heredity \sail ~mod
 
 
 
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-mse-nactive-sim-1} 
+
+}
+
+\caption[Test set MSE vs number of active variables results]{Test set MSE vs number of active variables results.}\label{fig:plot-mse-nactive-sim}
+\end{figure}
 
 
+\end{knitrout}
 
 
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-tpr-sim-1} 
+
+}
+
+\caption[True positive rate results]{True positive rate results.}\label{fig:plot-tpr-sim}
+\end{figure}
 
 
+\end{knitrout}
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-fpr-sim-1} 
+
+}
+
+\caption[False positive rate results]{False positive rate results.}\label{fig:plot-fpr-sim}
+\end{figure}
 
 
+\end{knitrout}
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-nactive-sim-1} 
+
+}
+
+\caption[Number of active variables results]{Number of active variables results.}\label{fig:plot-nactive-sim}
+\end{figure}
+
+
+\end{knitrout}
 
 
 \begin{figure}[H]
@@ -1578,6 +1688,10 @@ We give a quick overview of the main functions and go into details in other vign
 \hlkwd{data}\hlstd{(}\hlstr{"sailsim"}\hlstd{)}
 \hlkwd{names}\hlstd{(sailsim)}
 \end{alltt}
+\begin{verbatim}
+## [1] "x"        "y"        "e"        "f1"       "f2"       "f3"      
+## [7] "f4"       "f3.inter" "f4.inter"
+\end{verbatim}
 \end{kframe}
 \end{knitrout}
 
@@ -1614,6 +1728,13 @@ The entire solution path can be plotted via the \texttt{plot} method for objects
 \hlkwd{plot}\hlstd{(fit)}
 \end{alltt}
 \end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/sail-solution-path-1} 
+
+}
+
+
+
 \end{knitrout}
 
 
@@ -1624,6 +1745,23 @@ The estimated coefficients at each value of lambda is given by (matrix partially
 \begin{alltt}
 \hlkwd{coef}\hlstd{(fit)[}\hlnum{1}\hlopt{:}\hlnum{6}\hlstd{,}\hlnum{50}\hlopt{:}\hlnum{55}\hlstd{]}
 \end{alltt}
+\begin{verbatim}
+## 6 x 6 sparse Matrix of class "dgCMatrix"
+##                    s50        s51        s52        s53        s54
+## (Intercept)  5.2908242  5.2837492  5.2803715  5.2753572  5.2717869
+## X1_1        -0.9792849 -0.9604046 -0.9449616 -0.9220738 -0.9171304
+## X1_2         1.6903252  1.7894886  1.8924485  1.9952094  2.1042358
+## X1_3         1.6463057  1.7049842  1.7722916  1.8251613  1.8951562
+## X1_4         1.5224653  1.5433528  1.5663095  1.5854332  1.6102159
+## X1_5         3.3386403  3.4183219  3.4908074  3.5763781  3.6633809
+##                    s55
+## (Intercept)  5.2695399
+## X1_1        -0.9270958
+## X1_2         2.2058453
+## X1_3         1.9642875
+## X1_4         1.6322047
+## X1_5         3.7453708
+\end{verbatim}
 \end{kframe}
 \end{knitrout}
 
@@ -1636,6 +1774,14 @@ The corresponding predicted response at each value of lambda (matrix partially p
 \begin{alltt}
 \hlkwd{predict}\hlstd{(fit)[}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,}\hlnum{50}\hlopt{:}\hlnum{55}\hlstd{]}
 \end{alltt}
+\begin{verbatim}
+##            s50       s51       s52       s53       s54       s55
+## [1,]  6.244693  6.199302  6.185402  6.177991  6.156173  6.124271
+## [2,]  3.002799  2.995418  3.038701  3.079700  3.143715  3.209065
+## [3,]  2.073305  2.043476  2.016319  1.997172  1.966900  1.957271
+## [4,] 13.488945 13.490766 13.360998 13.384370 13.350671 13.324117
+## [5,]  1.225516  1.210346  1.134420  1.156355  1.156696  1.156135
+\end{verbatim}
 \end{kframe}
 \end{knitrout}
 
@@ -1647,6 +1793,9 @@ The predicted response at a specific value of lambda can be specified by the \te
 \begin{alltt}
 \hlkwd{predict}\hlstd{(fit,} \hlkwc{s} \hlstd{=} \hlnum{0.8}\hlstd{)[}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{, ]}
 \end{alltt}
+\begin{verbatim}
+## [1] 5.624232 4.940944 3.847965 6.687777 3.058125
+\end{verbatim}
 \end{kframe}
 \end{knitrout}
 
@@ -1658,6 +1807,14 @@ You can specify more than one value for `s`:
 \begin{alltt}
 \hlkwd{predict}\hlstd{(fit,} \hlkwc{s} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{0.8}\hlstd{,} \hlnum{0.2}\hlstd{))[}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{, ]}
 \end{alltt}
+\begin{verbatim}
+##             1         2
+## [1,] 5.624232  6.523025
+## [2,] 4.940944  2.975046
+## [3,] 3.847965  2.326672
+## [4,] 6.687777 13.956092
+## [5,] 3.058125  1.568897
+\end{verbatim}
 \end{kframe}
 \end{knitrout}
 
@@ -1669,6 +1826,35 @@ You can also extract a list of active variables (i.e. variables with a non-zero 
 \begin{alltt}
 \hlstd{fit[[}\hlstr{"active"}\hlstd{]][}\hlnum{50}\hlopt{:}\hlnum{55}\hlstd{]}
 \end{alltt}
+\begin{verbatim}
+## [[1]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X8"    "X10"   "X11"   "X20"  
+##  [9] "X1:E"  "X2:E"  "X3:E"  "X4:E"  "X8:E"  "X11:E" "E"    
+## 
+## [[2]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X6"    "X8"    "X10"   "X11"  
+##  [9] "X20"   "X1:E"  "X2:E"  "X3:E"  "X4:E"  "X8:E"  "X11:E" "E"    
+## 
+## [[3]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X6"    "X8"    "X10"   "X11"  
+##  [9] "X16"   "X20"   "X1:E"  "X2:E"  "X3:E"  "X4:E"  "X8:E"  "X11:E"
+## [17] "E"    
+## 
+## [[4]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X6"    "X8"    "X10"   "X11"  
+##  [9] "X15"   "X16"   "X19"   "X20"   "X1:E"  "X2:E"  "X3:E"  "X4:E" 
+## [17] "X8:E"  "X11:E" "E"    
+## 
+## [[5]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X5"    "X6"    "X8"    "X10"  
+##  [9] "X11"   "X15"   "X16"   "X19"   "X20"   "X1:E"  "X2:E"  "X3:E" 
+## [17] "X4:E"  "X8:E"  "X11:E" "E"    
+## 
+## [[6]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X5"    "X6"    "X8"    "X10"  
+##  [9] "X11"   "X15"   "X16"   "X19"   "X20"   "X1:E"  "X2:E"  "X3:E" 
+## [17] "X4:E"  "X8:E"  "X11:E" "E"
+\end{verbatim}
 \end{kframe}
 \end{knitrout}
 
@@ -1698,6 +1884,13 @@ We plot the cross-validated error curve which has the mean-squared error on the 
 \hlkwd{plot}\hlstd{(cvfit)}
 \end{alltt}
 \end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/sail-cv-1} 
+
+}
+
+
+
 \end{knitrout}
 
 \texttt{lambda.min} is the value of $\lambda$ that gives minimum mean cross-validated error. The other $\lambda$ saved is \texttt{lambda.1se},
@@ -1707,8 +1900,16 @@ which gives the most regularized model such that error is within one standard er
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlstd{cvfit[[}\hlstr{"lambda.min"}\hlstd{]]}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.2109289
+\end{verbatim}
+\begin{alltt}
 \hlstd{cvfit[[}\hlstr{"lambda.1se"}\hlstd{]]}
 \end{alltt}
+\begin{verbatim}
+## [1] 0.6148688
+\end{verbatim}
 \end{kframe}
 \end{knitrout}
 
@@ -1718,8 +1919,105 @@ The estimated nonzero coefficients at \texttt{lambda.1se} and \texttt{lambda.min
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{alltt}
 \hlkwd{predict}\hlstd{(cvfit,} \hlkwc{type} \hlstd{=} \hlstr{"nonzero"}\hlstd{,} \hlkwc{s}\hlstd{=}\hlstr{"lambda.1se"}\hlstd{)} \hlcom{# lambda.1se is the default}
+\end{alltt}
+\begin{verbatim}
+##                        1
+## (Intercept)   5.40562701
+## X1_1         -0.41591304
+## X1_2         -0.05315663
+## X1_3          0.12306918
+## X1_4          0.39757752
+## X1_5          1.04552137
+## X3_1          2.07590314
+## X3_2          0.96787580
+## X3_3         -0.79587019
+## X3_4         -1.61611187
+## X3_5         -1.05718450
+## X4_1          3.83402041
+## X4_2         -2.27650998
+## X4_3         -5.29748889
+## X4_4         -3.04147477
+## X4_5         -0.37017732
+## E             1.87331342
+## X3_1:E        0.23520328
+## X3_2:E        0.10966194
+## X3_3:E       -0.09017342
+## X3_4:E       -0.18310816
+## X3_5:E       -0.11978076
+## X4_1:E        8.15188934
+## X4_2:E       -4.84031263
+## X4_3:E      -11.26351417
+## X4_4:E       -6.46677981
+## X4_5:E       -0.78707056
+\end{verbatim}
+\begin{alltt}
 \hlkwd{predict}\hlstd{(cvfit,} \hlkwc{type} \hlstd{=} \hlstr{"nonzero"}\hlstd{,} \hlkwc{s} \hlstd{=} \hlstr{"lambda.min"}\hlstd{)}
 \end{alltt}
+\begin{verbatim}
+##                        1
+## (Intercept)   5.38418990
+## X1_1         -0.95293408
+## X1_2          0.95985046
+## X1_3          1.08688271
+## X1_4          1.28150692
+## X1_5          2.78251301
+## X2_1          0.28098747
+## X2_2         -2.66335703
+## X2_3         -2.44669669
+## X2_4         -0.23340006
+## X2_5         -1.31551172
+## X3_1          4.82743978
+## X3_2          2.71274481
+## X3_3         -1.36319180
+## X3_4         -2.49599039
+## X3_5         -1.08235296
+## X4_1          6.60048092
+## X4_2         -2.46337722
+## X4_3         -8.72797888
+## X4_4         -3.57605355
+## X4_5         -0.43277498
+## X8_1          0.63309319
+## X8_2          0.58536045
+## X8_3          0.24072528
+## X8_4         -0.27648564
+## X8_5         -0.79171965
+## X11_1         0.42512741
+## X11_2         0.01881440
+## X11_3        -0.22578239
+## X11_4        -0.91866142
+## X11_5        -1.04708521
+## X20_1         0.51797431
+## X20_2        -0.10793081
+## X20_3        -0.76941278
+## X20_4        -0.82115212
+## X20_5         0.39743438
+## E             2.26287501
+## X1_1:E       -0.15552538
+## X1_2:E        0.15665418
+## X1_3:E        0.17738671
+## X1_4:E        0.20915072
+## X1_5:E        0.45412520
+## X2_1:E        0.74718847
+## X2_2:E       -7.08227203
+## X2_3:E       -6.50613917
+## X2_4:E       -0.62064632
+## X2_5:E       -3.49814603
+## X3_1:E        2.62629018
+## X3_2:E        1.47582474
+## X3_3:E       -0.74162235
+## X3_4:E       -1.35790302
+## X3_5:E       -0.58883654
+## X4_1:E       10.50140051
+## X4_2:E       -3.91924636
+## X4_3:E      -13.88626116
+## X4_4:E       -5.68952036
+## X4_5:E       -0.68854731
+## X8_1:E        0.07275501
+## X8_2:E        0.06726957
+## X8_3:E        0.02766413
+## X8_4:E       -0.03177370
+## X8_5:E       -0.09098435
+\end{verbatim}
 \end{kframe}
 \end{knitrout}
 
@@ -1741,6 +2039,13 @@ Since we are using simulated data, we also plot the true curve:
 \hlkwc{s} \hlstd{= cvfit}\hlopt{$}\hlstd{lambda.min,} \hlkwc{f.truth} \hlstd{= sailsim}\hlopt{$}\hlstd{f3)}
 \end{alltt}
 \end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/sail-main-eff-1} 
+
+}
+
+
+
 \end{knitrout}
 
 
@@ -1757,6 +2062,13 @@ Again, since we are using simulated data, we also plot the true interaction:
 \hlkwc{title_z} \hlstd{=} \hlstr{"Estimated"}\hlstd{)}
 \end{alltt}
 \end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/sail-inter-eff-1} 
+
+}
+
+
+
 \end{knitrout}
 
 
@@ -1793,6 +2105,13 @@ Next we plot the cross-validated curve:
 \hlkwd{plot}\hlstd{(cvfit_linear)}
 \end{alltt}
 \end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/sail-solution-path-linear-1} 
+
+}
+
+
+
 \end{knitrout}
 
 And extract the model at \texttt{lambda.min}:
@@ -1802,6 +2121,29 @@ And extract the model at \texttt{lambda.min}:
 \begin{alltt}
 \hlkwd{predict}\hlstd{(cvfit_linear,} \hlkwc{s} \hlstd{=} \hlstr{"lambda.min"}\hlstd{,} \hlkwc{type} \hlstd{=} \hlstr{"nonzero"}\hlstd{)}
 \end{alltt}
+\begin{verbatim}
+##                       1
+## (Intercept)   5.4146762
+## X1_1          2.5991375
+## X2_1         -1.2729626
+## X3_1         -4.8289438
+## X4_1         -6.7531418
+## X7_1         -0.2761320
+## X8_1         -0.8932856
+## X11_1        -2.7136677
+## X14_1        -1.9683602
+## X16_1         2.9803707
+## X18_1         0.2380716
+## X20_1        -0.1888869
+## E             2.2708721
+## X1_1:E       -3.1863063
+## X2_1:E       -1.7454916
+## X3_1:E       -3.8315980
+## X4_1:E      -12.0266669
+## X11_1:E      -2.2292285
+## X14_1:E      -1.0637093
+## X16_1:E       6.1310067
+\end{verbatim}
 \end{kframe}
 \end{knitrout}
 
@@ -1847,6 +2189,13 @@ In the following example, we want the environment variable to always be included
 \hlkwd{plot}\hlstd{(fit_pf)}
 \end{alltt}
 \end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/sail-pf-path-1} 
+
+}
+
+
+
 \end{knitrout}
 
 
@@ -1869,6 +2218,11 @@ We use the simulated dataset \texttt{sailsim} provided in our package. We first 
 \hlstd{x_df}\hlopt{$}\hlstd{race} \hlkwb{<-} \hlkwd{factor}\hlstd{(}\hlkwd{sample}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{2}\hlstd{,} \hlkwd{nrow}\hlstd{(x_df),} \hlkwc{replace} \hlstd{=} \hlnum{TRUE}\hlstd{))}
 \hlkwd{table}\hlstd{(x_df}\hlopt{$}\hlstd{race)}
 \end{alltt}
+\begin{verbatim}
+## 
+##  1  2 
+## 42 58
+\end{verbatim}
 \end{kframe}
 \end{knitrout}
 
@@ -1882,6 +2236,57 @@ We then use the \texttt{model.matrix} function to create the design matrix. Note
 \hlkwd{bs}\hlstd{(X4,} \hlkwc{degree} \hlstd{=} \hlnum{6}\hlstd{)} \hlopt{+} \hlstd{X5} \hlopt{+} \hlkwd{poly}\hlstd{(X6,}\hlnum{2}\hlstd{)} \hlopt{+} \hlstd{race,} \hlkwc{data} \hlstd{= x_df)}
 \hlkwd{head}\hlstd{(x)}
 \end{alltt}
+\begin{verbatim}
+##   bs(X1, degree = 5)1 bs(X1, degree = 5)2 bs(X1, degree = 5)3
+## 1        0.0001654794         0.003945507        0.0470361237
+## 2        0.2470181057         0.345144379        0.2411253263
+## 3        0.1299195522         0.007832449        0.0002360971
+## 4        0.3808392973         0.121815907        0.0194821217
+## 5        0.1737663057         0.014898419        0.0006386822
+## 6        0.1184145931         0.281407715        0.3343772913
+##   bs(X1, degree = 5)4 bs(X1, degree = 5)5 bs(X2, degree = 3)1
+## 1        2.803692e-01        6.684809e-01           0.3272340
+## 2        8.422768e-02        1.176866e-02           0.3065738
+## 3        3.558391e-06        2.145244e-08           0.1896790
+## 4        1.557896e-03        4.983113e-05           0.4100900
+## 5        1.368987e-05        1.173746e-07           0.3946500
+## 6        1.986587e-01        4.721047e-02           0.3175164
+##   bs(X2, degree = 3)2 bs(X2, degree = 3)3 ns(X3, df = 8)1 ns(X3, df = 8)2
+## 1          0.41274967         0.173537682      0.06566652               0
+## 2          0.04879618         0.002588901      0.00000000               0
+## 3          0.01508834         0.000400076      0.00000000               0
+## 4          0.12345871         0.012389196      0.00000000               0
+## 5          0.35302552         0.105263760      0.00000000               0
+## 6          0.05370432         0.003027827      0.00000000               0
+##   ns(X3, df = 8)3 ns(X3, df = 8)4 ns(X3, df = 8)5 ns(X3, df = 8)6
+## 1     0.000000000    0.000000e+00       0.0000000   -1.589937e-01
+## 2     0.000000000    5.775107e-04       0.3179489    5.395130e-01
+## 3     0.000000000    4.989926e-03       0.4147696    4.830810e-01
+## 4     0.133404268    6.839146e-01       0.1826811    3.022366e-08
+## 5     0.000000000    8.944913e-05       0.2775548    5.564842e-01
+## 6     0.001578195    3.415384e-01       0.6070588    4.566909e-02
+##   ns(X3, df = 8)7 ns(X3, df = 8)8 bs(X4, degree = 6)1 bs(X4, degree = 6)2
+## 1    4.436233e-01   -2.846296e-01        0.1820918880        0.3088147022
+## 2    1.732713e-01   -3.131078e-02        0.0120101010        0.0000608354
+## 3    1.434410e-01   -4.628144e-02        0.0002900763        0.0044075535
+## 4    7.673343e-09   -4.923233e-09        0.2978877432        0.0579746877
+## 5    1.863219e-01   -2.045032e-02        0.0114895681        0.0645689076
+## 6    1.159471e-02   -7.439189e-03        0.0102152807        0.0595722132
+##   bs(X4, degree = 6)3 bs(X4, degree = 6)4 bs(X4, degree = 6)5
+## 1        2.793213e-01        1.421126e-01        3.856204e-02
+## 2        1.643482e-07        2.497444e-10        2.024070e-13
+## 3        3.571755e-02        1.628127e-01        3.958163e-01
+## 4        6.017595e-03        3.513419e-04        1.094046e-05
+## 5        1.935272e-01        3.262743e-01        2.933747e-01
+## 6        1.852831e-01        3.241534e-01        3.024572e-01
+##   bs(X4, degree = 6)6         X5 poly(X6, 2)1 poly(X6, 2)2 race1 race2
+## 1        4.359896e-03 0.51332996  -0.13705545   0.09851639     0     1
+## 2        6.835086e-17 0.02643863   0.18835303   0.22584415     0     1
+## 3        4.009478e-01 0.76746637  -0.15841216   0.16140597     0     1
+## 4        1.419483e-07 0.69077618  -0.03664279  -0.07954100     0     1
+## 5        1.099135e-01 0.27718210   0.13128945   0.05620199     1     0
+## 6        1.175889e-01 0.48384748   0.08486354  -0.03559388     0     1
+\end{verbatim}
 \end{kframe}
 \end{knitrout}
 
@@ -1892,6 +2297,9 @@ One benefit of using \texttt{stats::model.matrix} is that it returns the group m
 \begin{alltt}
 \hlkwd{attr}\hlstd{(x,} \hlstr{"assign"}\hlstd{)}
 \end{alltt}
+\begin{verbatim}
+##  [1] 1 1 1 1 1 2 2 2 3 3 3 3 3 3 3 3 4 4 4 4 4 4 5 6 6 7 7
+\end{verbatim}
 \end{kframe}
 \end{knitrout}
 
@@ -1905,7 +2313,16 @@ We need to set the argument \texttt{expand = FALSE} and provide the group member
 
 We can plot the solution path for both main effects and interactions using the \texttt{plot} method for objects of class \texttt{sail}:
 
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
+{\centering \includegraphics[width=1\linewidth]{figure/sail-expand-false-1} 
+
+}
+
+
+
+\end{knitrout}
 
 In this instance, since we provided a user-defined design matrix and `expand = FALSE`, the numbers at the top of the plot represent the total number of non-zero coefficients. 
 
@@ -1918,12 +2335,70 @@ We can use cross-validation to find the optimal value of lambda:
 
 We can plot the cross-validated mean squared error as a function of lambda:
 
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
 
+{\centering \includegraphics[width=1\linewidth]{figure/sail-plot-cv-design-1} 
+
+}
+
+
+
+\end{knitrout}
 
 
 The estimated non-zero coefficients at \texttt{lambda.1se}:
 
-
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{verbatim}
+##                                 1
+## (Intercept)             5.4495977
+## bs(X1, degree = 5)1    -1.0456941
+## bs(X1, degree = 5)2     0.5914166
+## bs(X1, degree = 5)3     0.9145862
+## bs(X1, degree = 5)4     1.1168525
+## bs(X1, degree = 5)5     2.5340095
+## bs(X2, degree = 3)1    -0.7019160
+## bs(X2, degree = 3)2    -0.6172127
+## bs(X2, degree = 3)3    -0.1048606
+## ns(X3, df = 8)1         3.1809909
+## ns(X3, df = 8)2         2.6249408
+## ns(X3, df = 8)3         0.9033761
+## ns(X3, df = 8)4        -1.0009075
+## ns(X3, df = 8)5        -1.6852800
+## ns(X3, df = 8)6        -1.4832566
+## ns(X3, df = 8)7         0.5639728
+## ns(X3, df = 8)8        -1.5058413
+## bs(X4, degree = 6)1     5.6797606
+## bs(X4, degree = 6)2    -0.1018338
+## bs(X4, degree = 6)3    -6.5435933
+## bs(X4, degree = 6)4    -6.3242737
+## bs(X4, degree = 6)5    -2.1107261
+## bs(X4, degree = 6)6    -0.3128171
+## E                       2.0908467
+## bs(X1, degree = 5)1:E  -0.4676835
+## bs(X1, degree = 5)2:E   0.2645093
+## bs(X1, degree = 5)3:E   0.4090459
+## bs(X1, degree = 5)4:E   0.4995089
+## bs(X1, degree = 5)5:E   1.1333281
+## ns(X3, df = 8)1:E       1.7788002
+## ns(X3, df = 8)2:E       1.4678587
+## ns(X3, df = 8)3:E       0.5051651
+## ns(X3, df = 8)4:E      -0.5597043
+## ns(X3, df = 8)5:E      -0.9424033
+## ns(X3, df = 8)6:E      -0.8294325
+## ns(X3, df = 8)7:E       0.3153718
+## ns(X3, df = 8)8:E      -0.8420617
+## bs(X4, degree = 6)1:E   8.7656770
+## bs(X4, degree = 6)2:E  -0.1571619
+## bs(X4, degree = 6)3:E -10.0988455
+## bs(X4, degree = 6)4:E  -9.7603656
+## bs(X4, degree = 6)5:E  -3.2575216
+## bs(X4, degree = 6)6:E  -0.4827763
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
 
 
 
