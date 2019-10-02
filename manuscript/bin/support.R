@@ -112,9 +112,8 @@ rgb(red=0,green=158,blue=115,max=255,alpha=25) -> Col2
 
 apply(ctPredmat,1,function(x) lines(polygonXct,-x,col=Col1,lty=1))
 apply(ARFPredmat,1,function(x) lines(polygonXarf,-x,col=Col2,lty=1))
-
-lines(originalX[cont_index][order(originalX[cont_index])], -cont_pred[order(originalX[cont_index])], col = color[1], lwd = 3)
-lines(originalX[ARF_index][order(originalX[ARF_index])], -ARF_pred[order(originalX[ARF_index])], col = color[2], lwd = 3)
+lines(polygonXct, -apply(ctPredmat,2,median), col = color[1], lwd = 3)
+lines(polygonXarf, -apply(ARFPredmat,2,median), col = color[2], lwd = 3)
 graphics::rug(originalX, side = 1)
 
 object = sailfittrain
@@ -202,8 +201,8 @@ rgb(red=0,green=158,blue=115,max=255,alpha=25) -> Col2
 apply(ctPredmat,1,function(x) lines(polygonXct,-x,col=Col1,lty=1))
 apply(ARFPredmat,1,function(x) lines(polygonXarf,-x,col=Col2,lty=1))
 
-lines(originalX[cont_index][order(originalX[cont_index])], -cont_pred[order(originalX[cont_index])], col = color[1], lwd = 3)
-lines(originalX[ARF_index][order(originalX[ARF_index])], -ARF_pred[order(originalX[ARF_index])], col = color[2], lwd = 3)
+lines(polygonXct, -apply(ctPredmat,2,median), col = color[1], lwd = 3)
+lines(polygonXarf, -apply(ARFPredmat,2,median), col = color[2], lwd = 3)
 legend("topleft", c("non-ARF/MOSF", "ARF/MOSF"),
        col = color[1:3], pch = 19, cex = 1.6, bty = "n")
 graphics::rug(originalX, side = 1)
