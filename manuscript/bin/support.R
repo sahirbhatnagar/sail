@@ -15,7 +15,7 @@ error.crosses(errorSummary[c(6:10),],
               cex.main = 1.5,
               offset = -0.8,
               xlim = c(0, 120),
-              ylab="Test Set AUROC",
+              ylab="Test Set AUC",
               colors = sail:::cbbPalette[c(1,3,4,7,2)],
               pch=16,cex=1)
 
