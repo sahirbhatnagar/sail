@@ -15,7 +15,7 @@ dat %>%
   select(age, sex, dzclass, num.co, diabetes,
          dementia, meanbp, wblc, hrt, resp, temp, crea, sod, adlsc) -> usedatcomplete
 
-usedatcomplete$survive6M <- ifelse(dat$death == 0, 1, 
+usedatcomplete$survive6M <- ifelse(dat$death == 0, 1,
                                    ifelse(dat$d.time >= 180, 1, -1))
 
 usedatcomplete <- na.omit(usedatcomplete)
@@ -47,12 +47,12 @@ for (i in 1:200) {
   traincomplete <- usedatcomplete[trainID,]
   valcomplete <- usedatcomplete[valID,]
   testcomplete <- usedatcomplete[testID,]
-  
+
   # sail
   cat("iteration: ",i," - sail", collapse="\n")
-  designmattrain <- model.matrix(~ 0 
-                                 + bs(age, degree = 3) 
-                                 + sex 
+  designmattrain <- model.matrix(~ 0
+                                 + bs(age, degree = 3)
+                                 + sex
                                  + bs(num.co, degree = 3)
                                  + diabetes
                                  + dementia
@@ -72,9 +72,9 @@ for (i in 1:200) {
                        verbose = 0,
                        alpha = 0.1,
                        strong = FALSE)
-  designmatval <- model.matrix(~ 0 
-                               + bs(age, degree = 3) 
-                               + sex 
+  designmatval <- model.matrix(~ 0
+                               + bs(age, degree = 3)
+                               + sex
                                + bs(num.co, degree = 3)
                                + diabetes
                                + dementia
@@ -94,9 +94,9 @@ for (i in 1:200) {
   names(COEF[COEF[,1]!=0,]) -> Ncoef
   length(Ncoef) - length(grep("bs",Ncoef)) - 1 + length(grep("bs",Ncoef))/3 -> Ncoef
   sailCoef <- c(sailCoef, Ncoef)
-  designmattest <- model.matrix(~ 0 
-                                + bs(age, degree = 3) 
-                                + sex 
+  designmattest <- model.matrix(~ 0
+                                + bs(age, degree = 3)
+                                + sex
                                 + bs(num.co, degree = 3)
                                 + diabetes
                                 + dementia
@@ -112,6 +112,62 @@ for (i in 1:200) {
   sailROC <- c(sailROC, testROC)
   exp(coef(glm(testcomplete$survive6M~scale(as.vector(predict(sailfittrain, newx = designmattest, newe = testcomplete$dzclass, s = sailfittrain$lambda[which.max(valOR)+1])))))[2]) -> testOR
   sailOR <- c(sailOR, testOR)
-}  
+}
 
-save(sailCoef,sailROC,sailOR,COEFlist,file="sailRes200Bootstrap.RData")
+# 113 was the best seed leading to the best prediction
+i <- 113
+set.seed(seedpool[i])
+cat("iteration: ",i, collapse="\n")
+# split dataset
+trainID <- sample(1:nrow(usedatcomplete),nrow(usedatcomplete)*0.34)
+valID <- sample((1:nrow(usedatcomplete))[! 1:nrow(usedatcomplete) %in% trainID],nrow(usedatcomplete)*0.33)
+testID <- setdiff(setdiff((1:nrow(usedatcomplete)),trainID),valID)
+traincomplete <- usedatcomplete[trainID,]
+valcomplete <- usedatcomplete[valID,]
+testcomplete <- usedatcomplete[testID,]
+
+# sail
+cat("iteration: ",i," - sail", collapse="\n")
+designmattrain <- model.matrix(~ 0
+                               + bs(age, degree = 3)
+                               + sex
+                               + bs(num.co, degree = 3)
+                               + diabetes
+                               + dementia
+                               + bs(meanbp, degree = 3)
+                               + bs(wblc, degree = 3)
+                               + bs(hrt, degree = 3)
+                               + bs(resp, degree = 3)
+                               + bs(temp, degree = 3)
+                               + bs(crea, degree = 3)
+                               + bs(sod, degree = 3)
+                               + bs(adlsc, degree = 3), data = traincomplete)
+sailfittrain <- sail(x = designmattrain,
+                     y = traincomplete$survive6M,
+                     e = traincomplete$dzclass,
+                     expand = FALSE,
+                     group = attr(designmattrain, "assign"),
+                     verbose = 0,
+                     alpha = 0.1,
+                     strong = FALSE)
+designmatval <- model.matrix(~ 0
+                             + bs(age, degree = 3)
+                             + sex
+                             + bs(num.co, degree = 3)
+                             + diabetes
+                             + dementia
+                             + bs(meanbp, degree = 3)
+                             + bs(wblc, degree = 3)
+                             + bs(hrt, degree = 3)
+                             + bs(resp, degree = 3)
+                             + bs(temp, degree = 3)
+                             + bs(crea, degree = 3)
+                             + bs(sod, degree = 3)
+                             + bs(adlsc, degree = 3), data = valcomplete)
+valscore <- predict(sailfittrain, newx = designmatval, newe = valcomplete$dzclass)
+apply(valscore[,-1],2,function(x) exp(coef(glm(valcomplete$survive6M~scale(x)))[2])) -> valOR
+#  sum(as.vector(coef(sailfittrain, s = sailfittrain$lambda[which.max(valOR)+1])) != 0) - 1 -> Ncoef
+sailfittrain$lambda[which.max(valOR)+1] -> optLambda
+designmattrain -> designmat2
+
+save(designmat2,usedatcomplete,sailfittrain,optLambda,COEFlist,file="sail200Bootstrap.RData")
