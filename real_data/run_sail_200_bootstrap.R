@@ -34,8 +34,20 @@ cat("done pre-processing", collapse="\n")
 set.seed(20000101)
 seedpool <- sample(1:10000,200)
 sailROC <- c()
+lassoROC <- c()
+lassoBTROC <- c()
+HBROC <- c()
+GLROC <- c()
 sailOR <- c()
+lassoOR <- c()
+lassoBTOR <- c()
+HBOR <- c()
+GLOR <- c()
 sailCoef <- c()
+lassoCoef <- c()
+lassoBTCoef <- c()
+HBCoef <- c()
+GLCoef <- c()
 COEFlist <- list()
 for (i in 1:200) {
   set.seed(seedpool[i])
@@ -112,6 +124,59 @@ for (i in 1:200) {
   sailROC <- c(sailROC, testROC)
   exp(coef(glm(testcomplete$survive6M~scale(as.vector(predict(sailfittrain, newx = designmattest, newe = testcomplete$dzclass, s = sailfittrain$lambda[which.max(valOR)+1])))))[2]) -> testOR
   sailOR <- c(sailOR, testOR)
+
+  # Lasso
+  cat("iteration: ",i," - lasso", collapse="\n")
+  lassofittrain <- glmnet(x = as.matrix(traincomplete[,1:14]), y = traincomplete$survive6M, family = "binomial", alpha = 1)
+  lassovalscore <- predict(lassofittrain, newx = as.matrix(valcomplete[,1:14]))
+  apply(lassovalscore[,-1],2,function(x) exp(coef(glm(valcomplete$survive6M~scale(x)))[2])) -> valOR
+  sum(as.vector(coef(lassofittrain, s = lassofittrain$lambda[which.max(valOR)+1])) != 0) - 1 -> Ncoef
+  lassoCoef <- c(lassoCoef, Ncoef)
+  pROC::auc(testcomplete$survive6M, as.vector(predict(lassofittrain, newx = as.matrix(testcomplete[,1:14]), s = lassofittrain$lambda[which.max(valOR)+1])))[1] -> testROC
+  lassoROC <- c(lassoROC, testROC)
+  exp(coef(glm(testcomplete$survive6M~scale(as.vector(predict(lassofittrain, newx = as.matrix(testcomplete[,1:14]), s = lassofittrain$lambda[which.max(valOR)+1])))))[2]) -> testOR
+  lassoOR <- c(lassoOR, testOR)
+
+  # LassoBT
+  cat("iteration: ",i," - lassoBT", collapse="\n")
+  lassoBTfittrain <- LassoBT(x = as.matrix(traincomplete[,1:14]), y = traincomplete$survive6M, iter_max = 20)
+  lassoBTvalscore <- predict(lassoBTfittrain, newx = as.matrix(valcomplete[,1:14]))
+  apply(lassoBTvalscore,3,function(x) apply(x[,-1],2,function(xcol) exp(coef(glm(valcomplete$survive6M ~ scale(xcol)))[2]))) -> lassoBTORrun
+  which.max(apply(lassoBTORrun,2,max)) -> iterID
+  lassoBTvalscore <- predict(lassoBTfittrain, newx = as.matrix(valcomplete[,1:14]))[,,iterID]
+  apply(lassoBTvalscore[,-1],2,function(x) exp(coef(glm(valcomplete$survive6M~scale(x)))[2])) -> valOR
+  sum(as.vector(predict(lassoBTfittrain,type = "coefficients",s = lassoBTfittrain$lambda[which.max(valOR)+1], iter = iterID)) != 0) -1 -> Ncoef
+  lassoBTCoef <- c(lassoBTCoef, Ncoef)
+  lassoBTtestscore <- predict(lassoBTfittrain, newx = as.matrix(testcomplete[,1:14]))[,,iterID]
+  pROC::auc(testcomplete$survive6M, as.vector(lassoBTtestscore[,which.max(valOR)+1]))[1] -> testROC
+  lassoBTROC <- c(lassoBTROC, testROC)
+  exp(coef(glm(testcomplete$survive6M~scale(as.vector(lassoBTtestscore[,which.max(valOR)+1]))))[2]) -> testOR
+  lassoBTOR <- c(lassoBTOR, testOR)
+
+  # HierBasis
+  cat("iteration: ",i," - HierBasis", collapse="\n")
+  HBfittrain <- AdditiveHierBasis(x = as.matrix(traincomplete[,1:14]), y = ifelse(traincomplete$survive6M==1,1,0), type = "binomial", nlam = 100, max.iter = 100)
+  HBvalscore <- predict(HBfittrain, new.x = as.matrix(valcomplete[,1:14]))
+  apply(HBvalscore[,apply(HBvalscore,2,function(x) length(unique(x)))!=1],2,function(x) exp(coef(glm(valcomplete$survive6M~scale(x)))[2])) -> valOR
+  sum(HBfittrain$beta[,apply(HBvalscore,2,function(x) length(unique(x)))!=1][,which.max(valOR)] != 0) -> Ncoef
+  HBCoef <- c(HBCoef, Ncoef)
+  HBtestscore <- predict(HBfittrain, new.x = as.matrix(testcomplete[,1:14]))
+  pROC::auc(testcomplete$survive6M, HBtestscore[,apply(HBvalscore,2,function(x) length(unique(x)))!=1][,which.max(valOR)])[1] -> testROC
+  HBROC <- c(HBROC, testROC)
+  exp(coef(glm(testcomplete$survive6M~scale(HBtestscore[,apply(HBvalscore,2,function(x) length(unique(x)))!=1][,which.max(valOR)])))[2]) -> testOR
+  HBOR <- c(HBOR, testOR)
+
+  # GLinternet
+  cat("iteration: ",i," - GLinternet", collapse="\n")
+  glinternetfittrain <- glinternet(X = as.matrix(traincomplete[,1:14]), Y = ifelse(traincomplete$survive6M==1,1,0), numLevels = c(1,2,2,1,2,2,1,1,1,1,1,1,1,1), nLambda = 100, interactionCandidates = c(3), family = "binomial")
+  glinternetvalscore <- predict(glinternetfittrain, X = as.matrix(valcomplete[,1:14]))
+  apply(glinternetvalscore[,-1],2,function(x) exp(coef(glm(valcomplete$survive6M~scale(x)))[2])) -> valOR
+  sum(glinternetfittrain$betahat[[which.max(valOR) + 1]] != 0) -> Ncoef
+  GLCoef <- c(GLCoef, Ncoef)
+  pROC::auc(testcomplete$survive6M, as.vector(predict(glinternetfittrain, X = as.matrix(testcomplete[,1:14]), lambda = glinternetfittrain$lambda[which.max(valOR)+1])))[1] -> testROC
+  GLROC <- c(GLROC, testROC)
+  exp(coef(glm(testcomplete$survive6M~scale(as.vector(predict(glinternetfittrain, X = as.matrix(testcomplete[,1:14]), lambda = glinternetfittrain$lambda[which.max(valOR)+1])))))[2]) -> testOR
+  GLOR <- c(GLOR, testOR)
 }
 
 # 113 was the best seed leading to the best prediction
@@ -171,3 +236,13 @@ sailfittrain$lambda[which.max(valOR)+1] -> optLambda
 designmattrain -> designmat2
 
 save(designmat2,usedatcomplete,sailfittrain,optLambda,COEFlist,file="sail200Bootstrap.RData")
+
+permRes <- data.frame(OR=c(sailOR,lassoOR,lassoBTOR,HBOR,GLOR),
+                      AUC=c(sailROC,lassoROC,lassoBTROC,HBROC,GLROC),
+                      Ncoef=c(sailCoef,lassoCoef,lassoBTCoef,HBCoef,GLCoef),
+                      Method=rep(c("sail","lasso","lassoBT","HierBasis","GLinternet"),each=200))
+describeBy(permRes[,c("AUC","Ncoef")], permRes$Method, mat=TRUE) -> errorSummary
+
+save(errorSummary, file="methods_comparison_error_summary.RData")
+
+
