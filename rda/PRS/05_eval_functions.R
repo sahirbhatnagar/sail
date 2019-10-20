@@ -5,16 +5,17 @@ sqrerr <- new_metric("sqrerr", "squared error",
                        colMeans(as.matrix(out$beta - model$true_beta)^2)
                      })
 
-mse <- new_metric("mse", "Test Set MSE",
-                  metric = function(model, out) {
-                    # as.numeric(sqrt(crossprod(out$y - out$yhat)))
-                    as.numeric(crossprod(out$ytest - out$yhat_test) / (length(out$ytest)))
-                  })
+# mse <- new_metric("mse", "Test Set MSE",
+#                   metric = function(model, out) {
+#                     # as.numeric(sqrt(crossprod(out$y - out$yhat)))
+#                     as.numeric(crossprod(out$ytest - out$yhat_test) / (length(out$ytest)))
+#                   })
 
 msevalid <- new_metric("mse", "Validation Set MSE",
                        metric = function(model, out) {
                          # as.numeric(sqrt(crossprod(out$y - out$yhat)))
                          as.numeric(out$msevalid)
+                         # as.numeric(crossprod(out$yvalid - out$yvalid_hat) / (length(out$yvalid)))
                        })
 
 
@@ -48,7 +49,7 @@ correct_sparsity <- new_metric("cs", "Correct Sparsity",
                                  correct_zeros <- length(setdiff(out$not_causal,out$active))
                                  #correct sparsity
                                  (1 / length(model$vnames)) * (correct_nonzeros + correct_zeros)
-                                 
+
                                })
 
 nactive <- new_metric("nactive", "Number of Active Variables",

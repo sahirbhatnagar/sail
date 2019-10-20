@@ -81,9 +81,12 @@ IQ4y=
                          "Tx_group_bin",                                                                                      #E variable
                          "PRS_0.0001","PRS_0.001","PRS_0.01","PRS_0.05","PRS_0.1","PRS_0.2","PRS_0.3","PRS_0.4","PRS_0.5"))   #X variables
 
-IQ4y=as.matrix(IQ4y)
+pacman::p_load(mice)
+pt <- mice::mice(IQ4y, m = 1, seed = 1234)
+IQ4y <- mice::complete(pt)
+IQ4y <- as.matrix(IQ4y)
 rownames(IQ4y)=IQdat[,"SentrixID"]
-IQ4y=IQ4y[!is.na(IQ4y[,"IQ_4yrs"]),]  #remove rows with missing IQ values
+IQ4y <- IQ4y[!is.na(IQ4y[,"IQ_4yrs"]),]  #remove rows with missing IQ values
 
 
 
@@ -140,29 +143,7 @@ sim <- new_simulation(name = "IQ_4yrs_cond2_split2_4",
   simulate_from_model(nsim = 6, index = 1:35)
 
 
-
-
-
-#To see which simulations were leading to outlier values for MSE and number of active variables,
-#we created the following code that explicitly tests that:
-
-#"/mnt/GREENWOOD_JBOD1/GREENWOOD_BACKUP/home/amanda.lovato/DNA methylation/Sahir/Script/Finding the outliers.R"
-
-#This code found r8.5 to be outlier for mse HierBasis and r25.6 and r30.2 to be an outlier in terms of number of variables
-#We will remove these draws and re-run sail, lasso,lassobt and hierbasis on the subsetted list. Unfortunately, we were unable to
-#access the results for each draw separately. Thus, we removed all of r8,r25 and r30 (each of which has 6 draws).
-#This removes a total of 18 draws from the 210 leaving 192. #This is done right below:
-
-
-# load("/mnt/GREENWOOD_JBOD1/GREENWOOD_BACKUP/home/amanda.lovato/files/sim-IQ_4yrs_cond2_split2_4.Rdata")
-# sim@draws_refs[[1]][[30]]=NULL
-# sim@draws_refs[[1]][[25]]=NULL
-# sim@draws_refs[[1]][[8]]=NULL
-# save(sim,file="/mnt/GREENWOOD_JBOD1/GREENWOOD_BACKUP/home/amanda.lovato/files/sim-IQ_4yrs_cond2_split2_4.Rdata")
-# load("/mnt/GREENWOOD_JBOD1/GREENWOOD_BACKUP/home/amanda.lovato/files/sim-IQ_4yrs_cond2_split2_4.Rdata")
-
-
-#Now, we run the 4 methods on the 192 remaining simulations and save the results:
+#Now, we run the 4 methods  save the results:
 sim <- run_method(sim,list(lassosplit, sailsplit,sailsplitadaptive, sailsplitadaptiveweak,sailsplitweak, lassoBTsplit, Hiersplit),
                   parallel = list(socket_names = 40,#refers to the number of cores on which to split the simulation
                                   libraries = c("LassoBacktracking", "glmnet","splines",
@@ -173,8 +154,7 @@ save_simulation(sim)
 as.data.frame(evals(sim))
 ls()
 
-sim <- load_simulation(name = "IQ_4yrs_cond2_split2_4",
-                       dir = "my_sims/")
+sim <- load_simulation(name = "PRS_IQ_4yrs_cond2_split2_4", dir = "my_sims/")
 
 plot_eval(sim, "mse")
 
@@ -188,6 +168,20 @@ sim %>% subset_simulation(methods = c("lasso", "sail","sailweak",
 # save(sim,file="/mnt/GREENWOOD_JBOD1/GREENWOOD_BACKUP/home/amanda.lovato/files/IQ_4yrs_cond2_s2_4.Rdata")
 
 
+sim@output_refs
+simulator::get_contents(dir = "my_sims/")
+
+simulator::load_outputs(dir = "my_sims/",
+                          model_name = "IQ4y_data_split_Cond2_split2_4/exposure_Tx_group_bin/n_train_test_150/phenoVariable_IQ_4yrs/",
+                        method_name = "sail")
+
+
+index <- paste0("r",rep(1:35,each=6),".",1:6)
+
+# the 2 is the index for sail
+COEFlist <- lapply(index, function(i) {
+  simulator::output(sim)[[2]]@out[[i]][["beta"]]
+})
 
 
 #######################################################################################################################################################
@@ -198,7 +192,7 @@ sim %>% subset_simulation(methods = c("lasso", "sail","sailweak",
 
 # load("/mnt/GREENWOOD_JBOD1/GREENWOOD_BACKUP/home/amanda.lovato/files/IQ_4yrs_cond2_s2_4.Rdata")
 
-df <- as.data.frame(evals(sim))
+# df <- as.data.frame(evals(sim))
 # saveRDS(df, file = "~/git_repositories/sail/my_sims/rda_results/rda_IQ_4yrs_cond2_s2_4.rds")
 
 
@@ -219,12 +213,18 @@ DT_res <- df %>% as.data.table()
 
 ## ---- get-best-sail-model ---- (the one that results in the lowest MSE)
 
+# get best model
 draw_ind <- DT_res[Method=="sail"][which.min(mse)]$Draw
+
+# draw random sample
 draw_ind <- sample(DT_res[Method=="sail"]$Draw, size = 1)
+
+
 dat <- draws(sim)@draws[[draw_ind]]
 saveRDS(dat, file = "~/git_repositories/sail/my_sims/rda_results/rda_IQ_4yrs_cond2_s2_4_data.rds")
 dat <- readRDS("~/git_repositories/sail/my_sims/rda_results/rda_IQ_4yrs_cond2_s2_4_data.rds")
 # devtools::load_all()
+# the bootstrap results are based on strong=FALSE, alpha = 0.1, degree=3
 fit <- sail(x = dat$xtrain, y = dat$ytrain, e = dat$etrain,
             basis = function(i) splines::bs(i, degree = 3),
             expand = TRUE,
@@ -244,7 +244,7 @@ lambda.min.index <- as.numeric(which.min(msetest))
 lambda.min <- fit$lambda[which.min(msetest)]
 yvalid_hat <- predict(fit, newx = dat$xvalid, newe = dat$evalid, s = lambda.min)
 msevalid <- mean((dat$yvalid - drop(yvalid_hat))^2)
-nzcoef <- predict(fit, s = lambda.min, type = "nonzero")
+(nzcoef <- predict(fit, s = lambda.min, type = "nonzero"))
 
 design <- do.call(rbind, list(dat$xtrain, dat$xtest, dat$xvalid))
 #design2=sail:::design_sail(design,e,expand=TRUE,basis = function(i) splines::bs(i, degree = 3),center.e=TRUE,center.x=TRUE,nvars=ncol(design),vnames=colnames(design))$design
@@ -267,28 +267,27 @@ fit <- sail(x = X[,-c(1,2)], y = Y, e = IQ4y[, "Tx_group_bin"],
 
 library(doMC)
 registerDoMC(cores = 10)
-fit <- cv.sail(x = X[,-c(1,2)], y = Y, e = IQ4y[, "Tx_group_bin"],
-            basis = function(i) splines::bs(i, degree = 3),
-            expand = TRUE,
-            center.x = T,
-            center.e = T,
-            #group = dat$group,
-            alpha = 0.1,
-            #maxit = 250,
-            strong = FALSE,
-            verbose = 1,
-            parallel = TRUE
+fitcv <- cv.sail(x = X[,-c(1,2)], y = Y, e = IQ4y[, "Tx_group_bin"],
+                 basis = function(i) splines::bs(i, degree = 3),
+                 expand = TRUE,
+                 center.x = T,
+                 center.e = T,
+                 #group = dat$group,
+                 alpha = 0.1,
+                 #maxit = 250,
+                 strong = FALSE,
+                 verbose = 1,
+                 parallel = TRUE
 )
 
-
-plot(fit)
-
+plot(fitcv)
+coef(fitcv, s= "lambda.min")
 
 
 ## ----error-crosses plots----
 
 affect.mat2 <- describeBy(DT_res[, c("mse","nactive")], DT_res$Method, mat = TRUE)
-affect.mat2 <- affect.mat2[which(affect.mat2$group1 %in% c("sail","lasso","lassoBT","HierBasis")),]
+affect.mat2 <- affect.mat2[which(affect.mat2$group1 %in% c("Adaptivesailweak","lasso","lassoBT","HierBasis")),]
 par(family="serif")
 error.crosses(affect.mat2[grep("nactive", rownames(affect.mat2)),],
               affect.mat2[grep("mse", rownames(affect.mat2)),],
@@ -316,7 +315,26 @@ error.crosses(affect.mat2[grep("nactive", rownames(affect.mat2)),],
 
 
 
+plotInterPRS(object = fitcv$sail.fit,
+             originalDataNotCentered = IQ4y, # complete original data which contains both "x" and "e"
+             xvar = "PRS_0.0001",
+             s = fitcv$lambda.min,
+             design = fitcv$sail.fit$design, # this contains the design matrix from sail
+             evar = "Tx_group_bin", # this is the name of the E column in 'originalDataNotCentered'
+             xlab = "PRS_0.0001",
+             degree = 3,
+             ylab = "Marginal Risk",
+             legend.position = "bottomright",
+             main = "Effect of Intervention and PRS
+     on IQ at 4 years of age",
+             rug = TRUE,
+             color = sail:::cbbPalette[c(2,4)],
+             legend = TRUE)
 
+
+
+
+# not used underneath this line -------------------------------------------
 
 
 #To extrapolate the entire dataset (not just the training set on which we fitted)
@@ -331,12 +349,15 @@ object=fit      #fit on the training dataset
 x=dat$xtrain
 
 
+object = fitcv$sail.fit
+
 #Define important variables
 i=1 #(since we are interested in PRS_0.0001 which is the first of the covariates, i=1)
 cv=c("IQ4y")
 xv=colnames(get(cv[1]))[-c(1,2)]  #Remove the first 2 columns that contain the response and environment variable
 xvar = xv[i]
-s = lambda.min
+# s = lambda.min
+s <- fitcv$lambda.min
 xlab=xv[i]
 ylab=paste0("f(",xv[i],")")
 color=c("orange","blue")
@@ -360,7 +381,7 @@ design.mat.int <- object$design[, object$interaction.names[ind], drop = FALSE]
 ind2 <- which(object$vnames %in% xvar)
 
 originalE <- object$design[, "E", drop = FALSE]
-originalX <- x[,ind2,drop=FALSE]
+originalX <- X[,xvar,drop=FALSE]
 
 
 #Obtain the associated IQ value for the corresponding PRS score and environment status
@@ -417,7 +438,12 @@ legend("bottomright",c("Intervention","Control"),col=c(color[2],color[1]),lwd=c(
 
 
 
-
+plotInterADNI(object=fit, x=originalX, xvar = xv[i], s = lambda.min,
+design = fit$basis(fit$design[,1,drop=F]), # this contains user defined expand matrix
+                          e = originalE, # this is E vector for whole sample
+                          # xlab , ylab ,
+                          legend.position = "bottomleft", main = "", rug = TRUE,
+                          color = sail:::cbbPalette[c(6,4,7)], legend = TRUE)
 
 
 
