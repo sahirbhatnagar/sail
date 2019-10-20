@@ -1,6 +1,6 @@
 \documentclass[12pt,letter]{article}\usepackage[]{graphicx}\usepackage[]{color}
-%% maxwidth is the original width if it is less than linewidth
-%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+% maxwidth is the original width if it is less than linewidth
+% otherwise use linewidth (to make sure the graphics do not exceed the margin)
 \makeatletter
 \def\maxwidth{ %
   \ifdim\Gin@nat@width>\linewidth
@@ -125,6 +125,10 @@
 %\usepackage{enumitem}
 % These packages are all incorporated in the memoir class to one degree or another...
 
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+
 %########################################################################################  
 %            						CUSTOM COMMANDS
 %########################################################################################
@@ -175,6 +179,16 @@
 
 \DeclarePairedDelimiter\abs{\lvert}{\rvert}%
 \DeclarePairedDelimiter\norm{\lVert}{\rVert}%
+
+\global\long\def\ddd{,\ldots,}
+\global\long\def\Op{O_{P}}
+\global\long\def\op{o_{P}}
+
+\newcommand{\bthetastar}{\boldsymbol{\theta}^{*}}
+\newcommand{\bThetastar}{\boldsymbol{\Theta}^{*}}
+\newcommand{\bdelta}{\boldsymbol{\delta}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\mH}{\mathcal{H}}
 
 % Swap the definition of \abs* and \norm*, so that \abs
 % and \norm resizes the size of the brackets, and the 
@@ -280,24 +294,27 @@ Let $Y=(Y_1, \ldots, Y_n) \in \mathbb{R}^n$ be a continuous outcome variable, \m
 \end{equation}
 Here, the $\left\lbrace \psi_{j\ell} \right\rbrace_1^{m_j}$ are a family of basis functions in $X_j$~\citep{hastie2015statistical}. Let $\bPsi_j$ be the $n \times m_j$ matrix of evaluations of the $\psi_{j\ell}$ and \mbox{$\btheta_j = (\beta_{j1}, \ldots, \beta_{jm_j}) \in \mathbb{R}^{m_j}$} for $j = 1, \ldots, p$ ($\btheta_j$ is a $m_j$-dimensional column vector of basis coefficients for the $j$th main effect). In this article we consider an additive interaction regression model of the form 
 \begin{align}
-	g(\bmu)  & =  \beta_0 \cdot \boldsymbol{1} + \sum_{j=1}^p \bPsi_j \btheta_j + \beta_E X_E + \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_{j}    \label{eq:linpred}
+Y = \beta_0 \cdot \boldsymbol{1}_n + \sum_{j=1}^p \bPsi_j \btheta_j + \beta_E X_E + \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j + \varepsilon  \label{eq:linpred}
 \end{align}
-where $g(\cdot)$ is a known link function, $\bmu = \e\left[Y|\bPsi, X_E \right]$, $\beta_0$ is the intercept, $\beta_E$ is the coefficient for the environment variable, $\btau_j = (\tau_{j1}, \ldots, \tau_{jm_j})\in \mathbb{R}^{m_j}$ are the basis coefficients for the $j$th interaction term, and $(X_E \circ \bPsi_j)$ is the $n \times m_j$ matrix formed by the component-wise multiplication of the column vector $X_E$ by each column of $\bPsi_j$. For a continuous response, we use the squared-error loss to estimate the parameters:
-\begin{equation}
-	\mathcal{L}(\bTheta| \bD) = \frac{1}{2n}\norm{Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j }_2^2
-\end{equation}
-and for binary response $Y_i \in \left\lbrace -1, +1 \right\rbrace$ we use the logistic loss:
-\begin{equation}
-	\mathcal{L}(\bTheta| \bD) = \frac{1}{n} \sum_i \log \left(1 + \exp \left\lbrace - Y_i \left( \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j \right) \right\rbrace   \right)
-\end{equation}
-
-where $\bTheta \coloneqq (\beta_0, \beta_E,\btheta_1, \ldots, \btheta_p, \btau_1, \ldots, \btau_p)$ and $\bD \coloneqq (Y,\bPsi,X_E)$ is the working data. Here we assume that $p$ is large relative to $n$, and particularly that $\sum_{j=1}^{p}m_j / n$ is large.
+%\begin{align}
+%	g(\bmu)  & =  \beta_0 \cdot \boldsymbol{1} + \sum_{j=1}^p \bPsi_j \btheta_j + \beta_E X_E + \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_{j}    \label{eq:linpred}
+%\end{align}
+%where $g(\cdot)$ is a known link function, $\bmu = \e\left[Y|\bPsi, X_E \right]$, $\beta_0$ is the intercept, $\beta_E$ is the coefficient for the environment variable, $\btau_j = (\tau_{j1}, \ldots, \tau_{jm_j})\in \mathbb{R}^{m_j}$ are the basis coefficients for the $j$th interaction term, and $(X_E \circ \bPsi_j)$ is the $n \times m_j$ matrix formed by the component-wise multiplication of the column vector $X_E$ by each column of $\bPsi_j$. For a continuous response, we use the squared-error loss to estimate the parameters:
+where $\beta_0 \in \mathbb{R}$ is the intercept, $\beta_E \in \mathbb{R}$ is the coefficient for the environment variable, $\btau_j = (\tau_{j1}, \ldots, \tau_{jm_j})\in \mathbb{R}^{m_j}$ are the basis coefficients for the $j$th interaction term, $(X_E \circ \bPsi_j)$ is the $n \times m_j$ matrix formed by the component-wise multiplication of the column vector $X_E$ by each column of $\bPsi_j$, and $\varepsilon \in \mathbb{R}^n$ is a vector of iid errors with mean zero and finite variance. %For a continuous response, we use the squared-error loss to estimate the parameters:
+%\begin{equation}
+%	\mathcal{L}(\bTheta| \bD) = \frac{1}{2n}\norm{Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j }_2^2
+%\end{equation}
+%and for binary response $Y_i \in \left\lbrace -1, +1 \right\rbrace$ we use the logistic loss:
+%\begin{equation}
+%	\mathcal{L}(\bTheta| \bD) = \frac{1}{n} \sum_i \log \left(1 + \exp \left\lbrace - Y_i \left( \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j \right) \right\rbrace   \right)
+%\end{equation}
+Here we assume that $p$ is large relative to $n$, and particularly that $\sum_{j=1}^{p}m_j / n$ is large.
 Due to the large number of parameters to estimate with respect to the number of observations, one commonly-used approach is to shrink the regression coefficients by placing a constraint on the values
-of $(\beta_E, \btheta_j, \btau_j)$. Certain constraints have the added benefit of producing a sparse model in the sense that many of the coefficients will be set exactly to 0~\citep{buhlmann2011statistics}. Such a reduced predictor set can lead to a more interpretable model with smaller prediction variance, albeit at the cost of having biased parameter estimates~\citep{fan2014challenges}. In light of these goals, we consider the following objective function:
+of $(\beta_E, \btheta_j, \btau_j)$. Certain constraints have the added benefit of producing a sparse model in the sense that many of the coefficients will be set exactly to 0~\citep{buhlmann2011statistics}. Such a reduced predictor set can lead to a more interpretable model with smaller prediction variance, albeit at the cost of having biased parameter estimates~\citep{fan2014challenges}. In light of these goals, we consider the following penalized objective function:
 \begin{equation}
-	\argmin_{\bTheta }  	\mathcal{L}(\bTheta| \bD) + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \norm{\btau_{j}}_2 \label{eq:lassolikelihood3}
+	Q(\bTheta) =  	-L(\bTheta) + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \norm{\btau_{j}}_2 \label{eq:lassolikelihood3}
 \end{equation} 
-where $\norm{\btheta_j}_2 = \sqrt{\sum_{k=1}^{m_j} \beta_{jk}^2}$, $\norm{\btau_j}_2 = \sqrt{\sum_{k=1}^{m_j} \tau_{jk}^2}$, $\lambda >0$ and $\alpha \in (0,1)$ are adjustable tuning parameters, $w_E, w_j, w_{jE}$ are non-negative penalty factors for $j=1, \ldots, p$ which serve as a way of allowing parameters to be penalized differently. The first term in the penalty penalizes the main effects while the second term penalizes the interactions. The parameter $\alpha$ controls the relative weight on the two penalties. Note that we do not penalize the intercept. 
+where $\bTheta = (\beta_0, \beta_E,\btheta_1, \ldots, \btheta_p, \btau_1, \ldots, \btau_p)$, $L(\bTheta)$ is the log-likelihood function of the observations $\bV_i = (Y_i,\bPsi_i,X_{iE})$ for $i=1\ddd n$, $\norm{\btheta_j}_2 = \sqrt{\sum_{k=1}^{m_j} \beta_{jk}^2}$, $\norm{\btau_j}_2 = \sqrt{\sum_{k=1}^{m_j} \tau_{jk}^2}$, $\lambda >0$ and $\alpha \in (0,1)$ are adjustable tuning parameters, $w_E, w_j, w_{jE}$ are non-negative penalty factors for $j=1, \ldots, p$ which serve as a way of allowing parameters to be penalized differently. The first term in the penalty penalizes the main effects while the second term penalizes the interactions. The parameter $\alpha$ controls the relative weight on the two penalties. Note that we do not penalize the intercept. 
 
 An issue with~\eqref{eq:lassolikelihood3} is that since no constraint is placed on the structure of the model, it is possible that an estimated interaction term is nonzero while the corresponding main effects are zero. While there may be certain situations where this is plausible, statisticians have generally argued that interactions should only be included if the corresponding main effects are also in the model~\citep{mccullagh1989generalized}. This is known as the strong heredity principle~\citep{chipman1996bayesian}. Indeed, large main effects are more likely to lead to detectable interactions~\citep{cox1984interaction}. In the next section we discuss how a simple reparametrization of the model~\eqref{eq:lassolikelihood3} can lead to this desirable property. 
 %Furthermore, adaptive weighting~\citep{zou2006adaptive} has been shown to construct oracle procedures~\citep{fan2001variable}, i.e., asymptotically, it performs as well as if the true model were given in advance. These weights are given by
@@ -308,20 +325,20 @@ An issue with~\eqref{eq:lassolikelihood3} is that since no constraint is placed 
 
 \subsection{Strong and weak heredity}
 
-The strong heredity principle states that an interaction term can only have a non-zero estimate if its corresponding main effects are estimated to be non-zero. The weak heredity principle allows for a non-zero interaction estimate as long as one of the corresponding main effects is estimated to be non-zero~\citep{chipman1996bayesian}. In the context of penalized regression methods, these principles can be formulated as structured sparsity \citep{bach2012structured} problems. Several authors have proposed to modify the type of penalty in order to achieve the heredity principle~\citep{radchenko2010variable,bien2013lasso,haris2014convex,lim2014learning}. We take an alternative approach. Following Choi et al.~\citep{choi2010variable}, we introduce a new set of parameters $\bgamma = (\gamma_1, \ldots, \gamma_p)\in \mathbb{R}^p$ and reparametrize the coefficients for the interaction terms $\btau_j$ in~\eqref{eq:linpred} as a function of $\gamma_j$ and the main effect parameters $\btheta_j$ and $\beta_E$. This reparametrization for both strong and weak heredity is summarized in Table~\ref{tab:reparam}.
+The strong heredity principle states that an interaction term can only have a non-zero estimate if its corresponding main effects are estimated to be non-zero. The weak heredity principle allows for a non-zero interaction estimate as long as one of the corresponding main effects is estimated to be non-zero~\citep{chipman1996bayesian}. In the context of penalized regression methods, these principles can be formulated as structured sparsity \citep{bach2012structured} problems. Several authors have proposed to modify the type of penalty in order to achieve the heredity principle~\citep{radchenko2010variable,bien2013lasso,lim2015learning,haris2016convex}. We take an alternative approach. Following Choi et al.~\citep{choi2010variable}, we introduce a new set of parameters $\bgamma = (\gamma_1, \ldots, \gamma_p)\in \mathbb{R}^p$ and reparametrize the coefficients for the interaction terms $\btau_j$ in~\eqref{eq:linpred} as a function of $\gamma_j$ and the main effect parameters $\btheta_j$ and $\beta_E$. This reparametrization for both strong and weak heredity is summarized in Table~\ref{tab:reparam}.
 
 \ctable[caption={Reparametrization for strong and weak heredity principle for \texttt{sail} model},label=tab:reparam,pos=h!,doinside=\footnotesize, ]{lll}{
 }{
 \FL
 Type      & Feature  & Reparametrization \ML
-\multicolumn{1}{m{3cm}}{Strong heredity}    & \multicolumn{1}{m{5cm}}{$\hat{\btau}_{j} \neq 0 \Rightarrow  \hat{\btheta}_j \neq 0  \tm{ and }  \hat{\beta}_E \neq 0$}        &   $\btau_{j} = \gamma_{j} \beta_E \btheta_j $    \\
-\multicolumn{1}{m{3cm}}{Weak heredity} & \multicolumn{1}{m{5cm}}{$\hat{\btau}_{j} \neq 0 \Rightarrow  \hat{\btheta}_j \neq 0  \tm{ or }  \hat{\beta}_E \neq 0$}        &   $\btau_{j} = \gamma_{j}(\beta_E \cdot \mb{1}_{m_j} +  \btheta_j)$    \LL
+\multicolumn{1}{m{3cm}}{Strong heredity}    & \multicolumn{1}{m{6cm}}{$\hat{\btau}_{j} \neq 0 \textrm{ only if }  \hat{\btheta}_j \neq 0  \tm{ and }  \hat{\beta}_E \neq 0$}        &   $\btau_{j} = \gamma_{j} \beta_E \btheta_j $    \\
+\multicolumn{1}{m{3cm}}{Weak heredity} & \multicolumn{1}{m{6cm}}{$\hat{\btau}_{j} \neq 0 \textrm{ only if }  \hat{\btheta}_j \neq 0  \tm{ or }  \hat{\beta}_E \neq 0$}        &   $\btau_{j} = \gamma_{j}(\beta_E \cdot \mb{1}_{m_j} +  \btheta_j)$    \LL
 }
 
 
-To perform variable selection in this new parametrization, we penalize $\bs{\gamma} = \left(\gamma_{1}, \ldots, \gamma_{p}\right)$ instead of penalizing $\btau$ as in~\eqref{eq:lassolikelihood3}, leading to the following objective function:
+To perform variable selection in this new parametrization, we penalize $\bs{\gamma} = \left(\gamma_{1}, \ldots, \gamma_{p}\right)$ instead of penalizing $\btau$ as in~\eqref{eq:lassolikelihood3}, leading to the following penalized objective function:
 \begin{equation}
-	\argmin_{\bTheta }  	\mathcal{L}(\bTheta| \bD) + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{j}} \label{eq:saillikelihood}
+	Q(\bTheta) = -L(\bTheta) + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{j}} \label{eq:saillikelihood}
 \end{equation}
 %where
 %\begin{equation}
@@ -332,7 +349,7 @@ To perform variable selection in this new parametrization, we penalize $\bs{\gam
 %	\mathcal{L}(\bTheta| \bD) = \frac{1}{n} \sum_i \log \left(1 + \exp \left\lbrace - Y_i \left( \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j \right) \right\rbrace   \right)
 %\end{equation}
 %for a binary response. 
-This penalty allows for the possibility of excluding the interaction term from the model even if the corresponding main effects are non-zero. Furthermore, smaller values for $\alpha$ would lead to more interactions being included in the final model while values approaching 1 would favor main effects. 
+An estimate of the regression parameters is given by $\widehat{\bTheta} = \argmin_{\bTheta} Q(\bTheta)$. This penalty allows for the possibility of excluding the interaction term from the model even if the corresponding main effects are non-zero. Furthermore, smaller values for $\alpha$ would lead to more interactions being included in the final model while values approaching 1 would favor main effects. 
 Similar to the elastic net~\citep{zou2005regularization}, we fix $\alpha$ and obtain a solution path over a sequence of $\lambda$ values. 
 
 \begin{comment}
@@ -456,6 +473,378 @@ Type      & Method   & Software \ML
 
 \end{comment}
 
+
+\section{Theory}
+
+
+In this section we study the asymptotic behaviour of the \sail ~estimator $\widehat{\bTheta}$, defined as the minimizer of~\eqref{eq:saillikelihood}, as well as the model selection properties. We show that $\texttt{{sail}}$ posesses the oracle property when the sample size approaches infinity and the number of predictors is fixed. That is, under certain regularity conditions, it performs as well as if the true model were known in advance and has the optimal estimation rate~\citep{zou2006adaptive}. The regularity conditions and proofs are given in the Supplementary Material. 
+
+\subsection{Problem setup}
+
+Let $\bThetastar = (\beta_{E}^*,\btheta_{1}^*,\ldots,\btheta_{p}^*,\gamma_{1}^*,\ldots,\gamma_{p}^*)$ denote the unknown vector of true coefficients in \eqref{eq:saillikelihood}, $\mathcal{H}=\left\lbrace h : \bThetastar_h \neq 0 \right\rbrace$ the unknown sparsity pattern of $\bThetastar$, and $\widehat{\mathcal{H}} =\left\lbrace h : \widehat{\bTheta}_h \neq 0 \right\rbrace$ the estimated \sail ~model selector. Here, we assume $\bThetastar$ is ordered such that the index $h=1$ corresponds to $\beta_E^*$, the indices $h=2, \ldots, p+1$ correspond to $\btheta_{1}^*,\ldots,\btheta_{p}^*$, and the indices $h=p+2, \ldots, 2p+1$ corresponds to $\gamma_{1}^*,\ldots,\gamma_{p}^*$. To simplify the notation, we redefine the penalty terms in~\eqref{eq:saillikelihood} and parameter indices, and consider the \sail ~estimates $\widehat{\bTheta}_n$ given by 
+%\begin{equation}
+%	\widehat{\bTheta}_n=  \argmin_{\bTheta}Q(\bTheta)
+%=L(\bTheta)+n\lambda_{E}\left|\beta_{E}\right|+n\sum_{j=1}^{p}\lambda_{j}^{\theta}\left\Vert \btheta_{j}\right\Vert _{2}+n\sum_{k=1}^{p}\lambda_{k}^{\gamma}\left|\gamma_{k}\right|
+%\end{equation}
+\begin{equation}
+\widehat{\bTheta}_n=  \argmin_{\bTheta}Q_n(\bTheta)
+=-L_n(\bTheta)+n\lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} + n\sum_{h=2}^{p+1}   \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}  +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|
+\end{equation}
+where $\lambda_{h}^\beta=\frac{{1}}{n}\lambda(1-\alpha)w_{h}^\beta$ for $h=1$, $\lambda_{h}^{\theta}=\frac{{1}}{n}\lambda(1-\alpha)w_{h}^\theta$ for $h=2, \ldots, p+1$, and $\lambda_{h}^{\gamma}=\frac{{1}}{n}\lambda\alpha w_{h}^\gamma$ for $h=p+2, \ldots, 2p+1$. The superscripts $\beta,\theta, \gamma$ on the tuning parameters ($\lambda_h$) and adaptive weights ($w_h$) indicate which parameter (environment, main effect, interaction) they are being applied to. Let $a_n = \max \left\lbrace \lambda_{h}^\beta, \lambda_{h}^\theta, \lambda_h^\gamma: h \in \mathcal{H}  \right\rbrace$ and $b_n = \min \left\lbrace \lambda_{h}^\beta, \lambda_{h}^\theta, \lambda_h^\gamma: h \notin \mathcal{H}  \right\rbrace$. In words, $a_n$ is a sequence containing the largest tuning parameters such that all causal covariates are included in the model, and $b_n$ is a sequence containing the smallest tuning parameters such that all noise variables are excluded from the model. Note that our asymptotic results are stated for the main effects and interaction terms only, even though our formulation includes an unpenalized intercept. Consistency results immediately follow for $\beta_0$ since we assume the data has been centered, leading to a closed form solution for the intercept in the least-squares setting. 
+
+%where $\bTheta\coloneqq(\beta_{0},\beta_{E},\btheta_{1},\ldots,\btheta_{p},\btau_{1},\ldots,\btau_{p})$
+%and $\bD\coloneqq(Y,\bPsi,X_{E})$ is the working data.
+
+%\begin{align*}
+%\begin{aligned}\widehat{\bTheta}= & \argmin_{\bTheta}Q(\bTheta)\end{aligned}
+%& =\mathcal{L}(\bTheta|\bD)+\lambda(1-\alpha)\left(w_{E}\left|\beta_{E}\right|+\sum_{j=1}^{p}w_{j}\left\Vert \btheta_{j}\right\Vert _{2}\right)+\lambda\alpha\sum_{k=1}^{p}w_{kE}\left|\gamma_{k}\right|
+%\end{align*}
+
+
+
+\begin{lemma}[Existence of a local minimizer]\label{th:lemma1}
+	Assume $a_n = O_P(\frac{1}{\sqrt{n}})$. Let $\eta_{n}=\frac{1}{\sqrt{n}}+a_{n}$ and $\{\bTheta^{*}+\eta_{n}\boldsymbol{\delta}:\|\boldsymbol{\delta}\|_2\leq C\}$
+	be the ball around $\bTheta^{*}$ for $\boldsymbol{\delta} \in \mathbb{R}^d$, where $d$ is the dimension of the design matrix and $C$ is some constant. Under the regularity assumptions, there exists a local minimizer $\widehat{\bTheta}_n$ of $Q_n(\bTheta)$ such that $\|\widehat{\bTheta}_n - \bTheta^*  \|_2 = O_P(\eta_{n})$.
+\end{lemma}
+
+The proof is in Appendix A. Lemma \eqref{th:lemma1} states that if the tuning parameters corresponding to the nonzero coefficients converge to 0 at a speed faster than $\frac{1}{\sqrt{n}}$, then there exists a local minimizer of $Q_n(\bTheta)$ which is $\sqrt{n}$-consistent~\citep{wang2007regression, choi2010variable}. The following Theorem shows that this estimator is model selection consistent.
+
+
+
+\begin{theorem}[Model selection consistency] \label{th:theorem1}
+	Assume $\sqrt{n}b_n \to \infty$ and $\|\widehat{\bTheta}_n - \bTheta^*  \|_2 = O_P(\frac{1}{\sqrt{n}})$. Then \begin{equation}
+	\mathbb{P}\left\{\widehat{\mathcal{H}}=\mathcal{H}\right\} \rightarrow 1, \quad \text { as } n \rightarrow \infty \label{eq:modelselectionconsistency}
+	\end{equation}
+\end{theorem}
+
+The proof is in Appendix B. Theorem~\eqref{th:theorem1} shows that \sail ~can consistently remove the main effects and interaction terms which are not associated with the response with high probability. Together with Lemma~\eqref{th:lemma1}, we see that the asymptotic behaviour of the penalty terms for the zero and non-zero predictors must be different to satisfy the model selection consistency property~\eqref{eq:modelselectionconsistency}~\citep{nardi2008asymptotic}. Next, we obtain the asymptotic distribution of the \sail ~estimator.
+
+\begin{theorem}[Asymptotic normality] \label{th:theorem2}
+Assume that $a_n = O_P(\frac{1}{\sqrt{n}})$ and $\sqrt{n}b_n \to \infty$. Then, under the regularity conditions, 
+\begin{equation}
+\sqrt{n}\left(\widehat{\bTheta}-\bTheta^{*}\right) \stackrel{d}{\rightarrow} Z,
+\end{equation}
+where $Z_{\mathcal{H}} \sim \mathrm{N}\left(0, \mathbf{I}^{-1}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right) \right)$, $Z_{\mathcal{H}^{c}}=0$, and $\mathbf{I}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)$ is the Fisher information matrix for the causal predictors only. 
+\end{theorem}
+The proof is in Appendix C. Together, Theorems~\eqref{th:theorem1} and~\eqref{th:theorem2} establish that if the tuning parameters satisfy the conditions $a_n = O_P(\frac{1}{\sqrt{n}})$ and $\sqrt{n}b_n \to \infty$, then as the sample size grows large, \sail ~has the oracle property~\citep{fan2001variable}. In order for the conditions on the tuning parameters to be satisfied, we follow the strategies outlined for the adaptive lasso~\citep{zou2006adaptive}, the adaptive group lasso~\citep{nardi2008asymptotic} and the adaptive elastic-net~\citep{zou2009adaptive}. That is, we define the adaptive weights as $w_h = \| \widehat{\bTheta}_h^{ini} + 1/n \|_2^{-\xi}$ for $h=1, \ldots, 2p+1$, where $\xi$ is a positive constant and $\widehat{\bTheta}_h^{ini}$ is an initial $\sqrt{n}$-consistent estimate of $\bTheta^*$. Here, the $1/n$ is to avoid division by zero. 
+%,  $w_h^\beta = \frac{1}{\|\widehat{\beta}_h \|_2^\xi}$ for $h=1$, $w_h^\theta = \frac{1}{\|\widehat{\btheta}_h \|_2^\xi}$ for $h=2, \ldots, p+1$, and $w_h^\gamma = \frac{1}{\|\widehat{\gamma}_h \|_2^\xi}$ for $h=p+1, \ldots, 2p+1$.
+
+
+
+\begin{comment}
+\begin{proposition}
+\begin{itemize}
+	\item 	proposition 3.1 of rinaldi paper says that model selection consistency property, i.e.,  
+	\[\mathbb{P}\left\{\widehat{\mathcal{H}}=\mathcal{H}_{0}\right\} \rightarrow 1, \quad \text { as } n \rightarrow \infty\]
+	holds only if \[\sqrt{n} \lambda \lambda_{h} \rightarrow \infty, \quad \forall h \notin \mathcal{H}_{0}\]. the issue is that you need knowledge of the true active set. So in theorem 3.2 they propose the adaptive group lasso
+	\item Theorem 3.2 of rinaldi shows the model selection consistency property and asymptotic normality using adaptive group lasso weights. 
+	\item Theorem 3.3 of rinaldi follows fan and li 2001 and shows existence of a local minimizer inside a ball around the truth. This is Lemma 1 of Choi and Theorem 1 of Fan and Li. It also shows that the penalty terms for the zero and non-zero blocks need to have a different asymptotic behavior. This is what Choi does in Lemma1+Theorem 1. 
+\end{itemize}
+\end{proposition}
+\end{comment}
+
+
+
+\subsection{Lemma 1 proof}
+For this proof, we adopt the approaches outlined in~\citep{fan2001variable,choi2010variable,nardi2008asymptotic,wang2007regression} and extend it to our situation. Let $\eta_{n}=\frac{1}{\sqrt{n}}+a_{n}$ and $\{\bTheta^{*}+\eta_{n}\boldsymbol{\delta}:\|\boldsymbol{\delta}\|_2\leq C\}$
+be the ball around $\bTheta^{*}$ for $\boldsymbol{\delta}=(u_{1}, \textit{\textbf{u}}_2, \ddd \textit{\textbf{u}}_{p+1},v_{p+2},\ldots,v_{2p+1})^{\top} \in \mathbb{R}^d$, where $d$ is the dimension of the design matrix and $C$ is some constant. The objective function is given by
+\begin{equation*}
+Q_n(\bTheta)
+=-L_n(\bTheta)+n\lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} + n\sum_{h=2}^{p+1}      \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}  +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|
+\end{equation*}
+Define 
+\[ D_{n}(\boldsymbol{\delta})\equiv Q_{n}(\bThetastar+\eta_{n}\bdelta)-Q_{n}(\bThetastar).\] Let $\mathcal{H}_1=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=1 \right\rbrace$, $\mathcal{H}_2=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=2, \ldots, p+1 \right\rbrace$ \\and $\mathcal{H}_3=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=p+2, \ldots, 2p+1 \right\rbrace$ where $\mathcal{H} = \mathcal{H}_1 \cup \mathcal{H}_2 \cup \mathcal{H}_3$. Then for $\bdelta$ that satisfies $\|\bdelta\|_2=C$, we have
+
+\begin{align}
+D_{n}(\bdelta) & =-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  + n \lambda_{h}^{\beta}(\left|\beta_{h}^*+\eta_n u_h\right| - |\beta_h^*|) \cdot \textrm{I}_{\lbrace h=1 \rbrace} +  \sum_{h=2}^{p+1}  \lambda_{h}^{\theta} (\| \btheta_{h}^* + \eta_{n}\textit{\textbf{u}}_h\|_{2} - \|\btheta_{h}^* \|_2 ) \nonumber\\  
+& +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}( \left|\gamma_{h}^* + \eta_{n}v_h\right| -        \left|\gamma_{h}^*\right|) \nonumber\\
+%
+ & \overset{(a)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  
+ +   \lambda_{h}^{\beta}(\left|\beta_{h}^*+\eta_n u_h\right| - |\beta_h^*|) \cdot \textrm{I}_{\lbrace h \in \mathcal{H}_1 \rbrace} +  n \sum_{h \in \mathcal{H}_2} \lambda_{h}^{\theta} (\| \btheta_{h}^* + \eta_{n}\textit{\textbf{u}}_h\|_{2} - \|\btheta_{h}^* \|_2 ) \nonumber\\  
+& +n\sum_{h \in \mathcal{H}_3}\lambda_{h}^{\gamma}( \left|\gamma_{h}^* + \eta_{n}v_h\right| -        \left|\gamma_{h}^*\right|)\nonumber \\
+%
+ & \overset{(b)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  - n \eta_{n}  \lambda_{h}^{\beta}\left|u_h\right| \cdot \textrm{I}_{\lbrace h \in \mathcal{H}_1 \rbrace}  -      n \eta_{n}\sum_{h \in \mathcal{H}_2}     \lambda_{h}^{\theta} \| \textit{\textbf{u}}_h\|_{2} - n \eta_n \sum_{h \in \mathcal{H}_3}\lambda_{h}^{\gamma} \left|v_h\right| \nonumber \\
+%
+%
+ & \overset{(c)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  - n \eta_{n}^2  \left|u_h\right| \cdot \textrm{I}_{\lbrace h \in \mathcal{H}_1 \rbrace}  -      n \eta_{n}^2 \sum_{h \in \mathcal{H}_2}    \| \textit{\textbf{u}}_h\|_{2} - n \eta_n^2 \sum_{h \in \mathcal{H}_3} \left|v_h\right| \nonumber \\
+%
+%
+& \overset{(d)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar) - n \eta_{n}^2 ( |\mathcal{H}_1| + |\mathcal{H}_2| + |\mathcal{H}_3|) C \nonumber \\
+%
+%
+%& \overset{(d)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar) - n %\eta_{n}^2 |\mathcal{H}_1| C + |\mathcal{H}_2| + n \eta_{n}^2 |\mathcal{H}_3|C %\nonumber \\
+%
+& \overset{(e)}{=}-[\nabla L_{n}(\bThetastar)]^{\top}(\eta_{n}\bdelta)-\frac{1}{2}(\eta_{n}\bdelta)^{\top}[\nabla^{2}L_{n}(\bThetastar)](\eta_{n}\bdelta)(1+o_{p}(1)) \nonumber \\ 
+& - n \eta_{n}^2 ( |\mathcal{H}_1| + |\mathcal{H}_2|+ |\mathcal{H}_3| ) C \label{eq:lemma1}
+\end{align}
+\begin{comment}
+\begin{align*}
+D_{n}(\bdelta) & =-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)+ n\sum_{h=1}^{p+1} \left( \lambda_{h}^{\beta}\left|\beta_{h}+\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}\right) + 
+n\lambda_{E}(|\beta_{E}^{*}+\eta_{n}u_{E}|-|\beta_{E}^{*}|)+n\sum_{j}\lambda_{j}^{\theta}\left(\left\Vert \btheta{}_{j}^{*}+\eta_{n}\boldsymbol{u}_{j}\right\Vert _{2}-\left\Vert \btheta_{j}^{*}\right\Vert _{2}\right)\\
+& +n\sum_{k}\lambda_{k}^{\gamma}(|\gamma_{k}^{*}+\eta_{n}v_{kE}|-|\gamma_{k}^{*}|)\\
+& \overset{(a)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)+n\lambda_{E}(|\beta_{E}^{*}+\eta_{n}u_{E}|-|\beta_{E}^{*}|)\cdot I(\beta_{E}^{*}\neq0)\\ 
+&+n\sum_{j\in\mathcal{A}_{2}}\lambda_{j}^{\theta}\left(\left\Vert \btheta{}_{j}^{*}+\eta_{n}\boldsymbol{u}_{j}\right\Vert _{2}-\left\Vert \btheta_{j}^{*}\right\Vert _{2}\right)\\
+& +n\sum_{k\in\mathcal{A}_{3}}\lambda_{k}^{\gamma}(|\gamma_{k}^{*}+\eta_{n}v_{kE}|-|\gamma_{k}^{*}|)\\
+& \overset{(b)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)-n\eta_{n}\lambda_{E}|u_{E}|\cdot I(\beta_{E}^{*}\neq0)-n\eta_{n}\sum_{j\in\A_{2}}\lambda_{j}^{\theta}\left\Vert \boldsymbol{u}_{j}\right\Vert _{2}-n\eta_{n}\sum_{k\in\A_{3}}\lambda_{k}^{\gamma}|v_{kE}|\\
+& \overset{(c)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)-n\eta_{n}^{2}\left(\left|u_{E}\right|\cdot I(\beta_{E}^{*}\neq0)+\sum_{j\in\A_{2}}\left\Vert \boldsymbol{u}_{j}\right\Vert _{2}+\sum_{k\in\A_{3}}\lambda_{k}^{\gamma}|v_{kE}|\right)\\
+& \overset{(d)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)-n\eta_{n}^{2}\left(|\A_{1}|+|\A_{2}|+|\A_{3}|\right)d\\
+& \overset{(e)}{=}-[\nabla L_{n}(\bThetastar)]^{\top}(\eta_{n}\bdelta)-\frac{1}{2}(\eta_{n}\bdelta)^{\top}[\nabla^{2}L_{n}(\bThetastar)](\eta_{n}\bdelta)(1+o_{p}(1))\\
+& -n\eta_{n}^{2}\left(|\A_{1}|+|\A_{2}|+|\A_{2}|\right)d
+\end{align*}
+\end{comment}
+Inequality (a) is by the fact that $\sum_{h\notin\mathcal{H}_1}|\bTheta_{h}^{*}|=0$ and $\sum_{h\notin\mathcal{H}_2}|\bTheta_{h}^{*}|=0$. 
+Inequality (b) is due to the reverse triangle inequality $|a|-|b|\geq-|a-b|$. Inequality (c) is by $\lambda_{h}^\beta\leq\eta_{n}$, $\lambda_{h}^{\theta}\leq\eta_{n}$ and $\lambda_{h}^{\gamma}\leq\eta_{n}$. Inequality (d) is by the Cauchy\textendash Schwarz
+inequality:
+\[
+\sum_{j\in \mathcal{H}}|u_{j}|=|\mathbf{1}_{\mH}^{\top}\textit{\textbf{u}}_{\mH}|\leq\|\mathbf{1}_{\mH}\|_2 \|\textit{\textbf{u}}_{\mH}\|_2=\sqrt{|\mH}|\|\textit{\textbf{u}}_{\mH}\|_2\leq|\mH|C.
+\]
+Equality (e) is by the standard argument on the Taylor expansion of the loss function:
+\begin{align*}
+L_{n}(\bThetastar+\eta_{n}\bdelta) & =L_{n}(\bThetastar+\eta_{n}\cdot\mathbf{0})+\eta_{n}\nabla L_{n}(\bThetastar+\eta_{n}\cdot\mathbf{0})^{\top}(\bdelta-\mathbf{0})\\
+& \qquad+\frac{1}{2}(\bdelta-\mathbf{0})^{\top}\nabla^{2}L_{n}(\bThetastar+\eta_{n}\cdot\mathbf{0})(\bdelta-\mathbf{0})\{1+\op(1)\}\\
+& =L_{n}(\bThetastar)+\eta_{n}\nabla L_{n}(\bThetastar)^{\top}\bdelta+\frac{1}{2}\bdelta^{\top}\nabla^{2}L_{n}(\bThetastar)\bdelta\eta_{n}^{2}\{1+\op(1)\}
+\end{align*}
+We split~\eqref{eq:lemma1} into three parts:
+\[
+\begin{aligned}A_{1} & =-\left[\nabla L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]^{\mathrm{T}}\left(\eta_{n}\boldsymbol{\delta}\right)\\
+A_{2} & =-\frac{1}{2}\left(\eta_{n}\boldsymbol{\delta}\right)^{\top}\left[\nabla^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]\left(\eta_{n}\boldsymbol{\delta}\right)\left(1+o_{p}(1)\right)\\
+A_{3} & =-n\eta_{n}^{2}\left(\left|\mathcal{H}_{1}\right|+\left|\mathcal{H}_{2}\right|+\left|\mathcal{H}_{3}\right|\right)C
+\end{aligned}
+\]
+
+\begin{align}
+A_{1} & =-\eta_{n}\left[\nabla L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]^{\top}\boldsymbol{\delta} \nonumber\\
+& =-\sqrt{n}\eta_{n}\left(\frac{1}{\sqrt{n}}\nabla L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right)^{\top}\boldsymbol{\delta} \nonumber\\
+& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\Theta}\right)\right|_{\boldsymbol{\Theta}=\boldsymbol{\Theta}^{*}}\right)^{\top}\boldsymbol{\delta}\nonumber\\
+& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\left[\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\Theta}\right)\right|_{\boldsymbol{\Theta}=\boldsymbol{\Theta}^{*}}-\mathbf{0}\right]\right)^{\top}\boldsymbol{\delta} \nonumber\\
+& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\left[\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\Theta}\right)\right|_{\boldsymbol{\Theta}=\boldsymbol{\Theta}^{*}}-E_{\boldsymbol{\Theta}^{*}}\nabla L\left(\boldsymbol{\Theta}^{*}\right)\right]\right)^{\top}\boldsymbol{\delta} \nonumber\\
+& =-\sqrt{n}\eta_{n}\Op\left(1\right)\boldsymbol{\delta}\nonumber\\
+& =-\Op\left(\sqrt{n}\eta_{n} \|\bdelta\|_2 \right) \label{eq:lemma1A1}
+%& =-\Op\left(n\eta_{n}^{2} \|\bdelta\|_2  \right)
+\end{align}
+\begin{comment}
+The last equation is due to
+\begin{align*}
+\Op(n^{1/2}\eta_{n}) & =\Op(n^{1/2}(n^{-1/2}+a_{n}))\\
+& =\Op(1+n^{1/2}a_{n})=\Op(1+n^{1/2}a_{n}\{1+\op(1)\})\\
+& =\Op(1+2n^{1/2}a_{n}+\op(n^{1/2}a_{n}))\\
+& =\Op(1+2n^{1/2}a_{n}+(n^{1/2}a_{n})^{2})\\
+& =\Op(1+2n^{1/2}a_{n}+na_{n}^{2}))\\
+& =\Op(n(n^{-1/2}+a_{n})^{2})=\Op(n\eta_{n}^{2})
+\end{align*}
+\end{comment}
+\begin{align}
+A_{2} & =\frac{1}{2}n\eta_{n}^{2}\left\{ \boldsymbol{\delta}^{\top}\left[-\frac{1}{n}\nabla^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]\boldsymbol{\delta}\right\} \left(1+o_{p}(1)\right) \nonumber\\
+& =\frac{1}{2}n\eta_{n}^{2}\left\{ \boldsymbol{\delta}^{\top}\left[I\left(\boldsymbol{\Theta}^{*}\right)\right]\boldsymbol{\delta}\right\} \left(1+o_{p}(1)\right)\text{ by the weak law of large numbers. } \nonumber\\
+& = O(n \eta_n^2 \|\bdelta\|_2^2) \label{eq:lemma1A2}
+\end{align}
+Combining \eqref{eq:lemma1A1} and \eqref{eq:lemma1A2} with \eqref{eq:lemma1} gives:
+\[
+\begin{aligned}D_{n}(\boldsymbol{\delta}) & \geq A_{1}+A_{2}+A_{3}\\
+& =-\Op\left(\sqrt{n}\eta_{n} \|\bdelta\|_2 \right)+O(n \eta_n^2 \|\bdelta\|_2^2)-n\eta_{n}^{2}\left(\left|\mathcal{H}_{1}\right|+\left|\mathcal{H}_{2}+\left|\mathcal{H}_{3}\right|\right|\right)C
+\end{aligned}
+\]
+We can conclude that for a large enough constant $C=\|\bdelta\|_2$, the positive term $O(n \eta_n^2 \|\bdelta\|_2^2)$ dominates all the others. Note that this is a positive term since $I(\bTheta)$ is positive definite at $\bTheta = \bTheta^*$ by regularity condition (C2).  
+%Notice that $A_{2}$ dominates the rest terms $A_{1}$ and $A_{3}$
+%and is positive since $I(\boldsymbol{\Theta})$ is positive definite
+%at $\boldsymbol{\Theta}=\bThetastar$ from (C2). 
+Therefore, for each $\varepsilon>0$, there exists a large enough constant $C$ such that, for large enough $n$
+\[
+P\left\{ \underset{\|\bdelta\|_2=C}{\inf}D_{n}\left(\boldsymbol{\delta}\right) > 0\right\} \geq 1-\varepsilon
+\]
+%\[
+%P\left\{ \underset{\|\bdelta\|_2=C}{\inf}Q_{n}\left(\boldsymbol{\Theta}^{*}+\eta_{n}\boldsymbol{\delta}\right)>Q_{n}\left(\boldsymbol{\Theta}^{*}\right)\right\} \geq1-\varepsilon
+%\]
+This implies with probability at least $1-\varepsilon$ that the empirical
+likelihood $Q_{n}$ has a local minimizer in the ball $\{\boldsymbol{\Theta}^{*}+\eta_{n}\mathbf{\bdelta}:\|\mathbf{\bdelta}\|_2\leq C\}$
+(since $Q_{n}$ is bounded and $\{\boldsymbol{\Theta}^{*}+\alpha_{n}\bdelta:\|\bdelta\|_2\leq C\}$
+is closed). In other words, there exists a solution $\widehat{\bTheta}_{n}$
+such that $\|\widehat{\boldsymbol{\Theta}}_{n}-\boldsymbol{\Theta}^{*}\|\leq\eta_{n}\|\bdelta\|_2\leq\eta_{n}C=\Op(\eta_{n})=\Op(n^{-1/2}+a_{n})$.
+Hence, $\left\Vert \widehat{\boldsymbol{\Theta}}_{n}-\boldsymbol{\Theta}^{*}\right\Vert =\Op\left(\eta_{n}\right).$ $\square$
+
+
+\subsection{Theorem 1 proof}
+We first recall the definitions of the active sets from Lemma 1. Let $\mathcal{H}_1=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=1 \right\rbrace$, $\mathcal{H}_2=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=2, \ldots, p+1 \right\rbrace$ and $\mathcal{H}_3=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=p+2, \ldots, 2p+1 \right\rbrace$ where $\mathcal{H} = \mathcal{H}_1 \cup \mathcal{H}_2 \cup \mathcal{H}_3$. We first consider consistency for the main effects: 
+\begin{align*}
+P&\left(\widehat{\bTheta}_{\mathcal{H}_{1}^{c}}=0\right)\rightarrow 1 \\
+P&\left(\widehat{\bTheta}_{\mathcal{H}_2^c}=0\right)\rightarrow 1
+\end{align*}
+Following \citep{fan2001variable,choi2010variable}, it is sufficient to show for any $h\in\mathcal{H}_{1}^{c} \cup \mathcal{H}_2^c$ 
+\begin{equation}
+\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}<0\quad\text{ for }-\varepsilon_{n}<\widehat{\bTheta}_{h}<0\label{eq:first_eq}
+\end{equation}
+\begin{equation}
+\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}>0\quad\text{ for }0<\widehat{\bTheta}_{h}<\varepsilon_{n}\label{eq:sec_eq}
+\end{equation}
+with probability tending to 1 where $\varepsilon_{n}=Cn^{-1/2}$ and
+$C>0$ is any constant. To show \eqref{eq:sec_eq}, notice that 
+\begin{itemize}
+	\item[for] $h=1$  
+\begin{align*}
+	\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}= & -\frac{\partial L_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}+n\lambda_{h}^{\beta}\textrm{sgn}\left(\widehat{\bTheta}_{h}\right)\\
+	= & -\frac{\partial L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}}-\sum_{k=2}^{2p+1}\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\\
+	& -\sum_{k=2}^{2p+1}\sum_{l=2}^{2p+1}  (2p+1)\frac{\partial^{3}L_{n}(\widetilde{\bTheta})}{\partial\bTheta_{h}\partial\bTheta_{k}\partial\bTheta_{l}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\left(\widehat{\bTheta}_{l}-\bTheta_{l}^{*}\right)+n\lambda_{h}^{\beta}\textrm{sgn}\left(\widehat{\bTheta}_{h}\right)
+\end{align*} 
+\item[for] $h=2, \ldots, p+1$ 
+%\begin{align*}
+%\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}= & -\frac{\partial L_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}+n\lambda_{h}^{\theta}\frac{\widehat{\bTheta}_{h}}{\|\widehat{\bTheta}_{h} \|_2}
+%\end{align*} 
+\begin{align*}
+\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}= & -\frac{\partial L_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}+n\lambda_{h}^{\theta}\frac{\widehat{\bTheta}_{h}}{\|\widehat{\bTheta}_{h} \|_2}\\
+= & -\frac{\partial L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}}-\sum_{k=2}^{2p+1}\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\\
+& -\sum_{k=2}^{2p+1}\sum_{l=2}^{2p+1}  (2p+1)\frac{\partial^{3}L_{n}(\widetilde{\bTheta})}{\partial\bTheta_{h}\partial\bTheta_{k}\partial\bTheta_{l}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\left(\widehat{\bTheta}_{l}-\bTheta_{l}^{*}\right)+n\lambda_{h}^{\theta}\frac{\widehat{\bTheta}_{h}}{\|\widehat{\bTheta}_{h} \|_2}
+\end{align*} 
+\end{itemize}
+
+\begin{comment}
+\[
+\begin{aligned}\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}= & -\frac{\partial L_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}+n\lambda_{h}^{\beta}\textrm{sgn}\left(\widehat{\bTheta}_{h}\right)\\
+= & -\frac{\partial L_{n}\left(\boldsymbol{\theta}^{*}\right)}{\partial\beta_{j}}-\sum_{k=1}^{\frac{p(p+1)}{2}}\frac{\partial^{2}L_{n}\left(\boldsymbol{\theta}^{*}\right)}{\partial\beta_{j}\partial\theta_{k}}\left(\hat{\theta}_{k}-\theta_{k}^{*}\right)\\
+& -\sum_{k=1}^{\frac{p(p+1)}{2}}\frac{p(p+1)}{2}\frac{\partial^{3}L_{n}(\widetilde{\btheta})}{\partial\beta_{j}\partial\theta_{k}\partial\theta_{l}}\left(\hat{\theta}_{k}-\theta_{k}^{*}\right)\left(\hat{\theta}_{l}-\theta_{l}^{*}\right)+n\lambda_{j}^{\beta}\textrm{sgn}\left(\hat{\beta}_{j}\right)
+\end{aligned}
+\]
+\end{comment}
+
+where $\widetilde{\bTheta}$ lies between $\widehat{\bTheta}_{n}$ and $\bTheta^{*}$. In both cases above, the first term is
+\[
+\frac{\partial L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}}=\sqrt{n}\sqrt{n}\frac{1}{n}\frac{\partial L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}}=\sqrt{n}O_{P}(1)=O_{P}(n^{1/2}).
+\]
+Since 
+\[
+\frac{1}{n}\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}=E\left\{ \frac{\partial^{2}\log f(\bTheta^{*})}{\partial\bTheta_{h}\partial\bTheta_{k}}\right\} +\op(1),
+\]
+then
+\[
+\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}=nE\left\{ \frac{\partial^{2}\log f(\bTheta^{*})}{\partial\bTheta_{h}\partial\bTheta_{k}}\right\} +\op(n),
+\]
+Then the second term
+\begin{align*}
+\sum_{k=2}^{2p+1}\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right) & =\left[nE\left\{ \frac{\partial^{2}\log f(\bTheta_{*})}{\partial\bTheta_{h}\partial\bTheta_{k}}\right\} +\op(n)\right]O_{p}\left(n^{-1/2}\right)\\
+& =O_{P}(n^{1/2})+o_{P}(n^{1/2})
+\end{align*}
+The third term is 
+\[
+-\sum_{k=2}^{2p+1}\sum_{l=2}^{2p+1}  (2p+1)\frac{\partial^{3}L_{n}(\widetilde{\bTheta})}{\partial\bTheta_{h}\partial\bTheta_{k}\partial\bTheta_{l}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\left(\widehat{\bTheta}_{l}-\bTheta_{l}^{*}\right)=O_{p}\left(n^{-1/2}\right)O_{p}\left(n^{-1/2}\right)=O_{p}\left(n^{-1}\right)
+\]
+By the regularity conditions and the condition $\left\Vert \widehat{\boldsymbol{\Theta}}_{n}-\boldsymbol{\Theta}^{*}\right\Vert =O_{p}\left(\frac{1}{\sqrt{n}}\right)$,
+\begin{itemize}
+	\item[for] $h=1$  
+	\begin{align}
+\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}=\sqrt{n}\left\{ O_{p}(1)+\sqrt{n}\lambda_{j}^{\beta}\textrm{sgn}\left(\hat{\beta}_{j}\right)\right\} . \label{eq:theorem1h1}
+\end{align}
+\item[for] $h=2, \ldots, p+1$ 
+	\begin{align}
+\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}=\sqrt{n}\left\{ O_{p}(1)+\sqrt{n}\lambda_{h}^{\theta}\frac{\widehat{\bTheta}_{h}}{\|\widehat{\bTheta}_{h} \|_2}\right\} .\label{eq:theorem1h2}
+\end{align}
+\end{itemize}
+As $\sqrt{n}\lambda_h^\beta\to\infty$ for $h\in\mathcal{H}_{1}^{c}$ from the assumption, the sign of $\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}$ in~\eqref{eq:theorem1h1} is dominated by $\textrm{sgn(\ensuremath{\widehat{\bTheta_{h}})}}$. Similarly, as $\sqrt{n}\lambda_h^\theta\to\infty$ for $h\in\mathcal{H}_{2}^{c}$, the sign of $\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}$ in~\eqref{eq:theorem1h2} is dominated by the norm of $\widehat{\bTheta_{h}}$. 
+
+Therefore,
+\[
+P\left[\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}>0\quad\text{ for }0<\widehat{\bTheta}_{h}<\varepsilon_{n}\right]\rightarrow1\quad\text{ as }n\rightarrow\infty.
+\]
+
+\eqref{eq:first_eq} can be shown in the same way. 
+
+Due to the strong heredity property and the proof above for the consistency of the main effects, it follows that $P\left(\widehat{\bTheta}_{\mathcal{H}_{3}^{c}}=0\right)\rightarrow1$. $\qed$
+
+\begin{comment}
+\begin{itemize}
+	\item For $(k,k^{\prime})$ where $(k,k^{\prime})\in\mathcal{A}_{2}^{c}$
+	and $k,k^{\prime}\in\mathcal{A}_{1}:$ we can prove $P\left(\hat{\gamma}_{kk^{\prime}}=0\right)\rightarrow1$
+	by a similar reasoning
+	\item For $(k,k^{\prime})$ where $(k,k^{\prime})\in\mathcal{A}_{2}^{c}$
+	and either $k$ or $k^{\prime}$ is in $\mathcal{A}_{1}^{c}$: without
+	loss of generality, assume that $\beta_{k}^{*}=0$. Notice that $\hat{\beta}_{k}=0$
+	implies $\hat{\gamma}_{kk^{\prime}}=0$, because if $\hat{\gamma}_{kk^{\prime}}\neq0$,
+	then the value of the loss function does not change but the value
+	of the penalty function will increase. Since we already have $P\left(\hat{\beta}_{k}=0\right)\rightarrow1$,
+	we can conclude $P\left(\hat{\gamma}_{kk^{\prime}}=0\right)\rightarrow1$
+	as well. $\qed$
+\end{itemize}
+\end{comment}
+
+
+\subsection{Theorem 2 proof}
+
+By Lemma~\eqref{th:lemma1} and Theorem~\eqref{th:theorem1}, there exists a $\widehat{\bTheta}_{\mathcal{H}}$ that is a $\sqrt{n}$-consistent local minimizer of $Q(\bTheta_{\mathcal{H}})$, and that satisfies (with probability tending to 1):
+\begin{equation}
+\left.\frac{\partial Q_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}\right)}{\partial\bTheta_{h}}\right|_{\boldsymbol{\Theta}_{\mathcal{H}}=\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}}=0,\quad\forall h\in\mathcal{H}\label{eq:eq_14}
+\end{equation}
+where
+\begin{align}
+Q_n(\bTheta_{\mathcal{H}})
+&=-L_n(\bTheta_{\mathcal{H}})+\underbrace{n\lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h \in \mathcal{H}_1 \rbrace} + n\sum_{h \in \mathcal{H}_2}      \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}  +n\sum_{h \in \mathcal{H}_3}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|}_{\equiv n P(\bTheta_{\mathcal{H}})} \nonumber \\
+& = -L_n(\bTheta_{\mathcal{H}})+n P(\bTheta_{\mathcal{H}}) \label{eq:eq_14.5}
+\end{align}
+
+\begin{comment}
+Let $Q_{n}(\btheta_{\mathcal{A}})$ denote the objective function
+$Q_{n}$ only on the $\mathcal{A}-$component of $\btheta$, that
+is, $Q_{n}(\btheta)$ with $\btheta_{\mathcal{A}^{c}}.$Based on Lemma
+1 and Theorem 1, we have $P\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}^{c}}=0\right)\rightarrow1$.
+Thus, 
+\[
+P\left[\arg\min_{\boldsymbol{\theta}_{\mathcal{A}}}Q_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)=\left(\mathcal{A}\text{ -component of }\arg\min_{\boldsymbol{\theta}}Q_{n}(\boldsymbol{\theta})\right)\right]\rightarrow1.
+\]
+
+It means that $\widehat{\btheta}_{\mathcal{A}}$ should satisfy 
+with probability tending to 1. 
+Let $L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)$ and $P_{\boldsymbol{\lambda}}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)$
+denote the log-likelihood function of $\btheta_{\mathcal{A}}$and
+the penalty function of $\btheta_{\mathcal{A}}$ respectively so that
+we have 
+\[
+Q_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)=-L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)+nP_{\boldsymbol{\lambda}}\left(\boldsymbol{\theta}_{\mathcal{A}}\right).
+\]
+\end{comment}
+
+From \eqref{eq:eq_14} and~\eqref{eq:eq_14.5} we have
+\begin{equation}
+\nabla_{\mathcal{H}}Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right)=-\nabla_{\mathcal{H}}L_{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right)+n\nabla_{\mathcal{H}}P\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right)=\mathbf{0},\label{eq:eq_15}
+\end{equation}
+
+with probability tending to 1. 
+
+We then expand $-\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}\right)\text{ at }\boldsymbol{\Theta}_{\mathcal{H}}=\boldsymbol{\Theta}_{\mathcal{H}}^{*}$ in \eqref{eq:eq_15}:
+	\[
+	\begin{aligned}-\nabla_{\mathcal{H}}L_{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right) & =-\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)-\left[\nabla_{\mathcal{H}}^{2}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+o_{p}(1)\right]\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\\
+	& =\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+\left(-\frac{1}{n}\nabla_{\mathcal{H}}^{2}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)-o_{p}(1)\right)\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\right]\\
+	& =\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+I\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+o_{p}(1)\right]
+	\end{aligned}
+	\]
+
+The third line follows by
+\[\frac{1}{n} \nabla_{\mathcal{H}}^{2} L_{n}\left(\boldsymbol{\bTheta}_{\mathcal{H}}^{*}\right)=E\left\{\nabla_{\mathcal{H}}^{2} L\left(\boldsymbol{\bTheta}_{\mathcal{H}}^{*}\right)\right\}+o_{P}(1)=-I\left(\boldsymbol{\bTheta}_{\mathcal{H}}^{*}\right)+o_{P}(1)\]
+
+We also expand $n\nabla_{\mathcal{H}}P\left(\boldsymbol{\Theta}_{\mathcal{H}}\right)\text{ at }\boldsymbol{\Theta}_{\mathcal{H}}=\boldsymbol{\Theta}_{\mathcal{H}}^{*}$ in \eqref{eq:eq_15}:
+	
+	\[
+	\begin{aligned}n\nabla_{\mathcal{H}}P\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right) & =n\left\{ \left[\begin{array}{c}
+	{\lambda_{h}^{\beta}\textrm{sgn}\left(\beta_{h}\right)}\\
+	{\lambda_{h}^{\theta}  \frac{\btheta_{h}}{\| \btheta_{h} \|_2}    }\\
+	{\lambda_{h}^{\gamma}\textrm{sgn}\left(\gamma_{h}\right)}
+	\end{array}\right]_{h\in\mathcal{H}}+o_{p}(1)\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\right\} \\
+	& =\sqrt{n}o_{p}(1)
+	\end{aligned}
+	\]
+	because $\sqrt{n}a_{n}=$$o(1)$ and $\left\Vert \widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right\Vert =O_{p}\left(n^{-1/2}\right)$.
+
+
+
+Thus, 
+\[
+0=\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+\boldsymbol{I}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+o_{p}(1)\right].
+\]
+It follows 
+\[
+\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)=\boldsymbol{I}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)^{-1}\sqrt{n}\frac{1}{n}\sum_{i=1}^{n}\nabla_{\mathcal{H}}\log f\left(\boldsymbol{V}_{i},\boldsymbol{\Theta}_{\mathcal{H}}\right)+o_{p}(1).
+\]
+Therefore, by the central limit theorem, 
+\[
+\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\rightarrow_{d}N\left(\mathbf{0},\boldsymbol{I}^{-1}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\right).
+\]
+$\qed$
 
 \section{Algorithm and Computational Details} \label{sec:sail_algorithm}
 
@@ -1513,13 +1902,13 @@ which gives the most regularized model such that error is within one standard er
 \hlstd{cvfit[[}\hlstr{"lambda.min"}\hlstd{]]}
 \end{alltt}
 \begin{verbatim}
-## [1] 0.2788355
+## [1] 0.2109289
 \end{verbatim}
 \begin{alltt}
 \hlstd{cvfit[[}\hlstr{"lambda.1se"}\hlstd{]]}
 \end{alltt}
 \begin{verbatim}
-## [1] 0.4238052
+## [1] 0.6148688
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -1533,101 +1922,101 @@ The estimated nonzero coefficients at \texttt{lambda.1se} and \texttt{lambda.min
 \end{alltt}
 \begin{verbatim}
 ##                        1
-## (Intercept)   5.42162330
-## X1_1         -0.78259292
-## X1_2          0.13434743
-## X1_3          0.43872182
-## X1_4          0.79452833
-## X1_5          1.92193021
-## X3_1          3.45123833
-## X3_2          1.56772288
-## X3_3         -1.27179135
-## X3_4         -2.27792209
-## X3_5         -1.23352137
-## X4_1          4.47182924
-## X4_2         -2.87488058
-## X4_3         -6.65073351
-## X4_4         -3.44085202
-## X4_5         -0.47032703
-## X8_1          0.17507051
-## X8_2          0.11619435
-## X8_3          0.01783624
-## X8_4         -0.10505726
-## X8_5         -0.24485431
-## X11_1         0.13691003
-## X11_2         0.02857999
-## X11_3        -0.07324928
-## X11_4        -0.20944262
-## X11_5        -0.22648392
-## E             1.99575642
-## X3_1:E        1.80711590
-## X3_2:E        0.82088128
-## X3_3:E       -0.66592746
-## X3_4:E       -1.19275137
-## X3_5:E       -0.64588877
-## X4_1:E        8.31249627
-## X4_2:E       -5.34399523
-## X4_3:E      -12.36277025
-## X4_4:E       -6.39605585
-## X4_5:E       -0.87427125
+## (Intercept)   5.40562701
+## X1_1         -0.41591304
+## X1_2         -0.05315663
+## X1_3          0.12306918
+## X1_4          0.39757752
+## X1_5          1.04552137
+## X3_1          2.07590314
+## X3_2          0.96787580
+## X3_3         -0.79587019
+## X3_4         -1.61611187
+## X3_5         -1.05718450
+## X4_1          3.83402041
+## X4_2         -2.27650998
+## X4_3         -5.29748889
+## X4_4         -3.04147477
+## X4_5         -0.37017732
+## E             1.87331342
+## X3_1:E        0.23520328
+## X3_2:E        0.10966194
+## X3_3:E       -0.09017342
+## X3_4:E       -0.18310816
+## X3_5:E       -0.11978076
+## X4_1:E        8.15188934
+## X4_2:E       -4.84031263
+## X4_3:E      -11.26351417
+## X4_4:E       -6.46677981
+## X4_5:E       -0.78707056
 \end{verbatim}
 \begin{alltt}
 \hlkwd{predict}\hlstd{(cvfit,} \hlkwc{type} \hlstd{=} \hlstr{"nonzero"}\hlstd{,} \hlkwc{s} \hlstd{=} \hlstr{"lambda.min"}\hlstd{)}
 \end{alltt}
 \begin{verbatim}
 ##                        1
-## (Intercept)   5.43619834
-## X1_1         -1.23832799
-## X1_2          0.48736979
-## X1_3          0.88915804
-## X1_4          1.10813495
-## X1_5          2.68123247
-## X2_1         -0.21985179
-## X2_2         -0.95071069
-## X2_3         -0.76066212
-## X2_4         -0.17413616
-## X2_5         -0.06845895
-## X3_1          4.42751615
-## X3_2          2.28700197
-## X3_3         -1.36817303
-## X3_4         -2.56642377
-## X3_5         -1.03093978
-## X4_1          5.37962120
-## X4_2         -3.35568118
-## X4_3         -8.07355346
-## X4_4         -3.50305791
-## X4_5         -0.55031385
-## X8_1          0.47925233
-## X8_2          0.33992532
-## X8_3          0.07652614
-## X8_4         -0.28114406
-## X8_5         -0.66616044
-## X11_1         0.34768804
-## X11_2         0.06274138
-## X11_3        -0.20149241
-## X11_4        -0.67859653
-## X11_5        -0.69589312
-## X20_1         0.10225010
-## X20_2        -0.03831915
-## X20_3        -0.17781683
-## X20_4        -0.18564133
-## X20_5         0.09741855
-## E             2.06410796
-## X1_1:E       -0.53459297
-## X1_2:E        0.21040020
-## X1_3:E        0.38385439
-## X1_4:E        0.47838792
-## X1_5:E        1.15750273
-## X3_1:E        2.37995847
-## X3_2:E        1.22935061
-## X3_3:E       -0.73544508
-## X3_4:E       -1.37955047
-## X3_5:E       -0.55416937
-## X4_1:E        8.87349228
-## X4_2:E       -5.53507578
-## X4_3:E      -13.31703694
-## X4_4:E       -5.77816841
-## X4_5:E       -0.90772296
+## (Intercept)   5.38418990
+## X1_1         -0.95293408
+## X1_2          0.95985046
+## X1_3          1.08688271
+## X1_4          1.28150692
+## X1_5          2.78251301
+## X2_1          0.28098747
+## X2_2         -2.66335703
+## X2_3         -2.44669669
+## X2_4         -0.23340006
+## X2_5         -1.31551172
+## X3_1          4.82743978
+## X3_2          2.71274481
+## X3_3         -1.36319180
+## X3_4         -2.49599039
+## X3_5         -1.08235296
+## X4_1          6.60048092
+## X4_2         -2.46337722
+## X4_3         -8.72797888
+## X4_4         -3.57605355
+## X4_5         -0.43277498
+## X8_1          0.63309319
+## X8_2          0.58536045
+## X8_3          0.24072528
+## X8_4         -0.27648564
+## X8_5         -0.79171965
+## X11_1         0.42512741
+## X11_2         0.01881440
+## X11_3        -0.22578239
+## X11_4        -0.91866142
+## X11_5        -1.04708521
+## X20_1         0.51797431
+## X20_2        -0.10793081
+## X20_3        -0.76941278
+## X20_4        -0.82115212
+## X20_5         0.39743438
+## E             2.26287501
+## X1_1:E       -0.15552538
+## X1_2:E        0.15665418
+## X1_3:E        0.17738671
+## X1_4:E        0.20915072
+## X1_5:E        0.45412520
+## X2_1:E        0.74718847
+## X2_2:E       -7.08227203
+## X2_3:E       -6.50613917
+## X2_4:E       -0.62064632
+## X2_5:E       -3.49814603
+## X3_1:E        2.62629018
+## X3_2:E        1.47582474
+## X3_3:E       -0.74162235
+## X3_4:E       -1.35790302
+## X3_5:E       -0.58883654
+## X4_1:E       10.50140051
+## X4_2:E       -3.91924636
+## X4_3:E      -13.88626116
+## X4_4:E       -5.68952036
+## X4_5:E       -0.68854731
+## X8_1:E        0.07275501
+## X8_2:E        0.06726957
+## X8_3:E        0.02766413
+## X8_4:E       -0.03177370
+## X8_5:E       -0.09098435
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -1734,28 +2123,26 @@ And extract the model at \texttt{lambda.min}:
 \end{alltt}
 \begin{verbatim}
 ##                       1
-## (Intercept)   5.4385240
-## X1_1          2.4568930
-## X2_1         -1.6517024
-## X3_1         -5.1516226
-## X4_1         -7.1356296
-## X7_1         -1.1055458
-## X8_1         -0.8602620
-## X11_1        -2.1990021
-## X14_1        -1.9208459
-## X16_1         3.2004798
-## X18_1         1.0234994
-## X20_1        -0.2161983
-## E             2.4466403
-## X1_1:E       -4.3995787
-## X2_1:E       -2.7115733
-## X3_1:E       -4.7198552
-## X4_1:E      -12.9777976
-## X7_1:E        2.3705634
-## X11_1:E      -2.1462985
-## X14_1:E      -0.9788318
-## X16_1:E       6.9268058
-## X18_1:E       1.9005742
+## (Intercept)   5.4146762
+## X1_1          2.5991375
+## X2_1         -1.2729626
+## X3_1         -4.8289438
+## X4_1         -6.7531418
+## X7_1         -0.2761320
+## X8_1         -0.8932856
+## X11_1        -2.7136677
+## X14_1        -1.9683602
+## X16_1         2.9803707
+## X18_1         0.2380716
+## X20_1        -0.1888869
+## E             2.2708721
+## X1_1:E       -3.1863063
+## X2_1:E       -1.7454916
+## X3_1:E       -3.8315980
+## X4_1:E      -12.0266669
+## X11_1:E      -2.2292285
+## X14_1:E      -1.0637093
+## X16_1:E       6.1310067
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -1834,7 +2221,7 @@ We use the simulated dataset \texttt{sailsim} provided in our package. We first 
 \begin{verbatim}
 ## 
 ##  1  2 
-## 55 45
+## 42 58
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -1893,11 +2280,11 @@ We then use the \texttt{model.matrix} function to create the design matrix. Note
 ## 5        1.935272e-01        3.262743e-01        2.933747e-01
 ## 6        1.852831e-01        3.241534e-01        3.024572e-01
 ##   bs(X4, degree = 6)6         X5 poly(X6, 2)1 poly(X6, 2)2 race1 race2
-## 1        4.359896e-03 0.51332996  -0.13705545   0.09851639     1     0
+## 1        4.359896e-03 0.51332996  -0.13705545   0.09851639     0     1
 ## 2        6.835086e-17 0.02643863   0.18835303   0.22584415     0     1
 ## 3        4.009478e-01 0.76746637  -0.15841216   0.16140597     0     1
 ## 4        1.419483e-07 0.69077618  -0.03664279  -0.07954100     0     1
-## 5        1.099135e-01 0.27718210   0.13128945   0.05620199     0     1
+## 5        1.099135e-01 0.27718210   0.13128945   0.05620199     1     0
 ## 6        1.175889e-01 0.48384748   0.08486354  -0.03559388     0     1
 \end{verbatim}
 \end{kframe}
@@ -1965,44 +2352,50 @@ The estimated non-zero coefficients at \texttt{lambda.1se}:
 \begin{knitrout}\scriptsize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{verbatim}
-##                                  1
-## (Intercept)            5.427451767
-## bs(X1, degree = 5)1   -0.525424522
-## bs(X1, degree = 5)2    0.052358374
-## bs(X1, degree = 5)3    0.271119758
-## bs(X1, degree = 5)4    0.554195548
-## bs(X1, degree = 5)5    1.330393115
-## ns(X3, df = 8)1        2.349455333
-## ns(X3, df = 8)2        2.089923982
-## ns(X3, df = 8)3        0.666828606
-## ns(X3, df = 8)4       -1.200690572
-## ns(X3, df = 8)5       -1.662360501
-## ns(X3, df = 8)6       -1.365480040
-## ns(X3, df = 8)7        0.516186563
-## ns(X3, df = 8)8       -1.215186213
-## bs(X4, degree = 6)1    4.466614577
-## bs(X4, degree = 6)2   -0.252832683
-## bs(X4, degree = 6)3   -4.706674900
-## bs(X4, degree = 6)4   -4.868782936
-## bs(X4, degree = 6)5   -2.105379737
-## bs(X4, degree = 6)6   -0.213392506
-## race1                  0.006726548
-## race2                 -0.006726548
-## E                      1.963105161
-## ns(X3, df = 8)1:E      1.170879214
-## ns(X3, df = 8)2:E      1.041538657
-## ns(X3, df = 8)3:E      0.332322025
-## ns(X3, df = 8)4:E     -0.598378532
-## ns(X3, df = 8)5:E     -0.828457273
-## ns(X3, df = 8)6:E     -0.680503338
-## ns(X3, df = 8)7:E      0.257247758
-## ns(X3, df = 8)8:E     -0.605602609
-## bs(X4, degree = 6)1:E  8.430067510
-## bs(X4, degree = 6)2:E -0.477183905
-## bs(X4, degree = 6)3:E -8.883145495
-## bs(X4, degree = 6)4:E -9.189100187
-## bs(X4, degree = 6)5:E -3.973589620
-## bs(X4, degree = 6)6:E -0.402746465
+##                                 1
+## (Intercept)             5.4495977
+## bs(X1, degree = 5)1    -1.0456941
+## bs(X1, degree = 5)2     0.5914166
+## bs(X1, degree = 5)3     0.9145862
+## bs(X1, degree = 5)4     1.1168525
+## bs(X1, degree = 5)5     2.5340095
+## bs(X2, degree = 3)1    -0.7019160
+## bs(X2, degree = 3)2    -0.6172127
+## bs(X2, degree = 3)3    -0.1048606
+## ns(X3, df = 8)1         3.1809909
+## ns(X3, df = 8)2         2.6249408
+## ns(X3, df = 8)3         0.9033761
+## ns(X3, df = 8)4        -1.0009075
+## ns(X3, df = 8)5        -1.6852800
+## ns(X3, df = 8)6        -1.4832566
+## ns(X3, df = 8)7         0.5639728
+## ns(X3, df = 8)8        -1.5058413
+## bs(X4, degree = 6)1     5.6797606
+## bs(X4, degree = 6)2    -0.1018338
+## bs(X4, degree = 6)3    -6.5435933
+## bs(X4, degree = 6)4    -6.3242737
+## bs(X4, degree = 6)5    -2.1107261
+## bs(X4, degree = 6)6    -0.3128171
+## E                       2.0908467
+## bs(X1, degree = 5)1:E  -0.4676835
+## bs(X1, degree = 5)2:E   0.2645093
+## bs(X1, degree = 5)3:E   0.4090459
+## bs(X1, degree = 5)4:E   0.4995089
+## bs(X1, degree = 5)5:E   1.1333281
+## ns(X3, df = 8)1:E       1.7788002
+## ns(X3, df = 8)2:E       1.4678587
+## ns(X3, df = 8)3:E       0.5051651
+## ns(X3, df = 8)4:E      -0.5597043
+## ns(X3, df = 8)5:E      -0.9424033
+## ns(X3, df = 8)6:E      -0.8294325
+## ns(X3, df = 8)7:E       0.3153718
+## ns(X3, df = 8)8:E      -0.8420617
+## bs(X4, degree = 6)1:E   8.7656770
+## bs(X4, degree = 6)2:E  -0.1571619
+## bs(X4, degree = 6)3:E -10.0988455
+## bs(X4, degree = 6)4:E  -9.7603656
+## bs(X4, degree = 6)5:E  -3.2575216
+## bs(X4, degree = 6)6:E  -0.4827763
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
