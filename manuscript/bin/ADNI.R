@@ -2,9 +2,9 @@
 
 source("/home/sahir/git_repositories/sail/my_sims/plot_functions_rda_ADNI.R")
 
-amy_mat <- read.csv("/home/sahir/git_repositories/sail/data-nogit/adni_new/csf_amyloid_final.csv",
+amy_mat <- read.csv("/home/sahir/git_repositories/sail/rda/csf_amyloid_final.csv",
                     stringsAsFactors = FALSE)
-covr <- read.csv("/home/sahir/git_repositories/sail/data-nogit/adni_new/covariates.csv",
+covr <- read.csv("/home/sahir/git_repositories/sail/rda/covariates.csv",
                  stringsAsFactors = FALSE, sep = ";")
 
 # these are used for plotting. we use the entire data set for the plots
