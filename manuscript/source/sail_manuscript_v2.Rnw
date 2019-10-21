@@ -179,11 +179,11 @@
 %            						TITLE and AUTHORS
 %########################################################################################
 
-\title{Sparse Additive Interaction Learning}
+\title{A Sparse Additive Model for High-Dimensional Interactions with an Exposure Variable}
 %\author{SRB}
 
 \author[1,2]{Sahir R Bhatnagar}
-%\author[3]{Karim Oualkacha}
+\author[2]{Tianyuan Lu}
 \author[2]{Amanda Lovato}
 \author[4]{Yi Yang}
 \author[1,2,5]{\mbox{Celia MT Greenwood}}
@@ -196,12 +196,14 @@
 %########################################################################################
 %            						START OF DOCUMENT
 %########################################################################################
+% NOTE: To produce blinded version, replace "1" with "0" below.
+\newcommand{\blind}{0}
 
 \begin{document}
 
 <<setup, include=FALSE>>=
 rm(list = ls())
-knitr::opts_chunk$set(cache=FALSE, message = FALSE, tidy = FALSE, echo = FALSE,
+knitr::opts_chunk$set(cache=TRUE, message = FALSE, tidy = FALSE, echo = FALSE,
 						fig.width = 6, fig.asp = 0.618, warning = FALSE,
 						fig.align = 'center', out.width = "100%", size = 'scriptsize')
 
@@ -211,7 +213,8 @@ knitr::read_chunk("../bin/setup.R")
 knitr::read_chunk("../bin/intro.R")
 knitr::read_chunk("../bin/simulation.R")
 knitr::read_chunk("../bin/ADNI.R")
-knitr::read_chunk("../bin/support.R")
+knitr::read_chunk("../bin/support_plots.R")
+knitr::read_chunk("../bin/PRS_plots.R")
 #finalversion <- FALSE # set to FALSE if still in development and you dont want to run the R code
 finalversion <- TRUE
 @
@@ -222,14 +225,32 @@ finalversion <- TRUE
 <<globals, eval=finalversion>>=
 @
 
-\maketitle
+\if1\blind
+{
+	\maketitle
+} \fi
+
+\if0\blind
+{
+	\bigskip
+	\bigskip
+	\bigskip
+	\begin{center}
+		{\LARGE\bf A Sparse Additive Model for High-Dimensional Interactions with an Exposure Variable}
+	\end{center}
+	\medskip
+} \fi
+
+\bigskip
+
+
 \pagestyle{fancy}
 
 \begin{abstract}
 Diseases are now thought to be the result of changes in entire biological networks whose states are affected by a complex interaction of genetic and environmental factors. In general, power to estimate interactions is low, the number of possible interactions could be enormous and their effects may be non-linear. Existing approaches such as the lasso might keep an interaction but remove a main effect, which is problematic for interpretation. In this work, we introduce a sparse additive interaction learning model called \sail ~for detecting non-linear interactions with a key environmental or exposure variable in high-dimensional settings. Our method can accommodate either the strong or weak heredity constraints. We develop a computationally efficient fitting algorithm with automatic tuning parameter selection, which scales to high-dimensional datasets. Through an extensive simulation study, we show that \sail ~outperforms existing penalized regression methods in terms of prediction error, sensitivity and specificity when there are non-linear interactions with an exposure variable. We apply \sail ~to the Alzheimer's Disease Neuroimaging Initiative (ADNI) data to select non-linear interactions between clinical diagnosis and A$\beta$ protein in 96 brain regions on mini-mental state examination. Our algorithms are available in an R package (\url{https://github.com/greenwoodlab}).
 \end{abstract}
 
-\maketitle
+
 \section{Introduction}
 
 Computational approaches to variable selection have become increasingly important with the advent of high-throughput technologies in genomics and brain imaging studies, where the data has become massive, yet where it is believed that the number of truly important variables is small relative to the total number of variables.
@@ -1170,6 +1191,46 @@ To visualize the estimated interaction effects, we ordered the 200 simulation ru
 \section{Real Data Application} \label{sec:sail_rda}
 In this section we illustrate \sail ~on several real data examples.
 
+\subsection{title}
+
+Intelligence is a highly heritable polygenic trait that measures the ability to learn, reason and solve problems. Over time, studies have shown an important role for both genetic and environmental factors in explaining IQ. For instance, genome-wide association studies (GWAS) have been used to explain variance in intelligence across the population through the use of a polygenic risk score (PRS) that assigns a number based on the effect multiple genetic loci on the phenotype of interest. To date, the PRS measure can account for over 20\% of the heritability of intelligence (1). In addition to the pre-determined effect of genes, environmental exposure, too, can have an important impact on IQ. Specifically, early intervention in young children has been shown to positively impact intellectual abilities (2). 
+While the individual influences of genetics and environment are well characterized, an interesting query that arises is how the two components interact together to mediate intelligence. To address this question, we have a dataset of PRS for educational attainment for a collection of individuals, separated by genes according to different p-value cutoffs. For each subject, we also have the Stanford Binet IQ score at 4 years of age and information on whether the children received early intervention or not. We ran the sail algorithm against this data to test for non-linear interactions between the introduction of early intervention and PRS at different significance levels on child IQ. For this, a total of 170 subjects were randomly stratified into training/validation/test sets of sizes 110, 40 and 20 respectively. We ran the strong heredity sail with cubic B-splines and α = 0.1. At the same time, the lasso, lassoBT, HierBasis and GLinternet were tested for comparison purposes. Using the same approach as in the simulation study and example above, each method was run on the training dataset, tuned with the validation set and the MSE was assessed on the test data. This process was repeated 200 times and outliers were removed for interpretability. In the plot of mean test set MSE vs. the mean number of active variables $\pm$ 1 SE above (Figure ), sail is shifted towards the lower end of the active variable counts with respect to the other methods. This illustrates, once again, that sail tends to generate the sparsest models. In terms of MSE, however, sail does not perform as well on average as the lasso, lassoBT and HierBasis in this example. Overall, though, these differences are insignificant. The GLinternet statistics are omitted here since the algorithm did not converge for several of the 200 simulations.
+
+<<PRS-packages, eval=finalversion, results = 'hide', message=FALSE>>=
+@
+
+<<load-PRS-results, eval=finalversion, results = 'hide', message=FALSE>>=
+@
+
+<<load-PRS-data, eval=finalversion, results = 'hide', message=FALSE, warning=FALSE>>=
+@
+
+<<PRS-cvsail-imputation-1, eval=finalversion, results = 'hide', message=FALSE>>=
+@
+
+
+<<PRS-intervention-interaction, fig.width=12, fig.height=8, fig.pos= 'H', fig.cap="Illustration of estimated interaction effects identified by \\texttt{sail} for the PRS data. Median prediction curves in dark colors based on 200 train/validate/test splits represent the estimated marginal interaction effects. Coefficients estimated in each of the 200 train/validate/test splits were used to generate prediction curves representing a 90\\% confidence interval colored in corresponding light colors.", eval=finalversion, results='hide'>>=
+@
+
+
+<<PRS-cvsail-imputation-others, eval=finalversion, results= 'hide', message=FALSE>>=
+@
+
+
+<<PRS-intervention-interaction-others, fig.width=12, fig.height=8, fig.pos= 'H', fig.cap="Illustration of estimated interaction effects identified by \\texttt{sail} for the PRS data. Median prediction curves in dark colors based on 200 train/validate/test splits represent the estimated marginal interaction effects. Coefficients estimated in each of the 200 train/validate/test splits were used to generate prediction curves representing a 90\\% confidence interval colored in corresponding light colors.", eval=finalversion, results='hide'>>=
+@
+
+
+
+<<PRS-model-selection, fig.width=12, fig.height=8, fig.pos= 'H', fig.cap="Illustration of estimated interaction effects identified by \\texttt{sail} for the PRS data. Median prediction curves in dark colors based on 200 train/validate/test splits represent the estimated marginal interaction effects. Coefficients estimated in each of the 200 train/validate/test splits were used to generate prediction curves representing a 90\\% confidence interval colored in corresponding light colors.", eval=finalversion, results='hide'>>=
+@
+
+
+<<PRS-error-crosses-plots, fig.width=10, fig.height=8, fig.pos= 'H', fig.cap="Mean test set AUC vs. mean number of active variables ($\\pm 1$ SD) for the SUPPORT data based on 200 train/validation/test splits.", eval=finalversion>>=
+@
+
+
+
 
 \subsection{Alzheimer's Disease Neuroimaging Initiative}
 
@@ -1208,13 +1269,13 @@ We found that \sail ~in general achieved the highest prediction accuracy (Figure
 
 We visualized in Figure~\ref{fig:dzclass-interaction} two strongest interaction effects associated with the number of comorbidities and age, respectively. For patients having undergo ARF/MOSF, an increased number of comorbidities can largely compromise their chance of survival, while the risk incurred by ARF/MOSF is most distinguishing among patients aged at approximately 70-80.
 
-<<load-support, eval=T, results = 'hide'>>=
+<<load-support, eval=finalversion, results = 'hide'>>=
 @
 
 <<support-error-cross, fig.width=10, fig.height=8, fig.pos= 'H', fig.cap="Mean test set AUC vs. mean number of active variables ($\\pm 1$ SD) for the SUPPORT data based on 200 train/validation/test splits.", eval=finalversion>>=
 @
 
-<<dzclass-interaction, fig.width=12, fig.height=8, fig.pos= 'H', fig.cap="Illustration of estimated interaction effects identified by \\texttt{sail} for the SUPPORT data. Median prediction curves in dark colors based on 200 train/validate/test splits represent the estimated marginal interaction effects. Coefficients estimated in each of the 200 train/validate/test splits were used to generate prediction curves representing a 90% confidence interval colored in corresponding light colors.", eval=finalversion, results='hide'>>=
+<<dzclass-interaction, fig.width=12, fig.height=8, fig.pos= 'H', fig.cap="Illustration of estimated interaction effects identified by \\texttt{sail} for the SUPPORT data. Median prediction curves in dark colors based on 200 train/validate/test splits represent the estimated marginal interaction effects. Coefficients estimated in each of the 200 train/validate/test splits were used to generate prediction curves representing a 90\\% confidence interval colored in corresponding light colors.", eval=finalversion, results='hide'>>=
 @
 
 

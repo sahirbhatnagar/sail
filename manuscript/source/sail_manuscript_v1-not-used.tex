@@ -1,0 +1,2189 @@
+\documentclass[12pt,letter]{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+\let\hlipl\hlkwb
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}    
+
+%########################################################################################  
+%            						PACKAGES
+%########################################################################################
+
+\usepackage{authblk} % for author affiliations
+\usepackage{float} % for H in figures and tables
+\usepackage{amsmath,amsthm,amssymb,bbm,mathrsfs,mathtools,xfrac} %math stuff
+%\usepackage{cleveref}
+%\newcommand{\crefrangeconjunction}{--}
+
+\usepackage[sort]{natbib}   % bibliography omit 'round' option if you prefer square brackets
+\usepackage{placeins} % for \FloatBarrier
+\usepackage[pagebackref=true,bookmarks]{hyperref}
+\hypersetup{
+	unicode=false,          
+	pdftoolbar=true,        
+	pdfmenubar=true,        
+	pdffitwindow=false,     % window fit to page when opened
+	pdfstartview={FitH},    % fits the width of the page to the window
+	pdftitle={Sparse Additive Interaction Learning},    % title
+	pdfauthor={Sahir Rai Bhatnagar},     % author
+	pdfsubject={sail manuscript},   % subject of the document
+	pdfcreator={Sahir Rai Bhatnagar},   % creator of the document
+	pdfproducer={Sahir Rai Bhatnagar}, % producer of the document
+	pdfkeywords={}, % list of keywords
+	pdfnewwindow=true,      % links in new window
+	colorlinks=true,       % false: boxed links; true: colored links
+	linkcolor=red,          % color of internal links (change box color with linkbordercolor)
+	citecolor=blue,        % color of links to bibliography
+	filecolor=black,      % color of file links
+	urlcolor=cyan           % color of external links
+}
+\usepackage[utf8]{inputenc} % for french accents
+\usepackage[T1]{fontenc} % for french accents
+\usepackage{ctable} % load after tikz. used for tables
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+\def\widebar#1{\overline{#1}}
+\usepackage{array}
+\newcolumntype{L}{>{\centering\arraybackslash}m{3cm}} % used for text wrapping in ctable
+\usepackage{color, colortbl, xcolor, comment}
+\usepackage{subfig}
+\usepackage{tcolorbox} % for box around text
+%\usepackage[ruled,vlined,linesnumbered,noresetcount]{algorithm2e}
+%\usepackage[ruled,vlined,noresetcount]{algorithm2e}
+\usepackage{algorithm}
+\usepackage{chngcntr} % for figure labels in appendix
+%\usepackage[ruled,vlined,noresetcount]{algorithm2e}
+\usepackage[noend]{algpseudocode}
+\algrenewcommand\textproc{}% Used to be \textsc
+\algdef{SE}[SUBALG]{Indent}{EndIndent}{}{\algorithmicend\ }%
+\algtext*{Indent}
+\algtext*{EndIndent}
+%\usepackage[american]{babel}
+%\let\tnote\relax
+
+%\usepackage{csquotes}
+
+
+
+%\usepackage[style=apa,sortcites=true,sorting=nyt,backend=biber]{biblatex}
+%\usepackage{epstopdf}
+
+%\usepackage{tabulary}
+%\usepackage{siunitx}
+%\sisetup{output-exponent-marker=\ensuremath{\mathrm{e}}}
+%\AtBeginEnvironment{tabulary}{\onehalfspacing}
+%\usepackage{multirow}
+%\usepackage{ctable} % NEED TO LOAD CTABLE AFTER TIKZ FOR SOME REASON
+%\usepackage{array}
+%\newcolumntype{L}{>{\centering\arraybackslash}m{3cm}} % used for text wrapping in ctable
+%\usepackage{enumitem}
+% These packages are all incorporated in the memoir class to one degree or another...
+
+%########################################################################################  
+%            						CUSTOM COMMANDS
+%########################################################################################
+
+\newcommand{\sail}{\texttt{sail}}
+\newcommand{\tm}[1]{\textrm{{#1}}}
+\newcommand{\bx}{\textbf{\emph{x}}}
+\newcommand{\by}{\textbf{\emph{y}}}
+\newcommand{\bX}{\textbf{\emph{X}}}
+\newcommand{\bW}{\textbf{\emph{W}}}
+\newcommand{\bY}{\textbf{\emph{Y}}}
+\newcommand{\bD}{\textbf{\text{D}}}
+\newcommand{\bXtilde}{\widetilde{\bX}}
+\newcommand{\bYtilde}{\widetilde{\bY}}
+\newcommand{\bDtilde}{\widetilde{\bD}}
+\newcommand{\Xtilde}{\widetilde{X}}
+\newcommand{\Ytilde}{\widetilde{Y}}
+\newcommand{\Dtilde}{\widetilde{D}}
+\newcommand{\bu}{\textbf{u}}
+\newcommand{\bU}{\textbf{\emph{U}}}
+\newcommand{\bV}{\textbf{\emph{V}}}
+\newcommand{\bE}{\textbf{\emph{E}}}
+\newcommand{\bb}{\textbf{\emph{b}}}
+\newcommand{\bI}{\textbf{\emph{I}}}
+\newcommand{\be}{\boldsymbol{\varepsilon}}
+\newcommand{\bSigma}{\boldsymbol{\Sigma}}
+\newcommand{\bLambda}{\boldsymbol{\Lambda}}
+\newcommand{\bTheta}{\boldsymbol{\Theta}}
+\newcommand{\balpha}{\boldsymbol{\alpha}}
+\newcommand{\btau}{\boldsymbol{\tau}}
+\newcommand{\bgamma}{\boldsymbol{\gamma}}
+%\newcommand{\ltwonorm}[1]{\lVert #1 \rVert}
+\newcommand{\mb}[1]{\mathbf{#1}}
+\newcommand {\bs}{\boldsymbol}
+%\newcommand{\norm}[1]{\left\Vert #1 \right\Vert} 
+\newcommand{\xf}{\mathcal{X}}
+\newcommand{\pfrac}[2]{\left( \frac{#1}{#2}\right)}
+\newcommand{\e}{{\mathsf E}}
+\newcommand{\bt}{\boldsymbol{\theta}}
+\newcommand{\bmu}{\boldsymbol{\mu}}
+\newcommand{\bbeta}{\boldsymbol{\beta}}
+\newcommand{\btheta}{\boldsymbol{\theta}}
+\newcommand{\bPhi}{\boldsymbol{\Phi}}
+\newcommand{\bPsi}{\boldsymbol{\Psi}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator{\diag}{diag} % operator and subscript
+
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}%
+\DeclarePairedDelimiter\norm{\lVert}{\rVert}%
+
+% Swap the definition of \abs* and \norm*, so that \abs
+% and \norm resizes the size of the brackets, and the 
+% starred version does not.
+\makeatletter
+\let\oldabs\abs
+\def\abs{\@ifstar{\oldabs}{\oldabs*}}
+%
+\let\oldnorm\norm
+\def\norm{\@ifstar{\oldnorm}{\oldnorm*}}
+\makeatother
+
+%########################################################################################  
+%            						FANCY HEADER STUFF
+%######################################################################################## 
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\cfoot{\thepage}
+\lhead[\leftmark]{}
+\rhead[]{\leftmark}
+\makeatletter
+\makeatother
+\lfoot{} \cfoot{ } \rfoot{{\small{\em Page \thepage \ of \pageref{LastPage}}}}
+
+
+%########################################################################################  
+%            						SPACING
+%######################################################################################## 
+
+\usepackage[parfill]{parskip} % Activate to begin paragraphs with an empty line rather than an indent
+%\usepackage[left=.1in,right=.1in,top=.1in,bottom=.1in]{geometry}
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\doublespacing
+
+%########################################################################################  
+%            						TITLE and AUTHORS
+%########################################################################################
+
+\title{Sparse Additive Interaction Learning}
+%\author{SRB}
+
+\author[1,2]{Sahir R Bhatnagar}
+%\author[3]{Karim Oualkacha}
+\author[4]{Yi Yang}
+\author[2]{Amanda Lovato}
+\author[1,2,5]{\mbox{Celia MT Greenwood}}
+\affil[1]{Department of Epidemiology, Biostatistics and Occupational Health, McGill University}
+\affil[2]{Lady Davis Institute, Jewish General Hospital, Montr\'{e}al, QC}
+%\affil[3]{Département de Mathématiques, Université de Québec À Montréal}
+\affil[4]{Department of Mathematics and Statistics, McGill University}
+\affil[5]{Departments of Oncology and Human Genetics, McGill University}
+
+%########################################################################################  
+%            						START OF DOCUMENT
+%########################################################################################
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+
+
+
+
+
+
+
+\maketitle
+\pagestyle{fancy}
+
+
+\maketitle
+\section{Introduction}
+
+Computational approaches to variable selection have become increasingly important with the advent of high-throughput technologies in genomics and brain imaging studies, where the data has become massive, yet where it is believed that the number of truly important variables is small relative to the total number of variables. 
+Although many approaches have been developed for main effects, there is a consistent interest in powerful methods for estimating interactions, since interactions may reflect important modulation of a genomic system by an external factor. Accurate capture of interactions may hold the potential to better understand  biological phenomena and improve prediction accuracy.
+
+%For example, genome wide association studies (GWAS) have been unable to explain a large proportion of heritability (the variance in phenotype attributable to genetic variants) and it has been suggested that this missing heritability may in part be due to gene-environment interactions~\citep{manolio2009finding}. 
+Furthermore, the manifestations of disease are often considered to be the result of changes in entire biological networks whose states are affected by a complex interaction of genetic and environmental factors~\citep{schadt2009molecular}. However, there is a general deficit of such replicated interactions in the literature~\citep{timpson2018genetic}.   
+Indeed, power to detect interactions is always lower than for  main effects, and in high-dimensional settings ($p >> n$), this lack of power to detect interactions is exacerbated, since the number of possible interactions could be enormous and their effects may be non-linear. Hence, analytic methods that may improve power are essential.  
+
+{\color{green} You need a non-genetic example - i.e. gene expression or proteomic or ...}
+
+Interactions may occur in numerous types and of varying complexities. In this paper, we consider one specific type of interaction models, where one (exposure) variable is involved in possibly non-linear interactions with a high-dimensional set of measures $\mb{X}$ leading to effects on a response variable, $Y$. We propose a multivariable penalization procedure for detecting non-linear interactions $\mb{X}$ and $E$. 
+
+
+%Our approach improves on existing procedures for detecting such interactions in three ways; 1) it automatically enforces the strong heredity property, i.e., an interaction term can only be included in the model if the corresponding main effects are in the model 2) it reduces the dimensionality of the problem and leverages the high correlations by transforming the input feature space using network connectivity measures and 3) it leads to interpretable models which are biologically meaningful.
+
+
+%Furthermore, diseases are now thought to be the result of entire biological networks whose states are affected by environmental factors, and these systemic changes can induce or eliminate strong correlations between elements in a network. Therefore, we propose a multivariate penalization procedure for detecting interactions between high dimensional data ($p >> n$) and an environmental factor, where the effect of this environmental factor on the high dimensional data is widespread and plays a role in predicting the response. Our approach improves on existing procedures for detecting such interactions in three ways; 1) it automatically enforces the strong heredity property, i.e., an interaction term can only be included in the model if the corresponding main effects are in the model 2) it reduces the dimensionality of the problem and leverages the high correlations by transforming the input feature space using network connectivity measures and 3) it leads to interpretable models which are biologically meaningful. This thesis is motivated by three studies; one that looks at the impact of maternal care on child development, another that characterizes normal brain development as a function of intelligence scores and one that looks at the long-lasting effects of diet in subsequent generations.
+
+
+%Diseases are now thought to be the result of changes in entire biological networks whose states are affected by a complex interaction of genetic and environmental factors. In general, power to estimate interactions is low, the number of possible interactions could be enormous and their effects may be non-linear. Existing approaches such as the lasso might keep an interaction but remove a main effect, which is problematic for interpretation. We develop a model for linear and non-linear interactions in penalized regression models that automatically enforces the strong heredity property. A computationally efficient fitting algorithm combined with a non-parametric screening approach scales to high-dimensional datasets and has been implemented in an R package. We apply our method to identify gene-prenatal maternal depression interactions on negative emotionality in mother–infant dyads from the Maternal Adversity, Vulnerability, and Neurodevelopment (MAVAN) cohort.
+
+
+
+\subsection{Sparse additive interaction model}
+Let $Y=(Y_1, \ldots, Y_n) \in \mathbb{R}^n$ be a continuous or binary outcome variable, \mbox{$X_E=(E_1, \ldots, E_n) \in \mathbb{R}^n$} a binary or continuous environment vector, and \mbox{$\bX = (X_{1}, \ldots, X_{p}) \in \mathbb{R}^{n\times p}$} a matrix of predictors, possibly high-dimensional. Furthermore let $f_j: \mathbb{R} \rightarrow \mathbb{R}$ be a smoothing method for variable $X_j$ by a projection on to a set of basis functions:
+\begin{equation}
+	f_j(X_j) = \sum_{\ell = 1}^{m_j} \psi_{j\ell}(X_j) \beta_{j\ell} \label{eq:smooth}
+\end{equation}
+Here, the $\left\lbrace \psi_{j\ell} \right\rbrace_1^{m_j}$ are a family of basis functions in $X_j$~\citep{hastie2015statistical}. Let $\bPsi_j$ be the $n \times m_j$ matrix of evaluations of the $\psi_{j\ell}$ and \mbox{$\btheta_j = (\beta_{j1}, \ldots, \beta_{jm_j}) \in \mathbb{R}^{m_j}$} for $j = 1, \ldots, p$, i.e., $\btheta_j$ is a $m_j$-dimensional column vector of basis coefficients for the $j$th main effect. In this article we consider an additive interaction regression model of the form 
+\begin{align}
+	g(\bmu)  & =  \beta_0 \cdot \boldsymbol{1} + \sum_{j=1}^p \bPsi_j \btheta_j + \beta_E X_E + \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_{j}    \label{eq:linpred}
+\end{align}
+where $g(\cdot)$ is a known link function, $\bmu = \e\left[Y|\bPsi, X_E \right]$, $\beta_0$ is the intercept, $\beta_E$ is the coefficient for the environment variable, $\btau_j = (\tau_{j1}, \ldots, \tau_{jm_j})\in \mathbb{R}^{m_j}$ are the basis coefficients for the $j$th interaction term, and $(X_E \circ \bPsi_j)$ is the $n \times m_j$ matrix formed by the component-wise multiplication of the column vector $X_E$ by each column of $\bPsi_j$. For a continuous response, we use the squared-error loss:
+\begin{equation}
+	\mathcal{L}(\bTheta| \bD) = \frac{1}{2n}\norm{Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j }_2^2
+\end{equation}
+and for binary response $Y_i \in \left\lbrace -1, +1 \right\rbrace$ we use the logistic loss:
+\begin{equation}
+	\mathcal{L}(\bTheta| \bD) = \frac{1}{n} \sum_i \log \left(1 + \exp \left\lbrace - Y_i \left( \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j \right) \right\rbrace   \right)
+\end{equation}
+
+where $\bTheta \coloneqq (\beta_0, \beta_E,\btheta_1, \ldots, \btheta_p, \btau_1, \ldots, \btau_p)$ and $\bD \coloneqq (Y,\bPsi,X_E)$ is the working data. 
+
+
+Due to the large number of parameters to estimate with respect to the number of observations, one
+commonly-used approach is to shrink the regression coefficients by placing a constraint on the values
+of $(\beta_E, \btheta_j, \btau_j)$. Certain constraints have the added benefit of producing a sparse model in the sense that many of the coefficients will be set exactly to 0. This reduced predictor set can lead to a more interpretable model with smaller prediction variance, albeit at the cost of having biased parameter estimates. In light of these goals, we consider the following objective function:
+\begin{equation}
+	\argmin_{\bTheta }  	\mathcal{L}(\bTheta| \bD) + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \norm{\btau_{j}}_2 \label{eq:lassolikelihood3}
+\end{equation} 
+where $\norm{\btheta_j}_2 = \sqrt{\sum_{k=1}^{m_j} \beta_{jk}^2}$, $\norm{\btau_j}_2 = \sqrt{\sum_{k=1}^{m_j} \tau_{jk}^2}$, $\lambda >0$ and $\alpha \in (0,1)$ are tuning parameters, $w_E, w_j, w_{jE}$ are adaptive weights for $j=1, \ldots, p$. These weights serve as a way of allowing parameters to be penalized differently. 
+
+An issue with~\eqref{eq:lassolikelihood3} is that since no constraint is placed on the structure of the model, it is possible that an estimated interaction term is nonzero while the corresponding main effects are zero. While there may be certain situations where this is plausible, statisticians have generally argued that interactions should only be included if the corresponding main effects are also in the model~\citep{mccullagh1989generalized}. This is known as the strong heredity principle~\citep{chipman1996bayesian}. Indeed, large main effects are more likely to lead to detectable interactions~\citep{cox1984interaction}. In the next section we discuss how a simple reparametrization of the model~\eqref{eq:lassolikelihood3} can lead to this desirable property. 
+%Furthermore, adaptive weighting~\citep{zou2006adaptive} has been shown to construct oracle procedures~\citep{fan2001variable}, i.e., asymptotically, it performs as well as if the true model were given in advance. These weights are given by
+%\begin{equation}
+%	w_E = \left|   \frac{1}{\hat{\beta}_E} \right| ,\quad w_j = \frac{1}{\norm{\hat{\btheta}_j}_2} , \quad w_{jE} = \left | \frac{\hat{\beta}_E \norm{\hat{\btheta}_j}_2}{\norm{\hat{\alpha}_{j}}_2} \right| \quad \tm{ for }j=1, \ldots, p   \label{eq:weights}
+%\end{equation}
+%where $\hat{\beta}_E$, $\hat{\btheta}_j$ and $\hat{\balpha}_{j}$ are the MLEs, from~\eqref{eq:linpred} or the ridge regression estimates when $p > n$.
+
+\subsection{Strong and weak heredity}
+
+The strong heredity principle states that the interaction term can only have a non-zero estimate if its corresponding main effects are estimated to be non-zero. The weak heredity principle allows for a non-zero interaction estimate as long as one of the corresponding main effects are estimated to be non-zero~\citep{chipman1996bayesian}. In the context of penalized regression methods, these principles can be formulated as structured sparsity \citep{bach2012structured} problems. Several authors have proposed to modify the type of penalty in order to achieve the heredity principle~\citep{radchenko2010variable,bien2013lasso,haris2014convex,lim2014learning}. We take an alternative approach. Following Choi et al.~\citep{choi2010variable}, we introduce a parameter $\bgamma = (\gamma_1, \ldots, \gamma_p)\in \mathbb{R}^p$ and reparametrize the coefficients for the interaction terms $\btau_j$ in~\eqref{eq:linpred} as a function of $\gamma_j$ and the main effect parameters $\btheta_j$ and $\beta_E$. This reparametrization for both strong and weak heredity is summarized in Table~\ref{tab:reparam}.
+
+\ctable[caption={Reparametrization for strong and weak heredity principle for \texttt{sail} model},label=tab:reparam,pos=h!,doinside=\footnotesize, ]{lll}{
+}{
+\FL
+Type      & Feature  & Reparametrization \ML
+\multicolumn{1}{m{3cm}}{Strong heredity}    & \multicolumn{1}{m{5cm}}{$\hat{\btau}_{j} \neq 0 \Rightarrow  \hat{\btheta}_j \neq 0  \tm{ and }  \hat{\beta}_E \neq 0$}        &   $\btau_{j} = \gamma_{j} \beta_E \btheta_j $    \\
+\multicolumn{1}{m{3cm}}{Weak heredity} & \multicolumn{1}{m{5cm}}{$\hat{\btau}_{j} \neq 0 \Rightarrow  \hat{\btheta}_j \neq 0  \tm{ or }  \hat{\beta}_E \neq 0$}        &   $\btau_{j} = \gamma_{j}(\beta_E \cdot \mb{1}_{m_j} +  \btheta_j)$    \LL
+}
+
+
+To perform variable selection in this new parametrization, we penalize $\bs{\gamma} = \left(\gamma_{1}, \ldots, \gamma_{p}\right)$ instead of penalizing $\btau$ as in~\eqref{eq:lassolikelihood3}, leading to the following objective function:
+\begin{equation}
+	\argmin_{\bTheta }  	\mathcal{L}(\bTheta| \bD) + \lambda (1-\alpha)  \left( w_E \beta_E + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{j}} \label{eq:saillikelihood}
+\end{equation}
+%where
+%\begin{equation}
+%	\mathcal{L}(\bTheta| \bD) = \frac{1}{2n}\norm{Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j }_2^2
+%\end{equation}
+%for a continuous response, and 
+%\begin{equation}
+%	\mathcal{L}(\bTheta| \bD) = \frac{1}{n} \sum_i \log \left(1 + \exp \left\lbrace - Y_i \left( \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j \right) \right\rbrace   \right)
+%\end{equation}
+%for a binary response. 
+This penalty allows for the possibility of excluding the interaction term from the model even if the corresponding main effects are non-zero. 
+
+\begin{comment}
+\subsection{Linear interaction model}
+
+We first consider a regression model for an outcome variable $Y=(Y_1, \ldots, Y_n)$ where $n$ is the number of subjects. 
+Let $E=(E_1, \ldots, E_n)$ be a binary or continuous environment vector and \mbox{$\bX = (X_{1}, \ldots, X_{n})^\top$} be the $n \times p$ matrix of high-dimensional data where $X_i = (X_{i1}, \ldots,X_{ij}, \ldots,  X_{ip}) $, and $\bs{\varepsilon} = (\varepsilon_1, \ldots, \varepsilon_n)$ a vector of errors. 
+Consider the regression model with main effects and their interactions with $E$:
+\begin{equation}  
+g(\bmu) =  \beta_0 + \sum_{j=1}^p \beta_j X_{j} + \beta_E E + \sum_{j=1}^p \alpha_j E X_j \label{eq:linpred1.1} , %\qquad i=1, \ldots, n ,
+\end{equation}
+where $g(\cdot)$ is a known link function, $\bmu = \e\left[Y|\bX, E, \bbeta,\balpha\right]$, and $\beta_0,\beta_j,\beta_E,\alpha_j$ are the true unknown model parameters for $j=1, \ldots, p$. 
+Due to the large number of parameters to estimate with respect to the number of observations, one commonly-used approach is to shrink the regression coefficients by placing a constraint on the values of $\bbeta$ and $\boldsymbol{\alpha}$.
+For example, the lasso~\citep{tibshirani1996regression} penalizes the squared loss of the data with the \mbox{$L_1$-norm} of the regression coefficients resulting in a method that performs both model selection and estimation. 
+A natural extension of the lasso to the interaction model~\eqref{eq:linpred1.1} is given by:
+\begin{equation}
+\argmin_{\beta_0, \bbeta, \boldsymbol{\alpha} }  \frac{1}{2} \norm{Y - g(\bmu)}_2^2 + \lambda \left( \norm{\bbeta}_1 + \norm{\balpha}_1    \right) \label{eq:lassolikelihood}
+\end{equation}
+where $\norm{Y - g(\bmu)}_2^2 = \sum_i (y_i - g(\mu_i))^2$, $\norm{\bbeta}_1 = \sum_j | \beta_j  |$, $\norm{\balpha}_1 = \sum_j | \alpha_j  |$ and $\lambda \geq 0$ is a data driven tuning parameter that can set some of the coefficients to zero when sufficiently large. 
+However, since no constraint is placed on the structure of the model in~\eqref{eq:lassolikelihood}, it is possible that the estimated main effects are zero while the interaction term is not. This has motivated methods that produce structured sparsity \citep{bach2012structured}. 
+
+%For example, Bien \textit{et al.}~\citep{bien2013lasso} propose a strong hierarchical lasso which forces the main effects to be included if the interaction term is non-zero. However this method and related ones are restricted to all pairwise interactions between $p$ measured variables. Here were concern ouself with methods that impose a strong hierarchy in the context of gene environment interactions. 
+
+
+One benefit brought by hierarchy is that the number of measured variables can be reduced, referred to as practical sparsity~\citep{she2014group,bien2013lasso}. For example, a model involving $X_1, E, X_1 \cdot E$ is more parsimonious than a model involving $X_1, E, X_2 \cdot E$, because in the first model a researcher would only have to measure two variables compared to three in the second model. In order to address these issues, we propose to extend the model of~\citep{choi2010variable} to simultaneously perform variable selection, estimation and impose the strong heredity principle in the context of high dimensional interactions with the environment (HD$\times E$). To do so, we follow Choi and reparametrize the coefficients for the interaction terms as $\alpha_{j} = \gamma_{j} \beta_j \beta_E$. Plugging this into~\eqref{eq:linpred1.1}:
+\begin{align}
+g(\bmu)  = & \beta_0 + \sum_{j=1}^p \beta_j X_{j} + \beta_E E + \sum_{j=1}^p \gamma_{j} \beta_j \beta_E E X_j     \label{eq:linpred2}
+\end{align}
+This reparametrization directly enforces the strong heredity principle~\eqref{eq:heredity}, i.e., if either main effect estimates are 0, then $\hat{\alpha}_{j}$ will be zero and a non-zero interaction coefficient implies non-zero $\hat{\beta}_j$ and $\hat{\beta}_E$. To perform variable selection in this new parametrization, we follow~\cite{choi2010variable} and penalize $\bs{\gamma} = \left(\gamma_{1}, \ldots, \gamma_{p}\right)$ instead of penalizing $\balpha$ as in~\eqref{eq:lassolikelihood}, leading to the following penalized least squares criterion:
+\begin{equation}
+\argmin_{\beta_0, \bbeta, \bs{\gamma} }  \frac{1}{2} \norm{Y - g(\bmu)}^2 + \lambda_\beta \sum_{j=1}^{p}w_j \abs{\beta_j} + \lambda_\gamma \sum_{j=1}^{p} w_{jE} \abs{\gamma_{jE}} \label{eq:lassolikelihood2}
+\end{equation} 
+where $g(\bmu)$ is from~\eqref{eq:linpred2}, $\lambda_\beta$ and $\lambda_\gamma$ are tuning parameters and $\mb{w} = \left(w_{1}, \ldots, w_q, w_{1E}, \ldots, w_{qE}\right)$ are prespecified adaptive weights. The $\lambda_\beta$ tuning parameter controls the amount of shrinkage applied to the main effects, while $\lambda_\gamma$ controls the interaction estimates and allows for the possibility of excluding the interaction term from the model even if the corresponding main effects are non-zero. The adaptive weights serve as a way of allowing parameters to be penalized differently. Furthermore, adaptive weighting~\citep{zou2006adaptive} has been shown to construct oracle procedures~\citep{fan2001variable}, i.e., asymptotically, it performs as well as if the true model were given in advance. The oracle property is achieved when the weights are a function of any root-$n$ consistent estimator of the true parameters e.g. maximum likelihood (MLE) or ridge regression estimates. It can be shown that the procedure in~\eqref{eq:lassolikelihood2} asymptotically possesses the oracle property~\citep{choi2010variable}, even when the number of parameters tends to $\infty$ as the sample size increases, if the weights are chosen such that
+\begin{equation}
+w_j = \left | \frac{1}{\hat{\beta}_j} \right|, \quad w_{jE} = \left | \frac{\hat{\beta}_j \hat{\beta}_E}{\hat{\alpha}_{jE}} \right| \quad \tm{ for }j=1, \ldots, q   \label{eq:weights}
+\end{equation}
+where $\hat{\beta}_j$ and $\hat{\alpha}_{j}$ are the MLEs, from~\eqref{eq:linpred1.1} or the ridge regression estimates when $p > n$. The rationale behind the data-dependent $\hat{\bs{w}}$ is that as the sample size grows, the weights for the truly zero predictors go to $\infty$ (which translates to a large penalty), whereas the weights for the truly non-zero predictors converge to a finite constant~\citep{zou2006adaptive}. 
+\end{comment}
+
+\subsection{Toy example}
+
+We begin with a toy example to better illustrate our method. With a sample size of $n=100$, we sample $p=20$ covariates $X_1, \ldots X_p$ independently from a $N(0,1)$ truncated to the interval [0,1]. We generated data from a model which follows the strong heredity principle, but where only one covariates, $X_2$, is involved in the interaction with $E$:
+\begin{equation}
+	Y = f_1(X_1) + f_2(X_2) + 1.75 E + 1.5 E \cdot f_2(X_2) + \varepsilon
+\end{equation}
+Function $f_1(\cdot)$ is assumed to be linear, whereas function $f_2(\cdot)$ is non-linear: $f_1(x) = -3x$, $f_2(x) = 2(2x-1)^3$. The error term $\varepsilon$ is generated from a normal distribution with variance chosen such that the signal-to-noise ratio (SNR) is 2.  We generated a single simulated dataset and used the strong heredity \sail ~method with cubic B-splines to estimate the functional forms. 10-fold CV was used to choose the optimal value of $\lambda$. We used $\alpha=0.5$ and default values were used for all other arguments. We plot the solution path for both main effects and interactions in Figure~\ref{fig:toy-solution-path} and we color the lines corresponding to the selected model. We see that our method is able to correctly identify the true model. We can also visually see the effect of the penalty and strong heredity principle working in tandem, i.e., the interaction term $E \cdot f_2(X_2)$ (orange lines in the bottom panel) can only be nonzero if the main effects $E$ and $f_2(X_2)$ (black and orange lines respectively in the top panel) are nonzero, while nonzero main effects doesn't necessarily imply a nonzero interaction. 
+
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/toy-solution-path-1} 
+
+}
+
+\caption[Toy example solution path]{Toy example solution path}\label{fig:toy-solution-path}
+\end{figure}
+
+
+\end{knitrout}
+
+In Figure~\ref{fig:toy-effects}, we plot the true and estimated component functions $\hat{f}_1(X_1)$ and $E \cdot \hat{f}_2(X_2)$, and their estimates with \texttt{sail}. We are able to capture the shape of the correct functional form, but our means are not well aligned with the data. Lack-of-fit for $f_1(X_1)$ can be partially explained by acknowledging that \sail ~is trying to fit a cubic spline to a linear function. Nevertheless, this example demonstrates that it can still identify linear associations with reasonable sensitivity and specificity. 
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/toy-effects-1} 
+
+}
+
+\caption[Estimated smooth functions by \texttt{sail} method based on $\lambda_{min}$]{Estimated smooth functions by \texttt{sail} method based on $\lambda_{min}$.}\label{fig:toy-effects}
+\end{figure}
+
+
+\end{knitrout}
+
+
+\subsection{Related Work}
+Methods for interaction selection can be broken down into two categories: linear and non-linear interaction effects. 
+Many of the linear effect methods consider all pairwise interactions in $\bX$~\citep{zhao2009composite,choi2010variable,bien2013lasso, she2014group} which can be computationally prohibitive when $p$ is large. This is evidenced by the relatively small number of variables used in their simulations and real data analysis. 
+More recent proposals allow the user to restrict the search space to interaction candidates~\citep{lim2015learning,haris2016convex} which is useful when the researcher wants to impose some prior information on the model. 
+Two-stage procedures, where interactions candidates are considered from an original screen of main effects, have shown good performance when $p$ is large~\citep{hao2018model,shah2016modelling} in the linear setting.  
+There are many fewer methods avaliable for non-linear interactions. For example, Radchenko and James (2010)~\citep{radchenko2010variable} proposed a model of the form
+\[Y = \beta_0 + \sum_{j=1}^{p} f_j(X_j) + \sum_{j>k}f_{jk}(X_j, X_k) + \varepsilon\]
+where $f(\cdot)$ are smooth component functions. This method is computationally expensive however, as it involves a complex penalty function and considers all pairwise interactions. 
+Furthermore, it's effectiveness in both simulations and real-data applications is unknown as there is no software implementation.  
+
+While working on this paper, we were made aware of the recently proposed pliable lasso~\citep{tibshirani2017pliable} which considers the interactions between $\bX_{n \times p}$ and another matrix $\mathbf{Z}_{n\times K}$ and takes the form
+\[Y = \beta_0 + \sum_{j=1}^{p}\beta_j X_j + \sum_{j=1}^{K}\theta_j Z_j + \sum_{j=1}^{p} (X_j \circ \mathbf{Z}) \balpha_j + \varepsilon  \] where $\alpha_j$ is a $K$-dimensional vector. Our proposal is most closely related to this method with $\mathbf{Z}$ being a single column matrix; the key difference being the non-linearity of the predictor variables. 
+As pointed out by the authors of the pliable lasso, these methods can be seen as a varying coefficient model, i.e., the effect of the predictors vary as a function of the exposure variable $E$. 
+
+The main contributions of this paper are fourfold. 
+First, we develop a model for non-linear interactions with a key exposure variable following either the weak or strong heredity principle that is computationally efficient and scales to the high-dimensional setting ($n << p$). 
+Second, through simulation studies, we show improved performance over existing methods that only consider linear interactions or additive main effects. 
+Third, we show that our method possesses the oracle property~\citep{fan2001variable}, i.e., it performs as well as if the true model were known in advance. 
+Fourth, all of our algorithms are implemented in the \texttt{sail} R package hosted on GitHub with extensive documentation (\url{http://sahirbhatnagar.com/sail/}). In particular, our implementation also allows for linear interaction models, user-defined basis expansions, a cross-validation procedure for selecting the optimal tuning parameter, and differential shrinkage parameters to apply the adaptive lasso~\citep{zou2006adaptive} idea. 
+
+The rest of the paper is organized as follows. Sections 2 and 3 describe our optimization procedure and some details about the algorithm used to fit the \texttt{sail} model for the least squares and logistic case, respectively. In Section 4, we compare the performance of our proposed approach and demonstrate the scenarios where it can be advantageous to use over existing methods through simulation studies. Section 5 contains some real data examples and Section 6 discusses some limitations and future directions. 
+
+%~
+\begin{comment}
+\ctable[pos=H,doinside=\footnotesize]{lcc}{
+}{
+\FL
+Type      & Method   & Software \ML
+\multicolumn{1}{m{1cm}}{Linear}    & \multicolumn{1}{m{6cm}}{\texttt{CAP}~\citep{zhao2009composite} }        &   \xmark    \\
+& \multicolumn{1}{m{4cm}}{\texttt{SHIM}~\citep{choi2010variable}}        &   \xmark    \\
+& \multicolumn{1}{m{4cm}}{\texttt{hiernet}~\citep{bien2013lasso}}        &   \texttt{hierNet(x, y)}    \\
+& \multicolumn{1}{m{4cm}}{\texttt{GRESH}~\citep{she2014group} }        &  \xmark     \\
+& \multicolumn{1}{m{4cm}}{\texttt{FAMILY}~\citep{haris2016convex}}    &  \texttt{FAMILY(x, z, y)}   \\
+& \multicolumn{1}{m{4cm}}{\texttt{glinternet}~\citep{lim2015learning} }    & \texttt{glinternet(x, y)}  \\			   	 	
+& \multicolumn{1}{m{4cm}}{\texttt{RAMP}~\citep{hao2018model}}        & \texttt{RAMP(x, y)}  \\ 
+& \multicolumn{1}{m{4cm}}{\texttt{LassoBacktracking}~\citep{shah2016modelling}   }        & \texttt{LassoBT(x, y)}  \ML
+\multicolumn{1}{m{4cm}}{Non-linear} 	& \multicolumn{1}{m{8cm}}{\texttt{VANISH}~\citep{radchenko2010variable} }        & \xmark  \\
+& \multicolumn{1}{m{4cm}}{\texttt{sail}}        & \texttt{sail(x, y, e)}  \LL
+}
+
+\end{comment}
+
+
+\section{Algorithm and Computational Details}
+
+In this section we describe a blockwise coordinate descent algorithm for fitting both the least-squares and logistic version of the \texttt{sail} model in~\eqref{eq:saillikelihood}. We fix the value for $\alpha$ and minimize the objective function over a decreasing sequence of $\lambda$ values ($\lambda_{max}>\cdots>\lambda_{min}$). We use the subgradient equations to determine the maximal value $\lambda_{max}$ such that all estimates are zero. Due to the heredity principle, this reduces to finding the largest $\lambda$ such that all main effects ($\beta_E, \btheta_1, \ldots, \btheta_p$) are zero. Following Friedman et al.~\citep{friedman2010regularization}, we construct a $\lambda$-sequence of 100 values decreasing from $\lambda_{max}$ to $0.001 \lambda_{max}$ on the log scale, and use the warm start strategy where the solution for $\lambda_{\ell}$ is used as a starting value for $\lambda_{\ell + 1}$.  
+
+
+\begin{comment}
+\begin{algorithm}[H]
+	\SetAlgoLined
+	%	\KwResult{Write here the result }
+	Set the iteration counter $k \leftarrow 0$, initial values for the parameter vector $\bTheta^{(0)}$\;
+	\For{ each pair ($\lambda_\beta, \lambda_\gamma$)}{
+		\Repeat{convergence criterion is satisfied}{
+			\begin{align*}
+			\bgamma^{(k+1)} &\leftarrow \underset{\bgamma }{\mathrm{argmin}} \quad Q_{\lambda_\beta, \lambda_\gamma}\left(\boldsymbol{\gamma},\beta_E^{(k)}, \boldsymbol{\theta}^{(k)}\right) \\
+			\btheta^{(k+1)} &\leftarrow \underset{\boldsymbol{\btheta} }{\mathrm{argmin}} \quad Q_{\lambda_\beta, \lambda_\gamma} \left(\btheta, \beta_E^{(k)}, \bgamma^{(k+1)}\right)\\
+			\beta_E^{(k+1)} &\leftarrow \underset{\boldsymbol{\beta_E} }{\mathrm{argmin}} \quad Q_{\lambda_\beta, \lambda_\gamma} \left(\btheta^{(k+1)}, \beta_E, \bgamma^{(k+1)}\right)
+			\end{align*}
+			
+			$k \leftarrow k +1$
+		}
+	}
+	\caption{Block Relaxation Algorithm} \label{alg:cgd2}
+\end{algorithm}
+\end{comment}
+
+\subsection{Blockwise coordinate descent for least-squares loss}
+
+%\section{Regularization Path}
+The strong heredity \texttt{sail} model with least-squares loss has the form
+\begin{equation}
+	\hat{Y}   =  \beta_0 \cdot \boldsymbol{1} + \sum_{j=1}^p \bPsi_j \btheta_j + \beta_E X_E + \sum_{j=1}^p \gamma_{j}  \beta_E (X_E \circ \bPsi_j) \btheta_j
+\end{equation}
+and the objective function is given by 
+\begin{equation}
+	Q(\bTheta) = \frac{1}{2n} \norm{Y - \hat{Y}}_2^2 + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{j}} \label{eq:objective_least-squares}
+\end{equation}
+
+Solving~\eqref{eq:objective_least-squares} in a blockwise manner allows us to leverage computationally fast algorithms for $\ell_1$ and $\ell_2$ norm penalized regression. The objective function simplifies to a modified lasso problem when holding all $\theta_j$ fixed, and a modified group lasso problem when holding $\beta_E$ and all $\gamma_j$ fixed. 
+
+Denote the $n$-dimensional residual column vector $R = Y-\hat{Y}$. The subgradient equations are given by
+\begin{align}
+	\frac{\partial Q}{\partial \beta_0} & = \frac{1}{n} \left( Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p \gamma_{j}  \beta_E (X_E \circ \bPsi_j) \btheta_j\right)^\top \boldsymbol{1}  = 0 \label{eq:sub_b0} \\
+	\frac{\partial Q}{\partial \beta_E} & = -\frac{1}{n} \left(X_E + \sum_{j=1}^{p}\gamma_j (X_E \circ \bPsi_j)\btheta_j\right)^\top R  + \lambda (1-\alpha) w_E s_1 = 0 \label{eq:sub_bE}\\
+	\frac{\partial Q}{\partial \btheta_j} & = -\frac{1}{n} \left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R  + \lambda (1-\alpha) w_j s_2 = \boldsymbol{0} \label{eq:sub_thetaj}\\
+	\frac{\partial Q}{\partial \gamma_j} & = -\frac{1}{n} \left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)^\top R  + \lambda \alpha w_{jE} s_3 = 0 \label{eq:sub_gammaj}
+\end{align}
+where $s_1$ is in the subgradient of the $\ell_1$ norm:
+$$
+s_1 \in \begin{cases}
+\textrm{sign}\left(\beta_E\right) & \tm{if  } \beta_E \neq 0\\
+[-1, 1] &  \tm{if  } \beta_E = 0,\\
+\end{cases}
+$$
+$s_2$ is in the subgradient of the $\ell_2$ norm:
+$$
+s_2 \in \begin{cases}
+\dfrac{\btheta_j}{\norm{\btheta_j}_2} &  \tm{if  } \btheta_j \neq \boldsymbol{0}\\
+u \in \mathbb{R}^{m_j}: \norm{u}_2 \leq 1 & \tm{if  } \btheta_j = \boldsymbol{0},\\
+\end{cases}
+$$
+and $s_3$ is in the subgradient of the $\ell_1$ norm:
+$$
+s_3 \in \begin{cases}
+\textrm{sign}\left(\gamma_j\right) & \tm{if  } \gamma_j \neq 0\\
+[-1, 1] &  \tm{if  } \gamma_j = 0.\\
+\end{cases}
+$$
+Define the partial residuals, without the $j$th predictor for $j=1, \ldots, p$, as
+\[R_{(-j)} = Y - \beta_0 \cdot \boldsymbol{1} - \sum_{\ell \neq j} \bPsi_\ell \btheta_\ell - \beta_E X_E - \sum_{\ell\neq j} \gamma_{\ell}  \beta_E (X_E \circ \bPsi_\ell) \btheta_\ell \]
+the partial residual without $X_E$ as
+\[R_{(-E)} = Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j\]
+and the partial residual without the $j$th interaction for $j=1, \ldots, p$, as
+\[R_{(-jE)} = Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{\ell\neq j} \gamma_{\ell}  \beta_E (X_E \circ \bPsi_\ell) \btheta_\ell \]
+From the subgradient equations~\eqref{eq:sub_b0}--\eqref{eq:sub_gammaj} we see that 
+\begin{align}
+	\hat{\beta}_0 &=  \left( Y - \sum_{j=1}^p \bPsi_j \hat\btheta_j - \hat\beta_E X_E - \sum_{j=1}^p \hat\gamma_{j}  \hat\beta_E (X_E \circ \bPsi_j) \hat\btheta_j\right)^\top \boldsymbol{1} \label{eq:beta0} \\
+	\hat{\beta}_E & = S\left(\frac{1}{n \cdot w_E} \left(X_E + \sum_{j=1}^{p}\hat\gamma_j (X_E \circ \bPsi_j)\hat\btheta_j\right)^\top R_{(-E)}, \lambda(1-\alpha)\right) \label{eq:betaE} \\
+	\lambda (1-\alpha) w_j \dfrac{\btheta_j}{\norm{\btheta_j}_2} & =  \frac{1}{n} \left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R_{(-j)} \label{eq:thetaj} \\
+	\hat\gamma_j & = S \left(\frac{1}{n \cdot w_{jE}} \left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-jE)}, \lambda \alpha\right) \label{eq:gammaj}
+\end{align}
+where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operator. We see from~\eqref{eq:beta0} and~\eqref{eq:betaE} that there are closed form solutions for the intercept and $\beta_E$. From~\eqref{eq:gammaj}, each $\gamma_j$ also has a closed form solution and can be solved efficiently for $j=1, \ldots, p$ using the coordinate descent procedure implemented in the \texttt{glmnet} package~\citep{friedman2010regularization}. While there is no closed form solution for $\beta_j$, we can use a quadratic majorization technique implemented in the \texttt{gglasso} package~\citep{yang2015fast} to solve~\eqref{eq:thetaj}. From these estimates, we can compute the interaction effects using the reparametrizations presented in Table~\ref{tab:reparam}, e.g.,  $\hat{\btau}_j = \hat{\gamma}_j \hat{\beta}_E \hat{\btheta}_j$, $j=1, \ldots, p$ for the strong heredity \sail ~model. 
+We provide an overview of the computations in Algorithm~\ref{alg:psudeolssail}. A more detailed version of this algorithm is given in Section~\ref{ap:subsec:lssail} of the Appendix. 
+
+
+
+\begin{algorithm}[htbp]
+	For a decreasing sequence $\lambda = \lambda_{max}, \ldots,\lambda_{min}$ and fixed $\alpha$:
+	\begin{enumerate}
+		\item Initialize $\beta_0^{(0)}, \beta_E^{(0)}, \btheta_j^{(0)},\gamma_j^{(0)}$ for $j=1, \ldots, p$ and set iteration counter $k \gets 0$.
+		\item Repeat the following until convergence:
+		\begin{enumerate}
+			\item update $\boldsymbol{\gamma}=(\gamma_1, \ldots, \gamma_p)$
+			\begin{enumerate}
+				\item Compute the pseudo design: $\widetilde{X}_j \gets \beta_E^{(k)} (X_E \circ \bPsi_j) \btheta_j^{(k)} \qquad$ for $j = 1, \ldots, p$
+				%\item Compute the pseudo response $\widetilde{Y}$ by removing the contribution of the main effects from the response: $\widetilde{Y} \gets Y - \beta_0^{(k)} - \beta_E^{(k)} X_E - \sum_{j} \bPsi_{j}\btheta_{j}^{(k)}$
+				\item Compute the pseudo response $\widetilde{Y}$ by removing the contribution of every term not involving $\boldsymbol{\gamma}$ from $Y$
+				\item Solve:
+				\begin{equation}
+					\boldsymbol{\gamma}^{(k)(new)} \gets \argmin_{\boldsymbol{\gamma}} \frac{1}{2n} \norm{\widetilde{Y} - \sum_{j} \gamma_j \widetilde{X}_j}_2^2 + \lambda \alpha \sum_{j} w_{jE} \abs{\gamma_{j}} \label{eq:gammaupdate}
+				\end{equation}
+				\item Set $\boldsymbol{\gamma}^{(k)}=\boldsymbol{\gamma}^{(k)(new)}$
+			\end{enumerate}
+			\item update $\btheta = (\btheta_1, \ldots, \btheta_p)$
+			\begin{enumerate}
+				\item[---] for $j=1, \ldots, p$
+				\item Compute the pseudo design: $\widetilde{X}_j \gets \bPsi_j + \gamma_j^{(k)} \beta_E^{(k)} (X_E \circ \bPsi_j)$
+				\item Compute the pseudo response ($\widetilde{Y}$) by removing the contribution of every term not involving $\btheta_j$ from $Y$
+				\item Solve: \begin{equation}
+					\btheta_j^{(k)(new)} \gets \argmin_{\btheta_j} \frac{1}{2n} \norm{\widetilde{Y} -  \widetilde{X}_j \btheta_j}_2^2 + \lambda (1-\alpha) w_j \norm{\theta_j}_2 \label{eq:thetaupdate}
+				\end{equation}
+				\item Set $\btheta_j^{(k)} \gets \btheta_j^{(k)(new)}$
+			\end{enumerate}
+			\item update $\beta_E$
+			\begin{enumerate}
+				\item Compute the pseudo design: $\widetilde{X}_E \gets X_E + \sum_{j} \gamma_j^{(k)} \widetilde\bPsi_j \btheta_j^{(k)}$
+				\item Compute the pseudo response ($\widetilde{Y}$) by removing the contribution of every term not involving $\beta_E$ from $Y$
+				\item Soft-threshold update ($S(x,t) = \textrm{sign}(x) (\abs{x} - t)_+$):
+				\begin{equation}
+					\beta_E^{(k)(new)} \gets S\left(\frac{1}{n \cdot w_E} \widetilde{X}_E^\top \widetilde{Y}, \lambda(1-\alpha)\right) \label{eq:betaeupdate}
+				\end{equation}
+				\item Set $\beta_E^{(k+1)} \gets \beta_E^{(k)(new)}$, $k \gets k + 1$
+			\end{enumerate}
+		\end{enumerate}
+	\end{enumerate}
+	\caption{Blockwise Coordinate Descent for Least-Squares \texttt{sail} with Strong Heredity. \label{alg:psudeolssail}}
+\end{algorithm}
+
+
+%\newpage
+
+\FloatBarrier
+
+
+
+\subsection{Lambda max}
+
+The subgradient equations~\eqref{eq:sub_bE}--\eqref{eq:sub_gammaj} can be used to determine the largest value of $\lambda$ such that all coefficients are 0. From the subgradient Equation~\eqref{eq:sub_bE}, we see that $\beta_E = 0$ is a solution if
+\begin{equation}
+	\frac{1}{w_E}\abs{\frac{1}{n} \left(X_E + \sum_{j=1}^{p}\gamma_j (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-E)}} \leq \lambda (1-\alpha)
+\end{equation}
+From the subgradient Equation~\eqref{eq:sub_thetaj}, we see that $\btheta_j = \boldsymbol{0}$ is a solution if
+\begin{equation}
+	\frac{1}{w_{j}}\norm{\frac{1}{n} \left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R_{(-j)}}_2 \leq \lambda (1-\alpha)
+\end{equation}
+From the subgradient Equation~\eqref{eq:sub_gammaj}, we see that $\gamma_j = 0$ is a solution if
+\begin{equation}
+	\frac{1}{w_{jE}}\abs{\frac{1}{n} \left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-jE)}} \leq \lambda \alpha
+\end{equation}
+Due to the strong heredity property, the parameter vector $(\beta_E,\btheta_1, \ldots, \btheta_p, \gamma_1, \ldots, \gamma_p)$ will be entirely equal to $\boldsymbol{0}$ if $(\beta_E,\btheta_1, \ldots, \btheta_p) = \boldsymbol{0}$. Therefore, the smallest value of $\lambda$ for which the entire parameter vector (excluding the intercept) is $\boldsymbol{0}$ is:
+\begin{multline}
+	\lambda_{max} = \frac{1}{n(1-\alpha)} \max \left\lbrace \frac{1}{w_E}\left(X_E + \sum_{j=1}^{p}\gamma_j (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-E)}, \right. \\
+	\left. \max_j \frac{1}{w_{j}}\norm{\left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R_{(-j)}}_2   \right\rbrace 
+\end{multline}
+which reduces to
+\begin{align*}
+	\lambda_{max} = \frac{1}{n(1-\alpha)} \max \left\lbrace \frac{1}{w_E}\left(X_E\right)^\top R_{(-E)}, \max_j \frac{1}{w_{j}}\norm{\left(\bPsi_j\right)^\top R_{(-j)}}_2   \right\rbrace 
+\end{align*}
+
+
+\subsection{Weak Heredity}
+Our method can be easily adopted to enforce the weak heredity property:
+\begin{equation}
+	\hat{\alpha}_{jE} \neq 0 \qquad \Rightarrow \qquad \hat{\beta}_j \neq 0 \qquad \tm{or} \qquad \hat{\beta}_E \neq 0   \label{eq:heredity2} \nonumber
+\end{equation}
+That is, an interaction term can only be present if at least one of it's corresponding main effects is nonzero. To do so, we reparametrize the coefficients for the interaction terms in~\eqref{eq:linpred} as $\balpha_{j} = \gamma_{j}  (\beta_E \cdot \mb{1}_{m_j} + \btheta_j)$, where $\mb{1}_{m_j}$ is a vector of ones with dimension $m_j$ (i.e. the length of $\btheta_j$). We defer the algorithm details for fitting the \sail ~model with weak heredity in Section~\ref{ap:subsec:lssailweak} of the Appendix, as it is very similar to Algorithm~\ref{alg:psudeolssail} for the strong heredity \sail ~model. 
+
+
+\subsection{Adaptive \sail}
+
+The weights for the environment variable, main effects and interactions are given by $w_E, w_j$ and $w_{jE}$ respectively. These weights serve as a way of allowing a different penalty to be applied to each variable. In particular, any variable with a weight of zero is not penalized at all. This feature can be applied mainly for two reasons:  
+
+\begin{enumerate}
+	\item Prior knowledge about the importance of certain variables is known. Larger weights will penalize the variable more, while smaller weights will penalize the variable less  
+	\item Allows users to apply the adaptive \sail, similar to the adaptive lasso~\citep{zou2006adaptive}
+\end{enumerate}  
+
+We describe the adaptive \sail ~in Algorithm~\ref{alg:adaptivesail}. This is a general procedure that can be applied to the weak and strong heredity settings, as well as both least squares and logistic loss functions. We provide this capability in the \sail ~package using the \texttt{penalty.factor} argument and provide an example in Section~\ref{ap:pfac} of the Appendix.
+
+\begin{algorithm}
+	\begin{enumerate}
+		\item For a decreasing sequence $\lambda = \lambda_{max}, \ldots,\lambda_{min}$ and fixed $\alpha$ run the \sail ~algorithm
+		\item Use cross-validation or a data splitting procedure to determine the optimal value for the tuning parameter: $\lambda^{[opt]} \in \left\lbrace \lambda_{max},\ldots, \lambda_{min} \right\rbrace$
+		\item Let $\widehat{\beta_E}^{[opt]}, \widehat{\btheta}_{j}^{[opt]}$ and $\widehat{\btau}_j^{[opt]}$ for $j=1, \ldots,p$ be the coefficient estimates corresponding to the model at $\lambda^{[opt]}$
+		\item Set the weights to be
+			\begin{enumerate}
+				\item[] $w_E = \left(\abs{\widehat{\beta_E}^{[opt]}}\right)^{-1}$, $w_j = \left(\Vert \widehat{\btheta}_{j}^{[opt]} \Vert_2\right)^{-1}$, 
+				$w_{jE} = \left(\Vert\widehat{\btau_j}^{[opt]}\Vert_2\right)^{-1}$ for $j=1, \ldots, p$
+		\end{enumerate}
+	\item Run the \sail ~algorithm with the weights defined in step 4), and use cross-validation or a data splitting procedure to choose the optimal value of $\lambda$
+	\end{enumerate}
+	\caption{Adaptive \sail  ~algorithm \label{alg:adaptivesail}}
+\end{algorithm}
+
+
+
+\subsection{Flexible design matrix} \label{sec:linearsail}
+
+The definition of the basis expansion functions in~\eqref{eq:smooth} is very flexible in the sense that our algorithms are independent of this choice. As a result, the user can apply any basis expansion they want. In the extreme case, we can apply the identity map, i.e., $f_j(X_j) = X_j$ which leads to a linear interaction model (referred to as \texttt{linear} \sail). When little information is known a priori about the relationship between the predictors and the response, by default, we choose to apply the same basis expansion to all columns of $\bX$. This is a reasonable approach when all the variables are continuous. However, there are often instances when our data contains a combination of categorical and continuous variables. In these situations it may be sub-optimal to apply a basis expansion to the categorical variables. Owing to the flexible nature of our algorithm, we can handle this scenario in our implementation by allowing a user-defined design matrix. The only extra information needed is the group membership of each column in the design matrix. We provide such an example in the \sail ~package showcase in Section~\ref{ap:userdesign} of the Appendix. 
+
+
+
+\begin{comment}
+
+\newpage
+\begin{enumerate}
+%\item (Standardization) Center $Y$. Center and normalize each term $X_E, X_j$ and $X_E \bPsi_j$ for $j= 1, \ldots, p$.
+\item (Initialization) Initialize $\beta_0^{(0)}$, $\beta_E^{(0)}$, $\btheta_j^{(0)}$, $\gamma_j^{(0)}$ for $j=1, \ldots, p$. Set iteration counter $k = 1$
+\item (Update $\gamma_j$). Define the partial residual
+\begin{align*}
+R_1 &= Y - \beta_0^{(k-1)} - \beta_E^{(k-1)} X_E - \sum_{j=1}^p \bPsi_j \btheta_j^{(k-1)}
+\end{align*}
+and pseudo design matrix
+\begin{align*}
+\widetilde{X}_j = \beta_E^{(k-1)} \left(X_E \circ \bPsi_j\right) \btheta_j^{(k-1)}, \quad j = 1, \ldots, p   
+\end{align*}
+Let $\boldsymbol{\gamma} = (\gamma_1, \ldots, \gamma_p)$. Solve
+\begin{align*}
+\boldsymbol{\gamma}^{(k)} = \argmin_{\boldsymbol{\gamma}} \frac{1}{2n} \norm{R_1 - \sum_j \gamma_j \widetilde{X}_j}_2^2 + \lambda \alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{j}}
+\end{align*}
+\item \begin{itemize}
+\item Set $\btheta_j^{(k)} = \btheta_j^{(k-1)}, \beta_0^{(k)} = \beta_0^{(k-1)}, \beta_E^{(k)} = \beta_E^{(k-1)}$
+\item For each $j=1, \ldots, p$, let
+\begin{align*}
+R_2 = Y - \beta_0^{(k)} - \beta_E^{(k)} X_E - \sum_{\ell \neq j}  \bPsi_{\ell} \btheta_{\ell}^{(k)} - \sum_{\ell \neq j} \gamma_{\ell}^{(k)} \beta_E^{(k)}  (X_E \circ \bPsi_{\ell}) \btheta_{\ell}^{(k)} 
+\end{align*}
+and
+\begin{align*}
+\widetilde{X}_j = \bPsi_j + \gamma_{j}^{(k)} \beta_E^{(k)} (X_E \circ \bPsi_{j})
+\end{align*}
+then
+\begin{align*}
+\btheta_j^{(k)} = \argmin_{\btheta_j} \frac{1}{2n} \norm{R_2 - \btheta_j \widetilde{X}_j}_2^2 + \lambda (1-\alpha) w_j \norm{\theta_j}_2
+\end{align*}
+\item Update $\beta_E$. Let
+\begin{align*}
+R_3 = Y - \beta_0^{(k)} - \sum_{j=1}^p \bPsi_j \btheta_j^{(k)} - \sum_{j=1}^p \gamma_j^{(k)}  \bPsi_j \btheta_j^{(k)}
+\end{align*}
+and
+\begin{align*}
+\widetilde{X}_E = X_E + \sum_{j = 1}^p \gamma_j^{(k)} (X_E \circ  \bPsi_j) \btheta_j^{(k)}
+\end{align*}
+then
+\begin{align*}
+\beta_E^{(k)} = \argmin_{\beta_E} \frac{1}{2n} \norm{R_3 - \beta_E \widetilde{X}_E}_2^2 + \lambda(1-\alpha) w_E \abs{\beta_E}
+\end{align*}
+\item Update $\beta_0$. Let
+\begin{align*}
+R_4 = Y - \beta_E^{(k)} X_E - \sum_{j=1}^p  \bPsi_{j} \btheta_{j}^{(k)} - \sum_{j=1}^p \gamma_{j}^{(k)} \beta_E^{(k)}  (X_E \circ \bPsi_{j}) \btheta_{j}^{(k)} 
+\end{align*}
+\begin{align*}
+\beta_0^{(k)} = \frac{1}{n} R_4^\top \cdot \boldsymbol{1}
+\end{align*}
+\end{itemize}
+\item Set $k=k+1$. Return to step 2 until convergence.	
+\end{enumerate}
+\end{comment}
+
+
+
+
+\section{Simulation Study}
+In this section, we use simulated data to understand the performance of  \texttt{sail} in different scenarios. 
+
+\subsection{Comparator Methods}
+
+Since there is no software that directly addresses our problem, we selected comparator methods based on the following criteria: 1) is a penalized regression method that can handle high-dimensional data ($n<p$) 2) considers linear,  non-linear or interaction effects and 3) has a software implementation in \texttt{R}. The selected methods can be grouped into three categories:
+\begin{enumerate}
+	\item Linear main effects: \texttt{lasso}~\citep{tibshirani1996regression}, \texttt{adaptive lasso}~\citep{zou2006adaptive}
+	\item Linear interactions: \texttt{lassoBT}~\citep{shah2016modelling}, \texttt{GLinternet}~\citep{lim2015learning}
+	\item Non-linear main effects: \texttt{HierBasis}~\citep{haris2016nonparametric}, \texttt{SPAM}~\citep{ravikumar2009sparse}, \texttt{gamsel}~\citep{chouldechova2015generalized}
+\end{enumerate}
+
+For \texttt{GLinternet} we specified the \texttt{interactionCandidates} argument as to only consider interactions between the environment and all other $X$ variables. For all other methods we supplied ($\bX, X_E$) as the data matrix, 100 for the number of tuning parameters to fit, and used the default values otherwise\footnote[1]{\texttt{R} code for each method available at \url{https://github.com/sahirbhatnagar/sail/blob/master/my_sims/method_functions.R}}. \texttt{lassoBT} considers all pairwise interactions as there is no way for the user to restrict the search space. \texttt{SPAM} applies the same basis expansion to every column of the data matrix; we chose 5 basis spline functions. \texttt{HierBasis} and \texttt{gamsel} selects whether a term in an additive model is nonzero, linear, or a non-linear spline up to a specified max degrees of freedom per variable. 
+
+We compare the above listed methods with our main proposal \texttt{sail}, as well as \texttt{adaptive sail} (Algorithm~\ref{alg:adaptivesail}), \texttt{sail weak} which has the weak heredity property and \texttt{linear sail} as described in Section~\ref{sec:linearsail}. For each function $f_j$, we use a B-spline basis matrix with \texttt{degree=5} implemented in the \texttt{bs} function in \texttt{R}~\citep{cran}. We center the environment variable and the basis functions before running the \sail ~method.
+
+
+\subsection{Simulation Design}
+The covariates are simulated as follows. First, we generate $w_1,\ldots, w_p, u,v$ independently from a standard normal distribution truncated to the interval [0,1] for $i=1,\ldots,n$. Then we set $x_j = (w_j + t\cdot u)/(1 + t)$ for $j = 1,\ldots, 4$ and $x_j = (w_j + t\cdot v)/(1 + t)$ for $j = 5,\ldots, p$, where the parameter $t$ controls the amount of correlation among predictors. The first four variables are nonzero (i.e. active in the response), while the rest of the variables are zero (i.e. are noise variables). This leads to a compound symmetry correlation structure where $Corr(x_j,x_k) = t^2/(1+t^2)$, for $1 \leq j \leq 4, 1 \leq k \leq 4$, and $Corr(x_j,x_k) = t^2/(1+t^2)$, for $5 \leq j \leq p, 5 \leq k \leq p$, but the covariates of the nonzero and zero components are independent~\citep{lin2006component,huang2010variable}. We consider the case when $p=1000$ and $t=0$. The outcome $Y$ is then generated following one of the models and assumptions described below.
+
+We evaluate the performance of our method on three of its defining characteristics: 1) the strong heredity property, 2) non-linearity of predictor effects and 3) interactions.
+
+
+\begin{enumerate}
+	\item \textbf{Hierarchy}
+	\begin{enumerate}
+		\item Truth obeys strong hierarchy. In this situation, the true model for $Y$ contains main effect terms for all covariates involved in interactions. \[Y = \sum_{j=1}^{4} f_j(X_{j}) + \beta_E \cdot X_{E} +  X_{E} \cdot f_3(X_{3}) + X_{E} \cdot f_4(X_{4}) + \varepsilon\]
+		\item Truth obeys weak hierarchy. Here, in addition to the interaction, the $E$ variable has its own main effect but the covariates $X_3$ and $X_4$ do not.
+		\[Y = f_1(X_{1}) + f_2(X_{2}) + \beta_E \cdot X_{E} +  X_{E} \cdot f_3(X_{3}) + X_{E} \cdot f_4(X_{4}) + \varepsilon\]
+		\item Truth only has interactions. In this simulation, the covariates involved in interactions do not have main effects as well.  \[Y =  X_{E} \cdot f_3(X_{3}) + X_{E} \cdot f_4(X_{4}) + \varepsilon\]
+	\end{enumerate}
+	
+	\item \textbf{Non-linearity}
+	\begin{enumerate}
+		% wording taken from Lim and Hastie
+		\item[---] Truth is linear. \texttt{sail} is designed to model non-linearity; here we assess its performance if the true model is completely linear. \[Y = 5X_1 + 3(X_2 + 1) + 4X_3 + 6(X_4-2) + \beta_E \cdot X_{E} +  X_{E} \cdot 4X_3 + X_{E} \cdot 6(X_4-2) + \varepsilon\]
+	\end{enumerate}
+	
+	\item \textbf{Interactions}
+	\begin{enumerate}
+		
+		\item[---] Truth only has main effects. \texttt{sail} is designed to capture interactions; here we assess its performance when there are non in the true model. \[Y = \sum_{j=1}^{4} f_j(X_{j}) + \beta_E \cdot X_{E} + \varepsilon\]
+	\end{enumerate}
+	
+	
+\end{enumerate}
+
+The true component functions are the same as in~\citep{lin2006component,huang2010variable} and are given by $f_1(t) = 5t$, $f_2(t) = 3(2t-1)^2$, $f_3(t) = 4\sin(2\pi t) / (2-\sin(2\pi t))$, $f_4(t) = 6(0.1\sin(2\pi t) + 0.2 \cos(2\pi t)  + 0.3 \sin(2\pi t)^2 + 0.4\cos(2\pi t)^3+0.5\sin(2\pi t)^3)$. We set $\beta_E = 2$ and draw $\varepsilon$ from a normal distribution with variance chosen such that the signal-to-noise ratio is 2. Using this setup, we generated 200 replications consisting of a training set of $n=200$, a validation set of $n=200$ and a test set of $n=800$. The training set was used to fit the model and the validation set was used to select the optimal tuning parameter corresponding to the minimum prediction mean squared error (MSE). Variable selection results including true positive rate, false positive rate and number of active variables (the number of variables with a non-zero coefficient estimate) were assessed on the training set and MSE was assessed on the test set. %In the case of the non-linear methods, one variable may have several non-zero estimated coefficients
+
+\subsection{Results}
+
+The test set MSE results for each of the five simulation scenarios are shown in Figure~\ref{fig:plot-mse-sim}, while Figure~\ref{fig:plot-tpr-fpr-sim} shows the mean true positive rate (TPR) vs. the mean false positive rate (FPR) $\pm 1$ standard deviation (SD). 
+
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-mse-sim-1} 
+
+}
+
+\caption[Boxplots of the test set mean squared error from 200 simulations for each of the five simulation scenarios]{Boxplots of the test set mean squared error from 200 simulations for each of the five simulation scenarios.}\label{fig:plot-mse-sim}
+\end{figure}
+
+
+\end{knitrout}
+
+We see that \sail~,\texttt{adaptive sail} and \texttt{sail weak} have the best performance in terms of both MSE and yielding correct sparse models when the truth follows strong hierarchy (scenario 1a), as we would expect, since this is exactly the scenario that our method is trying to target. 
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-tpr-fpr-sim-1} 
+
+}
+
+\caption[Means $\pm 1$ standard deviation of true positive rate vs]{Means $\pm 1$ standard deviation of true positive rate vs. false positive rate from 200 simulations for each of the five scenarios. $|S_0|$ is the number of truly associated variables.}\label{fig:plot-tpr-fpr-sim}
+\end{figure}
+
+
+\end{knitrout}
+
+Our method is also competitive when only main effects are present (scenario 3) and performs just as well as methods that only consider linear and non-linear main effects (\texttt{HierBasis}, \texttt{SPAM}), owing to the penalization applied to the interaction parameter. Due to the heredity property, our method is unable to capture any of the truly associated variables when only interactions are present (scenario 1c). However, the other methods also fail to capture any signal, with the exception of \texttt{GLinternet} which has a high TPR and FPR. When only linear effects and interactions are present (scenario 2), we see that \texttt{linear sail} has a high TPR and low FPR as compared to the other linear interaction methods (\texttt{lassoBT} and \texttt{GLinternet}) though the test set MSE isn't as good. The \texttt{lasso} and \texttt{adaptive lasso} have good test set MSE performance but poor sensitivity. Additional results are available in Section~\ref{ap:simulation} of the Appendix. Specifically, in Figure~\ref{fig:plot-mse-nactive-sim} we plot the mean MSE against the mean number of active variables $\pm 1$ standard deviation (SD). Figures~\ref{fig:plot-tpr-sim} and~\ref{fig:plot-fpr-sim} show the true positive and false positive rates, respectively. Figure~\ref{fig:plot-nactive-sim} shows the number of active variables. 
+
+We visually inspected whether our method could correctly capture the shape of the association between the predictors and the response for both main and interaction effects. To do so, we plotted the true and predicted curves for scenario 1a) only. Figure~\ref{fig:main_eff} shows each of the four main effects with the estimated curves from each of the 200 simulations along with the true curve. We can see the effect of the penalty on the parameters, i.e., decreasing prediction variance at the cost of increased bias. This is particularly well illustrated in the bottom right panel where \sail ~smooths out the very wiggly component function $f_4(x)$.
+
+To visualize the estimated interaction effects, we ordered the 200 simulation runs by the euclidean distance between the estimated and true regression functions. Following Radchenko et al.~\citep{radchenko2010variable}, we then identified the 25th, 50th, and 75th best simulations and plotted, in Figures~\ref{fig:X3} and~\ref{fig:X4}, their interaction effects of $X_E$ with $f_3(X_3)$ and $f_4(X_4)$, respectively. We see that \sail ~does a good job at capturing the true interaction surface for $X_E \cdot f_3(X_3)$. Again, the smoothing and shrinkage effect is apparent when looking at the interaction surfaces for $X_E \cdot f_4(X_4)$
+
+
+
+%\begin{comment}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.61]{/home/sahir/git_repositories/sail/my_sims/figures/sail_main_eff_paramIndex1_200sims.pdf}
+	\caption{True and estimated main effect component functions for scenario 1a). The estimated curves represent the results from each one of the 200 simulations conducted.}\label{fig:main_eff}
+\end{figure}
+
+
+\begin{figure}[H]
+	\centering
+	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_intertruth_X3_paramIndex1_200sims.pdf}}
+	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter25_X3_paramIndex1_200sims.pdf}}\quad 
+	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter50_X3_paramIndex1_200sims.pdf}}
+	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter75_X3_paramIndex1_200sims.pdf}}
+	\caption{True and estimated interaction effects for $X_E \cdot f_3(X_3)$ in simulation scenario 1a).}
+	\label{fig:X3}
+\end{figure}
+
+
+\begin{figure}[H]
+	\centering
+	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_intertruth_X4_paramIndex1_200sims.pdf}}
+	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter25_X4_paramIndex1_200sims.pdf}}\quad 
+	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter50_X4_paramIndex1_200sims.pdf}}
+	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter75_X4_paramIndex1_200sims.pdf}}
+	\caption{True and estimated interaction effects for $X_E \cdot f_4(X_4)$ in simulation scenario 1a).}
+	\label{fig:X4}
+\end{figure}
+
+
+%\end{comment}
+
+
+\section{Real Data Application}
+In this section we illustrate \sail ~on several real data examples.
+
+
+\subsection{Alzheimer's Disease Neuroimaging Initiative}
+
+Alzheimer's is an irreversible neurodegenerative disease that results in a loss of mental function due to the deterioration of brain tissue. The overall goal of the Alzheimer's Disease Neuroimaging Initiative (ADNI) is to validate biomarkers for use in
+Alzheimer's disease clinical treatment trials~\citep{petersen2010alzheimer}. The patients were selected into the study based on their clinical diagnosis: controls, mild cognitive impairment (MCI) or Alzheimer's disease (AD). PET amyloid imaging was used to asses amyloid beta (A$\beta$) protein load in 96 brain regions. The response was general cognitive decline measured by a continuous mini-mental state examination score. We applied \sail ~to this data to see if there were any non-linear interactions between clinical diagnosis and A$\beta$ protein in the 96 brain regions on mini-mental state examination. 
+
+There were a total of 343 patients who we divided randomly into equal sized training/validation/test splits. We ran the strong heredity \sail ~with cubic B-splines and $\alpha=0.1$. We also applied the \texttt{lasso, lassoBT, HierBasis} and \texttt{GLinternet} to this data. Using the same default settings and strategy as the simulation study, we ran each method on the training data, determined the optimal tuning parameter on the validation data, and assessed MSE on the test data. We repeated this process 200 times. 
+
+
+
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/error-crosses-adni-1} 
+
+}
+
+\caption[Mean test set MSE vs]{Mean test set MSE vs. mean number of active variables ($\pm 1$ SD).}\label{fig:error-crosses-adni}
+\end{figure}
+
+
+\end{knitrout}
+
+In Figure~\ref{fig:error-crosses-adni} we plot the mean test set MSE vs. the mean number of active variables $\pm 1$ SD. We see that \sail ~produces the sparsest models but doesn't perform as well as \texttt{HierBasis} and \texttt{GLinternet} in terms of MSE. \sail ~achieves similar MSE to both the \texttt{lasso} and \texttt{lassoBT} with fewer variables on average. \texttt{GLinternet} produces the largest models and seems to be sensitive to the train/validate/test split as evidenced by the large standard deviations. 
+
+To visualize the results from the \sail ~method, we chose the train/validate/test split which led to the best test set MSE, and then plotted the interaction effects in Figure~\ref{fig:plot-inter-adni}. The left panel shows the middle occipital gyrus left region in the occipital lobe known for visual object perception. We see that more A$\beta$ protein loads leads to a worse cognitive score for the MCI and AD group but not for the controls. The right panel shows the cuneus region known which is known to be involved in basic visual processing. We see that more A$\beta$ proteins leads to better cognitive scores for the MCI and AD group and poorer scores for the controls. 
+
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-inter-adni-1} 
+
+}
+
+\caption[Estimated interaction effects by \texttt{sail} for ADNI data]{Estimated interaction effects by \texttt{sail} for ADNI data.}\label{fig:plot-inter-adni}
+\end{figure}
+
+
+\end{knitrout}
+
+
+
+
+
+
+
+\section{Discussion}
+
+In this article we introduce the sparse additive interaction learning model \sail ~for detecting non-linear interactions with a key environmental or exposure variable in high-dimensional settings. 
+Using a simple reparametrization, we are able to achieve both the weak and strong heredity property without using a complex penalty function. We use a blockwise coordinate descent algorithm to solve the \sail ~objective function for both least-squares and logistic loss functions. 
+We show that the \texttt{adaptive sail} has the oracle property. All our algorithms are implemented in a computationally efficient, well-documented and freely available \texttt{R} package. 
+Furthermore, our method is flexible to handle any type of basis expansion including the identity map, which allows for linear interactions. Our implementation allows the user to selectively apply the basis expansions to the predictors, allowing for example, a combination of continuous and categorical predictors. 
+An extensive simulation study shows that \sail, \texttt{adaptive sail} and \texttt{sail weak} outperform existing penalized regression methods in terms of prediction error, sensitivity and specificity when there are non-linear main effects only, as well as interactions with an exposure variable. 
+
+Our method however does have its limitations. \sail can currently only handle $X_E \cdot f(X)$ or $f(X_E) \cdot X$ and does not allow for $f(X, X_E)$, i.e., only one of the variables in the interaction can have a non-linear effect and we do not consider the tensor product. The reparametrization leads to a non-convex optimization problem which makes convergence rates difficult to assess, though we did not experience any major convergence issues in our simulations and real data analysis. The memory footprint can also be an issue depending on the degree of the basis expansion and the number of variables. 
+
+To our knowledge, our proposal is the first to allow for non-linear interactions with a key exposure variable following the weak or strong heredity property in high-dimensional settings. We also provide a first software implementation for these models. 
+
+
+
+
+
+
+%\section{Application}
+
+%\includegraphics[scale=0.5]{l1}
+
+%\includegraphics[scale=0.5]{l2}
+
+\newpage
+%\bibliographystyle{plainnat}
+%\bibliographystyle{abbrv}
+%\addcontentsline{toc}{chapter}{References}
+\bibliographystyle{unsrt}
+\bibliography{GEbib}
+
+\newpage
+
+\appendix
+\counterwithin{figure}{section}
+
+\section{Algorithm Details}
+
+In this section we provide more specific details about the algorithms used to solve the \sail ~objective function. 
+
+\subsection{Least-Squares \sail ~with Strong Heredity} \label{ap:subsec:lssail}
+A more detailed algorithm for fitting the least-squares \texttt{sail} model with strong heredity is given in Algorithm~\ref{alg:lssail}.
+\begin{algorithm}
+	\caption{Blockwise Coordinate Descent for Least-Squares \texttt{sail} with Strong Heredity}\label{alg:lssail}
+	\begin{algorithmic}[1]
+		 %\algsetup{linenosize=\tiny}
+		\small
+		\Function{\texttt{sail}}{$\boldsymbol{X},Y, X_E,\texttt{basis},\lambda, \alpha,w_j, w_E, w_{jE}, \epsilon$}\Comment{Algorithm for solving~\eqref{eq:objective_least-squares}}
+		%\State $\Psi_j \gets $ \texttt{splines::bs}($X_j$, \texttt{df}, \texttt{degree}) for $j=1, \ldots, p$
+		%\State $\widetilde\Psi_j \gets X_E \circ \Psi_j$ for $j=1, \ldots, p$
+		\State $\Psi_j \gets $ \texttt{basis}($X_j$), $\widetilde\Psi_j \gets X_E \circ \Psi_j$ for $j=1, \ldots, p$
+		%\item[]
+		\State Initialize: $\beta_0^{(0)}\gets \bar{Y}$, $\beta_E^{(0)}=\btheta_j^{(0)}=\gamma_j^{(0)} \gets 0$ for $j=1, \ldots, p$.
+		%\State Initialize: $R^\ast \gets Y $ %\Comment{Initial partial residual used for $\btheta$ update}
+		\State Set iteration counter $k \gets 0$
+		\State $R^\ast \gets Y - \beta_0^{(k)} - \beta_E^{(k)} X_E - \sum_{j}  (\bPsi_{j} + \gamma_{j}^{(k)} \beta_E^{(k)}  \widetilde\bPsi_{j}) \btheta_{j}^{(k)}$
+		\Repeat		
+		\State $\bullet$ To update $\boldsymbol{\gamma}=(\gamma_1, \ldots, \gamma_p)$
+		\Indent
+		\State $\widetilde{X}_j \gets \beta_E^{(k)} \widetilde{\bPsi}_j \btheta_j^{(k)} \qquad$ for $j = 1, \ldots, p$
+		\State $R \gets R^\ast + \sum_{j=1}^p  \gamma_{j}^{(k)} \widetilde{X}_j$
+		%\State $R_1 \gets Y - \beta_0^{(k)} - \beta_E^{(k)} X_E - \sum_{j} \bPsi_j \btheta_j^{(k)}$
+		\State \[\boldsymbol{\gamma}^{(k)(new)} \gets \argmin_{\boldsymbol{\gamma}} \frac{1}{2n} \norm{R - \sum_{j} \gamma_j \widetilde{X}_j}_2^2 + \lambda \alpha \sum_{j} w_{jE} \abs{\gamma_{j}}\]
+		\State $\Delta = \sum_j (\gamma_j^{(k)} - \gamma_j^{(k)(new)}) \widetilde{X}_j $
+		\State $R^\ast \gets R^\ast + \Delta$
+		\EndIndent
+		\State $\bullet$ To update $\btheta = (\btheta_1, \ldots, \btheta_p)$
+		\Indent
+		\State %$\beta_0^{(k)} \gets \beta_0^{(k-1)}$, $\btheta_j^{(k)} \gets \btheta_j^{(k-1)}$, 
+		$\widetilde{X}_j \gets \bPsi_j + \gamma_{j}^{(k)} \beta_E^{(k)} \widetilde\bPsi_{j}$ for $j=1, \ldots, p$
+		\For{$j=1, \ldots, p$}
+		\State $R \gets R^\ast + \widetilde{X}_j\btheta_j^{(k)}$
+		%\State $R_2 \gets Y - \beta_0^{(k)} - \beta_E^{(k)} X_E - \sum_{j=1}^p  (\bPsi_{j} + \gamma_{j}^{(k)} \beta_E^{(k)}  \widetilde\bPsi_{j}) \btheta_{j}^{(k)} + (\bPsi_j + \gamma_j^{(k)}\beta_E^{(k)} \widetilde{\bPsi}_j)\btheta_j^{(k)}$
+		%\If{$j=1$} \State $\Delta \gets 0$ \Else \State $\Delta \gets \widetilde{X}_{j}  \btheta_{j}^{(k)} - \widetilde{X}_{j-1} \btheta_{j-1}^{(k)}$ \Comment{see~\eqref{subsec:Delta} for details}
+		%\EndIf
+		%\State $R_2 \gets R_2 + \Delta$
+		\State \[\btheta_j^{(k)(new)} \gets \argmin_{\btheta_j} \frac{1}{2n} \norm{R -  \widetilde{X}_j \btheta_j}_2^2 + \lambda (1-\alpha) w_j \norm{\theta_j}_2\]
+		%\State $R_2^{\prime\prime} \gets Y - \beta_0^{(k)} - \beta_E^{(k)} X_E - \sum_{\ell \neq j}  \bPsi_{\ell} \btheta_{\ell}^{(k)} - \sum_{\ell \neq j} \gamma_{\ell}^{(k)} \beta_E^{(k)}  \widetilde\bPsi_{\ell} \btheta_{\ell}^{(k)} $
+		\State $\Delta = \widetilde{X}_j(\btheta_j^{(k)} - \btheta_j^{(k)(new)})$
+		\State $R^\ast \gets R^\ast + \Delta$
+		\EndFor 
+		\EndIndent
+		%\item[]
+		\State $\bullet$ To update $\beta_E$
+		\Indent
+		\State $\widetilde{X}_E \gets X_E + \sum_{j} \gamma_j^{(k)} \widetilde\bPsi_j \btheta_j^{(k)}$
+		%\State $R \gets R^\ast + \beta_E^{(k)} X_E + \sum_{j}  ( \gamma_{j}^{(k)} \beta_E^{(k)}  \widetilde\bPsi_{j}) \btheta_{j}^{(k)} = R^\ast + \beta_E^{(k)} \widetilde{X}_E$
+		\State $R \gets R^\ast + \beta_E^{(k)} \widetilde{X}_E$
+		%\State $R_3 \gets Y - \beta_0^{(k)} - \sum_j \bPsi_j \btheta_j^{(k)} - \sum_{j} \gamma_j^{(k)}  \bPsi_j \btheta_j^{(k)}$
+		\State \[\beta_E^{(k)(new)} \gets S\left(\frac{1}{n \cdot w_E} \widetilde{X}_E^\top R, \lambda(1-\alpha)\right)\] \Comment{$S(x,t) = \textrm{sign}(x) (\abs{x} - t)_+$}
+		%\State $\beta_E^{(k)} \gets \argmin_{\beta_E} \frac{1}{2n} \norm{R_3 - \beta_E \widetilde{X}_E}_2^2 + \lambda(1-\alpha) w_E \abs{\beta_E}$
+		\State $\Delta = (\beta_E^{(k)} - \beta_E^{(k)(new)})\widetilde{X}_E$
+		\State $R^\ast \gets R^\ast + \Delta$
+		\EndIndent
+		\State $\bullet$ To update $\beta_0$
+		\Indent
+		\State $R \gets R^* + \beta_0^{(k)}$
+		%\State $R_4 \gets Y - \beta_E^{(k)} X_E - \sum_{j}  \bPsi_{j} \btheta_{j}^{(k)} - \sum_{j} \gamma_{j}^{(k)} \beta_E^{(k)}  \widetilde\bPsi_{j} \btheta_{j}^{(k)}$ 
+		\State \[\beta_0^{(k)(new)} \gets \frac{1}{n} R^\ast \cdot \boldsymbol{1}\]
+		\State $\Delta = \beta_0^{(k)} - \beta_0^{(k)(new)}$
+		\State $R^\ast \gets R^\ast + \Delta$
+		\EndIndent
+		\State $k \gets k + 1$
+		%\State \Until{convergence criterion is satisfied: $\norm{\bTheta^{(k)} - \bTheta^{(k-1)}}_2^2 < \epsilon$}
+		\State \Until{convergence criterion is satisfied: $\abs{Q(\bTheta^{(k-1)}) - Q(\bTheta^{(k)})} /Q(\bTheta^{(k-1)})  < \epsilon$}
+		\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\newpage
+
+
+\subsection{Details on Update for $\btheta$} \label{ap:subsec:Delta}
+
+Here we discuss a computational speedup in the updates for the $\btheta$ parameter. The partial residual ($R_{s}$) used for updating $\btheta_s$ ($s \in {1,\ldots, p}$) at the $k$th iteration is given by
+\begin{align}
+R_{s} & = Y - \widetilde{Y}_{(-s)}^{(k)} \label{eq:r2}
+\end{align}
+where $\widetilde{Y}_{(-s)}^{(k)}$ is the fitted value at the $k$th iteration excluding the contribution from $\bPsi_s$:
+\begin{align}
+\widetilde{Y}_{(-s)}^{(k)} & = \beta_0^{(k)} - \beta_E^{(k)} X_E - \sum_{\ell \neq s}  \bPsi_{\ell} \btheta_{\ell}^{(k)} - \sum_{\ell \neq s} \gamma_{\ell}^{(k)} \beta_E^{(k)}  \widetilde\bPsi_{\ell} \btheta_{\ell}^{(k)} \label{eq:r2_2}
+\end{align}
+Using~\eqref{eq:r2_2},~\eqref{eq:r2} can be re-written as
+\begin{align}
+% R_2 & = Y - \beta_0^{(k)} - \beta_E^{(k)} X_E - \sum_{j=1}^p  \bPsi_{j} \btheta_{j}^{(k)} - \sum_{j=1}^p \gamma_{j}^{(k)} \beta_E^{(k)}  \widetilde\bPsi_{j} \btheta_{j}^{(k)} + (\bPsi_s + \gamma_s^{(k)}\beta_E^{(k)} \widetilde{\bPsi}_s)\btheta_s^{(k)}  \\
+R_{s} & = Y - \beta_0^{(k)} - \beta_E^{(k)} X_E - \sum_{j=1}^p  (\bPsi_{j} + \gamma_{j}^{(k)} \beta_E^{(k)}  \widetilde\bPsi_{j}) \btheta_{j}^{(k)} + (\bPsi_s + \gamma_s^{(k)}\beta_E^{(k)} \widetilde{\bPsi}_s)\btheta_s^{(k)} \nonumber \\
+& = R^\ast + (\bPsi_s + \gamma_s^{(k)}\beta_E^{(k)} \widetilde{\bPsi}_s)\btheta_s^{(k)} \label{eq:r2_3} 
+\end{align}
+where 
+\begin{equation}
+R^\ast = Y - \beta_0^{(k)} - \beta_E^{(k)} X_E - \sum_{j=1}^p  (\bPsi_{j} + \gamma_{j}^{(k)} \beta_E^{(k)}  \widetilde\bPsi_{j}) \btheta_{j}^{(k)} \label{eq:rast}
+\end{equation}
+Denote $\btheta_{s}^{(k)(\tm{new})}$ the solution for predictor $s$ at the $k$th iteration, given by:
+\begin{align}
+\btheta_s^{(k)(new)} = \argmin_{\btheta_j} \frac{1}{2n} \norm{R_s - (\bPsi_s + \gamma_{s}^{(k)} \beta_E^{(k)}\widetilde{\bPsi}_{s})\btheta_j }_2^2 + \lambda (1-\alpha) w_s \norm{\theta_j}_2 \label{eq:r2_4}
+\end{align}
+Now we want to update the parameters for the next predictor $\btheta_{s+1}$ ($s+1 \in {1,\ldots, p}$) at the $k$th iteration. The partial residual used to update $\btheta_{s+1}$ is given by
+\begin{align}
+R_{s+1} & = R^\ast + (\bPsi_{s+1} + \gamma_{s+1}^{(k)}\beta_E^{(k)} \widetilde{\bPsi}_{s+1})\btheta_{s+1}^{(k)} + (\bPsi_s + \gamma_s^{(k)}\beta_E^{(k)} \widetilde{\bPsi}_s)(\btheta_s^{(k)} - \btheta_s^{(k)(new)}) \label{eq:r2_5} 
+\end{align}
+where $R^\ast$ is given by~\eqref{eq:rast}, $\btheta_s^{(k)}$ is the parameter value prior to the update, and $\btheta_s^{(k)(new)}$ is the updated value given by~\eqref{eq:r2_4}. Taking the difference between~\eqref{eq:r2_3} and~\eqref{eq:r2_5} gives
+\begin{align}
+\Delta & = R_t - R_s \nonumber\\
+& = (\bPsi_t + \gamma_t^{(k)}\beta_E^{(k)} \widetilde{\bPsi}_t)\btheta_t^{(k)} + (\bPsi_s + \gamma_s^{(k)}\beta_E^{(k)} \widetilde{\bPsi}_s)(\btheta_s^{(k)} - \btheta_s^{(k)(new)}) - (\bPsi_s + \gamma_s^{(k)}\beta_E^{(k)} \widetilde{\bPsi}_s)\btheta_s^{(k)} \nonumber\\
+& = (\bPsi_t + \gamma_t^{(k)}\beta_E^{(k)} \widetilde{\bPsi}_t)\btheta_t^{(k)} - (\bPsi_s + \gamma_s^{(k)}\beta_E^{(k)} \widetilde{\bPsi}_s)\btheta_s^{(k)(new)} \label{eq:Delta}
+\end{align} 
+Therefore $R_t = R_s + \Delta$, and the partial residual for updating the next predictor can be computed by updating the previous partial residual by $\Delta$, given by~\eqref{eq:Delta}. This formulation can lead to computational speedups especially when $\Delta = 0$, meaning the partial residual does not need to be re-calculated.  
+
+
+
+\subsection{Least-Squares \sail ~with Weak Heredity} \label{ap:subsec:lssailweak}
+
+The least-squares \texttt{sail} model with weak heredity has the form
+\begin{equation}
+\hat{Y}   =  \beta_0 \cdot \boldsymbol{1} + \sum_{j=1}^p \bPsi_j \btheta_j + \beta_E X_E + \sum_{j=1}^p \gamma_{j}  (X_E \circ \bPsi_j) (\beta_E\cdot \mb{1}_{m_j} + \btheta_j)
+\end{equation}
+The objective function is given by 
+\begin{equation}
+Q(\bTheta) = \frac{1}{2n} \norm{Y - \hat{Y}}_2^2 + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{j}} \label{eq:objective_least-squares-weak}
+\end{equation}
+Denote the $n$-dimensional residual column vector $R = Y-\hat{Y}$. The subgradient equations are given by
+\begin{align}
+\frac{\partial Q}{\partial \beta_0} & = \frac{1}{n} \left( Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p \gamma_{j}  (X_E \circ \bPsi_j)(\beta_E \cdot \mb{1}_{m_j} + \btheta_j)\right)^\top \boldsymbol{1}  = 0 \label{eq:sub_b0_weak} \\
+\frac{\partial Q}{\partial \beta_E} & = -\frac{1}{n} \left(X_E + \sum_{j=1}^{p}\gamma_j (X_E \circ \bPsi_j)\mb{1}_{m_j}\right)^\top R  + \lambda (1-\alpha) w_E s_1 = 0 \label{eq:sub_bEweak}\\
+\frac{\partial Q}{\partial \btheta_j} & = -\frac{1}{n} \left(\bPsi_j + \gamma_j (X_E \circ \bPsi_j)\right)^\top R  + \lambda (1-\alpha) w_j s_2 = \boldsymbol{0} \label{eq:sub_thetajweak}\\
+\frac{\partial Q}{\partial \gamma_j} & = -\frac{1}{n} \left((X_E \circ \bPsi_j)(\beta_E \cdot \mb{1}_{m_j} + \btheta_j)\right)^\top R  + \lambda \alpha w_{jE} s_3 = 0 \label{eq:sub_gammajweak}
+\end{align}
+where $s_1$ is in the subgradient of the $\ell_1$ norm:
+$$
+s_1 \in \begin{cases}
+\textrm{sign}\left(\beta_E\right) & \tm{if  } \beta_E \neq 0\\
+[-1, 1] &  \tm{if  } \beta_E = 0,\\
+\end{cases}
+$$
+$s_2$ is in the subgradient of the $\ell_2$ norm:
+$$
+s_2 \in \begin{cases}
+\dfrac{\btheta_j}{\norm{\btheta_j}_2} &  \tm{if  } \btheta_j \neq \boldsymbol{0}\\
+u \in \mathbb{R}^{m_j}: \norm{u}_2 \leq 1 & \tm{if  } \btheta_j = \boldsymbol{0},\\
+\end{cases}
+$$
+and $s_3$ is in the subgradient of the $\ell_1$ norm:
+$$
+s_3 \in \begin{cases}
+\textrm{sign}\left(\gamma_j\right) & \tm{if  } \gamma_j \neq 0\\
+[-1, 1] &  \tm{if  } \gamma_j = 0.\\
+\end{cases}
+$$
+Define the partial residuals, without the $j$th predictor for $j=1, \ldots, p$, as
+\[R_{(-j)} = Y - \beta_0 \cdot \boldsymbol{1} - \sum_{\ell \neq j} \bPsi_\ell \btheta_\ell - \beta_E X_E - \sum_{\ell\neq j} \gamma_{\ell}  (X_E \circ \bPsi_\ell) (\beta_E \cdot \mb{1}_{m_{\ell}} +\btheta_\ell) \]
+the partial residual without $X_E$ as
+\[R_{(-E)} = Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \sum_{j=1}^p \gamma_{j}  (X_E \circ \bPsi_j) \btheta_j\]
+and the partial residual without the $j$th interaction for $j=1, \ldots, p$
+\[R_{(-jE)} = Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{\ell\neq j} \gamma_{\ell} (X_E \circ \bPsi_\ell) (\beta_E \cdot \mb{1}_{m_{\ell}} +\btheta_\ell) \]
+From the subgradient Equation~\eqref{eq:sub_bEweak}, we see that $\beta_E = 0$ is a solution if
+\begin{equation}
+\frac{1}{w_E}\abs{\frac{1}{n} \left(X_E + \sum_{j=1}^{p}\gamma_j (X_E \circ \bPsi_j)\mb{1}_{m_j}\right)^\top R_{(-E)}} \leq \lambda (1-\alpha)
+\end{equation}
+From the subgradient Equation~\eqref{eq:sub_thetajweak}, we see that $\btheta_j = \boldsymbol{0}$ is a solution if
+\begin{equation}
+\frac{1}{w_{j}}\norm{\frac{1}{n} \left(\bPsi_j + \gamma_j (X_E \circ \bPsi_j)\right)^\top R_{(-j)}}_2 \leq \lambda (1-\alpha)
+\end{equation}
+From the subgradient Equation~\eqref{eq:sub_gammajweak}, we see that $\gamma_j = 0$ is a solution if
+\begin{equation}
+\frac{1}{w_{jE}}\abs{\frac{1}{n} \left((X_E \circ \bPsi_j)(\beta_E \cdot \mb{1}_{m_j}+\btheta_j)\right)^\top R_{(-jE)}} \leq \lambda \alpha
+\end{equation}
+From the subgradient equations we see that 
+\begin{align}
+	\hat{\beta}_0 &=  \left( Y - \sum_{j=1}^p \bPsi_j \hat\btheta_j - \hat\beta_E X_E - \sum_{j=1}^p \hat\gamma_{j}   (X_E \circ \bPsi_j)(\hat\beta_E\cdot \mb{1}_{m_j}+ \hat\btheta_j)\right)^\top \boldsymbol{1} \\
+	\hat{\beta}_E & = S\left(\frac{1}{n \cdot w_E} \left(X_E + \sum_{j=1}^{p}\hat\gamma_j (X_E \circ \bPsi_j)\mb{1}_{m_j}\right)^\top R_{(-E)}, \lambda(1-\alpha)\right) \\
+	\lambda (1-\alpha) w_j \dfrac{\btheta_j}{\norm{\btheta_j}_2} & =  \frac{1}{n} \left(\bPsi_j + \gamma_j (X_E \circ \bPsi_j)\right)^\top R_{(-j)} \label{eq:thetajweak} \\
+	\hat\gamma_j & = S \left(\frac{1}{n \cdot w_{jE}} \left((X_E \circ \bPsi_j)(\beta_E \cdot \mb{1}_{m_j}+\btheta_j)\right)^\top R_{(-jE)}, \lambda \alpha\right)
+\end{align}
+where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operator. As was the case in the strong heredity \sail ~model, there are closed form solutions for the intercept and $\beta_E$, each $\gamma_j$ also has a closed form solution and can be solved efficiently for $j=1, \ldots, p$ using the coordinate descent procedure implemented in the \texttt{glmnet} package~\citep{friedman2010regularization}, while we use the quadratic majorization technique implemented in the \texttt{gglasso} package~\citep{yang2015fast} to solve~\eqref{eq:thetajweak}. Algorithm~\ref{alg:sailweak} details the procedure used to fit the least-squares weak heredity \sail ~model.
+
+\begin{algorithm}
+	\caption{Coordinate descent for least-squares \texttt{sail} with weak heredity}\label{alg:sailweak}
+	\begin{algorithmic}[1]
+		\small
+		\Function{\texttt{sail}}{$\boldsymbol{X},Y, X_E,\texttt{basis},\lambda, \alpha,w_j, w_E, w_{jE}, \epsilon$}\Comment{Algorithm for solving~\eqref{eq:objective_least-squares-weak}}
+		\State $\Psi_j \gets $ \texttt{basis}($X_j$), $\widetilde\Psi_j \gets X_E \circ \Psi_j$ for $j=1, \ldots, p$
+		%\State  for $j=1, \ldots, p$
+		%\item[]
+		\State Initialize: $\beta_0^{(0)}\gets \bar{Y}$, $\beta_E^{(0)}=\btheta_j^{(0)} = \gamma_j^{(0)} \gets 0$ for $j=1, \ldots, p$.
+		%\State Initialize: $R^\ast \gets Y $ %\Comment{Initial partial residual used for $\btheta$ update}
+		\State Set iteration counter $k \gets 0$
+		\State $R^\ast \gets Y - \beta_0^{(k)} - \beta_E^{(k)} X_E - \sum_{j}  \bPsi_{j}\btheta_{j}^{(k)} - \sum_{j} \gamma_{j}^{(k)} \widetilde\bPsi_{j}(\beta_E^{(k)}\cdot \mb{1}_{m_j} +\btheta_{j}^{(k)})$
+		\Repeat		
+		\State $\bullet$ To update $\boldsymbol{\gamma}=(\gamma_1, \ldots, \gamma_p)$
+		\Indent
+		\State $\widetilde{X}_j \gets \widetilde{\bPsi}_j (\beta_E^{(k)}\cdot \mb{1}_{m_j}+ \btheta_j^{(k)}) \qquad$ for $j = 1, \ldots, p$
+		\State $R \gets R^\ast + \sum_{j=1}^p  \gamma_{j}^{(k)} \widetilde{X}_j$
+		%\State $R_1 \gets Y - \beta_0^{(k)} - \beta_E^{(k)} X_E - \sum_{j} \bPsi_j \btheta_j^{(k)}$
+		\State \[\boldsymbol{\gamma}^{(k)(new)} \gets \argmin_{\boldsymbol{\gamma}} \frac{1}{2n} \norm{R - \sum_{j} \gamma_j \widetilde{X}_j}_2^2 + \lambda \alpha \sum_{j} w_{jE} \abs{\gamma_{j}}\]
+		\State $\Delta = \sum_j (\gamma_j^{(k)} - \gamma_j^{(k)(new)}) \widetilde{X}_j $
+		\State $R^\ast \gets R^\ast + \Delta$
+		\EndIndent
+		\State $\bullet$ To update $\btheta = (\btheta_1, \ldots, \btheta_p)$
+		\Indent
+		\State %$\beta_0^{(k)} \gets \beta_0^{(k-1)}$, $\btheta_j^{(k)} \gets \btheta_j^{(k-1)}$, 
+		$\widetilde{X}_j \gets \bPsi_j + \gamma_{j}^{(k)} \widetilde\bPsi_{j}$ for $j=1, \ldots, p$
+		\For{$j=1, \ldots, p$}
+		\State $R \gets R^\ast + \widetilde{X}_j\btheta_j^{(k)}$
+		%\State $R_2 \gets Y - \beta_0^{(k)} - \beta_E^{(k)} X_E - \sum_{j=1}^p  (\bPsi_{j} + \gamma_{j}^{(k)} \beta_E^{(k)}  \widetilde\bPsi_{j}) \btheta_{j}^{(k)} + (\bPsi_j + \gamma_j^{(k)}\beta_E^{(k)} \widetilde{\bPsi}_j)\btheta_j^{(k)}$
+		%\If{$j=1$} \State $\Delta \gets 0$ \Else \State $\Delta \gets \widetilde{X}_{j}  \btheta_{j}^{(k)} - \widetilde{X}_{j-1} \btheta_{j-1}^{(k)}$ \Comment{see~\eqref{subsec:Delta} for details}
+		%\EndIf
+		%\State $R_2 \gets R_2 + \Delta$
+		\State \[\btheta_j^{(k)(new)} \gets \argmin_{\btheta_j} \frac{1}{2n} \norm{R -  \widetilde{X}_j \btheta_j}_2^2 + \lambda (1-\alpha) w_j \norm{\theta_j}_2\]
+		%\State $R_2^{\prime\prime} \gets Y - \beta_0^{(k)} - \beta_E^{(k)} X_E - \sum_{\ell \neq j}  \bPsi_{\ell} \btheta_{\ell}^{(k)} - \sum_{\ell \neq j} \gamma_{\ell}^{(k)} \beta_E^{(k)}  \widetilde\bPsi_{\ell} \btheta_{\ell}^{(k)} $
+		\State $\Delta = \widetilde{X}_j(\btheta_j^{(k)} - \btheta_j^{(k)(new)})$
+		\State $R^\ast \gets R^\ast + \Delta$
+		\EndFor 
+		\EndIndent
+		%\item[]
+		\State $\bullet$ To update $\beta_E$
+		\Indent
+		\State $\widetilde{X}_E \gets X_E + \sum_{j} \gamma_j^{(k)} \widetilde\bPsi_j \mb{1}_{m_j}$
+		%\State $R \gets R^\ast + \beta_E^{(k)} X_E + \sum_{j}  ( \gamma_{j}^{(k)} \beta_E^{(k)}  \widetilde\bPsi_{j}) \btheta_{j}^{(k)} = R^\ast + \beta_E^{(k)} \widetilde{X}_E$
+		\State $R \gets R^\ast + \beta_E^{(k)} \widetilde{X}_E$
+		%\State $R_3 \gets Y - \beta_0^{(k)} - \sum_j \bPsi_j \btheta_j^{(k)} - \sum_{j} \gamma_j^{(k)}  \bPsi_j \btheta_j^{(k)}$
+		\State \[\beta_E^{(k)(new)} \gets S\left(\frac{1}{n \cdot w_E} \widetilde{X}_E^\top R, \lambda(1-\alpha)\right)\] \Comment{$S(x,t) = \textrm{sign}(x) (\abs{x} - t)_+$}
+		%\State $\beta_E^{(k)} \gets \argmin_{\beta_E} \frac{1}{2n} \norm{R_3 - \beta_E \widetilde{X}_E}_2^2 + \lambda(1-\alpha) w_E \abs{\beta_E}$
+		\State $\Delta = (\beta_E^{(k)} - \beta_E^{(k)(new)})\widetilde{X}_E$
+		\State $R^\ast \gets R^\ast + \Delta$
+		\EndIndent
+		\State $\bullet$ To update $\beta_0$
+		\Indent
+		\State $R \gets R^* + \beta_0^{(k)}$
+		%\State $R_4 \gets Y - \beta_E^{(k)} X_E - \sum_{j}  \bPsi_{j} \btheta_{j}^{(k)} - \sum_{j} \gamma_{j}^{(k)} \beta_E^{(k)}  \widetilde\bPsi_{j} \btheta_{j}^{(k)}$ 
+		\State \[\beta_0^{(k)(new)} \gets \frac{1}{n} R^\ast \cdot \boldsymbol{1}\]
+		\State $\Delta = \beta_0^{(k)} - \beta_0^{(k)(new)}$
+		\State $R^\ast \gets R^\ast + \Delta$
+		\EndIndent
+		\State $k \gets k + 1$
+		%\State \Until{convergence criterion is satisfied: $\norm{\bTheta^{(k)} - \bTheta^{(k-1)}}_2^2 < \epsilon$}
+		\State \Until{convergence criterion is satisfied: $\abs{Q(\bTheta^{(k-1)}) - Q(\bTheta^{(k)})} /Q(\bTheta^{(k-1)})  < \epsilon$}
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+
+
+\subsubsection{Lambda Max}
+
+The smallest value of $\lambda$ for which the entire parameter vector $(\beta_E,\btheta_1, \ldots, \btheta_p, \gamma_1, \ldots, \gamma_p)$ is $\boldsymbol{0}$ is:
+
+\begin{multline}
+\lambda_{max} = \frac{1}{n} \max \left\lbrace \frac{1}{(1-\alpha)w_E}\left(X_E + \sum_{j=1}^{p}\gamma_j (X_E \circ \bPsi_j)\mb{1}_{m_j}\right)^\top R_{(-E)}, \right. \\
+\left. \max_j \frac{1}{(1-\alpha)w_{j}}\norm{\left(\bPsi_j + \gamma_j (X_E \circ \bPsi_j)\right)^\top R_{(-j)}}_2, \right. \\
+\left. \max_j \frac{1}{\alpha w_{jE}}\left((X_E \circ \bPsi_j)(\beta_E \cdot \mb{1}_{m_j}+\btheta_j)\right)^\top R_{(-jE)}  \right\rbrace 
+\end{multline}
+which reduces to
+\begin{align*}
+\lambda_{max} = \frac{1}{n(1-\alpha)} \max \left\lbrace \frac{1}{w_E}\left(X_E\right)^\top R_{(-E)}, \max_j \frac{1}{w_{j}}\norm{\left(\bPsi_j\right)^\top R_{(-j)}}_2   \right\rbrace 
+\end{align*}
+
+This is the same $\lambda_{max}$ as the least-squares strong heredity \sail ~model. 
+
+
+\FloatBarrier 
+
+\section{Simulation Results} \label{ap:simulation}
+
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-mse-nactive-sim-1} 
+
+}
+
+\caption[Test set MSE vs number of active variables results]{Test set MSE vs number of active variables results.}\label{fig:plot-mse-nactive-sim}
+\end{figure}
+
+
+\end{knitrout}
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-tpr-sim-1} 
+
+}
+
+\caption[True positive rate results]{True positive rate results.}\label{fig:plot-tpr-sim}
+\end{figure}
+
+
+\end{knitrout}
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-fpr-sim-1} 
+
+}
+
+\caption[False positive rate results]{False positive rate results.}\label{fig:plot-fpr-sim}
+\end{figure}
+
+
+\end{knitrout}
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/plot-nactive-sim-1} 
+
+}
+
+\caption[Number of active variables results]{Number of active variables results.}\label{fig:plot-nactive-sim}
+\end{figure}
+
+
+\end{knitrout}
+
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.61]{/home/sahir/git_repositories/sail/my_sims/figures/upset_selection_sail_paramIndex1-2-2.pdf}
+	\caption{Selection rates across 200 simulations of scenario 1a) for strong heredity \sail.}\label{fig:upset}
+\end{figure}
+
+\FloatBarrier 
+
+\section{\sail ~Package Showcase} \label{ap:showcase}
+
+In this section we briefly introduce the freely available and open source \sail ~package in \texttt{R}. More comprehensive documentation is available at \url{https://sahirbhatnagar.com/sail}. Note that this entire section is reproducible; the code and text are combined in an \texttt{.Rnw}\footnote[1]{scripts available at \url{https://github.com/sahirbhatnagar/sail/tree/master/manuscript}} file and compiled using \texttt{knitr}~\citep{xie2015dynamic}. 
+
+\subsection{Installation}
+
+The package can be installed from \href{https://github.com/sahirbhatnagar/sail}{GitHub} via
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{install.packages}\hlstd{(}\hlstr{"pacman"}\hlstd{)}
+\hlstd{pacman}\hlopt{::}\hlkwd{p_load_gh}\hlstd{(}\hlstr{'sahirbhatnagar/sail'}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+
+\subsection{Quick Start}
+
+We give a quick overview of the main functions and go into details in other vignettes. We will use the simulated data which ships with the package and can be loaded via:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(sail)}
+\hlkwd{data}\hlstd{(}\hlstr{"sailsim"}\hlstd{)}
+\hlkwd{names}\hlstd{(sailsim)}
+\end{alltt}
+\begin{verbatim}
+## [1] "x"        "y"        "e"        "f1"       "f2"       "f3"      
+## [7] "f4"       "f3.inter" "f4.inter"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+We first define a basis expansion. In this example we use B-splines with degree 5.
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(splines)}
+\hlstd{f.basis} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{x}\hlstd{) splines}\hlopt{::}\hlkwd{bs}\hlstd{(x,} \hlkwc{degree} \hlstd{=} \hlnum{5}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+Next we fit the model using the most basic call to \sail
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fit} \hlkwb{<-} \hlkwd{sail}\hlstd{(}\hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{y} \hlstd{= sailsim}\hlopt{$}\hlstd{y,} \hlkwc{e} \hlstd{= sailsim}\hlopt{$}\hlstd{e,} \hlkwc{basis} \hlstd{= f.basis)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\texttt{fit} is an object of class \sail ~that contains all the relevant information of the fitted model including the estimated coefficients at each value of $\lambda$ (by default the program chooses its own decreasing sequence of 100 $\lambda$ values). There are \texttt{print}, \texttt{plot}, \texttt{coef} and \texttt{predict} methods of objects of class \sail. We can call the \texttt{print} method:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fit}
+\end{alltt}
+\begin{verbatim}
+## 
+## Call:  sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis) 
+## 
+##      df_main df_interaction df_environment     %Dev  Lambda
+## s1         0              0              0 0.000000 1.48800
+## s2         0              0              1 0.001701 1.42000
+## s3         0              0              1 0.003359 1.35600
+## s4         0              0              1 0.004899 1.29400
+## s5         0              0              1 0.006354 1.23500
+## s6         1              0              1 0.014750 1.17900
+## s7         2              0              1 0.045860 1.12600
+## s8         2              0              1 0.080070 1.07500
+## s9         2              0              1 0.111900 1.02600
+## s10        2              0              1 0.141500 0.97900
+## s11        2              0              1 0.169000 0.93450
+## s12        2              0              1 0.194500 0.89210
+## s13        2              0              1 0.218100 0.85150
+## s14        2              0              1 0.240100 0.81280
+## s15        2              0              1 0.260400 0.77590
+## s16        2              0              1 0.279200 0.74060
+## s17        3              1              1 0.465100 0.70690
+## s18        3              1              1 0.479500 0.67480
+## s19        3              1              1 0.493000 0.64410
+## s20        3              2              1 0.508300 0.61490
+## s21        3              2              1 0.524200 0.58690
+## s22        3              2              1 0.536600 0.56020
+## s23        3              2              1 0.548100 0.53480
+## s24        4              2              1 0.558000 0.51050
+## s25        5              2              1 0.568900 0.48730
+## s26        5              2              1 0.579900 0.46510
+## s27        5              2              1 0.590100 0.44400
+## s28        5              2              1 0.599500 0.42380
+## s29        5              3              1 0.609800 0.40450
+## s30        5              3              1 0.619200 0.38620
+## s31        5              3              1 0.628200 0.36860
+## s32        6              3              1 0.637200 0.35190
+## s33        6              3              1 0.646800 0.33590
+## s34        6              3              1 0.655000 0.32060
+## s35        6              3              1 0.663300 0.30600
+## s36        7              3              1 0.671600 0.29210
+## s37        7              3              1 0.679500 0.27880
+## s38        7              3              1 0.687400 0.26620
+## s39        7              3              1 0.694600 0.25410
+## s40        7              4              1 0.702700 0.24250
+## s41        7              4              1 0.734100 0.23150
+## s42        7              4              1 0.739300 0.22100
+## s43        7              5              1 0.745200 0.21090
+## s44        7              6              1 0.754400 0.20130
+## s45        7              6              1 0.760700 0.19220
+## s46        7              6              1 0.767300 0.18350
+## s47        7              6              1 0.771800 0.17510
+## s48        7              6              1 0.776100 0.16720
+## s49        8              6              1 0.780700 0.15960
+## s50        8              6              1 0.784500 0.15230
+## s51        9              6              1 0.788700 0.14540
+## s52       10              6              1 0.792700 0.13880
+## s53       12              6              1 0.797800 0.13250
+## s54       13              6              1 0.802600 0.12640
+## s55       13              6              1 0.807500 0.12070
+## s56       13              6              1 0.812200 0.11520
+## s57       14              6              1 0.816800 0.11000
+## s58       14              6              1 0.821400 0.10500
+## s59       15              6              1 0.826100 0.10020
+## s60       15              7              1 0.831200 0.09565
+## s61       13             10              1 0.871400 0.09131
+## s62       13             10              1 0.873800 0.08716
+## s63       13             10              1 0.876200 0.08319
+## s64       14             10              1 0.878600 0.07941
+## s65       14             10              1 0.881000 0.07580
+## s66       14             11              1 0.883400 0.07236
+## s67       14             11              1 0.885900 0.06907
+## s68       14             11              1 0.888400 0.06593
+## s69       14             11              1 0.890600 0.06293
+## s70       16             13              1 0.930600 0.06007
+## s71       16             13              1 0.932300 0.05734
+## s72       16             13              1 0.934200 0.05474
+## s73       16             13              1 0.936100 0.05225
+## s74       16             13              1 0.938500 0.04987
+## s75       16             13              1 0.940000 0.04761
+## s76       17             13              1 0.942100 0.04544
+## s77       17             13              1 0.943800 0.04338
+## s78       17             14              1 0.945600 0.04141
+## s79       17             14              1 0.947300 0.03952
+## s80       18             14              1 0.949000 0.03773
+## s81       18             14              1 0.950700 0.03601
+## s82       18             14              1 0.952400 0.03438
+## s83       18             14              1 0.954400 0.03281
+## s84       18             14              1 0.955800 0.03132
+## s85       18             14              1 0.957200 0.02990
+## s86       19             14              1 0.959100 0.02854
+## s87       19             15              1 0.960300 0.02724
+## s88       19             15              1 0.967900 0.02600
+## s89       19             15              1 0.968900 0.02482
+## s90       19             15              1 0.970100 0.02369
+## s91       19             15              1 0.971300 0.02262
+## s92       19             15              1 0.972400 0.02159
+## s93       19             15              1 0.973500 0.02061
+## s94       19             15              1 0.974600 0.01967
+## s95       20             19              1 0.977900 0.01878
+## s96       20             19              1 0.978600 0.01792
+## s97       20             19              1 0.979300 0.01711
+## s98       20             19              1 0.980000 0.01633
+## s99       20             19              1 0.980700 0.01559
+## s100      20             19              1 0.981400 0.01488
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+When \texttt{expand = TRUE} (i.e. the user did not provide their own design matrix), the \texttt{df\_main} and \texttt{df\_interaction} columns correspond to the number of non-zero predictors present in the model before basis expansion. This does not correspond to the number of non-zero coefficients in the model, but rather the number of unique variables. In this example we expanded each column of $\mathbf{X}$ to five columns. If  \texttt{df\_main=4}, \texttt{df\_interaction=2} and \texttt{df\_environment=1}, then the total number of non-zero coefficients would be $5 \times (4+2) + 1$.  
+
+The entire solution path can be plotted via the \texttt{plot} method for objects of class \sail. The y-axis is the value of the coefficient and the x-axis is the $\log(\lambda)$. Each line represents a coefficient in the model, and each color represents a variable (i.e. in this example a given variable will have 5 lines when it is non-zero). The numbers at the top of the plot represent the number of non-zero variables in the model: top panel (\texttt{df\_main} + \texttt{df\_environment}), bottom panel (\texttt{df\_interaction}). The black line is the coefficient path for the environment variable.  
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(fit)}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-3-1} 
+
+}
+
+
+
+\end{knitrout}
+
+
+The estimated coefficients at each value of lambda is given by (matrix partially printed here for brevity)
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{coef}\hlstd{(fit)[}\hlnum{1}\hlopt{:}\hlnum{6}\hlstd{,}\hlnum{50}\hlopt{:}\hlnum{55}\hlstd{]}
+\end{alltt}
+\begin{verbatim}
+## 6 x 6 sparse Matrix of class "dgCMatrix"
+##                    s50        s51        s52        s53        s54
+## (Intercept)  5.2908242  5.2837492  5.2803715  5.2753572  5.2717869
+## X1_1        -0.9792849 -0.9604046 -0.9449616 -0.9220738 -0.9171304
+## X1_2         1.6903252  1.7894886  1.8924485  1.9952094  2.1042358
+## X1_3         1.6463057  1.7049842  1.7722916  1.8251613  1.8951562
+## X1_4         1.5224653  1.5433528  1.5663095  1.5854332  1.6102159
+## X1_5         3.3386403  3.4183219  3.4908074  3.5763781  3.6633809
+##                    s55
+## (Intercept)  5.2695399
+## X1_1        -0.9270958
+## X1_2         2.2058453
+## X1_3         1.9642875
+## X1_4         1.6322047
+## X1_5         3.7453708
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+
+The corresponding predicted response at each value of lambda (matrix partially printed here for brevity):
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{predict}\hlstd{(fit)[}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{,}\hlnum{50}\hlopt{:}\hlnum{55}\hlstd{]}
+\end{alltt}
+\begin{verbatim}
+##            s50       s51       s52       s53       s54       s55
+## [1,]  6.244693  6.199302  6.185402  6.177991  6.156173  6.124271
+## [2,]  3.002799  2.995418  3.038701  3.079700  3.143715  3.209065
+## [3,]  2.073305  2.043476  2.016319  1.997172  1.966900  1.957271
+## [4,] 13.488945 13.490766 13.360998 13.384370 13.350671 13.324117
+## [5,]  1.225516  1.210346  1.134420  1.156355  1.156696  1.156135
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+The predicted response at a specific value of lambda can be specified by the \texttt{s} argument:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{predict}\hlstd{(fit,} \hlkwc{s} \hlstd{=} \hlnum{0.8}\hlstd{)[}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{, ]}
+\end{alltt}
+\begin{verbatim}
+## [1] 5.624232 4.940944 3.847965 6.687777 3.058125
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+You can specify more than one value for `s`:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{predict}\hlstd{(fit,} \hlkwc{s} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{0.8}\hlstd{,} \hlnum{0.2}\hlstd{))[}\hlnum{1}\hlopt{:}\hlnum{5}\hlstd{, ]}
+\end{alltt}
+\begin{verbatim}
+##             1         2
+## [1,] 5.624232  6.523025
+## [2,] 4.940944  2.975046
+## [3,] 3.847965  2.326672
+## [4,] 6.687777 13.956092
+## [5,] 3.058125  1.568897
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+You can also extract a list of active variables (i.e. variables with a non-zero estimated coefficient) for each value of lambda:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fit[[}\hlstr{"active"}\hlstd{]][}\hlnum{50}\hlopt{:}\hlnum{55}\hlstd{]}
+\end{alltt}
+\begin{verbatim}
+## [[1]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X8"    "X10"   "X11"   "X20"  
+##  [9] "X1:E"  "X2:E"  "X3:E"  "X4:E"  "X8:E"  "X11:E" "E"    
+## 
+## [[2]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X6"    "X8"    "X10"   "X11"  
+##  [9] "X20"   "X1:E"  "X2:E"  "X3:E"  "X4:E"  "X8:E"  "X11:E" "E"    
+## 
+## [[3]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X6"    "X8"    "X10"   "X11"  
+##  [9] "X16"   "X20"   "X1:E"  "X2:E"  "X3:E"  "X4:E"  "X8:E"  "X11:E"
+## [17] "E"    
+## 
+## [[4]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X6"    "X8"    "X10"   "X11"  
+##  [9] "X15"   "X16"   "X19"   "X20"   "X1:E"  "X2:E"  "X3:E"  "X4:E" 
+## [17] "X8:E"  "X11:E" "E"    
+## 
+## [[5]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X5"    "X6"    "X8"    "X10"  
+##  [9] "X11"   "X15"   "X16"   "X19"   "X20"   "X1:E"  "X2:E"  "X3:E" 
+## [17] "X4:E"  "X8:E"  "X11:E" "E"    
+## 
+## [[6]]
+##  [1] "X1"    "X2"    "X3"    "X4"    "X5"    "X6"    "X8"    "X10"  
+##  [9] "X11"   "X15"   "X16"   "X19"   "X20"   "X1:E"  "X2:E"  "X3:E" 
+## [17] "X4:E"  "X8:E"  "X11:E" "E"
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+\subsection{Cross-Validation}
+
+\texttt{cv.sail} is the main function to do cross-validation along with \texttt{plot}, \texttt{predict}, and \texttt{coef} methods for objects of class \texttt{cv.sail}. We run it in parallel:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{set.seed}\hlstd{(}\hlnum{432}\hlstd{)} \hlcom{# to reproduce results (randomness due to CV folds)}
+\hlkwd{library}\hlstd{(doMC)}
+\hlkwd{registerDoMC}\hlstd{(}\hlkwc{cores} \hlstd{=} \hlnum{8}\hlstd{)}
+\hlstd{cvfit} \hlkwb{<-} \hlkwd{cv.sail}\hlstd{(}\hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{y} \hlstd{= sailsim}\hlopt{$}\hlstd{y,} \hlkwc{e} \hlstd{= sailsim}\hlopt{$}\hlstd{e,} \hlkwc{basis} \hlstd{= f.basis,}
+\hlkwc{nfolds} \hlstd{=} \hlnum{5}\hlstd{,} \hlkwc{parallel} \hlstd{=} \hlnum{TRUE}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+We plot the cross-validated error curve which has the mean-squared error on the y-axis and $\log(\lambda)$ on the x-axis. It includes the cross-validation curve (red dotted line), and upper and lower standard deviation curves along the $\lambda$ sequence (error bars). Two selected $\lambda$'s are indicated by the vertical dotted lines (see below). The numbers at the top of the plot represent the total number of non-zero variables at that value of $\lambda$ (\texttt{df\_main} + \texttt{df\_environment} + \texttt{df\_interaction}):
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(cvfit)}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-10-1} 
+
+}
+
+
+
+\end{knitrout}
+
+\texttt{lambda.min} is the value of $\lambda$ that gives minimum mean cross-validated error. The other $\lambda$ saved is \texttt{lambda.1se},
+which gives the most regularized model such that error is within one standard error of the minimum. We can view the selected $\lambda$'s and the corresponding coefficients:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{cvfit[[}\hlstr{"lambda.min"}\hlstd{]]}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.2788355
+\end{verbatim}
+\begin{alltt}
+\hlstd{cvfit[[}\hlstr{"lambda.1se"}\hlstd{]]}
+\end{alltt}
+\begin{verbatim}
+## [1] 0.4238052
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+The estimated nonzero coefficients at \texttt{lambda.1se} and \texttt{lambda.min}:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{predict}\hlstd{(cvfit,} \hlkwc{type} \hlstd{=} \hlstr{"nonzero"}\hlstd{,} \hlkwc{s}\hlstd{=}\hlstr{"lambda.1se"}\hlstd{)} \hlcom{# lambda.1se is the default}
+\end{alltt}
+\begin{verbatim}
+##                        1
+## (Intercept)   5.42162330
+## X1_1         -0.78259292
+## X1_2          0.13434743
+## X1_3          0.43872182
+## X1_4          0.79452833
+## X1_5          1.92193021
+## X3_1          3.45123833
+## X3_2          1.56772288
+## X3_3         -1.27179135
+## X3_4         -2.27792209
+## X3_5         -1.23352137
+## X4_1          4.47182924
+## X4_2         -2.87488058
+## X4_3         -6.65073351
+## X4_4         -3.44085202
+## X4_5         -0.47032703
+## X8_1          0.17507051
+## X8_2          0.11619435
+## X8_3          0.01783624
+## X8_4         -0.10505726
+## X8_5         -0.24485431
+## X11_1         0.13691003
+## X11_2         0.02857999
+## X11_3        -0.07324928
+## X11_4        -0.20944262
+## X11_5        -0.22648392
+## E             1.99575642
+## X3_1:E        1.80711590
+## X3_2:E        0.82088128
+## X3_3:E       -0.66592746
+## X3_4:E       -1.19275137
+## X3_5:E       -0.64588877
+## X4_1:E        8.31249627
+## X4_2:E       -5.34399523
+## X4_3:E      -12.36277025
+## X4_4:E       -6.39605585
+## X4_5:E       -0.87427125
+\end{verbatim}
+\begin{alltt}
+\hlkwd{predict}\hlstd{(cvfit,} \hlkwc{type} \hlstd{=} \hlstr{"nonzero"}\hlstd{,} \hlkwc{s} \hlstd{=} \hlstr{"lambda.min"}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+##                        1
+## (Intercept)   5.43619834
+## X1_1         -1.23832799
+## X1_2          0.48736979
+## X1_3          0.88915804
+## X1_4          1.10813495
+## X1_5          2.68123247
+## X2_1         -0.21985179
+## X2_2         -0.95071069
+## X2_3         -0.76066212
+## X2_4         -0.17413616
+## X2_5         -0.06845895
+## X3_1          4.42751615
+## X3_2          2.28700197
+## X3_3         -1.36817303
+## X3_4         -2.56642377
+## X3_5         -1.03093978
+## X4_1          5.37962120
+## X4_2         -3.35568118
+## X4_3         -8.07355346
+## X4_4         -3.50305791
+## X4_5         -0.55031385
+## X8_1          0.47925233
+## X8_2          0.33992532
+## X8_3          0.07652614
+## X8_4         -0.28114406
+## X8_5         -0.66616044
+## X11_1         0.34768804
+## X11_2         0.06274138
+## X11_3        -0.20149241
+## X11_4        -0.67859653
+## X11_5        -0.69589312
+## X20_1         0.10225010
+## X20_2        -0.03831915
+## X20_3        -0.17781683
+## X20_4        -0.18564133
+## X20_5         0.09741855
+## E             2.06410796
+## X1_1:E       -0.53459297
+## X1_2:E        0.21040020
+## X1_3:E        0.38385439
+## X1_4:E        0.47838792
+## X1_5:E        1.15750273
+## X3_1:E        2.37995847
+## X3_2:E        1.22935061
+## X3_3:E       -0.73544508
+## X3_4:E       -1.37955047
+## X3_5:E       -0.55416937
+## X4_1:E        8.87349228
+## X4_2:E       -5.53507578
+## X4_3:E      -13.31703694
+## X4_4:E       -5.77816841
+## X4_5:E       -0.90772296
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+
+\subsection{Visualizing the Effect of the Non-linear Terms}
+
+B-splines are difficult to interpret. We provide a plotting function to visualize the effect of the non-linear function on the response.
+
+\subsubsection{Main Effects}
+
+Since we are using simulated data, we also plot the true curve:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plotMain}\hlstd{(cvfit}\hlopt{$}\hlstd{sail.fit,} \hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{xvar} \hlstd{=} \hlstr{"X3"}\hlstd{,}
+\hlkwc{legend.position} \hlstd{=} \hlstr{"topright"}\hlstd{,}
+\hlkwc{s} \hlstd{= cvfit}\hlopt{$}\hlstd{lambda.min,} \hlkwc{f.truth} \hlstd{= sailsim}\hlopt{$}\hlstd{f3)}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-13-1} 
+
+}
+
+
+
+\end{knitrout}
+
+
+\subsubsection{Interaction Effects}
+
+Again, since we are using simulated data, we also plot the true interaction:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plotInter}\hlstd{(cvfit}\hlopt{$}\hlstd{sail.fit,} \hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{xvar} \hlstd{=} \hlstr{"X4"}\hlstd{,}
+\hlkwc{f.truth} \hlstd{= sailsim}\hlopt{$}\hlstd{f4.inter,}
+\hlkwc{s} \hlstd{= cvfit}\hlopt{$}\hlstd{lambda.min,}
+\hlkwc{title_z} \hlstd{=} \hlstr{"Estimated"}\hlstd{)}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-14-1} 
+
+}
+
+
+
+\end{knitrout}
+
+
+
+\subsection{Linear Interactions}
+
+The \texttt{basis} argument in the \texttt{sail} function is very flexible in that it allows you to apply \textit{any} basis expansion to the columns of $\mathbf{X}$. Of course, there might be situations where you do not expect any non-linear main effects or interactions to be present in your data. You can still use the \sail ~method to search for linear main effects and interactions. This can be accomplished by specifying an identity map:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{f.identity} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{i}\hlstd{) i}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+We then pass this function to the \texttt{basis} argument in \texttt{cv.sail}:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{cvfit_linear} \hlkwb{<-} \hlkwd{cv.sail}\hlstd{(}\hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{y} \hlstd{= sailsim}\hlopt{$}\hlstd{y,} \hlkwc{e} \hlstd{= sailsim}\hlopt{$}\hlstd{e,}
+\hlkwc{basis} \hlstd{= f.identity,} \hlkwc{nfolds} \hlstd{=} \hlnum{5}\hlstd{,} \hlkwc{parallel} \hlstd{=} \hlnum{TRUE}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+Next we plot the cross-validated curve:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(cvfit_linear)}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-17-1} 
+
+}
+
+
+
+\end{knitrout}
+
+And extract the model at \texttt{lambda.min}:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{predict}\hlstd{(cvfit_linear,} \hlkwc{s} \hlstd{=} \hlstr{"lambda.min"}\hlstd{,} \hlkwc{type} \hlstd{=} \hlstr{"nonzero"}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+##                       1
+## (Intercept)   5.4385240
+## X1_1          2.4568930
+## X2_1         -1.6517024
+## X3_1         -5.1516226
+## X4_1         -7.1356296
+## X7_1         -1.1055458
+## X8_1         -0.8602620
+## X11_1        -2.1990021
+## X14_1        -1.9208459
+## X16_1         3.2004798
+## X18_1         1.0234994
+## X20_1        -0.2161983
+## E             2.4466403
+## X1_1:E       -4.3995787
+## X2_1:E       -2.7115733
+## X3_1:E       -4.7198552
+## X4_1:E      -12.9777976
+## X7_1:E        2.3705634
+## X11_1:E      -2.1462985
+## X14_1:E      -0.9788318
+## X16_1:E       6.9268058
+## X18_1:E       1.9005742
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+\subsection{Applying a different penalty to each predictor} \label{ap:pfac}
+
+Recall that we consider the following penalized least squares criterion for this problem:
+
+\begin{equation}
+\arg\min_{\boldsymbol{\theta} }  \mathcal{L}(Y;\boldsymbol{\theta}) + \lambda (1-\alpha)  \left( w_E |\beta_E| + \sum_{j=1}^{p} w_j \lVert\boldsymbol{\theta}_j \rVert_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} |\gamma_{j}| 
+\end{equation} 
+
+The weights $w_E, w_j, w_{jE}$ are by default set to 1 as specified by the \texttt{penalty.factor} argument. This argument allows users to apply separate penalty factors to each coefficient.  In particular, any variable with \texttt{penalty.factor} equal to zero is not penalized at all. This feature can be applied mainly for two reasons:  
+
+1. Prior knowledge about the importance of certain variables is known. Larger weights will penalize the variable more, while smaller weights will penalize the variable less  
+2. Allows users to apply the Adaptive \sail, ~similar to the \href{http://users.stat.umn.edu/~zouxx019/Papers/adalasso.pdf}{Adaptive Lasso}  
+
+In the following example, we want the environment variable to always be included so we set the first element of \texttt{p.fac} to zero. We also want to apply less of a penalty to the main effects for $X_2, X_3, X_4$:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlcom{# the weights correspond to E, X1, X2, X3, ... X_p, X1:E, X2:E, ... X_p:E}
+\hlstd{p.fac} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,} \hlnum{1}\hlstd{,} \hlnum{0.4}\hlstd{,} \hlnum{0.6}\hlstd{,} \hlnum{0.7}\hlstd{,} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{2}\hlopt{*}\hlkwd{ncol}\hlstd{(sailsim}\hlopt{$}\hlstd{x)} \hlopt{-} \hlnum{4}\hlstd{))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{fit_pf} \hlkwb{<-} \hlkwd{sail}\hlstd{(}\hlkwc{x} \hlstd{= sailsim}\hlopt{$}\hlstd{x,} \hlkwc{y} \hlstd{= sailsim}\hlopt{$}\hlstd{y,} \hlkwc{e} \hlstd{= sailsim}\hlopt{$}\hlstd{e,} \hlkwc{basis} \hlstd{= f.basis,}
+\hlkwc{penalty.factor} \hlstd{= p.fac)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{plot}\hlstd{(fit_pf)}
+\end{alltt}
+\end{kframe}
+
+{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-21-1} 
+
+}
+
+
+
+\end{knitrout}
+
+
+We see from the plot above that the black line (corresponding to the $X_E$ variable with \texttt{penalty.factor} equal to zero) is always included in the model.   
+
+\subsection{User-Defined Design Matrix} \label{ap:userdesign}
+
+A limitation of the  \texttt{sail} method is that the same basis expansion function $f(\cdot)$ is applied to all columns of the predictor matrix $\mathbf{X}$. Being able to automatically select linear vs. nonlinear components was not a focus of our paper, but is an active area of research for main effects only e.g. \href{https://cran.r-project.org/package=gamsel}{\texttt{gamsel}} and \href{https://github.com/asadharis/HierBasis}{\texttt{HierBasis}}.   
+
+However, if the user has some prior knowledge on possible effect relationships, then they can supply their own design matrix. This can be useful for example, when one has a combination of categorical (e.g. gender, race) and continuous variables, but would only like to apply $f(\cdot)$ on the continuous variables. We provide an example below to illustrate this functionality.  
+
+We use the simulated dataset \texttt{sailsim} provided in our package. We first add a categorical variable \texttt{race} to the data:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{set.seed}\hlstd{(}\hlnum{1234}\hlstd{)}
+\hlkwd{library}\hlstd{(sail)}
+\hlstd{x_df} \hlkwb{<-} \hlkwd{as.data.frame}\hlstd{(sailsim}\hlopt{$}\hlstd{x)}
+\hlstd{x_df}\hlopt{$}\hlstd{race} \hlkwb{<-} \hlkwd{factor}\hlstd{(}\hlkwd{sample}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{2}\hlstd{,} \hlkwd{nrow}\hlstd{(x_df),} \hlkwc{replace} \hlstd{=} \hlnum{TRUE}\hlstd{))}
+\hlkwd{table}\hlstd{(x_df}\hlopt{$}\hlstd{race)}
+\end{alltt}
+\begin{verbatim}
+## 
+##  1  2 
+## 55 45
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+We then use the \texttt{model.matrix} function to create the design matrix. Note that the intercept should not be included, as this is computed internally in the \texttt{sail} function. This is why we add 0 to the formula. Notice also the flexibility we can have by including different basis expansions to each predictor:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(splines)}
+\hlstd{x} \hlkwb{<-} \hlstd{stats}\hlopt{::}\hlkwd{model.matrix}\hlstd{(}\hlopt{~} \hlnum{0} \hlopt{+}  \hlkwd{bs}\hlstd{(X1,} \hlkwc{degree} \hlstd{=} \hlnum{5}\hlstd{)} \hlopt{+} \hlkwd{bs}\hlstd{(X2,} \hlkwc{degree} \hlstd{=} \hlnum{3}\hlstd{)} \hlopt{+} \hlkwd{ns}\hlstd{(X3,} \hlkwc{df} \hlstd{=} \hlnum{8}\hlstd{)} \hlopt{+}
+\hlkwd{bs}\hlstd{(X4,} \hlkwc{degree} \hlstd{=} \hlnum{6}\hlstd{)} \hlopt{+} \hlstd{X5} \hlopt{+} \hlkwd{poly}\hlstd{(X6,}\hlnum{2}\hlstd{)} \hlopt{+} \hlstd{race,} \hlkwc{data} \hlstd{= x_df)}
+\hlkwd{head}\hlstd{(x)}
+\end{alltt}
+\begin{verbatim}
+##   bs(X1, degree = 5)1 bs(X1, degree = 5)2 bs(X1, degree = 5)3
+## 1        0.0001654794         0.003945507        0.0470361237
+## 2        0.2470181057         0.345144379        0.2411253263
+## 3        0.1299195522         0.007832449        0.0002360971
+## 4        0.3808392973         0.121815907        0.0194821217
+## 5        0.1737663057         0.014898419        0.0006386822
+## 6        0.1184145931         0.281407715        0.3343772913
+##   bs(X1, degree = 5)4 bs(X1, degree = 5)5 bs(X2, degree = 3)1
+## 1        2.803692e-01        6.684809e-01           0.3272340
+## 2        8.422768e-02        1.176866e-02           0.3065738
+## 3        3.558391e-06        2.145244e-08           0.1896790
+## 4        1.557896e-03        4.983113e-05           0.4100900
+## 5        1.368987e-05        1.173746e-07           0.3946500
+## 6        1.986587e-01        4.721047e-02           0.3175164
+##   bs(X2, degree = 3)2 bs(X2, degree = 3)3 ns(X3, df = 8)1 ns(X3, df = 8)2
+## 1          0.41274967         0.173537682      0.06566652               0
+## 2          0.04879618         0.002588901      0.00000000               0
+## 3          0.01508834         0.000400076      0.00000000               0
+## 4          0.12345871         0.012389196      0.00000000               0
+## 5          0.35302552         0.105263760      0.00000000               0
+## 6          0.05370432         0.003027827      0.00000000               0
+##   ns(X3, df = 8)3 ns(X3, df = 8)4 ns(X3, df = 8)5 ns(X3, df = 8)6
+## 1     0.000000000    0.000000e+00       0.0000000   -1.589937e-01
+## 2     0.000000000    5.775107e-04       0.3179489    5.395130e-01
+## 3     0.000000000    4.989926e-03       0.4147696    4.830810e-01
+## 4     0.133404268    6.839146e-01       0.1826811    3.022366e-08
+## 5     0.000000000    8.944913e-05       0.2775548    5.564842e-01
+## 6     0.001578195    3.415384e-01       0.6070588    4.566909e-02
+##   ns(X3, df = 8)7 ns(X3, df = 8)8 bs(X4, degree = 6)1 bs(X4, degree = 6)2
+## 1    4.436233e-01   -2.846296e-01        0.1820918880        0.3088147022
+## 2    1.732713e-01   -3.131078e-02        0.0120101010        0.0000608354
+## 3    1.434410e-01   -4.628144e-02        0.0002900763        0.0044075535
+## 4    7.673343e-09   -4.923233e-09        0.2978877432        0.0579746877
+## 5    1.863219e-01   -2.045032e-02        0.0114895681        0.0645689076
+## 6    1.159471e-02   -7.439189e-03        0.0102152807        0.0595722132
+##   bs(X4, degree = 6)3 bs(X4, degree = 6)4 bs(X4, degree = 6)5
+## 1        2.793213e-01        1.421126e-01        3.856204e-02
+## 2        1.643482e-07        2.497444e-10        2.024070e-13
+## 3        3.571755e-02        1.628127e-01        3.958163e-01
+## 4        6.017595e-03        3.513419e-04        1.094046e-05
+## 5        1.935272e-01        3.262743e-01        2.933747e-01
+## 6        1.852831e-01        3.241534e-01        3.024572e-01
+##   bs(X4, degree = 6)6         X5 poly(X6, 2)1 poly(X6, 2)2 race1 race2
+## 1        4.359896e-03 0.51332996  -0.13705545   0.09851639     1     0
+## 2        6.835086e-17 0.02643863   0.18835303   0.22584415     0     1
+## 3        4.009478e-01 0.76746637  -0.15841216   0.16140597     0     1
+## 4        1.419483e-07 0.69077618  -0.03664279  -0.07954100     0     1
+## 5        1.099135e-01 0.27718210   0.13128945   0.05620199     0     1
+## 6        1.175889e-01 0.48384748   0.08486354  -0.03559388     0     1
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+One benefit of using \texttt{stats::model.matrix} is that it returns the group membership as an attribute:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{attr}\hlstd{(x,} \hlstr{"assign"}\hlstd{)}
+\end{alltt}
+\begin{verbatim}
+##  [1] 1 1 1 1 1 2 2 2 3 3 3 3 3 3 3 3 4 4 4 4 4 4 5 6 6 7 7
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+The group membership must be supplied to the \texttt{sail} function. This information is needed for the group lasso penalty, which will select the whole group as zero or non-zero.
+
+\subsubsection{Fit the \sail ~Model}
+
+We need to set the argument \texttt{expand = FALSE} and provide the group membership. The first element of the group membership corresponds to the first column of \texttt{x}, the second element to the second column of \texttt{x}, and so on. 
+
+
+
+We can plot the solution path for both main effects and interactions using the \texttt{plot} method for objects of class \texttt{sail}:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-26-1} 
+
+}
+
+
+
+\end{knitrout}
+
+In this instance, since we provided a user-defined design matrix and `expand = FALSE`, the numbers at the top of the plot represent the total number of non-zero coefficients. 
+
+
+\subsubsection{Find the Optimal Value for $\lambda$}
+
+We can use cross-validation to find the optimal value of lambda:
+
+
+
+We can plot the cross-validated mean squared error as a function of lambda:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+
+{\centering \includegraphics[width=1\linewidth]{figure/unnamed-chunk-28-1} 
+
+}
+
+
+
+\end{knitrout}
+
+
+The estimated non-zero coefficients at \texttt{lambda.1se}:
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{verbatim}
+##                                  1
+## (Intercept)            5.427451767
+## bs(X1, degree = 5)1   -0.525424522
+## bs(X1, degree = 5)2    0.052358374
+## bs(X1, degree = 5)3    0.271119758
+## bs(X1, degree = 5)4    0.554195548
+## bs(X1, degree = 5)5    1.330393115
+## ns(X3, df = 8)1        2.349455333
+## ns(X3, df = 8)2        2.089923982
+## ns(X3, df = 8)3        0.666828606
+## ns(X3, df = 8)4       -1.200690572
+## ns(X3, df = 8)5       -1.662360501
+## ns(X3, df = 8)6       -1.365480040
+## ns(X3, df = 8)7        0.516186563
+## ns(X3, df = 8)8       -1.215186213
+## bs(X4, degree = 6)1    4.466614577
+## bs(X4, degree = 6)2   -0.252832683
+## bs(X4, degree = 6)3   -4.706674900
+## bs(X4, degree = 6)4   -4.868782936
+## bs(X4, degree = 6)5   -2.105379737
+## bs(X4, degree = 6)6   -0.213392506
+## race1                  0.006726548
+## race2                 -0.006726548
+## E                      1.963105161
+## ns(X3, df = 8)1:E      1.170879214
+## ns(X3, df = 8)2:E      1.041538657
+## ns(X3, df = 8)3:E      0.332322025
+## ns(X3, df = 8)4:E     -0.598378532
+## ns(X3, df = 8)5:E     -0.828457273
+## ns(X3, df = 8)6:E     -0.680503338
+## ns(X3, df = 8)7:E      0.257247758
+## ns(X3, df = 8)8:E     -0.605602609
+## bs(X4, degree = 6)1:E  8.430067510
+## bs(X4, degree = 6)2:E -0.477183905
+## bs(X4, degree = 6)3:E -8.883145495
+## bs(X4, degree = 6)4:E -9.189100187
+## bs(X4, degree = 6)5:E -3.973589620
+## bs(X4, degree = 6)6:E -0.402746465
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+
+\end{document}
+
+\begin{comment}
+\subsection{Main Idea}
+This manuscript addresses more traditional \textit{statistical} interaction models of the form 
+
+\begin{equation}
+	Y = X\beta_X + E \beta_E + X E \beta_{XE} + \varepsilon
+\end{equation}
+
+We propose to first filter out the noise variables (main effects only) using a method from the \textit{variable screening} literature, and then subsequently fit a penalized model, on the filtered set of variables, that enforces the strong heredity property, i.e., interaction terms can only be selected by the procedure if the main effects have been selected. 
+
+
+\subsection{Introduction}
+
+We consider a regression model for an outcome variable $Y=(y_1, \ldots, y_n)$ which follows an exponential family. Let $E=(e_1, \ldots, e_n)$ be the binary environment vector and $\bx = (X_{1}, \ldots, X_{p})$ be the matrix of high-dimensional data. Consider the regression model with main effects and their interactions with $E$:
+\begin{align}
+	g(\bmu)  = & \beta_0  + \underbrace{\beta_1 X_{1} + \cdots + \beta_p X_p + \beta_{E} E}_{\tm{main effects}} + \underbrace{\alpha_{1E} (X_1 E) + \cdots + \alpha_{pE} (X_p E)}_{\tm{interactions}} \label{eq:linpred1}
+\end{align}
+where $g(\cdot)$ is a known link function and $\bmu = \e\left[Y|\bx, E, \bbeta,\balpha\right]$. Our goal is to estimate the parameters \mbox{$\bbeta = \left(\beta_1, \beta_2, \ldots, \beta_p, \beta_E\right) \in \mathbb{R}^{p+1}$} and $\boldsymbol{\alpha} = \left(\alpha_{1E}, \ldots, \alpha_{pE}\right) \in \mathbb{R}^p$ and to improve prediction of $Y$. 
+
+\subsection{Methods} \label{sec:varselect}
+
+\subsubsection{Variable Screening}
+
+Consider a binary response variable $Y=0,1$. A variable $X$ is independent of $Y$ \textit{iff} the conditional distributions of $X$ given $Y=0$ or $Y=1$ are identical. \citep{mai2012kolmogorov} proposed using the Kolmogorov-Smirnov (KS) test statistic
+\begin{equation}
+	\hat{K}_j = \sup_x \lvert \hat{F}_j(x|Y=1) - \hat{F}_j(x|Y=0)  \rvert   \label{eq:ks}
+\end{equation}
+to measure the dependence between $X_j$ and $Y$, where $\hat{F}_j$ is the empirical CDF of $X_j$. 
+
+\citep{mai2015fused} then extended their method to a continuous response by essentially categorizing the response variable so that Eq.~\eqref{eq:ks} can be applied. They called this the Fused Kolmogorov filter.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.75]{./ks}
+	\caption{Depiction of KS statistic}
+	\label{fig:ks}
+\end{figure}
+
+
+\subsubsection{Strong Heredity Model}
+
+We are interested in imposing the strong heredity principle~\citep{chipman1996bayesian}: 
+\begin{equation}
+	\hat{\alpha}_{jE} \neq 0 \qquad \Rightarrow \qquad \hat{\beta}_j \neq 0 \qquad \tm{and} \qquad \hat{\beta}_E \neq 0   \label{eq:heredity}
+\end{equation}
+In words, the interaction term will only have a non-zero estimate if its corresponding main effects are estimated to be non-zero. One benefit brought by hierarchy is that the number of measured variables can be reduced, referred to as practical sparsity~\citep{she2014group,bien2013lasso}. For example, a model involving $X_1, E, X_1 \cdot E$ is more parsimonious than a model involving $X_1, E, X_2 \cdot E$, because in the first model a researcher would only have to measure two variables compared to three in the second model. In order to address these issues, we propose to extend the model of Choi \textit{et al.}~\citep{choi2010variable} to simultaneously perform variable selection, estimation and impose the strong heredity principle in the context of high dimensional interactions with the environment (HD$\times E$). To do so, we follow Choi and reparametrize the coefficients for the interaction terms as $\alpha_{jE} = \gamma_{jE} \beta_j \beta_E$. Plugging this into~\eqref{eq:linpred1}:
+\begin{align}
+	g(\bmu)  = & \beta_0  + \beta_1 \widetilde{X}_{1} + \cdots + \beta_q \widetilde{X}_q + \beta_{E} E + \gamma_{1E}\beta_1 \beta_E (\widetilde{X}_1 E) + \cdots + \gamma_{qE}\beta_q \beta_E (\widetilde{X}_q E)    \label{eq:linpred2}
+\end{align}
+where $\widetilde{\bx} = (\widetilde{X}_1, \ldots, \widetilde{X}_q)$ are the cluster representatives derived in phase 2 and $q <p$. This reparametrization directly enforces the strong heredity principle (Eq.~\eqref{eq:heredity}), i.e., if either main effect estimates are 0, then $\hat{\alpha}_{jE}$ will be zero and a non-zero interaction coefficient implies non-zero $\hat{\beta}_j$ and $\hat{\beta}_E$. To perform variable selection in this new parametrization, we follow Choi \textit{et al.}~\citep{choi2010variable} and penalize $\bs{\gamma} = \left(\gamma_{1E}, \ldots, \gamma_{pE}\right)$, leading to the following penalized least squares criterion:
+\begin{equation}
+	\argmin_{\beta_0, \bbeta, \bs{\gamma} }  \frac{1}{2} \norm{Y - g(\bmu)}^2 + \lambda_\beta \left(w_1 \beta_1 + \cdots + w_q \beta_q + w_E \beta_E   \right) + \lambda_\gamma  \left( w_{1E} \gamma_{1E} + \cdots + w_{qE}\gamma_{qE}         \right) \label{eq:lassolikelihood2}
+\end{equation} 
+where $g(\bmu)$ is from~\eqref{eq:linpred2}, $\lambda_\beta$ and $\lambda_\gamma$ are tuning parameters and $\mb{w} = \left(w_{1}, \ldots, w_q, w_{1E}, \ldots, w_{qE}\right)$ are prespecified adaptive weights. The $\lambda_\beta$ tuning parameter controls the amount of shrinkage applied to the main effects, while $\lambda_\gamma$ controls the interaction estimates and allows for the possibility of excluding the interaction term from the model even if the corresponding main effects are non-zero. The adaptive weights serve as a way of allowing parameters to be penalized differently. Furthermore, adaptive weighting~\citep{zou2006adaptive} has been shown to construct oracle procedures~\citep{fan2001variable}, i.e., asymptotically, it performs as well as if the true model were given in advance. The oracle property is achieved when the weights are a function of any root-$n$ consistent estimator of the true parameters e.g. maximum likelihood (MLE) or ridge regression estimates. It can be shown that the procedure in~\eqref{eq:lassolikelihood2} asymptotically possesses the oracle property~\citep{choi2010variable}, even when the number of parameters tends to $\infty$ as the sample size increases, if the weights are chosen such that
+\begin{equation}
+	w_j = \left | \frac{1}{\hat{\beta}_j} \right|, \quad w_{jE} = \left | \frac{\hat{\beta}_j \hat{\beta}_E}{\hat{\alpha}_{jE}} \right| \quad \tm{ for }j=1, \ldots, q   \label{eq:weights}
+\end{equation}
+where $\hat{\beta}_j$ and $\hat{\alpha}_{j}$ are the MLEs, \textit{using the transformed variables}, from~\eqref{eq:linpred1} or the ridge regression estimates when $q > n$. The rationale behind the data-dependent $\hat{\bs{w}}$ is that as the sample size grows, the weights for the truly zero predictors go to $\infty$ (which translates to a large penalty), whereas the weights for the truly non-zero predictors converge to a finite constant~\citep{zou2006adaptive}. 
+
+There have been several more recent proposals for modeling interactions with the strong heredity constraint in the variable selection via penalization literature including Composite Absolute Penalties (CAP)~\citep{zhao2009composite}, Variable selection using Adaptive Nonlinear Interaction Structures in High dimensions (VANISH)~\citep{radchenko2010variable}, Strong Hierarchical Lasso (hierNet)~\citep{bien2013lasso}, Group-Lasso Interaction Network (glinternet)~\citep{lim2014learning}, Group Regularized Estimation under Structural Hierarchy (GRESH)~\citep{she2014group} and a Framework for Modeling Interactions with a Convex Penalty (FAMILY)~\citep{haris2014convex}. While each method has their own merit, including that they are all convex optimization problems, they all contain complex penalty functions which are hard to interpret and lead to computationally expensive fitting algorithms. On the other hand, the objective function in~\eqref{eq:lassolikelihood2} can be solved using an iterative approach (by first fixing $\bbeta$ and then $\balpha$) which simplifies to a LASSO type problem; one that has been extensively studied, is well understood and can be solved efficiently using existing software (e.g. \texttt{glmnet}~\citep{friedman2010regularization}). A limitation of this approach is that the optimization problem is non-convex, arising from the reparametrization of $\balpha$ as a product of optimization variables $(\bbeta, \bs{\gamma})$, and hence convergence to the global minimum is not guaranteed~\citep{choi2010variable}. 
+
+
+\subsection{Simulation Study}
+
+
+\subsection{Real-Data Example}
+
+
+\subsection{Novelty and Contributions}
+
+The fused Kolmogorov filter with the strong heredity model has not been previously investigated. 
+
+To our knowledge, strong hierarchies have never previously been used in HD interaction analysis in genomics or brain imaging studies. Furthermore, the specific choices of weights proposed here, i.e., based on the transformed variables from phase 2, have not been previously used. Choi \textit{et al.}~\citep{choi2010variable} estimated their weights simultaneously, but this would not be feasible in HD data. The adaptation to interactions with one key $E$ variable is specific to our situation.
+
+References~\cite{radchenko2010variable,zhao2009composite,she2014group,choi2010variable} (which includes the one that our proposal is based on) failed to provide any code or software for their method. Not only does this prevent applied researchers from using these advanced techniques, it also hinders statisticians from comparing the performance of their newly developed method against existing approaches. Indeed, a survey of the citations of these papers reveals that they are seldom used in practice or as a comparison method in theoretical papers, and only cited in literature review paragraphs. Three approaches that have provided \texttt{R} packages (\texttt{hierNet}~\citep{bien2013lasso}, \texttt{glinternet}~\citep{lim2014learning} and \texttt{FAMILY}~\citep{haris2014convex}) are only suited for all pairwise interactions of the design matrix (the theory in \texttt{FAMILY} does not impose such a restriction but the software returns an error when we input a 1 column environment variable) and are not designed for the HD$\times E$ interactions that are the focus of this thesis. Therefore, a novel aspect of this thesis will be the development of a procedure for $\tm{HD}\times E$ interactions which simultaneously performs variable selection and estimation, follows the strong heredity principle and is an oracle procedure, as well as its implementation into a computationally fast open source \texttt{R} package.
+\end{comment}
