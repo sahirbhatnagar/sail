@@ -230,7 +230,7 @@ plotInterPRS <- function(object,
   int_pred <- f.hat[int_index]
 
   min.length.top <- range(f.hat)[1] ; max.length.top <- range(f.hat)[2]
-  par(mai=c(1,1,1,0.2))
+  par(mai=c(1,1,1,0.2), family="serif")
   plot(originalX, f.hat,
        pch = 19,
        ylab = ylab,
@@ -239,11 +239,15 @@ plotInterPRS <- function(object,
        bty="n",
        xaxt="n",
        type = "n",
-       cex.lab = 2,
-       cex.axis = 2,
-       cex = 2,
+       cex.lab = 1.6,
+       font.lab = 1.6,
+       cex.axis = 1.6,
+       cex.main = .1,
+       # cex.lab = 2,
+       # cex.axis = 2,
+       # cex = 2,
        main = main,
-       cex.main = 2.5,
+       # cex.main = 2.5,
        # ylim = c(min.length.top-3, max.length.top+3),
        ylim = ylims)
   axis(1, labels = T, cex.axis = 2)

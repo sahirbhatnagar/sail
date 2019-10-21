@@ -84,16 +84,16 @@ df_mse_nactive <- DT[, c("method","scen","mse","nactive")] %>%
   group_by(method, scen) %>%
   summarise(mean.mse = mean(mse, na.rm = TRUE), sd.mse = sd(mse, na.rm = TRUE),
          mean.nactive = mean(nactive, na.rm = TRUE), sd.nactive = sd(nactive, na.rm = TRUE)) %>%
-  mutate(scen = case_when(scen == "1a) Strong Hierarchy" ~ "1a) Strong Hierarchy (|S_0| = 7)",
-                          scen == "1b) Weak Hierarchy" ~ "1b) Weak Hierarchy (|S_0| = 5)",
-                          scen == "1c) Interactions Only" ~ "1c) Interactions Only (|S_0| = 2)",
-                          scen == "2) Linear Effects" ~ "2) Linear Effects (|S_0| = 7)",
-                          scen == "3) Main Effects Only" ~ "3) Main Effects Only (|S_0| = 5)")) %>%
-  mutate(scen = factor(scen, levels = c("1a) Strong Hierarchy (|S_0| = 7)",
-                                        "1b) Weak Hierarchy (|S_0| = 5)",
-                                        "1c) Interactions Only (|S_0| = 2)",
-                                        "2) Linear Effects (|S_0| = 7)",
-                                        "3) Main Effects Only (|S_0| = 5)")))
+  mutate(scen = case_when(scen == "1a) Strong Hierarchy" ~ "1a) Strong Hierarchy (|H| = 7)",
+                          scen == "1b) Weak Hierarchy" ~ "1b) Weak Hierarchy (|H| = 5)",
+                          scen == "1c) Interactions Only" ~ "1c) Interactions Only (|H| = 2)",
+                          scen == "2) Linear Effects" ~ "2) Linear Effects (|H| = 7)",
+                          scen == "3) Main Effects Only" ~ "3) Main Effects Only (|H| = 5)")) %>%
+  mutate(scen = factor(scen, levels = c("1a) Strong Hierarchy (|H| = 7)",
+                                        "1b) Weak Hierarchy (|H| = 5)",
+                                        "1c) Interactions Only (|H| = 2)",
+                                        "2) Linear Effects (|H| = 7)",
+                                        "3) Main Effects Only (|H| = 5)")))
 
 p1_mse_nactive <- ggplot(data = df_mse_nactive, aes(x = mean.nactive, y = mean.mse, color = method, label = method)) +
   geom_point(size = 2.1) +
@@ -220,16 +220,16 @@ df_tpr_fpr <- DT[, c("method","scen","tpr","fpr")] %>%
   group_by(method, scen) %>%
   summarise(mean.tpr = mean(tpr, na.rm = TRUE), sd.tpr = sd(tpr, na.rm = TRUE),
             mean.fpr = mean(fpr, na.rm = TRUE), sd.fpr = sd(fpr, na.rm = TRUE)) %>%
-  mutate(scen = case_when(scen == "1a) Strong Hierarchy" ~ "1a) Strong Hierarchy (|S_0| = 7)",
-                          scen == "1b) Weak Hierarchy" ~ "1b) Weak Hierarchy (|S_0| = 5)",
-                          scen == "1c) Interactions Only" ~ "1c) Interactions Only (|S_0| = 2)",
-                          scen == "2) Linear Effects" ~ "2) Linear Effects (|S_0| = 7)",
-                          scen == "3) Main Effects Only" ~ "3) Main Effects Only (|S_0| = 5)")) %>%
-  mutate(scen = factor(scen, levels = c("1a) Strong Hierarchy (|S_0| = 7)",
-                                        "1b) Weak Hierarchy (|S_0| = 5)",
-                                        "1c) Interactions Only (|S_0| = 2)",
-                                        "2) Linear Effects (|S_0| = 7)",
-                                        "3) Main Effects Only (|S_0| = 5)")))
+  mutate(scen = case_when(scen == "1a) Strong Hierarchy" ~ "1a) Strong Hierarchy (|H| = 7)",
+                          scen == "1b) Weak Hierarchy" ~ "1b) Weak Hierarchy (|H| = 5)",
+                          scen == "1c) Interactions Only" ~ "1c) Interactions Only (|H| = 2)",
+                          scen == "2) Linear Effects" ~ "2) Linear Effects (|H| = 7)",
+                          scen == "3) Main Effects Only" ~ "3) Main Effects Only (|H| = 5)")) %>%
+  mutate(scen = factor(scen, levels = c("1a) Strong Hierarchy (|H| = 7)",
+                                        "1b) Weak Hierarchy (|H| = 5)",
+                                        "1c) Interactions Only (|H| = 2)",
+                                        "2) Linear Effects (|H| = 7)",
+                                        "3) Main Effects Only (|H| = 5)")))
 
 p1_tpr_fpr <- ggplot(data = df_tpr_fpr, aes(x = mean.fpr, y = mean.tpr, color = method, label = method)) +
   geom_point(size = 2.1) +

@@ -19,7 +19,8 @@ source(here::here("manuscript/bin/PRS_plot_functions.R"))
 # see the file 'run_sail_200_bootstrap_PRS.R' for script used to run the models on
 # bootstrap samples
 load(file = here::here("manuscript/results/PRS_results.RData"))
-
+affect.mat2 <- describeBy(simulation_results_PRS[, c("mse","nactive")], simulation_results_PRS$Method, mat = TRUE)
+affect.mat2 <- affect.mat2[which(affect.mat2$group1 %in% c("Adaptivesailweak", "lasso", "lassoBT", "sail","sailweak")),]
 
 ## ---- load-PRS-data ------------------------------------------------------
 
@@ -70,6 +71,7 @@ fitcv <- cv.sail(x = IQ4y[,-c(1,2)], y = IQ4y[,"IQ_4yrs"], e = IQ4y[, "Tx_group_
 
 ## ---- PRS-intervention-interaction ----
 
+
 plotInterPRS(object = fitcv$sail.fit,
              originalDataNotCentered = IQ4y, # complete original data which contains both "x" and "e"
              xvar = "PRS_0.0001",
@@ -80,8 +82,8 @@ plotInterPRS(object = fitcv$sail.fit,
              degree = 3,
              ylab = "Marginal Risk",
              legend.position = "bottomright",
-             main = "Effect of Intervention and PRS
-     on IQ at 4 years of age",
+     #         main = "Effect of Intervention and PRS
+     # on IQ at 4 years of age",
              rug = TRUE,
              color = sail:::cbbPalette[c(2,4)],
              legend = TRUE)
@@ -334,9 +336,6 @@ pheatmap(selected_vars, cluster_rows = FALSE, cluster_cols = FALSE,
 
 ## ---- PRS-error-crosses-plots ----
 
-
-affect.mat2 <- describeBy(simulation_results_PRS[, c("mse","nactive")], simulation_results_PRS$Method, mat = TRUE)
-affect.mat2 <- affect.mat2[which(affect.mat2$group1 %in% c("Adaptivesailweak", "lasso", "lassoBT", "sail","sailweak")),]
 par(family="serif")
 error.crosses(affect.mat2[grep("nactive", rownames(affect.mat2)),],
               affect.mat2[grep("mse", rownames(affect.mat2)),],

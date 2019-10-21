@@ -206,6 +206,6 @@ apply(ARFPredmat,1,function(x) lines(polygonXarf,-x,col=Col2,lty=1))
 lines(polygonXct, -apply(ctPredmat,2,median), col = color[1], lwd = 3)
 lines(polygonXarf, -apply(ARFPredmat,2,median), col = color[2], lwd = 3)
 legend("topleft", c("non-ARF/MOSF", "ARF/MOSF"),
-       col = color[1:3], pch = 19, cex = 1.6, bty = "n")
+       col = color[1:3], lwd = c(3,3), cex = 1.6, bty = "n")
 graphics::rug(originalX, side = 1)
 

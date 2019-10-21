@@ -247,7 +247,15 @@ finalversion <- TRUE
 \pagestyle{fancy}
 
 \begin{abstract}
-Diseases are now thought to be the result of changes in entire biological networks whose states are affected by a complex interaction of genetic and environmental factors. In general, power to estimate interactions is low, the number of possible interactions could be enormous and their effects may be non-linear. Existing approaches such as the lasso might keep an interaction but remove a main effect, which is problematic for interpretation. In this work, we introduce a sparse additive interaction learning model called \sail ~for detecting non-linear interactions with a key environmental or exposure variable in high-dimensional settings. Our method can accommodate either the strong or weak heredity constraints. We develop a computationally efficient fitting algorithm with automatic tuning parameter selection, which scales to high-dimensional datasets. Through an extensive simulation study, we show that \sail ~outperforms existing penalized regression methods in terms of prediction error, sensitivity and specificity when there are non-linear interactions with an exposure variable. We apply \sail ~to the Alzheimer's Disease Neuroimaging Initiative (ADNI) data to select non-linear interactions between clinical diagnosis and A$\beta$ protein in 96 brain regions on mini-mental state examination. Our algorithms are available in an R package (\url{https://github.com/greenwoodlab}).
+Diseases are now thought to be the result of changes in entire biological networks whose states are affected by a complex interaction of genetic and environmental factors. 
+In general, power to estimate interactions is low, the number of possible interactions could be enormous and their effects may be non-linear. 
+Existing approaches such as the lasso might keep an interaction but remove a main effect, which is problematic for interpretation. 
+In this work, we introduce a sparse additive interaction learning model called \sail ~for detecting non-linear interactions with a key environmental or exposure variable in high-dimensional settings. 
+Our method can accommodate either the strong or weak heredity constraints. 
+We develop a computationally efficient fitting algorithm with automatic tuning parameter selection, which scales to high-dimensional datasets. 
+Through an extensive simulation study, we show that \sail ~outperforms existing penalized regression methods in terms of prediction error and support recovery when there are non-linear interactions with an exposure variable. 
+We apply \sail ~to two real datasets to further illustrate the utility of the proposed method. 
+Our algorithms are available in an R package (\url{https://github.com/greenwoodlab}).
 \end{abstract}
 
 
@@ -257,26 +265,22 @@ Computational approaches to variable selection have become increasingly importan
 Although many approaches have been developed for main effects, there is an enduring interest in powerful methods for estimating interactions, since interactions may reflect important modulation of a genomic system by an external factor~\citep{bhatnagar2018analytic}.
 Accurate capture of interactions may hold the potential to better understanding  biological phenomena and improving prediction accuracy.
 For example, a model that considered interactions between brain imaging data and genetic features had better classification accuracy compared to a model that considered the main effects only~\citep{ning2018classifying}.
-%For example, genome wide association studies (GWAS) have been unable to explain a large proportion of heritability (the variance in phenotype attributable to genetic variants) and it has been suggested that this missing heritability may in part be due to gene-environment interactions~\citep{manolio2009finding}.
 Furthermore, the manifestations of disease are often considered to be the result of changes in entire biological networks whose states are affected by a complex interaction of genetic and environmental factors~\citep{schadt2009molecular}.
 However, there is a general deficit of such replicated interactions in the literature~\citep{timpson2018genetic}.
-Indeed, power to detect interactions is always lower than for  main effects, and in high-dimensional settings ($p >> n$), this lack of power to detect interactions is exacerbated, since the number of possible interactions could be enormous and their effects may be non-linear. Hence, analytic methods that may improve power are essential.
+Indeed, power to detect interactions is always lower than for  main effects, and in high-dimensional settings ($p >> n$), this lack of power to detect interactions is exacerbated, since the number of possible interactions could be enormous and their effects may be non-linear. 
+Hence, analytic methods that may improve power are essential.
 
-%{\color{green} You need a non-genetic example - i.e. gene expression or proteomic or ...}
-Interactions may occur in numerous types and of varying complexities. In this paper, we consider one specific type of interaction models, where one (exposure) variable is involved in possibly non-linear interactions with a high-dimensional set of measures $\mb{X}$ leading to effects on a response variable, $Y$. We propose a multivariable penalization procedure for detecting non-linear interactions $\mb{X}$ and $E$.
+Interactions may occur in numerous types and of varying complexities. 
+In this paper, we consider one specific type of interaction model, where one exposure variable $E$ is involved in possibly non-linear interactions with a high-dimensional set of measures $\mb{X}$ leading to effects on a response variable, $Y$. We propose a multivariable penalization procedure for detecting non-linear interactions $\mb{X}$ and $E$.
 
 
 %Our approach improves on existing procedures for detecting such interactions in three ways; 1) it automatically enforces the strong heredity property, i.e., an interaction term can only be included in the model if the corresponding main effects are in the model 2) it reduces the dimensionality of the problem and leverages the high correlations by transforming the input feature space using network connectivity measures and 3) it leads to interpretable models which are biologically meaningful.
-
-
 %Furthermore, diseases are now thought to be the result of entire biological networks whose states are affected by environmental factors, and these systemic changes can induce or eliminate strong correlations between elements in a network. Therefore, we propose a multivariate penalization procedure for detecting interactions between high dimensional data ($p >> n$) and an environmental factor, where the effect of this environmental factor on the high dimensional data is widespread and plays a role in predicting the response. Our approach improves on existing procedures for detecting such interactions in three ways; 1) it automatically enforces the strong heredity property, i.e., an interaction term can only be included in the model if the corresponding main effects are in the model 2) it reduces the dimensionality of the problem and leverages the high correlations by transforming the input feature space using network connectivity measures and 3) it leads to interpretable models which are biologically meaningful. This thesis is motivated by three studies; one that looks at the impact of maternal care on child development, another that characterizes normal brain development as a function of intelligence scores and one that looks at the long-lasting effects of diet in subsequent generations.
-
-
 %Diseases are now thought to be the result of changes in entire biological networks whose states are affected by a complex interaction of genetic and environmental factors. In general, power to estimate interactions is low, the number of possible interactions could be enormous and their effects may be non-linear. Existing approaches such as the lasso might keep an interaction but remove a main effect, which is problematic for interpretation. We develop a model for linear and non-linear interactions in penalized regression models that automatically enforces the strong heredity property. A computationally efficient fitting algorithm combined with a non-parametric screening approach scales to high-dimensional datasets and has been implemented in an R package. We apply our method to identify gene-prenatal maternal depression interactions on negative emotionality in mother–infant dyads from the Maternal Adversity, Vulnerability, and Neurodevelopment (MAVAN) cohort.
 
 
 
-\subsection{A Sparse additive interaction model}
+\subsection{A sparse additive interaction model}
 Let $Y=(Y_1, \ldots, Y_n) \in \mathbb{R}^n$ be a continuous outcome variable, \mbox{$X_E=(E_1, \ldots, E_n) \in \mathbb{R}^n$} a binary or continuous environment vector, and \mbox{$\bX = (X_{1}, \ldots, X_{p}) \in \mathbb{R}^{n\times p}$} a matrix of predictors, possibly high-dimensional. Furthermore let $f_j: \mathbb{R} \rightarrow \mathbb{R}$ be a smoothing method for variable $X_j$ by a projection on to a set of basis functions:
 \begin{equation}
 	f_j(X_j) = \sum_{\ell = 1}^{m_j} \psi_{j\ell}(X_j) \beta_{j\ell} \label{eq:smooth}
@@ -384,7 +388,7 @@ We present here a toy example to better illustrate our method. With a sample siz
 \begin{equation}
 	Y = f_1(X_1) + f_2(X_2) + 1.75 E + 1.5 E \cdot f_2(X_2) + \varepsilon
 \end{equation}
-For illustration, function $f_1(\cdot)$ is assumed to be linear, whereas function $f_2(\cdot)$ is non-linear: $f_1(x) = -3x$, $f_2(x) = 2(2x-1)^3$. The error term $\varepsilon$ is generated from a normal distribution with variance chosen such that the signal-to-noise ratio (SNR) is 2.  We generated a single simulated dataset and used the strong heredity \sail ~method with cubic B-splines to estimate the functional forms. 10-fold cross-validation (CV) was used to choose the optimal value of penalization. We used $\alpha=0.5$ and default values were used for all other arguments. We plot the solution path for both main effects and interactions in Figure~\ref{fig:toy-solution-path}, coloring lines to correspond to the selected model. We see that our method is able to correctly identify the true model. We can also visually see the effect of the penalty and strong heredity principle working in tandem, i.e., the interaction term $E \cdot f_2(X_2)$ (orange lines in the bottom panel) can only be nonzero if the main effects $E$ and $f_2(X_2)$ (black and orange lines respectively in the top panel) are nonzero, while nonzero main effects doesn't necessarily imply a nonzero interaction.
+For illustration, function $f_1(\cdot)$ is assumed to be linear, whereas function $f_2(\cdot)$ is non-linear: $f_1(x) = -3x$, $f_2(x) = 2(2x-1)^3$. The error term $\varepsilon$ is generated from a normal distribution with variance chosen such that the signal-to-noise ratio (SNR) is 2.  We generated a single simulated dataset and used the strong heredity \sail ~method with cubic B-splines to estimate the functional forms. 10-fold cross-validation (CV) was used to choose the optimal value of penalization. We used $\alpha=0.5$ and default values were used for all other arguments. We plot the solution path for both main effects and interactions in Figure~\ref{fig:toy-solution-path}, coloring lines to correspond to the selected model. We see that our method is able to correctly identify the true model. We can also visually see the effect of the penalty and strong heredity principle working in tandem, i.e., the interaction term $E \cdot f_2(X_2)$ (orange lines in the bottom panel) can only be nonzero if the main effects $E$ and $f_2(X_2)$ (black and orange lines respectively in the top panel) are nonzero, while nonzero main effects does not imply a nonzero interaction.
 
 <<toy-example, eval=finalversion>>=
 @
@@ -398,7 +402,7 @@ In Figure~\ref{fig:toy-effects}, we plot the true and estimated component functi
 @
 
 
-\subsection{Related Work}
+\subsection{Related work}
 Methods for variable selection of interactions can be broken down into two categories: linear and non-linear interaction effects.
 Many of the linear effect methods consider all pairwise interactions in $\bX$~\citep{zhao2009composite,choi2010variable,bien2013lasso, she2014group} which can be computationally prohibitive when $p$ is large. The computational limitation can be perceived through the relatively small number of variables used in simulations and real data analysis in~\citep{zhao2009composite,choi2010variable,bien2013lasso, she2014group}.
 More recent proposals for selection of interactions allow the user to restrict the search space to interaction candidates~\citep{lim2015learning,haris2016convex}. This is useful when the researcher wants to impose prior information on the model.
@@ -413,15 +417,15 @@ Y = \beta_0 + \sum_{j=1}^{p}\beta_j X_j + \sum_{j=1}^{K}\theta_j Z_j + \sum_{j=1
 \end{equation}
 where $\alpha_j$ is a $K$-dimensional vector.
 Our proposal is most closely related to this method with $\mathbf{Z}$ being a single column matrix; the key difference being the non-linearity effects of our predictor variables.
-As pointed out by the authors of the pliable lasso, either their or ours can be seen as a varying coefficient model, i.e., the effect of $X$ varies as a function of the exposure variable $E$ or $\mb{Z}$ in equation~\ref{eq:pliable}.
+As pointed out by the authors of the pliable lasso, either their or ours can be seen as a varying coefficient model, i.e., the effect of $X$ varies as a function of the exposure variable $E$ or $\mb{Z}$ in~\eqref{eq:pliable}.
 
 The main contributions of this paper are fourfold.
 First, we develop a model for non-linear interactions with a key exposure variable, following either the weak or strong heredity principle, that is computationally efficient and scales to the high-dimensional setting ($n << p$).
-Second, through simulation studies, we show improved performance over existing methods that only consider linear interactions or additive main effects.
+Second, through simulation studies, we show improved performance in terms of prediction error and support recovery over existing methods that only consider linear interactions or additive main effects.
 Third, we show that our method possesses the oracle property~\citep{fan2001variable}, i.e., it performs as well as if the true model were known in advance.
-Fourth, all of our algorithms are implemented in the \texttt{sail} R package hosted on GitHub with extensive documentation (\url{http://sahirbhatnagar.com/sail/}). In particular, our implementation also allows for linear interaction models, user-defined basis expansions, a cross-validation procedure for selecting the optimal tuning parameter, and differential shrinkage parameters to apply the adaptive lasso~\citep{zou2006adaptive} idea.
+Fourth, all of our algorithms are implemented in the \texttt{sail} R package with extensive documentation (\url{http://sahirbhatnagar.com/sail/}). In particular, our implementation also allows for linear interaction models, user-defined basis expansions, a cross-validation procedure for selecting the optimal tuning parameter, and differential shrinkage parameters to apply the adaptive lasso~\citep{zou2006adaptive} idea.
 
-The rest of the paper is organized as follows. Section~\ref{sec:sail_algorithm} describes our optimization procedure and some details about the algorithm used to fit the \texttt{sail} model for the least squares case. In Section~\ref{sec:sail_simulation}, through simulation studies we compare the performance of our proposed approach and demonstrate the scenarios where it can be advantageous to use \sail ~over existing methods. Section~\ref{sec:sail_rda} contains some real data examples and Section~\ref{sec:sail_discussion} discusses some limitations and future directions.
+The rest of the paper is organized as follows. Section~\ref{sec:sail_algorithm} describes our optimization procedure and some details about the algorithm used to fit the \texttt{sail} model for the least squares case. Theoretical results are given in Section~\ref{sec:theory}. In Section~\ref{sec:sail_simulation}, through simulation studies we compare the performance of our proposed approach and demonstrate the scenarios where it can be advantageous to use \sail ~over existing methods. Section~\ref{sec:sail_rda} contains some real data examples and Section~\ref{sec:sail_discussion} discusses some limitations and future directions.
 
 %~
 \begin{comment}
@@ -444,379 +448,9 @@ Type      & Method   & Software \ML
 \end{comment}
 
 
-\section{Theory}
 
 
-In this section we study the asymptotic behaviour of the \sail ~estimator $\widehat{\bTheta}$, defined as the minimizer of~\eqref{eq:saillikelihood}, as well as the model selection properties. We show that $\texttt{{sail}}$ posesses the oracle property when the sample size approaches infinity and the number of predictors is fixed. That is, under certain regularity conditions, it performs as well as if the true model were known in advance and has the optimal estimation rate~\citep{zou2006adaptive}. The regularity conditions and proofs are given in the Supplementary Material. 
-
-\subsection{Problem setup}
-
-Let $\bThetastar = (\beta_{E}^*,\btheta_{1}^*,\ldots,\btheta_{p}^*,\gamma_{1}^*,\ldots,\gamma_{p}^*)$ denote the unknown vector of true coefficients in \eqref{eq:saillikelihood}, $\mathcal{H}=\left\lbrace h : \bThetastar_h \neq 0 \right\rbrace$ the unknown sparsity pattern of $\bThetastar$, and $\widehat{\mathcal{H}} =\left\lbrace h : \widehat{\bTheta}_h \neq 0 \right\rbrace$ the estimated \sail ~model selector. Here, we assume $\bThetastar$ is ordered such that the index $h=1$ corresponds to $\beta_E^*$, the indices $h=2, \ldots, p+1$ correspond to $\btheta_{1}^*,\ldots,\btheta_{p}^*$, and the indices $h=p+2, \ldots, 2p+1$ corresponds to $\gamma_{1}^*,\ldots,\gamma_{p}^*$. To simplify the notation, we redefine the penalty terms in~\eqref{eq:saillikelihood} and parameter indices, and consider the \sail ~estimates $\widehat{\bTheta}_n$ given by 
-%\begin{equation}
-%	\widehat{\bTheta}_n=  \argmin_{\bTheta}Q(\bTheta)
-%=L(\bTheta)+n\lambda_{E}\left|\beta_{E}\right|+n\sum_{j=1}^{p}\lambda_{j}^{\theta}\left\Vert \btheta_{j}\right\Vert _{2}+n\sum_{k=1}^{p}\lambda_{k}^{\gamma}\left|\gamma_{k}\right|
-%\end{equation}
-\begin{equation}
-\widehat{\bTheta}_n=  \argmin_{\bTheta}Q_n(\bTheta)
-=-L_n(\bTheta)+n\lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} + n\sum_{h=2}^{p+1}   \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}  +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|
-\end{equation}
-where $\lambda_{h}^\beta=\frac{{1}}{n}\lambda(1-\alpha)w_{h}^\beta$ for $h=1$, $\lambda_{h}^{\theta}=\frac{{1}}{n}\lambda(1-\alpha)w_{h}^\theta$ for $h=2, \ldots, p+1$, and $\lambda_{h}^{\gamma}=\frac{{1}}{n}\lambda\alpha w_{h}^\gamma$ for $h=p+2, \ldots, 2p+1$. The superscripts $\beta,\theta, \gamma$ on the tuning parameters ($\lambda_h$) and adaptive weights ($w_h$) indicate which parameter (environment, main effect, interaction) they are being applied to. Let $a_n = \max \left\lbrace \lambda_{h}^\beta, \lambda_{h}^\theta, \lambda_h^\gamma: h \in \mathcal{H}  \right\rbrace$ and $b_n = \min \left\lbrace \lambda_{h}^\beta, \lambda_{h}^\theta, \lambda_h^\gamma: h \notin \mathcal{H}  \right\rbrace$. In words, $a_n$ is a sequence containing the largest tuning parameters such that all causal covariates are included in the model, and $b_n$ is a sequence containing the smallest tuning parameters such that all noise variables are excluded from the model. Note that our asymptotic results are stated for the main effects and interaction terms only, even though our formulation includes an unpenalized intercept. Consistency results immediately follow for $\beta_0$ since we assume the data has been centered, leading to a closed form solution for the intercept in the least-squares setting. 
-
-%where $\bTheta\coloneqq(\beta_{0},\beta_{E},\btheta_{1},\ldots,\btheta_{p},\btau_{1},\ldots,\btau_{p})$
-%and $\bD\coloneqq(Y,\bPsi,X_{E})$ is the working data.
-
-%\begin{align*}
-%\begin{aligned}\widehat{\bTheta}= & \argmin_{\bTheta}Q(\bTheta)\end{aligned}
-%& =\mathcal{L}(\bTheta|\bD)+\lambda(1-\alpha)\left(w_{E}\left|\beta_{E}\right|+\sum_{j=1}^{p}w_{j}\left\Vert \btheta_{j}\right\Vert _{2}\right)+\lambda\alpha\sum_{k=1}^{p}w_{kE}\left|\gamma_{k}\right|
-%\end{align*}
-
-
-
-\begin{lemma}[Existence of a local minimizer]\label{th:lemma1}
-	Assume $a_n = O_P(\frac{1}{\sqrt{n}})$. Let $\eta_{n}=\frac{1}{\sqrt{n}}+a_{n}$ and $\{\bTheta^{*}+\eta_{n}\boldsymbol{\delta}:\|\boldsymbol{\delta}\|_2\leq C\}$
-	be the ball around $\bTheta^{*}$ for $\boldsymbol{\delta} \in \mathbb{R}^d$, where $d$ is the dimension of the design matrix and $C$ is some constant. Under the regularity assumptions, there exists a local minimizer $\widehat{\bTheta}_n$ of $Q_n(\bTheta)$ such that $\|\widehat{\bTheta}_n - \bTheta^*  \|_2 = O_P(\eta_{n})$.
-\end{lemma}
-
-The proof is in Appendix A. Lemma \eqref{th:lemma1} states that if the tuning parameters corresponding to the nonzero coefficients converge to 0 at a speed faster than $\frac{1}{\sqrt{n}}$, then there exists a local minimizer of $Q_n(\bTheta)$ which is $\sqrt{n}$-consistent~\citep{wang2007regression, choi2010variable}. The following Theorem shows that this estimator is model selection consistent.
-
-
-
-\begin{theorem}[Model selection consistency] \label{th:theorem1}
-	Assume $\sqrt{n}b_n \to \infty$ and $\|\widehat{\bTheta}_n - \bTheta^*  \|_2 = O_P(\frac{1}{\sqrt{n}})$. Then \begin{equation}
-	\mathbb{P}\left\{\widehat{\mathcal{H}}=\mathcal{H}\right\} \rightarrow 1, \quad \text { as } n \rightarrow \infty \label{eq:modelselectionconsistency}
-	\end{equation}
-\end{theorem}
-
-The proof is in Appendix B. Theorem~\eqref{th:theorem1} shows that \sail ~can consistently remove the main effects and interaction terms which are not associated with the response with high probability. Together with Lemma~\eqref{th:lemma1}, we see that the asymptotic behaviour of the penalty terms for the zero and non-zero predictors must be different to satisfy the model selection consistency property~\eqref{eq:modelselectionconsistency}~\citep{nardi2008asymptotic}. Next, we obtain the asymptotic distribution of the \sail ~estimator.
-
-\begin{theorem}[Asymptotic normality] \label{th:theorem2}
-Assume that $a_n = O_P(\frac{1}{\sqrt{n}})$ and $\sqrt{n}b_n \to \infty$. Then, under the regularity conditions, 
-\begin{equation}
-\sqrt{n}\left(\widehat{\bTheta}-\bTheta^{*}\right) \stackrel{d}{\rightarrow} Z,
-\end{equation}
-where $Z_{\mathcal{H}} \sim \mathrm{N}\left(0, \mathbf{I}^{-1}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right) \right)$, $Z_{\mathcal{H}^{c}}=0$, and $\mathbf{I}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)$ is the Fisher information matrix for the causal predictors only. 
-\end{theorem}
-The proof is in Appendix C. Together, Theorems~\eqref{th:theorem1} and~\eqref{th:theorem2} establish that if the tuning parameters satisfy the conditions $a_n = O_P(\frac{1}{\sqrt{n}})$ and $\sqrt{n}b_n \to \infty$, then as the sample size grows large, \sail ~has the oracle property~\citep{fan2001variable}. In order for the conditions on the tuning parameters to be satisfied, we follow the strategies outlined for the adaptive lasso~\citep{zou2006adaptive}, the adaptive group lasso~\citep{nardi2008asymptotic} and the adaptive elastic-net~\citep{zou2009adaptive}. That is, we define the adaptive weights as $w_h = \| \widehat{\bTheta}_h^{ini} + 1/n \|_2^{-\xi}$ for $h=1, \ldots, 2p+1$, where $\xi$ is a positive constant and $\widehat{\bTheta}_h^{ini}$ is an initial $\sqrt{n}$-consistent estimate of $\bTheta^*$. Here, the $1/n$ is to avoid division by zero. 
-%,  $w_h^\beta = \frac{1}{\|\widehat{\beta}_h \|_2^\xi}$ for $h=1$, $w_h^\theta = \frac{1}{\|\widehat{\btheta}_h \|_2^\xi}$ for $h=2, \ldots, p+1$, and $w_h^\gamma = \frac{1}{\|\widehat{\gamma}_h \|_2^\xi}$ for $h=p+1, \ldots, 2p+1$.
-
-
-
-\begin{comment}
-\begin{proposition}
-\begin{itemize}
-	\item 	proposition 3.1 of rinaldi paper says that model selection consistency property, i.e.,  
-	\[\mathbb{P}\left\{\widehat{\mathcal{H}}=\mathcal{H}_{0}\right\} \rightarrow 1, \quad \text { as } n \rightarrow \infty\]
-	holds only if \[\sqrt{n} \lambda \lambda_{h} \rightarrow \infty, \quad \forall h \notin \mathcal{H}_{0}\]. the issue is that you need knowledge of the true active set. So in theorem 3.2 they propose the adaptive group lasso
-	\item Theorem 3.2 of rinaldi shows the model selection consistency property and asymptotic normality using adaptive group lasso weights. 
-	\item Theorem 3.3 of rinaldi follows fan and li 2001 and shows existence of a local minimizer inside a ball around the truth. This is Lemma 1 of Choi and Theorem 1 of Fan and Li. It also shows that the penalty terms for the zero and non-zero blocks need to have a different asymptotic behavior. This is what Choi does in Lemma1+Theorem 1. 
-\end{itemize}
-\end{proposition}
-\end{comment}
-
-
-
-\subsection{Lemma 1 proof}
-For this proof, we adopt the approaches outlined in~\citep{fan2001variable,choi2010variable,nardi2008asymptotic,wang2007regression} and extend it to our situation. Let $\eta_{n}=\frac{1}{\sqrt{n}}+a_{n}$ and $\{\bTheta^{*}+\eta_{n}\boldsymbol{\delta}:\|\boldsymbol{\delta}\|_2\leq C\}$
-be the ball around $\bTheta^{*}$ for $\boldsymbol{\delta}=(u_{1}, \textit{\textbf{u}}_2, \ddd \textit{\textbf{u}}_{p+1},v_{p+2},\ldots,v_{2p+1})^{\top} \in \mathbb{R}^d$, where $d$ is the dimension of the design matrix and $C$ is some constant. The objective function is given by
-\begin{equation*}
-Q_n(\bTheta)
-=-L_n(\bTheta)+n\lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} + n\sum_{h=2}^{p+1}      \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}  +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|
-\end{equation*}
-Define 
-\[ D_{n}(\boldsymbol{\delta})\equiv Q_{n}(\bThetastar+\eta_{n}\bdelta)-Q_{n}(\bThetastar).\] Let $\mathcal{H}_1=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=1 \right\rbrace$, $\mathcal{H}_2=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=2, \ldots, p+1 \right\rbrace$ \\and $\mathcal{H}_3=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=p+2, \ldots, 2p+1 \right\rbrace$ where $\mathcal{H} = \mathcal{H}_1 \cup \mathcal{H}_2 \cup \mathcal{H}_3$. Then for $\bdelta$ that satisfies $\|\bdelta\|_2=C$, we have
-
-\begin{align}
-D_{n}(\bdelta) & =-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  + n \lambda_{h}^{\beta}(\left|\beta_{h}^*+\eta_n u_h\right| - |\beta_h^*|) \cdot \textrm{I}_{\lbrace h=1 \rbrace} +  \sum_{h=2}^{p+1}  \lambda_{h}^{\theta} (\| \btheta_{h}^* + \eta_{n}\textit{\textbf{u}}_h\|_{2} - \|\btheta_{h}^* \|_2 ) \nonumber\\  
-& +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}( \left|\gamma_{h}^* + \eta_{n}v_h\right| -        \left|\gamma_{h}^*\right|) \nonumber\\
-%
- & \overset{(a)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  
- +   \lambda_{h}^{\beta}(\left|\beta_{h}^*+\eta_n u_h\right| - |\beta_h^*|) \cdot \textrm{I}_{\lbrace h \in \mathcal{H}_1 \rbrace} +  n \sum_{h \in \mathcal{H}_2} \lambda_{h}^{\theta} (\| \btheta_{h}^* + \eta_{n}\textit{\textbf{u}}_h\|_{2} - \|\btheta_{h}^* \|_2 ) \nonumber\\  
-& +n\sum_{h \in \mathcal{H}_3}\lambda_{h}^{\gamma}( \left|\gamma_{h}^* + \eta_{n}v_h\right| -        \left|\gamma_{h}^*\right|)\nonumber \\
-%
- & \overset{(b)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  - n \eta_{n}  \lambda_{h}^{\beta}\left|u_h\right| \cdot \textrm{I}_{\lbrace h \in \mathcal{H}_1 \rbrace}  -      n \eta_{n}\sum_{h \in \mathcal{H}_2}     \lambda_{h}^{\theta} \| \textit{\textbf{u}}_h\|_{2} - n \eta_n \sum_{h \in \mathcal{H}_3}\lambda_{h}^{\gamma} \left|v_h\right| \nonumber \\
-%
-%
- & \overset{(c)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  - n \eta_{n}^2  \left|u_h\right| \cdot \textrm{I}_{\lbrace h \in \mathcal{H}_1 \rbrace}  -      n \eta_{n}^2 \sum_{h \in \mathcal{H}_2}    \| \textit{\textbf{u}}_h\|_{2} - n \eta_n^2 \sum_{h \in \mathcal{H}_3} \left|v_h\right| \nonumber \\
-%
-%
-& \overset{(d)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar) - n \eta_{n}^2 ( |\mathcal{H}_1| + |\mathcal{H}_2| + |\mathcal{H}_3|) C \nonumber \\
-%
-%
-%& \overset{(d)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar) - n %\eta_{n}^2 |\mathcal{H}_1| C + |\mathcal{H}_2| + n \eta_{n}^2 |\mathcal{H}_3|C %\nonumber \\
-%
-& \overset{(e)}{=}-[\nabla L_{n}(\bThetastar)]^{\top}(\eta_{n}\bdelta)-\frac{1}{2}(\eta_{n}\bdelta)^{\top}[\nabla^{2}L_{n}(\bThetastar)](\eta_{n}\bdelta)(1+o_{p}(1)) \nonumber \\ 
-& - n \eta_{n}^2 ( |\mathcal{H}_1| + |\mathcal{H}_2|+ |\mathcal{H}_3| ) C \label{eq:lemma1}
-\end{align}
-\begin{comment}
-\begin{align*}
-D_{n}(\bdelta) & =-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)+ n\sum_{h=1}^{p+1} \left( \lambda_{h}^{\beta}\left|\beta_{h}+\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}\right) + 
-n\lambda_{E}(|\beta_{E}^{*}+\eta_{n}u_{E}|-|\beta_{E}^{*}|)+n\sum_{j}\lambda_{j}^{\theta}\left(\left\Vert \btheta{}_{j}^{*}+\eta_{n}\boldsymbol{u}_{j}\right\Vert _{2}-\left\Vert \btheta_{j}^{*}\right\Vert _{2}\right)\\
-& +n\sum_{k}\lambda_{k}^{\gamma}(|\gamma_{k}^{*}+\eta_{n}v_{kE}|-|\gamma_{k}^{*}|)\\
-& \overset{(a)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)+n\lambda_{E}(|\beta_{E}^{*}+\eta_{n}u_{E}|-|\beta_{E}^{*}|)\cdot I(\beta_{E}^{*}\neq0)\\ 
-&+n\sum_{j\in\mathcal{A}_{2}}\lambda_{j}^{\theta}\left(\left\Vert \btheta{}_{j}^{*}+\eta_{n}\boldsymbol{u}_{j}\right\Vert _{2}-\left\Vert \btheta_{j}^{*}\right\Vert _{2}\right)\\
-& +n\sum_{k\in\mathcal{A}_{3}}\lambda_{k}^{\gamma}(|\gamma_{k}^{*}+\eta_{n}v_{kE}|-|\gamma_{k}^{*}|)\\
-& \overset{(b)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)-n\eta_{n}\lambda_{E}|u_{E}|\cdot I(\beta_{E}^{*}\neq0)-n\eta_{n}\sum_{j\in\A_{2}}\lambda_{j}^{\theta}\left\Vert \boldsymbol{u}_{j}\right\Vert _{2}-n\eta_{n}\sum_{k\in\A_{3}}\lambda_{k}^{\gamma}|v_{kE}|\\
-& \overset{(c)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)-n\eta_{n}^{2}\left(\left|u_{E}\right|\cdot I(\beta_{E}^{*}\neq0)+\sum_{j\in\A_{2}}\left\Vert \boldsymbol{u}_{j}\right\Vert _{2}+\sum_{k\in\A_{3}}\lambda_{k}^{\gamma}|v_{kE}|\right)\\
-& \overset{(d)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)-n\eta_{n}^{2}\left(|\A_{1}|+|\A_{2}|+|\A_{3}|\right)d\\
-& \overset{(e)}{=}-[\nabla L_{n}(\bThetastar)]^{\top}(\eta_{n}\bdelta)-\frac{1}{2}(\eta_{n}\bdelta)^{\top}[\nabla^{2}L_{n}(\bThetastar)](\eta_{n}\bdelta)(1+o_{p}(1))\\
-& -n\eta_{n}^{2}\left(|\A_{1}|+|\A_{2}|+|\A_{2}|\right)d
-\end{align*}
-\end{comment}
-Inequality (a) is by the fact that $\sum_{h\notin\mathcal{H}_1}|\bTheta_{h}^{*}|=0$ and $\sum_{h\notin\mathcal{H}_2}|\bTheta_{h}^{*}|=0$. 
-Inequality (b) is due to the reverse triangle inequality $|a|-|b|\geq-|a-b|$. Inequality (c) is by $\lambda_{h}^\beta\leq\eta_{n}$, $\lambda_{h}^{\theta}\leq\eta_{n}$ and $\lambda_{h}^{\gamma}\leq\eta_{n}$. Inequality (d) is by the Cauchy\textendash Schwarz
-inequality:
-\[
-\sum_{j\in \mathcal{H}}|u_{j}|=|\mathbf{1}_{\mH}^{\top}\textit{\textbf{u}}_{\mH}|\leq\|\mathbf{1}_{\mH}\|_2 \|\textit{\textbf{u}}_{\mH}\|_2=\sqrt{|\mH}|\|\textit{\textbf{u}}_{\mH}\|_2\leq|\mH|C.
-\]
-Equality (e) is by the standard argument on the Taylor expansion of the loss function:
-\begin{align*}
-L_{n}(\bThetastar+\eta_{n}\bdelta) & =L_{n}(\bThetastar+\eta_{n}\cdot\mathbf{0})+\eta_{n}\nabla L_{n}(\bThetastar+\eta_{n}\cdot\mathbf{0})^{\top}(\bdelta-\mathbf{0})\\
-& \qquad+\frac{1}{2}(\bdelta-\mathbf{0})^{\top}\nabla^{2}L_{n}(\bThetastar+\eta_{n}\cdot\mathbf{0})(\bdelta-\mathbf{0})\{1+\op(1)\}\\
-& =L_{n}(\bThetastar)+\eta_{n}\nabla L_{n}(\bThetastar)^{\top}\bdelta+\frac{1}{2}\bdelta^{\top}\nabla^{2}L_{n}(\bThetastar)\bdelta\eta_{n}^{2}\{1+\op(1)\}
-\end{align*}
-We split~\eqref{eq:lemma1} into three parts:
-\[
-\begin{aligned}A_{1} & =-\left[\nabla L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]^{\mathrm{T}}\left(\eta_{n}\boldsymbol{\delta}\right)\\
-A_{2} & =-\frac{1}{2}\left(\eta_{n}\boldsymbol{\delta}\right)^{\top}\left[\nabla^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]\left(\eta_{n}\boldsymbol{\delta}\right)\left(1+o_{p}(1)\right)\\
-A_{3} & =-n\eta_{n}^{2}\left(\left|\mathcal{H}_{1}\right|+\left|\mathcal{H}_{2}\right|+\left|\mathcal{H}_{3}\right|\right)C
-\end{aligned}
-\]
-
-\begin{align}
-A_{1} & =-\eta_{n}\left[\nabla L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]^{\top}\boldsymbol{\delta} \nonumber\\
-& =-\sqrt{n}\eta_{n}\left(\frac{1}{\sqrt{n}}\nabla L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right)^{\top}\boldsymbol{\delta} \nonumber\\
-& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\Theta}\right)\right|_{\boldsymbol{\Theta}=\boldsymbol{\Theta}^{*}}\right)^{\top}\boldsymbol{\delta}\nonumber\\
-& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\left[\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\Theta}\right)\right|_{\boldsymbol{\Theta}=\boldsymbol{\Theta}^{*}}-\mathbf{0}\right]\right)^{\top}\boldsymbol{\delta} \nonumber\\
-& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\left[\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\Theta}\right)\right|_{\boldsymbol{\Theta}=\boldsymbol{\Theta}^{*}}-E_{\boldsymbol{\Theta}^{*}}\nabla L\left(\boldsymbol{\Theta}^{*}\right)\right]\right)^{\top}\boldsymbol{\delta} \nonumber\\
-& =-\sqrt{n}\eta_{n}\Op\left(1\right)\boldsymbol{\delta}\nonumber\\
-& =-\Op\left(\sqrt{n}\eta_{n} \|\bdelta\|_2 \right) \label{eq:lemma1A1}
-%& =-\Op\left(n\eta_{n}^{2} \|\bdelta\|_2  \right)
-\end{align}
-\begin{comment}
-The last equation is due to
-\begin{align*}
-\Op(n^{1/2}\eta_{n}) & =\Op(n^{1/2}(n^{-1/2}+a_{n}))\\
-& =\Op(1+n^{1/2}a_{n})=\Op(1+n^{1/2}a_{n}\{1+\op(1)\})\\
-& =\Op(1+2n^{1/2}a_{n}+\op(n^{1/2}a_{n}))\\
-& =\Op(1+2n^{1/2}a_{n}+(n^{1/2}a_{n})^{2})\\
-& =\Op(1+2n^{1/2}a_{n}+na_{n}^{2}))\\
-& =\Op(n(n^{-1/2}+a_{n})^{2})=\Op(n\eta_{n}^{2})
-\end{align*}
-\end{comment}
-\begin{align}
-A_{2} & =\frac{1}{2}n\eta_{n}^{2}\left\{ \boldsymbol{\delta}^{\top}\left[-\frac{1}{n}\nabla^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]\boldsymbol{\delta}\right\} \left(1+o_{p}(1)\right) \nonumber\\
-& =\frac{1}{2}n\eta_{n}^{2}\left\{ \boldsymbol{\delta}^{\top}\left[I\left(\boldsymbol{\Theta}^{*}\right)\right]\boldsymbol{\delta}\right\} \left(1+o_{p}(1)\right)\text{ by the weak law of large numbers. } \nonumber\\
-& = O(n \eta_n^2 \|\bdelta\|_2^2) \label{eq:lemma1A2}
-\end{align}
-Combining \eqref{eq:lemma1A1} and \eqref{eq:lemma1A2} with \eqref{eq:lemma1} gives:
-\[
-\begin{aligned}D_{n}(\boldsymbol{\delta}) & \geq A_{1}+A_{2}+A_{3}\\
-& =-\Op\left(\sqrt{n}\eta_{n} \|\bdelta\|_2 \right)+O(n \eta_n^2 \|\bdelta\|_2^2)-n\eta_{n}^{2}\left(\left|\mathcal{H}_{1}\right|+\left|\mathcal{H}_{2}+\left|\mathcal{H}_{3}\right|\right|\right)C
-\end{aligned}
-\]
-We can conclude that for a large enough constant $C=\|\bdelta\|_2$, the positive term $O(n \eta_n^2 \|\bdelta\|_2^2)$ dominates all the others. Note that this is a positive term since $I(\bTheta)$ is positive definite at $\bTheta = \bTheta^*$ by regularity condition (C2).  
-%Notice that $A_{2}$ dominates the rest terms $A_{1}$ and $A_{3}$
-%and is positive since $I(\boldsymbol{\Theta})$ is positive definite
-%at $\boldsymbol{\Theta}=\bThetastar$ from (C2). 
-Therefore, for each $\varepsilon>0$, there exists a large enough constant $C$ such that, for large enough $n$
-\[
-P\left\{ \underset{\|\bdelta\|_2=C}{\inf}D_{n}\left(\boldsymbol{\delta}\right) > 0\right\} \geq 1-\varepsilon
-\]
-%\[
-%P\left\{ \underset{\|\bdelta\|_2=C}{\inf}Q_{n}\left(\boldsymbol{\Theta}^{*}+\eta_{n}\boldsymbol{\delta}\right)>Q_{n}\left(\boldsymbol{\Theta}^{*}\right)\right\} \geq1-\varepsilon
-%\]
-This implies with probability at least $1-\varepsilon$ that the empirical
-likelihood $Q_{n}$ has a local minimizer in the ball $\{\boldsymbol{\Theta}^{*}+\eta_{n}\mathbf{\bdelta}:\|\mathbf{\bdelta}\|_2\leq C\}$
-(since $Q_{n}$ is bounded and $\{\boldsymbol{\Theta}^{*}+\alpha_{n}\bdelta:\|\bdelta\|_2\leq C\}$
-is closed). In other words, there exists a solution $\widehat{\bTheta}_{n}$
-such that $\|\widehat{\boldsymbol{\Theta}}_{n}-\boldsymbol{\Theta}^{*}\|\leq\eta_{n}\|\bdelta\|_2\leq\eta_{n}C=\Op(\eta_{n})=\Op(n^{-1/2}+a_{n})$.
-Hence, $\left\Vert \widehat{\boldsymbol{\Theta}}_{n}-\boldsymbol{\Theta}^{*}\right\Vert =\Op\left(\eta_{n}\right).$ $\square$
-
-
-\subsection{Theorem 1 proof}
-We first recall the definitions of the active sets from Lemma 1. Let $\mathcal{H}_1=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=1 \right\rbrace$, $\mathcal{H}_2=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=2, \ldots, p+1 \right\rbrace$ and $\mathcal{H}_3=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=p+2, \ldots, 2p+1 \right\rbrace$ where $\mathcal{H} = \mathcal{H}_1 \cup \mathcal{H}_2 \cup \mathcal{H}_3$. We first consider consistency for the main effects: 
-\begin{align*}
-P&\left(\widehat{\bTheta}_{\mathcal{H}_{1}^{c}}=0\right)\rightarrow 1 \\
-P&\left(\widehat{\bTheta}_{\mathcal{H}_2^c}=0\right)\rightarrow 1
-\end{align*}
-Following \citep{fan2001variable,choi2010variable}, it is sufficient to show for any $h\in\mathcal{H}_{1}^{c} \cup \mathcal{H}_2^c$ 
-\begin{equation}
-\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}<0\quad\text{ for }-\varepsilon_{n}<\widehat{\bTheta}_{h}<0\label{eq:first_eq}
-\end{equation}
-\begin{equation}
-\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}>0\quad\text{ for }0<\widehat{\bTheta}_{h}<\varepsilon_{n}\label{eq:sec_eq}
-\end{equation}
-with probability tending to 1 where $\varepsilon_{n}=Cn^{-1/2}$ and
-$C>0$ is any constant. To show \eqref{eq:sec_eq}, notice that 
-\begin{itemize}
-	\item[for] $h=1$  
-\begin{align*}
-	\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}= & -\frac{\partial L_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}+n\lambda_{h}^{\beta}\textrm{sgn}\left(\widehat{\bTheta}_{h}\right)\\
-	= & -\frac{\partial L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}}-\sum_{k=2}^{2p+1}\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\\
-	& -\sum_{k=2}^{2p+1}\sum_{l=2}^{2p+1}  (2p+1)\frac{\partial^{3}L_{n}(\widetilde{\bTheta})}{\partial\bTheta_{h}\partial\bTheta_{k}\partial\bTheta_{l}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\left(\widehat{\bTheta}_{l}-\bTheta_{l}^{*}\right)+n\lambda_{h}^{\beta}\textrm{sgn}\left(\widehat{\bTheta}_{h}\right)
-\end{align*} 
-\item[for] $h=2, \ldots, p+1$ 
-%\begin{align*}
-%\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}= & -\frac{\partial L_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}+n\lambda_{h}^{\theta}\frac{\widehat{\bTheta}_{h}}{\|\widehat{\bTheta}_{h} \|_2}
-%\end{align*} 
-\begin{align*}
-\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}= & -\frac{\partial L_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}+n\lambda_{h}^{\theta}\frac{\widehat{\bTheta}_{h}}{\|\widehat{\bTheta}_{h} \|_2}\\
-= & -\frac{\partial L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}}-\sum_{k=2}^{2p+1}\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\\
-& -\sum_{k=2}^{2p+1}\sum_{l=2}^{2p+1}  (2p+1)\frac{\partial^{3}L_{n}(\widetilde{\bTheta})}{\partial\bTheta_{h}\partial\bTheta_{k}\partial\bTheta_{l}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\left(\widehat{\bTheta}_{l}-\bTheta_{l}^{*}\right)+n\lambda_{h}^{\theta}\frac{\widehat{\bTheta}_{h}}{\|\widehat{\bTheta}_{h} \|_2}
-\end{align*} 
-\end{itemize}
-
-\begin{comment}
-\[
-\begin{aligned}\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}= & -\frac{\partial L_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}+n\lambda_{h}^{\beta}\textrm{sgn}\left(\widehat{\bTheta}_{h}\right)\\
-= & -\frac{\partial L_{n}\left(\boldsymbol{\theta}^{*}\right)}{\partial\beta_{j}}-\sum_{k=1}^{\frac{p(p+1)}{2}}\frac{\partial^{2}L_{n}\left(\boldsymbol{\theta}^{*}\right)}{\partial\beta_{j}\partial\theta_{k}}\left(\hat{\theta}_{k}-\theta_{k}^{*}\right)\\
-& -\sum_{k=1}^{\frac{p(p+1)}{2}}\frac{p(p+1)}{2}\frac{\partial^{3}L_{n}(\widetilde{\btheta})}{\partial\beta_{j}\partial\theta_{k}\partial\theta_{l}}\left(\hat{\theta}_{k}-\theta_{k}^{*}\right)\left(\hat{\theta}_{l}-\theta_{l}^{*}\right)+n\lambda_{j}^{\beta}\textrm{sgn}\left(\hat{\beta}_{j}\right)
-\end{aligned}
-\]
-\end{comment}
-
-where $\widetilde{\bTheta}$ lies between $\widehat{\bTheta}_{n}$ and $\bTheta^{*}$. In both cases above, the first term is
-\[
-\frac{\partial L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}}=\sqrt{n}\sqrt{n}\frac{1}{n}\frac{\partial L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}}=\sqrt{n}O_{P}(1)=O_{P}(n^{1/2}).
-\]
-Since 
-\[
-\frac{1}{n}\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}=E\left\{ \frac{\partial^{2}\log f(\bTheta^{*})}{\partial\bTheta_{h}\partial\bTheta_{k}}\right\} +\op(1),
-\]
-then
-\[
-\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}=nE\left\{ \frac{\partial^{2}\log f(\bTheta^{*})}{\partial\bTheta_{h}\partial\bTheta_{k}}\right\} +\op(n),
-\]
-Then the second term
-\begin{align*}
-\sum_{k=2}^{2p+1}\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right) & =\left[nE\left\{ \frac{\partial^{2}\log f(\bTheta_{*})}{\partial\bTheta_{h}\partial\bTheta_{k}}\right\} +\op(n)\right]O_{p}\left(n^{-1/2}\right)\\
-& =O_{P}(n^{1/2})+o_{P}(n^{1/2})
-\end{align*}
-The third term is 
-\[
--\sum_{k=2}^{2p+1}\sum_{l=2}^{2p+1}  (2p+1)\frac{\partial^{3}L_{n}(\widetilde{\bTheta})}{\partial\bTheta_{h}\partial\bTheta_{k}\partial\bTheta_{l}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\left(\widehat{\bTheta}_{l}-\bTheta_{l}^{*}\right)=O_{p}\left(n^{-1/2}\right)O_{p}\left(n^{-1/2}\right)=O_{p}\left(n^{-1}\right)
-\]
-By the regularity conditions and the condition $\left\Vert \widehat{\boldsymbol{\Theta}}_{n}-\boldsymbol{\Theta}^{*}\right\Vert =O_{p}\left(\frac{1}{\sqrt{n}}\right)$,
-\begin{itemize}
-	\item[for] $h=1$  
-	\begin{align}
-\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}=\sqrt{n}\left\{ O_{p}(1)+\sqrt{n}\lambda_{j}^{\beta}\textrm{sgn}\left(\hat{\beta}_{j}\right)\right\} . \label{eq:theorem1h1}
-\end{align}
-\item[for] $h=2, \ldots, p+1$ 
-	\begin{align}
-\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}=\sqrt{n}\left\{ O_{p}(1)+\sqrt{n}\lambda_{h}^{\theta}\frac{\widehat{\bTheta}_{h}}{\|\widehat{\bTheta}_{h} \|_2}\right\} .\label{eq:theorem1h2}
-\end{align}
-\end{itemize}
-As $\sqrt{n}\lambda_h^\beta\to\infty$ for $h\in\mathcal{H}_{1}^{c}$ from the assumption, the sign of $\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}$ in~\eqref{eq:theorem1h1} is dominated by $\textrm{sgn(\ensuremath{\widehat{\bTheta_{h}})}}$. Similarly, as $\sqrt{n}\lambda_h^\theta\to\infty$ for $h\in\mathcal{H}_{2}^{c}$, the sign of $\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}$ in~\eqref{eq:theorem1h2} is dominated by the norm of $\widehat{\bTheta_{h}}$. 
-
-Therefore,
-\[
-P\left[\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}>0\quad\text{ for }0<\widehat{\bTheta}_{h}<\varepsilon_{n}\right]\rightarrow1\quad\text{ as }n\rightarrow\infty.
-\]
-
-\eqref{eq:first_eq} can be shown in the same way. 
-
-Due to the strong heredity property and the proof above for the consistency of the main effects, it follows that $P\left(\widehat{\bTheta}_{\mathcal{H}_{3}^{c}}=0\right)\rightarrow1$. $\qed$
-
-\begin{comment}
-\begin{itemize}
-	\item For $(k,k^{\prime})$ where $(k,k^{\prime})\in\mathcal{A}_{2}^{c}$
-	and $k,k^{\prime}\in\mathcal{A}_{1}:$ we can prove $P\left(\hat{\gamma}_{kk^{\prime}}=0\right)\rightarrow1$
-	by a similar reasoning
-	\item For $(k,k^{\prime})$ where $(k,k^{\prime})\in\mathcal{A}_{2}^{c}$
-	and either $k$ or $k^{\prime}$ is in $\mathcal{A}_{1}^{c}$: without
-	loss of generality, assume that $\beta_{k}^{*}=0$. Notice that $\hat{\beta}_{k}=0$
-	implies $\hat{\gamma}_{kk^{\prime}}=0$, because if $\hat{\gamma}_{kk^{\prime}}\neq0$,
-	then the value of the loss function does not change but the value
-	of the penalty function will increase. Since we already have $P\left(\hat{\beta}_{k}=0\right)\rightarrow1$,
-	we can conclude $P\left(\hat{\gamma}_{kk^{\prime}}=0\right)\rightarrow1$
-	as well. $\qed$
-\end{itemize}
-\end{comment}
-
-
-\subsection{Theorem 2 proof}
-
-By Lemma~\eqref{th:lemma1} and Theorem~\eqref{th:theorem1}, there exists a $\widehat{\bTheta}_{\mathcal{H}}$ that is a $\sqrt{n}$-consistent local minimizer of $Q(\bTheta_{\mathcal{H}})$, and that satisfies (with probability tending to 1):
-\begin{equation}
-\left.\frac{\partial Q_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}\right)}{\partial\bTheta_{h}}\right|_{\boldsymbol{\Theta}_{\mathcal{H}}=\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}}=0,\quad\forall h\in\mathcal{H}\label{eq:eq_14}
-\end{equation}
-where
-\begin{align}
-Q_n(\bTheta_{\mathcal{H}})
-&=-L_n(\bTheta_{\mathcal{H}})+\underbrace{n\lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h \in \mathcal{H}_1 \rbrace} + n\sum_{h \in \mathcal{H}_2}      \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}  +n\sum_{h \in \mathcal{H}_3}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|}_{\equiv n P(\bTheta_{\mathcal{H}})} \nonumber \\
-& = -L_n(\bTheta_{\mathcal{H}})+n P(\bTheta_{\mathcal{H}}) \label{eq:eq_14.5}
-\end{align}
-
-\begin{comment}
-Let $Q_{n}(\btheta_{\mathcal{A}})$ denote the objective function
-$Q_{n}$ only on the $\mathcal{A}-$component of $\btheta$, that
-is, $Q_{n}(\btheta)$ with $\btheta_{\mathcal{A}^{c}}.$Based on Lemma
-1 and Theorem 1, we have $P\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}^{c}}=0\right)\rightarrow1$.
-Thus, 
-\[
-P\left[\arg\min_{\boldsymbol{\theta}_{\mathcal{A}}}Q_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)=\left(\mathcal{A}\text{ -component of }\arg\min_{\boldsymbol{\theta}}Q_{n}(\boldsymbol{\theta})\right)\right]\rightarrow1.
-\]
-
-It means that $\widehat{\btheta}_{\mathcal{A}}$ should satisfy 
-with probability tending to 1. 
-Let $L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)$ and $P_{\boldsymbol{\lambda}}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)$
-denote the log-likelihood function of $\btheta_{\mathcal{A}}$and
-the penalty function of $\btheta_{\mathcal{A}}$ respectively so that
-we have 
-\[
-Q_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)=-L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)+nP_{\boldsymbol{\lambda}}\left(\boldsymbol{\theta}_{\mathcal{A}}\right).
-\]
-\end{comment}
-
-From \eqref{eq:eq_14} and~\eqref{eq:eq_14.5} we have
-\begin{equation}
-\nabla_{\mathcal{H}}Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right)=-\nabla_{\mathcal{H}}L_{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right)+n\nabla_{\mathcal{H}}P\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right)=\mathbf{0},\label{eq:eq_15}
-\end{equation}
-
-with probability tending to 1. 
-
-We then expand $-\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}\right)\text{ at }\boldsymbol{\Theta}_{\mathcal{H}}=\boldsymbol{\Theta}_{\mathcal{H}}^{*}$ in \eqref{eq:eq_15}:
-	\[
-	\begin{aligned}-\nabla_{\mathcal{H}}L_{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right) & =-\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)-\left[\nabla_{\mathcal{H}}^{2}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+o_{p}(1)\right]\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\\
-	& =\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+\left(-\frac{1}{n}\nabla_{\mathcal{H}}^{2}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)-o_{p}(1)\right)\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\right]\\
-	& =\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+I\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+o_{p}(1)\right]
-	\end{aligned}
-	\]
-
-The third line follows by
-\[\frac{1}{n} \nabla_{\mathcal{H}}^{2} L_{n}\left(\boldsymbol{\bTheta}_{\mathcal{H}}^{*}\right)=E\left\{\nabla_{\mathcal{H}}^{2} L\left(\boldsymbol{\bTheta}_{\mathcal{H}}^{*}\right)\right\}+o_{P}(1)=-I\left(\boldsymbol{\bTheta}_{\mathcal{H}}^{*}\right)+o_{P}(1)\]
-
-We also expand $n\nabla_{\mathcal{H}}P\left(\boldsymbol{\Theta}_{\mathcal{H}}\right)\text{ at }\boldsymbol{\Theta}_{\mathcal{H}}=\boldsymbol{\Theta}_{\mathcal{H}}^{*}$ in \eqref{eq:eq_15}:
-	
-	\[
-	\begin{aligned}n\nabla_{\mathcal{H}}P\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right) & =n\left\{ \left[\begin{array}{c}
-	{\lambda_{h}^{\beta}\textrm{sgn}\left(\beta_{h}\right)}\\
-	{\lambda_{h}^{\theta}  \frac{\btheta_{h}}{\| \btheta_{h} \|_2}    }\\
-	{\lambda_{h}^{\gamma}\textrm{sgn}\left(\gamma_{h}\right)}
-	\end{array}\right]_{h\in\mathcal{H}}+o_{p}(1)\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\right\} \\
-	& =\sqrt{n}o_{p}(1)
-	\end{aligned}
-	\]
-	because $\sqrt{n}a_{n}=$$o(1)$ and $\left\Vert \widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right\Vert =O_{p}\left(n^{-1/2}\right)$.
-
-
-
-Thus, 
-\[
-0=\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+\boldsymbol{I}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+o_{p}(1)\right].
-\]
-It follows 
-\[
-\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)=\boldsymbol{I}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)^{-1}\sqrt{n}\frac{1}{n}\sum_{i=1}^{n}\nabla_{\mathcal{H}}\log f\left(\boldsymbol{V}_{i},\boldsymbol{\Theta}_{\mathcal{H}}\right)+o_{p}(1).
-\]
-Therefore, by the central limit theorem, 
-\[
-\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\rightarrow_{d}N\left(\mathbf{0},\boldsymbol{I}^{-1}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\right).
-\]
-$\qed$
-
-\section{Algorithm and Computational Details} \label{sec:sail_algorithm}
+\section{Computation} \label{sec:sail_algorithm}
 
 In this section we describe a blockwise coordinate descent algorithm for fitting the least-squares version of the \texttt{sail} model in~\eqref{eq:saillikelihood}. We fix the value for $\alpha$ and minimize the objective function over a decreasing sequence of $\lambda$ values ($\lambda_{max}>\cdots>\lambda_{min}$). We use the subgradient equations to determine the maximal value $\lambda_{max}$ such that all estimates are zero. Due to the heredity principle, this reduces to finding the largest $\lambda$ such that all main effects ($\beta_E, \btheta_1, \ldots, \btheta_p$) are zero. Following Friedman et al.~\citep{friedman2010regularization}, we construct a $\lambda$-sequence of 100 values decreasing from $\lambda_{max}$ to $0.001 \lambda_{max}$ on the log scale, and use the warm start strategy where the solution for $\lambda_{\ell}$ is used as a starting value for $\lambda_{\ell + 1}$.
 
@@ -856,7 +490,9 @@ and the objective function is given by
 Solving~\eqref{eq:objective_least-squares} in a blockwise manner allows us to leverage computationally fast algorithms for $\ell_1$ and $\ell_2$ norm penalized regression.
 We show in Supplemental Section~\ref{ap:sail_algorithm} that by careful construction of pseudo responses and pseudo design matrices, existing efficient algorithms can be used to estimate the parameters.
 Indeed, the objective function simplifies to a modified lasso problem when holding all $\theta_j$ fixed, and a modified group lasso problem when holding $\beta_E$ and all $\gamma_j$ fixed.
+We provide an overview of the computations in Algorithm~\ref{alg:psudeolssail}. %A more detailed version of this algorithm is given in Section~\ref{ap:subsec:lssail} of the Appendix.
 
+\begin{comment}
 Denote the $n$-dimensional residual column vector $R = Y-\hat{Y}$. The subgradient equations are given by
 \begin{align}
 	\frac{\partial Q}{\partial \beta_0} & = \frac{1}{n} \left( Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p \gamma_{j}  \beta_E (X_E \circ \bPsi_j) \btheta_j\right)^\top \boldsymbol{1}  = 0 \label{eq:sub_b0} \\
@@ -902,7 +538,7 @@ where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operato
 Since there is no closed form solution for $\beta_j$, we use a quadratic majorization technique~\citep{yang2015fast} to solve~\eqref{eq:thetaj}. Furthermore, we update each $\btheta_{j}$ in a coordinate wise fashion and leverage this to implement further computational speedups which are detailed in Supplemental Section~\ref{ap:subsec:Delta}.
 From these estimates, we compute the interaction effects using the reparametrizations presented in Table~\ref{tab:reparam}, e.g.,  $\hat{\btau}_j = \hat{\gamma}_j \hat{\beta}_E \hat{\btheta}_j$, $j=1, \ldots, p$ for the strong heredity \sail ~model.
 We provide an overview of the computations in Algorithm~\ref{alg:psudeolssail}. A more detailed version of this algorithm is given in Section~\ref{ap:subsec:lssail} of the Appendix.
-
+\end{comment}
 
 
 \begin{algorithm}[htbp]
@@ -950,41 +586,19 @@ We provide an overview of the computations in Algorithm~\ref{alg:psudeolssail}. 
 
 %\newpage
 
-\FloatBarrier
+%\FloatBarrier
 
 
 
-\subsection{Maximum penalty parameter (Lambda max)}
 
-The subgradient equations~\eqref{eq:sub_bE}--\eqref{eq:sub_gammaj} can be used to determine the largest value of $\lambda$ such that all coefficients are 0. From the subgradient Equation~\eqref{eq:sub_bE}, we see that $\beta_E = 0$ is a solution if
-\begin{equation}
-	\frac{1}{w_E}\abs{\frac{1}{n} \left(X_E + \sum_{j=1}^{p}\gamma_j (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-E)}} \leq \lambda (1-\alpha)
-\end{equation}
-From the subgradient Equation~\eqref{eq:sub_thetaj}, we see that $\btheta_j = \boldsymbol{0}$ is a solution if
-\begin{equation}
-	\frac{1}{w_{j}}\norm{\frac{1}{n} \left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R_{(-j)}}_2 \leq \lambda (1-\alpha)
-\end{equation}
-From the subgradient Equation~\eqref{eq:sub_gammaj}, we see that $\gamma_j = 0$ is a solution if
-\begin{equation}
-	\frac{1}{w_{jE}}\abs{\frac{1}{n} \left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-jE)}} \leq \lambda \alpha
-\end{equation}
-Due to the strong heredity property, the parameter vector $(\beta_E,\btheta_1, \ldots, \btheta_p, \gamma_1, \ldots, \gamma_p)$ will be entirely equal to $\boldsymbol{0}$ if $(\beta_E,\btheta_1, \ldots, \btheta_p) = \boldsymbol{0}$. Therefore, the smallest value of $\lambda$ for which the entire parameter vector (excluding the intercept) is $\boldsymbol{0}$ is:
-\begin{multline}
-	\lambda_{max} = \frac{1}{n(1-\alpha)} \max \left\lbrace \frac{1}{w_E}\left(X_E + \sum_{j=1}^{p}\gamma_j (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-E)}, \right. \\
-	\left. \max_j \frac{1}{w_{j}}\norm{\left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R_{(-j)}}_2   \right\rbrace
-\end{multline}
-which reduces to
-\begin{align*}
-	\lambda_{max} = \frac{1}{n(1-\alpha)} \max \left\lbrace \frac{1}{w_E}\left(X_E\right)^\top R_{(-E)}, \max_j \frac{1}{w_{j}}\norm{\left(\bPsi_j\right)^\top R_{(-j)}}_2   \right\rbrace
-\end{align*}
 
 
 \subsection{Weak Heredity}
-Our method can be easily adapted to enforce the weak heredity property:
-\begin{equation}
-	\hat{\alpha}_{jE} \neq 0 \qquad \Rightarrow \qquad \hat{\beta}_j \neq 0 \qquad \tm{or} \qquad \hat{\beta}_E \neq 0   \label{eq:heredity2} \nonumber
-\end{equation}
-That is, an interaction term can only be present if at least one of it's corresponding main effects is nonzero. To do so, we reparametrize the coefficients for the interaction terms in~\eqref{eq:linpred} as $\balpha_{j} = \gamma_{j}  (\beta_E \cdot \mb{1}_{m_j} + \btheta_j)$, where $\mb{1}_{m_j}$ is a vector of ones with dimension $m_j$ (i.e. the length of $\btheta_j$). We defer the algorithm details for fitting the \sail ~model with weak heredity in Section~\ref{ap:subsec:lssailweak} of the Appendix, as it is very similar to Algorithm~\ref{alg:psudeolssail} for the strong heredity \sail ~model.
+Our method can be easily adapted to enforce the weak heredity property. 
+%\begin{equation}
+%	\hat{\alpha}_{jE} \neq 0 \qquad \Rightarrow \qquad \hat{\beta}_j \neq 0 \qquad \tm{or} \qquad \hat{\beta}_E \neq 0   \label{eq:heredity2} \nonumber
+%\end{equation}
+That is, an interaction term can only be present if at least one of it's corresponding main effects is nonzero. To do so, we reparametrize the coefficients for the interaction terms in~\eqref{eq:linpred} as $\balpha_{j} = \gamma_{j}  (\beta_E \cdot \mb{1}_{m_j} + \btheta_j)$, where $\mb{1}_{m_j}$ is a vector of ones with dimension $m_j$ (i.e. the length of $\btheta_j$). We defer the algorithm details for fitting the \sail ~model with weak heredity in Supplemental Section~\ref{ap:subsec:lssailweak}, as it is very similar to Algorithm~\ref{alg:psudeolssail} for the strong heredity \sail ~model.
 
 
 \subsection{Adaptive \sail}
@@ -996,7 +610,7 @@ The weights for the environment variable, main effects and interactions are give
 	\item Allows users to apply the adaptive \sail, similar to the adaptive lasso~\citep{zou2006adaptive}
 \end{enumerate}
 
-We describe the adaptive \sail ~in Algorithm~\ref{alg:adaptivesail}. This is a general procedure that can be applied to the weak and strong heredity settings, as well as both least squares and logistic loss functions. We provide this capability in the \sail ~package using the \texttt{penalty.factor} argument and provide an example in Section~\ref{ap:pfac} of the Appendix.
+We describe the adaptive \sail ~in Algorithm~\ref{alg:adaptivesail}. This is a general procedure that can be applied to the weak and strong heredity settings, as well as both least squares and logistic loss functions. We provide this capability in the \sail ~package using the \texttt{penalty.factor} argument and provide an example in Supplemental Section~\ref{ap:pfac}.
 
 \begin{algorithm}
 	\begin{enumerate}
@@ -1017,7 +631,7 @@ We describe the adaptive \sail ~in Algorithm~\ref{alg:adaptivesail}. This is a g
 
 \subsection{Flexible design matrix} \label{sec:linearsail}
 
-The definition of the basis expansion functions in~\eqref{eq:smooth} is very flexible, in the sense that our algorithms are independent of this choice. As a result, the user can apply any basis expansion they desire. In the extreme case, one could apply the identity map, i.e., $f_j(X_j) = X_j$ which leads to a linear interaction model (referred to as \texttt{linear} \sail). When little information is known a priori about the relationship between the predictors and the response, by default, we choose to apply the same basis expansion to all columns of $\bX$. This is a reasonable approach when all the variables are continuous. However, there are often situations when the data contains a combination of categorical and continuous variables. In these cases it may be sub-optimal to apply a basis expansion to the categorical variables. Owing to the flexible nature of our algorithm, we can handle this scenario in our implementation by allowing a user-defined design matrix. The only extra information needed is the group membership of each column in the design matrix. We provide such an example in the \sail ~package showcase in Section~\ref{ap:userdesign} of the Appendix.
+The definition of the basis expansion functions in~\eqref{eq:smooth} is very flexible, in the sense that our algorithms are independent of this choice. As a result, the user can apply any basis expansion they desire. In the extreme case, one could apply the identity map, i.e., $f_j(X_j) = X_j$ which leads to a linear interaction model (referred to as \texttt{linear} \sail). When little information is known a priori about the relationship between the predictors and the response, by default, we choose to apply the same basis expansion to all columns of $\bX$. This is a reasonable approach when all the variables are continuous. However, there are often situations when the data contains a combination of categorical and continuous variables. In these cases it may be sub-optimal to apply a basis expansion to the categorical variables. Owing to the flexible nature of our algorithm, we can handle this scenario in our implementation by allowing a user-defined design matrix. The only extra information needed is the group membership of each column in the design matrix. %We provide such an example in the \sail ~package showcase in Section~\ref{ap:userdesign} of the Appendix.
 
 
 
@@ -1076,6 +690,77 @@ R_4 = Y - \beta_E^{(k)} X_E - \sum_{j=1}^p  \bPsi_{j} \btheta_{j}^{(k)} - \sum_{
 \item Set $k=k+1$. Return to step 2 until convergence.
 \end{enumerate}
 \end{comment}
+
+
+\section{Theory} \label{sec:theory}
+
+
+In this section we study the asymptotic behaviour of the \sail ~estimator $\widehat{\bTheta}$, defined as the minimizer of~\eqref{eq:saillikelihood}, as well as the model selection properties. We show that $\texttt{{sail}}$ posesses the oracle property when the sample size approaches infinity and the number of predictors is fixed. That is, under certain regularity conditions, it performs as well as if the true model were known in advance and has the optimal estimation rate~\citep{zou2006adaptive}. The regularity conditions and proofs are given in the Supplementary Material. 
+
+%\subsection{Problem setup}
+
+Let $\bThetastar = (\beta_{E}^*,\btheta_{1}^*,\ldots,\btheta_{p}^*,\gamma_{1}^*,\ldots,\gamma_{p}^*)$ denote the unknown vector of true coefficients in \eqref{eq:saillikelihood}, $\mathcal{H}=\left\lbrace h : \bThetastar_h \neq 0 \right\rbrace$ the unknown sparsity pattern of $\bThetastar$, and $\widehat{\mathcal{H}} =\left\lbrace h : \widehat{\bTheta}_h \neq 0 \right\rbrace$ the estimated \sail ~model selector. Here, we assume $\bThetastar$ is ordered such that the index $h=1$ corresponds to $\beta_E^*$, the indices $h=2, \ldots, p+1$ correspond to $\btheta_{1}^*,\ldots,\btheta_{p}^*$, and the indices $h=p+2, \ldots, 2p+1$ corresponds to $\gamma_{1}^*,\ldots,\gamma_{p}^*$. To simplify the notation, we redefine the penalty terms in~\eqref{eq:saillikelihood} and parameter indices, and consider the \sail ~estimates $\widehat{\bTheta}_n$ given by 
+%\begin{equation}
+%	\widehat{\bTheta}_n=  \argmin_{\bTheta}Q(\bTheta)
+%=L(\bTheta)+n\lambda_{E}\left|\beta_{E}\right|+n\sum_{j=1}^{p}\lambda_{j}^{\theta}\left\Vert \btheta_{j}\right\Vert _{2}+n\sum_{k=1}^{p}\lambda_{k}^{\gamma}\left|\gamma_{k}\right|
+%\end{equation}
+\begin{equation}
+\widehat{\bTheta}_n=  \argmin_{\bTheta}Q_n(\bTheta)
+=-L_n(\bTheta)+n\lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} + n\sum_{h=2}^{p+1}   \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}  +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|
+\end{equation}
+where $\lambda_{h}^\beta=\frac{{1}}{n}\lambda(1-\alpha)w_{h}^\beta$ for $h=1$, $\lambda_{h}^{\theta}=\frac{{1}}{n}\lambda(1-\alpha)w_{h}^\theta$ for $h=2, \ldots, p+1$, and $\lambda_{h}^{\gamma}=\frac{{1}}{n}\lambda\alpha w_{h}^\gamma$ for $h=p+2, \ldots, 2p+1$. The superscripts $\beta,\theta, \gamma$ on the tuning parameters ($\lambda_h$) and adaptive weights ($w_h$) indicate which parameter (environment, main effect, interaction) they are being applied to. Let $a_n = \max \left\lbrace \lambda_{h}^\beta, \lambda_{h}^\theta, \lambda_h^\gamma: h \in \mathcal{H}  \right\rbrace$ and $b_n = \min \left\lbrace \lambda_{h}^\beta, \lambda_{h}^\theta, \lambda_h^\gamma: h \notin \mathcal{H}  \right\rbrace$. In words, $a_n$ is a sequence containing the largest tuning parameters such that all causal covariates are included in the model, and $b_n$ is a sequence containing the smallest tuning parameters such that all noise variables are excluded from the model. Note that our asymptotic results are stated for the main effects and interaction terms only, even though our formulation includes an unpenalized intercept. Consistency results immediately follow for $\beta_0$ since we assume the data has been centered, leading to a closed form solution for the intercept in the least-squares setting. 
+
+%where $\bTheta\coloneqq(\beta_{0},\beta_{E},\btheta_{1},\ldots,\btheta_{p},\btau_{1},\ldots,\btau_{p})$
+%and $\bD\coloneqq(Y,\bPsi,X_{E})$ is the working data.
+
+%\begin{align*}
+%\begin{aligned}\widehat{\bTheta}= & \argmin_{\bTheta}Q(\bTheta)\end{aligned}
+%& =\mathcal{L}(\bTheta|\bD)+\lambda(1-\alpha)\left(w_{E}\left|\beta_{E}\right|+\sum_{j=1}^{p}w_{j}\left\Vert \btheta_{j}\right\Vert _{2}\right)+\lambda\alpha\sum_{k=1}^{p}w_{kE}\left|\gamma_{k}\right|
+%\end{align*}
+
+
+
+\begin{lemma}[Existence of a local minimizer]\label{th:lemma1}
+	Assume $a_n = O_P(\frac{1}{\sqrt{n}})$. Let $\eta_{n}=\frac{1}{\sqrt{n}}+a_{n}$ and $\{\bTheta^{*}+\eta_{n}\boldsymbol{\delta}:\|\boldsymbol{\delta}\|_2\leq C\}$
+	be the ball around $\bTheta^{*}$ for $\boldsymbol{\delta} \in \mathbb{R}^d$, where $d$ is the dimension of the design matrix and $C$ is some constant. Under the regularity assumptions, there exists a local minimizer $\widehat{\bTheta}_n$ of $Q_n(\bTheta)$ such that $\|\widehat{\bTheta}_n - \bTheta^*  \|_2 = O_P(\eta_{n})$.
+\end{lemma}
+
+The proof is in Supplemental Section~\ref{ap:lemma1proof}. Lemma \eqref{th:lemma1} states that if the tuning parameters corresponding to the nonzero coefficients converge to 0 at a speed faster than $\frac{1}{\sqrt{n}}$, then there exists a local minimizer of $Q_n(\bTheta)$ which is $\sqrt{n}$-consistent~\citep{wang2007regression, choi2010variable}. The following Theorem shows that this estimator is model selection consistent.
+
+
+
+\begin{theorem}[Model selection consistency] \label{th:theorem1}
+	Assume $\sqrt{n}b_n \to \infty$ and $\|\widehat{\bTheta}_n - \bTheta^*  \|_2 = O_P(\frac{1}{\sqrt{n}})$. Then \begin{equation}
+	\mathbb{P}\left\{\widehat{\mathcal{H}}=\mathcal{H}\right\} \rightarrow 1, \quad \text { as } n \rightarrow \infty \label{eq:modelselectionconsistency}
+	\end{equation}
+\end{theorem}
+
+The proof is in Supplemental Section~\ref{ap:theorem1proof}. Theorem~\eqref{th:theorem1} shows that \sail ~can consistently remove the main effects and interaction terms which are not associated with the response with high probability. Together with Lemma~\eqref{th:lemma1}, we see that the asymptotic behaviour of the penalty terms for the zero and non-zero predictors must be different to satisfy the model selection consistency property~\eqref{eq:modelselectionconsistency}~\citep{nardi2008asymptotic}. Next, we obtain the asymptotic distribution of the \sail ~estimator.
+
+\begin{theorem}[Asymptotic normality] \label{th:theorem2}
+	Assume that $a_n = O_P(\frac{1}{\sqrt{n}})$ and $\sqrt{n}b_n \to \infty$. Then, under the regularity conditions, 
+	\begin{equation}
+	\sqrt{n}\left(\widehat{\bTheta}-\bTheta^{*}\right) \stackrel{d}{\rightarrow} Z,
+	\end{equation}
+	where $Z_{\mathcal{H}} \sim \mathrm{N}\left(0, \mathbf{I}^{-1}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right) \right)$, $Z_{\mathcal{H}^{c}}=0$, and $\mathbf{I}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)$ is the Fisher information matrix for the causal predictors only. 
+\end{theorem}
+The proof is in Supplemental Section~\ref{ap:theorem2proof}. Together, Theorems~\eqref{th:theorem1} and~\eqref{th:theorem2} establish that if the tuning parameters satisfy the conditions $a_n = O_P(\frac{1}{\sqrt{n}})$ and $\sqrt{n}b_n \to \infty$, then as the sample size grows large, \sail ~has the oracle property~\citep{fan2001variable}. In order for the conditions on the tuning parameters to be satisfied, we follow the strategies outlined for the adaptive lasso~\citep{zou2006adaptive}, the adaptive group lasso~\citep{nardi2008asymptotic} and the adaptive elastic-net~\citep{zou2009adaptive}. That is, we define the adaptive weights as $w_h = \| \widehat{\bTheta}_h^{ini} + 1/n \|_2^{-\xi}$ for $h=1, \ldots, 2p+1$, where $\xi$ is a positive constant and $\widehat{\bTheta}_h^{ini}$ is an initial $\sqrt{n}$-consistent estimate of $\bTheta^*$. Here, the $1/n$ is to avoid division by zero. 
+%,  $w_h^\beta = \frac{1}{\|\widehat{\beta}_h \|_2^\xi}$ for $h=1$, $w_h^\theta = \frac{1}{\|\widehat{\btheta}_h \|_2^\xi}$ for $h=2, \ldots, p+1$, and $w_h^\gamma = \frac{1}{\|\widehat{\gamma}_h \|_2^\xi}$ for $h=p+1, \ldots, 2p+1$.
+
+
+
+\begin{comment}
+\begin{proposition}
+\begin{itemize}
+\item 	proposition 3.1 of rinaldi paper says that model selection consistency property, i.e.,  
+\[\mathbb{P}\left\{\widehat{\mathcal{H}}=\mathcal{H}_{0}\right\} \rightarrow 1, \quad \text { as } n \rightarrow \infty\]
+holds only if \[\sqrt{n} \lambda \lambda_{h} \rightarrow \infty, \quad \forall h \notin \mathcal{H}_{0}\]. the issue is that you need knowledge of the true active set. So in theorem 3.2 they propose the adaptive group lasso
+\item Theorem 3.2 of rinaldi shows the model selection consistency property and asymptotic normality using adaptive group lasso weights. 
+\item Theorem 3.3 of rinaldi follows fan and li 2001 and shows existence of a local minimizer inside a ball around the truth. This is Lemma 1 of Choi and Theorem 1 of Fan and Li. It also shows that the penalty terms for the zero and non-zero blocks need to have a different asymptotic behavior. This is what Choi does in Lemma1+Theorem 1. 
+\end{itemize}
+\end{proposition}
+\end{comment}
+
 
 
 
@@ -1143,10 +828,10 @@ The test set MSE results for each of the five simulation scenarios are shown in 
 
 We see that \sail~,\texttt{adaptive sail} and \texttt{sail weak} have the best performance in terms of both MSE and yielding correct sparse models when the truth follows a strong hierarchy (scenario 1a), as we would expect, since this is exactly the scenario that our method is trying to target.
 
-<<plot-tpr-fpr-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Means $\\pm 1$ standard deviation of true positive rate vs. false positive rate from 200 simulations for each of the five scenarios. $|S_0|$ is the number of truly associated variables.", eval=finalversion>>=
+<<plot-tpr-fpr-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Means $\\pm 1$ standard deviation of true positive rate vs. false positive rate from 200 simulations for each of the five scenarios. $|\\mathcal{H}|$ is the number of truly associated variables.", eval=finalversion>>=
 @
 
-Our method is also competitive when only main effects are present (scenario 3) and performs just as well as methods that only consider linear and non-linear main effects (\texttt{HierBasis}, \texttt{SPAM}), owing to the penalization applied to the interaction parameter. Due to the heredity property, our method is unable to capture any of the truly associated variables when only interactions are present (scenario 1c). However, the other methods also fail to capture any signal, with the exception of \texttt{GLinternet} which has a high TPR and FPR. When only linear effects and interactions are present (scenario 2), we see that \texttt{linear sail} has a high TPR and low FPR as compared to the other linear interaction methods (\texttt{lassoBT} and \texttt{GLinternet}) though the test set MSE is not as good. The \texttt{lasso} and \texttt{adaptive lasso} have good test set MSE performance but poor sensitivity. Additional results are available in Section~\ref{ap:simulation} of the Appendix. Specifically, in Figure~\ref{fig:plot-mse-nactive-sim} we plot the mean MSE against the mean number of active variables $\pm 1$ standard deviation (SD). Figures~\ref{fig:plot-tpr-sim} and~\ref{fig:plot-fpr-sim} show the true positive and false positive rates, respectively. Figure~\ref{fig:plot-nactive-sim} shows the number of active variables.
+Our method is also competitive when only main effects are present (scenario 3) and performs just as well as methods that only consider linear and non-linear main effects (\texttt{HierBasis}, \texttt{SPAM}), owing to the penalization applied to the interaction parameter. Due to the heredity property, our method is unable to capture any of the truly associated variables when only interactions are present (scenario 1c). However, the other methods also fail to capture any signal, with the exception of \texttt{GLinternet} which has a high TPR and FPR. When only linear effects and interactions are present (scenario 2), we see that \texttt{linear sail} has a high TPR and low FPR as compared to the other linear interaction methods (\texttt{lassoBT} and \texttt{GLinternet}) though the test set MSE is not as good. The \texttt{lasso} and \texttt{adaptive lasso} have good test set MSE performance but poor sensitivity. Additional results are available in Supplemental Section~\ref{ap:simulation}. %Specifically, in Figure~\ref{fig:plot-mse-nactive-sim} we plot the mean MSE against the mean number of active variables $\pm 1$ standard deviation (SD). Figures~\ref{fig:plot-tpr-sim} and~\ref{fig:plot-fpr-sim} show the true positive and false positive rates, respectively. Figure~\ref{fig:plot-nactive-sim} shows the number of active variables.
 
 We visually inspected whether our method could correctly capture the shape of the association between the predictors and the response for both main and interaction effects. To do so, we plotted the true and predicted curves for scenario 1a) only. Figure~\ref{fig:main_eff} shows each of the four main effects with the estimated curves from each of the 200 simulations along with the true curve. We can see the effect of the penalty on the parameters, i.e., decreasing prediction variance at the cost of increased bias. This is particularly well illustrated in the bottom right panel where \sail ~smooths out the very wiggly component function $f_4(x)$. Nevertheless, the primary shapes are clearly being captured.
 
@@ -1226,12 +911,12 @@ While the individual influences of genetics and environment are well characteriz
 @
 
 
-<<PRS-error-crosses-plots, fig.width=10, fig.height=8, fig.pos= 'H', fig.cap="Mean test set AUC vs. mean number of active variables ($\\pm 1$ SD) for the SUPPORT data based on 200 train/validation/test splits.", eval=finalversion>>=
+<<PRS-error-crosses-plots, fig.width=10, fig.height=8, fig.pos= 'H', fig.cap="Mean test set AUC vs. mean number of active variables ($\\pm 1$ SD) for the SUPPORT data based on 200 train/validation/test splits.", eval=FALSE>>=
 @
 
 
 
-
+\begin{comment}
 \subsection{Alzheimer's Disease Neuroimaging Initiative}
 
 Alzheimer's is an irreversible neurodegenerative disease that results in a loss of mental function due to the deterioration of brain tissue. The overall goal of the Alzheimer's Disease Neuroimaging Initiative (ADNI) is to validate biomarkers for use in
@@ -1257,7 +942,7 @@ To visualize the results from the \sail ~method, we chose the train/validate/tes
 
 <<plot-inter-adni, fig.width=12, fig.height=8, fig.pos = 'H', fig.cap="Estimated interaction effects by \\texttt{sail} for ADNI data.", eval=finalversion>>=
 @
-
+\end{comment}
 
 \subsection{Study to Understand Prognoses Preferences Outcomes and Risks of Treatment}
 
@@ -1272,13 +957,24 @@ We visualized in Figure~\ref{fig:dzclass-interaction} two strongest interaction 
 <<load-support, eval=finalversion, results = 'hide'>>=
 @
 
-<<support-error-cross, fig.width=10, fig.height=8, fig.pos= 'H', fig.cap="Mean test set AUC vs. mean number of active variables ($\\pm 1$ SD) for the SUPPORT data based on 200 train/validation/test splits.", eval=finalversion>>=
+<<support-error-cross, fig.width=10, fig.height=8, fig.pos= 'H', fig.cap="Mean test set AUC vs. mean number of active variables ($\\pm 1$ SD) for the SUPPORT data based on 200 train/validation/test splits.", eval=FALSE>>=
 @
 
 <<dzclass-interaction, fig.width=12, fig.height=8, fig.pos= 'H', fig.cap="Illustration of estimated interaction effects identified by \\texttt{sail} for the SUPPORT data. Median prediction curves in dark colors based on 200 train/validate/test splits represent the estimated marginal interaction effects. Coefficients estimated in each of the 200 train/validate/test splits were used to generate prediction curves representing a 90\\% confidence interval colored in corresponding light colors.", eval=finalversion, results='hide'>>=
 @
 
 
+
+\ctable[caption={Mean test set AUC vs. mean number of active variables ($\\pm 1$ SD) for the SUPPORT data based on 200 train/validation/test splits},label=tab:rda,pos=h!,doinside=\footnotesize, ]{lccccc}{
+}{
+	\FL
+	            & \multicolumn{2}{c}{Educational Attainment PRS} &  &\multicolumn{2}{c}{SUPPORT} \NN
+	 \cmidrule(r){2-3} \cmidrule(l){5-6}	            
+	Method          &  Mean Squared Error                                                                 & $|\widehat{\mathcal{H}}|$                                                       & & Mean AUC                                                                            & $|\widehat{\mathcal{H}}|$ \ML
+\texttt{sail weak}  &  \Sexpr{round(affect.mat2[5,"mean"],1)} (\Sexpr{round(affect.mat2[5,"sd"],1)})     &  \Sexpr{round(affect.mat2[10,"mean"],0)} (\Sexpr{round(affect.mat2[10,"sd"],0)}) & & \Sexpr{round(errorSummary[5,"mean"],2)} (\Sexpr{round(errorSummary[5,"sd"],3)})     &  \Sexpr{round(errorSummary[10,"mean"],0)} (\Sexpr{round(errorSummary[10,"sd"],0)})  \NN
+\texttt{lassoBT}    &  \Sexpr{round(affect.mat2[3,"mean"],2)} (\Sexpr{round(affect.mat2[3,"sd"],3)})     &  \Sexpr{round(affect.mat2[8,"mean"],0)} (\Sexpr{round(affect.mat2[8,"sd"],0)})   & &  \Sexpr{round(errorSummary[4,"mean"],2)} (\Sexpr{round(errorSummary[4,"sd"],3)})     &  \Sexpr{round(errorSummary[9,"mean"],0)} (\Sexpr{round(errorSummary[9,"sd"],0)})  \NN
+\texttt{GLinternet} &  	--                                                                               & --                                                                               & &  \Sexpr{round(errorSummary[1,"mean"],2)} (\Sexpr{round(errorSummary[1,"sd"],3)})     &  \Sexpr{round(errorSummary[6,"mean"],0)} (\Sexpr{round(errorSummary[6,"sd"],0)})   \LL
+}
 
 
 
@@ -1322,6 +1018,61 @@ To our knowledge, our proposal is the first to allow for non-linear interactions
 \section{Algorithm Details} \label{ap:sail_algorithm}
 
 In this section we provide more specific details about the algorithms used to solve the \sail ~objective function.
+The strong heredity \texttt{sail} model with least-squares loss has the form
+\begin{equation}
+\hat{Y}   =  \beta_0 \cdot \boldsymbol{1} + \sum_{j=1}^p \bPsi_j \btheta_j + \beta_E X_E + \sum_{j=1}^p \gamma_{j}  \beta_E (X_E \circ \bPsi_j) \btheta_j
+\end{equation}
+and the objective function is given by
+\begin{equation}
+Q(\bTheta) = \frac{1}{2n} \norm{Y - \hat{Y}}_2^2 + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{j}} \label{eq:objective_least-squares}
+\end{equation}
+
+Solving~\eqref{eq:objective_least-squares} in a blockwise manner allows us to leverage computationally fast algorithms for $\ell_1$ and $\ell_2$ norm penalized regression.
+Denote the $n$-dimensional residual column vector $R = Y-\hat{Y}$. The subgradient equations are given by
+\begin{align}
+\frac{\partial Q}{\partial \beta_0} & = \frac{1}{n} \left( Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p \gamma_{j}  \beta_E (X_E \circ \bPsi_j) \btheta_j\right)^\top \boldsymbol{1}  = 0 \label{eq:sub_b0} \\
+\frac{\partial Q}{\partial \beta_E} & = -\frac{1}{n} \left(X_E + \sum_{j=1}^{p}\gamma_j (X_E \circ \bPsi_j)\btheta_j\right)^\top R  + \lambda (1-\alpha) w_E s_1 = 0 \label{eq:sub_bE}\\
+\frac{\partial Q}{\partial \btheta_j} & = -\frac{1}{n} \left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R  + \lambda (1-\alpha) w_j s_2 = \boldsymbol{0} \label{eq:sub_thetaj}\\
+\frac{\partial Q}{\partial \gamma_j} & = -\frac{1}{n} \left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)^\top R  + \lambda \alpha w_{jE} s_3 = 0 \label{eq:sub_gammaj}
+\end{align}
+where $s_1$ is in the subgradient of the $\ell_1$ norm:
+$$
+s_1 \in \begin{cases}
+\textrm{sign}\left(\beta_E\right) & \tm{if  } \beta_E \neq 0\\
+[-1, 1] &  \tm{if  } \beta_E = 0,\\
+\end{cases}
+$$
+$s_2$ is in the subgradient of the $\ell_2$ norm:
+$$
+s_2 \in \begin{cases}
+\dfrac{\btheta_j}{\norm{\btheta_j}_2} &  \tm{if  } \btheta_j \neq \boldsymbol{0}\\
+u \in \mathbb{R}^{m_j}: \norm{u}_2 \leq 1 & \tm{if  } \btheta_j = \boldsymbol{0},\\
+\end{cases}
+$$
+and $s_3$ is in the subgradient of the $\ell_1$ norm:
+$$
+s_3 \in \begin{cases}
+\textrm{sign}\left(\gamma_j\right) & \tm{if  } \gamma_j \neq 0\\
+[-1, 1] &  \tm{if  } \gamma_j = 0.\\
+\end{cases}
+$$
+Define the partial residuals, without the $j$th predictor for $j=1, \ldots, p$, as
+\[R_{(-j)} = Y - \beta_0 \cdot \boldsymbol{1} - \sum_{\ell \neq j} \bPsi_\ell \btheta_\ell - \beta_E X_E - \sum_{\ell\neq j} \gamma_{\ell}  \beta_E (X_E \circ \bPsi_\ell) \btheta_\ell \]
+the partial residual without $X_E$ as
+\[R_{(-E)} = Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j\]
+and the partial residual without the $j$th interaction for $j=1, \ldots, p$, as
+\[R_{(-jE)} = Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{\ell\neq j} \gamma_{\ell}  \beta_E (X_E \circ \bPsi_\ell) \btheta_\ell \]
+From the subgradient equations~\eqref{eq:sub_b0}--\eqref{eq:sub_gammaj} we see that
+\begin{align}
+\hat{\beta}_0 &=  \left( Y - \sum_{j=1}^p \bPsi_j \hat\btheta_j - \hat\beta_E X_E - \sum_{j=1}^p \hat\gamma_{j}  \hat\beta_E (X_E \circ \bPsi_j) \hat\btheta_j\right)^\top \boldsymbol{1} \label{eq:beta0} \\
+\hat{\beta}_E & = S\left(\frac{1}{n \cdot w_E} \left(X_E + \sum_{j=1}^{p}\hat\gamma_j (X_E \circ \bPsi_j)\hat\btheta_j\right)^\top R_{(-E)}, \lambda(1-\alpha)\right) \label{eq:betaE} \\
+\lambda (1-\alpha) w_j \dfrac{\btheta_j}{\norm{\btheta_j}_2} & =  \frac{1}{n} \left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R_{(-j)} \label{eq:thetaj} \\
+\hat\gamma_j & = S \left(\frac{1}{n \cdot w_{jE}} \left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-jE)}, \lambda \alpha\right) \label{eq:gammaj}
+\end{align}
+where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operator. We see from~\eqref{eq:beta0} and~\eqref{eq:betaE} that there are closed form solutions for the intercept and $\beta_E$. From~\eqref{eq:gammaj}, each $\gamma_j$ also has a closed form solution and can be solved efficiently for $j=1, \ldots, p$ using a coordinate descent procedure~\citep{friedman2010regularization}.
+Since there is no closed form solution for $\beta_j$, we use a quadratic majorization technique~\citep{yang2015fast} to solve~\eqref{eq:thetaj}. Furthermore, we update each $\btheta_{j}$ in a coordinate wise fashion and leverage this to implement further computational speedups which are detailed in Supplemental Section~\ref{ap:subsec:Delta}.
+From these estimates, we compute the interaction effects using the reparametrizations presented in Table~\ref{tab:reparam}, e.g.,  $\hat{\btau}_j = \hat{\gamma}_j \hat{\beta}_E \hat{\btheta}_j$, $j=1, \ldots, p$ for the strong heredity \sail ~model.
+
 
 \subsection{Least-Squares \sail ~with Strong Heredity} \label{ap:subsec:lssail}
 A more detailed algorithm for fitting the least-squares \texttt{sail} model with strong heredity is given in Algorithm~\ref{alg:lssail}.
@@ -1431,7 +1182,29 @@ where $R^\ast$ is given by~\eqref{eq:rast}, $\btheta_s^{(k)}$ is the parameter v
 \end{align}
 Therefore $R_t = R_s + \Delta$, and the partial residual for updating the next predictor can be computed by updating the previous partial residual by $\Delta$, given by~\eqref{eq:Delta}. This formulation can lead to computational speedups especially when $\Delta = 0$, meaning the partial residual does not need to be re-calculated.
 
+\subsection{Maximum penalty parameter ($\lambda_{max}$) for strong heredity}
 
+The subgradient equations~\eqref{eq:sub_bE}--\eqref{eq:sub_gammaj} can be used to determine the largest value of $\lambda$ such that all coefficients are 0. From the subgradient Equation~\eqref{eq:sub_bE}, we see that $\beta_E = 0$ is a solution if
+\begin{equation}
+\frac{1}{w_E}\abs{\frac{1}{n} \left(X_E + \sum_{j=1}^{p}\gamma_j (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-E)}} \leq \lambda (1-\alpha)
+\end{equation}
+From the subgradient Equation~\eqref{eq:sub_thetaj}, we see that $\btheta_j = \boldsymbol{0}$ is a solution if
+\begin{equation}
+\frac{1}{w_{j}}\norm{\frac{1}{n} \left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R_{(-j)}}_2 \leq \lambda (1-\alpha)
+\end{equation}
+From the subgradient Equation~\eqref{eq:sub_gammaj}, we see that $\gamma_j = 0$ is a solution if
+\begin{equation}
+\frac{1}{w_{jE}}\abs{\frac{1}{n} \left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-jE)}} \leq \lambda \alpha
+\end{equation}
+Due to the strong heredity property, the parameter vector $(\beta_E,\btheta_1, \ldots, \btheta_p, \gamma_1, \ldots, \gamma_p)$ will be entirely equal to $\boldsymbol{0}$ if $(\beta_E,\btheta_1, \ldots, \btheta_p) = \boldsymbol{0}$. Therefore, the smallest value of $\lambda$ for which the entire parameter vector (excluding the intercept) is $\boldsymbol{0}$ is:
+\begin{multline}
+\lambda_{max} = \frac{1}{n(1-\alpha)} \max \left\lbrace \frac{1}{w_E}\left(X_E + \sum_{j=1}^{p}\gamma_j (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-E)}, \right. \\
+\left. \max_j \frac{1}{w_{j}}\norm{\left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R_{(-j)}}_2   \right\rbrace
+\end{multline}
+which reduces to
+\begin{align*}
+\lambda_{max} = \frac{1}{n(1-\alpha)} \max \left\lbrace \frac{1}{w_E}\left(X_E\right)^\top R_{(-E)}, \max_j \frac{1}{w_{j}}\norm{\left(\bPsi_j\right)^\top R_{(-j)}}_2   \right\rbrace
+\end{align*}
 
 \subsection{Least-Squares \sail ~with Weak Heredity} \label{ap:subsec:lssailweak}
 
@@ -1564,7 +1337,7 @@ where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operato
 \end{algorithm}
 
 
-\subsubsection{Lambda Max}
+\subsubsection{Maximum penalty parameter ($\lambda_{max}$) for weak heredity}
 
 The smallest value of $\lambda$ for which the entire parameter vector $(\beta_E,\btheta_1, \ldots, \btheta_p, \gamma_1, \ldots, \gamma_p)$ is $\boldsymbol{0}$ is:
 
@@ -1582,6 +1355,311 @@ This is the same $\lambda_{max}$ as the least-squares strong heredity \sail ~mod
 
 
 \FloatBarrier
+
+
+\section{Proofs}
+
+\subsection{Lemma 1 proof} \label{ap:lemma1proof}
+For this proof, we adopt the approaches outlined in~\citep{fan2001variable,choi2010variable,nardi2008asymptotic,wang2007regression} and extend it to our situation. Let $\eta_{n}=\frac{1}{\sqrt{n}}+a_{n}$ and $\{\bTheta^{*}+\eta_{n}\boldsymbol{\delta}:\|\boldsymbol{\delta}\|_2\leq C\}$
+be the ball around $\bTheta^{*}$ for $\boldsymbol{\delta}=(u_{1}, \textit{\textbf{u}}_2, \ddd \textit{\textbf{u}}_{p+1},v_{p+2},\ldots,v_{2p+1})^{\top} \in \mathbb{R}^d$, where $d$ is the dimension of the design matrix and $C$ is some constant. The objective function is given by
+\begin{equation*}
+Q_n(\bTheta)
+=-L_n(\bTheta)+n\lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} + n\sum_{h=2}^{p+1}      \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}  +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|
+\end{equation*}
+Define 
+\[ D_{n}(\boldsymbol{\delta})\equiv Q_{n}(\bThetastar+\eta_{n}\bdelta)-Q_{n}(\bThetastar).\] Let $\mathcal{H}_1=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=1 \right\rbrace$, $\mathcal{H}_2=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=2, \ldots, p+1 \right\rbrace$ \\and $\mathcal{H}_3=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=p+2, \ldots, 2p+1 \right\rbrace$ where $\mathcal{H} = \mathcal{H}_1 \cup \mathcal{H}_2 \cup \mathcal{H}_3$. Then for $\bdelta$ that satisfies $\|\bdelta\|_2=C$, we have
+
+\begin{align}
+D_{n}(\bdelta) & =-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  + n \lambda_{h}^{\beta}(\left|\beta_{h}^*+\eta_n u_h\right| - |\beta_h^*|) \cdot \textrm{I}_{\lbrace h=1 \rbrace} +  \sum_{h=2}^{p+1}  \lambda_{h}^{\theta} (\| \btheta_{h}^* + \eta_{n}\textit{\textbf{u}}_h\|_{2} - \|\btheta_{h}^* \|_2 ) \nonumber\\  
+& +n\sum_{h=p+2}^{2p+1}\lambda_{h}^{\gamma}( \left|\gamma_{h}^* + \eta_{n}v_h\right| -        \left|\gamma_{h}^*\right|) \nonumber\\
+%
+& \overset{(a)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  
++   \lambda_{h}^{\beta}(\left|\beta_{h}^*+\eta_n u_h\right| - |\beta_h^*|) \cdot \textrm{I}_{\lbrace h \in \mathcal{H}_1 \rbrace} +  n \sum_{h \in \mathcal{H}_2} \lambda_{h}^{\theta} (\| \btheta_{h}^* + \eta_{n}\textit{\textbf{u}}_h\|_{2} - \|\btheta_{h}^* \|_2 ) \nonumber\\  
+& +n\sum_{h \in \mathcal{H}_3}\lambda_{h}^{\gamma}( \left|\gamma_{h}^* + \eta_{n}v_h\right| -        \left|\gamma_{h}^*\right|)\nonumber \\
+%
+& \overset{(b)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  - n \eta_{n}  \lambda_{h}^{\beta}\left|u_h\right| \cdot \textrm{I}_{\lbrace h \in \mathcal{H}_1 \rbrace}  -      n \eta_{n}\sum_{h \in \mathcal{H}_2}     \lambda_{h}^{\theta} \| \textit{\textbf{u}}_h\|_{2} - n \eta_n \sum_{h \in \mathcal{H}_3}\lambda_{h}^{\gamma} \left|v_h\right| \nonumber \\
+%
+%
+& \overset{(c)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)  - n \eta_{n}^2  \left|u_h\right| \cdot \textrm{I}_{\lbrace h \in \mathcal{H}_1 \rbrace}  -      n \eta_{n}^2 \sum_{h \in \mathcal{H}_2}    \| \textit{\textbf{u}}_h\|_{2} - n \eta_n^2 \sum_{h \in \mathcal{H}_3} \left|v_h\right| \nonumber \\
+%
+%
+& \overset{(d)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar) - n \eta_{n}^2 ( |\mathcal{H}_1| + |\mathcal{H}_2| + |\mathcal{H}_3|) C \nonumber \\
+%
+%
+%& \overset{(d)}{\geq} -L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar) - n %\eta_{n}^2 |\mathcal{H}_1| C + |\mathcal{H}_2| + n \eta_{n}^2 |\mathcal{H}_3|C %\nonumber \\
+%
+& \overset{(e)}{=}-[\nabla L_{n}(\bThetastar)]^{\top}(\eta_{n}\bdelta)-\frac{1}{2}(\eta_{n}\bdelta)^{\top}[\nabla^{2}L_{n}(\bThetastar)](\eta_{n}\bdelta)(1+o_{p}(1)) \nonumber \\ 
+& - n \eta_{n}^2 ( |\mathcal{H}_1| + |\mathcal{H}_2|+ |\mathcal{H}_3| ) C \label{eq:lemma1}
+\end{align}
+\begin{comment}
+\begin{align*}
+D_{n}(\bdelta) & =-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)+ n\sum_{h=1}^{p+1} \left( \lambda_{h}^{\beta}\left|\beta_{h}+\right| \cdot \textrm{I}_{\lbrace h=1 \rbrace} +   \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}\right) + 
+n\lambda_{E}(|\beta_{E}^{*}+\eta_{n}u_{E}|-|\beta_{E}^{*}|)+n\sum_{j}\lambda_{j}^{\theta}\left(\left\Vert \btheta{}_{j}^{*}+\eta_{n}\boldsymbol{u}_{j}\right\Vert _{2}-\left\Vert \btheta_{j}^{*}\right\Vert _{2}\right)\\
+& +n\sum_{k}\lambda_{k}^{\gamma}(|\gamma_{k}^{*}+\eta_{n}v_{kE}|-|\gamma_{k}^{*}|)\\
+& \overset{(a)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)+n\lambda_{E}(|\beta_{E}^{*}+\eta_{n}u_{E}|-|\beta_{E}^{*}|)\cdot I(\beta_{E}^{*}\neq0)\\ 
+&+n\sum_{j\in\mathcal{A}_{2}}\lambda_{j}^{\theta}\left(\left\Vert \btheta{}_{j}^{*}+\eta_{n}\boldsymbol{u}_{j}\right\Vert _{2}-\left\Vert \btheta_{j}^{*}\right\Vert _{2}\right)\\
+& +n\sum_{k\in\mathcal{A}_{3}}\lambda_{k}^{\gamma}(|\gamma_{k}^{*}+\eta_{n}v_{kE}|-|\gamma_{k}^{*}|)\\
+& \overset{(b)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)-n\eta_{n}\lambda_{E}|u_{E}|\cdot I(\beta_{E}^{*}\neq0)-n\eta_{n}\sum_{j\in\A_{2}}\lambda_{j}^{\theta}\left\Vert \boldsymbol{u}_{j}\right\Vert _{2}-n\eta_{n}\sum_{k\in\A_{3}}\lambda_{k}^{\gamma}|v_{kE}|\\
+& \overset{(c)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)-n\eta_{n}^{2}\left(\left|u_{E}\right|\cdot I(\beta_{E}^{*}\neq0)+\sum_{j\in\A_{2}}\left\Vert \boldsymbol{u}_{j}\right\Vert _{2}+\sum_{k\in\A_{3}}\lambda_{k}^{\gamma}|v_{kE}|\right)\\
+& \overset{(d)}{\geq}-L_{n}(\bThetastar+\eta_{n}\bdelta)+L_{n}(\bThetastar)-n\eta_{n}^{2}\left(|\A_{1}|+|\A_{2}|+|\A_{3}|\right)d\\
+& \overset{(e)}{=}-[\nabla L_{n}(\bThetastar)]^{\top}(\eta_{n}\bdelta)-\frac{1}{2}(\eta_{n}\bdelta)^{\top}[\nabla^{2}L_{n}(\bThetastar)](\eta_{n}\bdelta)(1+o_{p}(1))\\
+& -n\eta_{n}^{2}\left(|\A_{1}|+|\A_{2}|+|\A_{2}|\right)d
+\end{align*}
+\end{comment}
+Inequality (a) is by the fact that $\sum_{h\notin\mathcal{H}_1}|\bTheta_{h}^{*}|=0$ and $\sum_{h\notin\mathcal{H}_2}|\bTheta_{h}^{*}|=0$. 
+Inequality (b) is due to the reverse triangle inequality $|a|-|b|\geq-|a-b|$. Inequality (c) is by $\lambda_{h}^\beta\leq\eta_{n}$, $\lambda_{h}^{\theta}\leq\eta_{n}$ and $\lambda_{h}^{\gamma}\leq\eta_{n}$. Inequality (d) is by the Cauchy\textendash Schwarz
+inequality:
+\[
+\sum_{j\in \mathcal{H}}|u_{j}|=|\mathbf{1}_{\mH}^{\top}\textit{\textbf{u}}_{\mH}|\leq\|\mathbf{1}_{\mH}\|_2 \|\textit{\textbf{u}}_{\mH}\|_2=\sqrt{|\mH}|\|\textit{\textbf{u}}_{\mH}\|_2\leq|\mH|C.
+\]
+Equality (e) is by the standard argument on the Taylor expansion of the loss function:
+\begin{align*}
+L_{n}(\bThetastar+\eta_{n}\bdelta) & =L_{n}(\bThetastar+\eta_{n}\cdot\mathbf{0})+\eta_{n}\nabla L_{n}(\bThetastar+\eta_{n}\cdot\mathbf{0})^{\top}(\bdelta-\mathbf{0})\\
+& \qquad+\frac{1}{2}(\bdelta-\mathbf{0})^{\top}\nabla^{2}L_{n}(\bThetastar+\eta_{n}\cdot\mathbf{0})(\bdelta-\mathbf{0})\{1+\op(1)\}\\
+& =L_{n}(\bThetastar)+\eta_{n}\nabla L_{n}(\bThetastar)^{\top}\bdelta+\frac{1}{2}\bdelta^{\top}\nabla^{2}L_{n}(\bThetastar)\bdelta\eta_{n}^{2}\{1+\op(1)\}
+\end{align*}
+We split~\eqref{eq:lemma1} into three parts:
+\[
+\begin{aligned}A_{1} & =-\left[\nabla L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]^{\mathrm{T}}\left(\eta_{n}\boldsymbol{\delta}\right)\\
+A_{2} & =-\frac{1}{2}\left(\eta_{n}\boldsymbol{\delta}\right)^{\top}\left[\nabla^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]\left(\eta_{n}\boldsymbol{\delta}\right)\left(1+o_{p}(1)\right)\\
+A_{3} & =-n\eta_{n}^{2}\left(\left|\mathcal{H}_{1}\right|+\left|\mathcal{H}_{2}\right|+\left|\mathcal{H}_{3}\right|\right)C
+\end{aligned}
+\]
+
+\begin{align}
+A_{1} & =-\eta_{n}\left[\nabla L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]^{\top}\boldsymbol{\delta} \nonumber\\
+& =-\sqrt{n}\eta_{n}\left(\frac{1}{\sqrt{n}}\nabla L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right)^{\top}\boldsymbol{\delta} \nonumber\\
+& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\Theta}\right)\right|_{\boldsymbol{\Theta}=\boldsymbol{\Theta}^{*}}\right)^{\top}\boldsymbol{\delta}\nonumber\\
+& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\left[\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\Theta}\right)\right|_{\boldsymbol{\Theta}=\boldsymbol{\Theta}^{*}}-\mathbf{0}\right]\right)^{\top}\boldsymbol{\delta} \nonumber\\
+& =-\sqrt{n}\eta_{n}\left(\sqrt{n}\left[\frac{1}{n}\sum_{i=1}^{n}\nabla\log f\left.\left(\boldsymbol{V}_{i},\boldsymbol{\Theta}\right)\right|_{\boldsymbol{\Theta}=\boldsymbol{\Theta}^{*}}-E_{\boldsymbol{\Theta}^{*}}\nabla L\left(\boldsymbol{\Theta}^{*}\right)\right]\right)^{\top}\boldsymbol{\delta} \nonumber\\
+& =-\sqrt{n}\eta_{n}\Op\left(1\right)\boldsymbol{\delta}\nonumber\\
+& =-\Op\left(\sqrt{n}\eta_{n} \|\bdelta\|_2 \right) \label{eq:lemma1A1}
+%& =-\Op\left(n\eta_{n}^{2} \|\bdelta\|_2  \right)
+\end{align}
+\begin{comment}
+The last equation is due to
+\begin{align*}
+\Op(n^{1/2}\eta_{n}) & =\Op(n^{1/2}(n^{-1/2}+a_{n}))\\
+& =\Op(1+n^{1/2}a_{n})=\Op(1+n^{1/2}a_{n}\{1+\op(1)\})\\
+& =\Op(1+2n^{1/2}a_{n}+\op(n^{1/2}a_{n}))\\
+& =\Op(1+2n^{1/2}a_{n}+(n^{1/2}a_{n})^{2})\\
+& =\Op(1+2n^{1/2}a_{n}+na_{n}^{2}))\\
+& =\Op(n(n^{-1/2}+a_{n})^{2})=\Op(n\eta_{n}^{2})
+\end{align*}
+\end{comment}
+\begin{align}
+A_{2} & =\frac{1}{2}n\eta_{n}^{2}\left\{ \boldsymbol{\delta}^{\top}\left[-\frac{1}{n}\nabla^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)\right]\boldsymbol{\delta}\right\} \left(1+o_{p}(1)\right) \nonumber\\
+& =\frac{1}{2}n\eta_{n}^{2}\left\{ \boldsymbol{\delta}^{\top}\left[I\left(\boldsymbol{\Theta}^{*}\right)\right]\boldsymbol{\delta}\right\} \left(1+o_{p}(1)\right)\text{ by the weak law of large numbers. } \nonumber\\
+& = O(n \eta_n^2 \|\bdelta\|_2^2) \label{eq:lemma1A2}
+\end{align}
+Combining \eqref{eq:lemma1A1} and \eqref{eq:lemma1A2} with \eqref{eq:lemma1} gives:
+\[
+\begin{aligned}D_{n}(\boldsymbol{\delta}) & \geq A_{1}+A_{2}+A_{3}\\
+& =-\Op\left(\sqrt{n}\eta_{n} \|\bdelta\|_2 \right)+O(n \eta_n^2 \|\bdelta\|_2^2)-n\eta_{n}^{2}\left(\left|\mathcal{H}_{1}\right|+\left|\mathcal{H}_{2}+\left|\mathcal{H}_{3}\right|\right|\right)C
+\end{aligned}
+\]
+We can conclude that for a large enough constant $C=\|\bdelta\|_2$, the positive term $O(n \eta_n^2 \|\bdelta\|_2^2)$ dominates all the others. Note that this is a positive term since $I(\bTheta)$ is positive definite at $\bTheta = \bTheta^*$ by regularity condition (C2).  
+%Notice that $A_{2}$ dominates the rest terms $A_{1}$ and $A_{3}$
+%and is positive since $I(\boldsymbol{\Theta})$ is positive definite
+%at $\boldsymbol{\Theta}=\bThetastar$ from (C2). 
+Therefore, for each $\varepsilon>0$, there exists a large enough constant $C$ such that, for large enough $n$
+\[
+P\left\{ \underset{\|\bdelta\|_2=C}{\inf}D_{n}\left(\boldsymbol{\delta}\right) > 0\right\} \geq 1-\varepsilon
+\]
+%\[
+%P\left\{ \underset{\|\bdelta\|_2=C}{\inf}Q_{n}\left(\boldsymbol{\Theta}^{*}+\eta_{n}\boldsymbol{\delta}\right)>Q_{n}\left(\boldsymbol{\Theta}^{*}\right)\right\} \geq1-\varepsilon
+%\]
+This implies with probability at least $1-\varepsilon$ that the empirical
+likelihood $Q_{n}$ has a local minimizer in the ball $\{\boldsymbol{\Theta}^{*}+\eta_{n}\mathbf{\bdelta}:\|\mathbf{\bdelta}\|_2\leq C\}$
+(since $Q_{n}$ is bounded and $\{\boldsymbol{\Theta}^{*}+\alpha_{n}\bdelta:\|\bdelta\|_2\leq C\}$
+is closed). In other words, there exists a solution $\widehat{\bTheta}_{n}$
+such that $\|\widehat{\boldsymbol{\Theta}}_{n}-\boldsymbol{\Theta}^{*}\|\leq\eta_{n}\|\bdelta\|_2\leq\eta_{n}C=\Op(\eta_{n})=\Op(n^{-1/2}+a_{n})$.
+Hence, $\left\Vert \widehat{\boldsymbol{\Theta}}_{n}-\boldsymbol{\Theta}^{*}\right\Vert =\Op\left(\eta_{n}\right).$ $\square$
+
+
+\subsection{Theorem 1 proof} \label{ap:theorem1proof}
+We first recall the definitions of the active sets from Lemma 1. Let $\mathcal{H}_1=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=1 \right\rbrace$, $\mathcal{H}_2=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=2, \ldots, p+1 \right\rbrace$ and $\mathcal{H}_3=\left\lbrace h : \bThetastar_h \neq 0 \textrm{ for }h=p+2, \ldots, 2p+1 \right\rbrace$ where $\mathcal{H} = \mathcal{H}_1 \cup \mathcal{H}_2 \cup \mathcal{H}_3$. We first consider consistency for the main effects: 
+\begin{align*}
+P&\left(\widehat{\bTheta}_{\mathcal{H}_{1}^{c}}=0\right)\rightarrow 1 \\
+P&\left(\widehat{\bTheta}_{\mathcal{H}_2^c}=0\right)\rightarrow 1
+\end{align*}
+Following \citep{fan2001variable,choi2010variable}, it is sufficient to show for any $h\in\mathcal{H}_{1}^{c} \cup \mathcal{H}_2^c$ 
+\begin{equation}
+\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}<0\quad\text{ for }-\varepsilon_{n}<\widehat{\bTheta}_{h}<0\label{eq:first_eq}
+\end{equation}
+\begin{equation}
+\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}>0\quad\text{ for }0<\widehat{\bTheta}_{h}<\varepsilon_{n}\label{eq:sec_eq}
+\end{equation}
+with probability tending to 1 where $\varepsilon_{n}=Cn^{-1/2}$ and
+$C>0$ is any constant. To show \eqref{eq:sec_eq}, notice that 
+\begin{itemize}
+	\item[for] $h=1$  
+	\begin{align*}
+	\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}= & -\frac{\partial L_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}+n\lambda_{h}^{\beta}\textrm{sgn}\left(\widehat{\bTheta}_{h}\right)\\
+	= & -\frac{\partial L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}}-\sum_{k=2}^{2p+1}\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\\
+	& -\sum_{k=2}^{2p+1}\sum_{l=2}^{2p+1}  (2p+1)\frac{\partial^{3}L_{n}(\widetilde{\bTheta})}{\partial\bTheta_{h}\partial\bTheta_{k}\partial\bTheta_{l}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\left(\widehat{\bTheta}_{l}-\bTheta_{l}^{*}\right)+n\lambda_{h}^{\beta}\textrm{sgn}\left(\widehat{\bTheta}_{h}\right)
+	\end{align*} 
+	\item[for] $h=2, \ldots, p+1$ 
+	%\begin{align*}
+	%\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}= & -\frac{\partial L_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}+n\lambda_{h}^{\theta}\frac{\widehat{\bTheta}_{h}}{\|\widehat{\bTheta}_{h} \|_2}
+	%\end{align*} 
+	\begin{align*}
+	\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}= & -\frac{\partial L_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}+n\lambda_{h}^{\theta}\frac{\widehat{\bTheta}_{h}}{\|\widehat{\bTheta}_{h} \|_2}\\
+	= & -\frac{\partial L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}}-\sum_{k=2}^{2p+1}\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\\
+	& -\sum_{k=2}^{2p+1}\sum_{l=2}^{2p+1}  (2p+1)\frac{\partial^{3}L_{n}(\widetilde{\bTheta})}{\partial\bTheta_{h}\partial\bTheta_{k}\partial\bTheta_{l}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\left(\widehat{\bTheta}_{l}-\bTheta_{l}^{*}\right)+n\lambda_{h}^{\theta}\frac{\widehat{\bTheta}_{h}}{\|\widehat{\bTheta}_{h} \|_2}
+	\end{align*} 
+\end{itemize}
+
+\begin{comment}
+\[
+\begin{aligned}\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}= & -\frac{\partial L_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}+n\lambda_{h}^{\beta}\textrm{sgn}\left(\widehat{\bTheta}_{h}\right)\\
+= & -\frac{\partial L_{n}\left(\boldsymbol{\theta}^{*}\right)}{\partial\beta_{j}}-\sum_{k=1}^{\frac{p(p+1)}{2}}\frac{\partial^{2}L_{n}\left(\boldsymbol{\theta}^{*}\right)}{\partial\beta_{j}\partial\theta_{k}}\left(\hat{\theta}_{k}-\theta_{k}^{*}\right)\\
+& -\sum_{k=1}^{\frac{p(p+1)}{2}}\frac{p(p+1)}{2}\frac{\partial^{3}L_{n}(\widetilde{\btheta})}{\partial\beta_{j}\partial\theta_{k}\partial\theta_{l}}\left(\hat{\theta}_{k}-\theta_{k}^{*}\right)\left(\hat{\theta}_{l}-\theta_{l}^{*}\right)+n\lambda_{j}^{\beta}\textrm{sgn}\left(\hat{\beta}_{j}\right)
+\end{aligned}
+\]
+\end{comment}
+
+where $\widetilde{\bTheta}$ lies between $\widehat{\bTheta}_{n}$ and $\bTheta^{*}$. In both cases above, the first term is
+\[
+\frac{\partial L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}}=\sqrt{n}\sqrt{n}\frac{1}{n}\frac{\partial L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}}=\sqrt{n}O_{P}(1)=O_{P}(n^{1/2}).
+\]
+Since 
+\[
+\frac{1}{n}\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}=E\left\{ \frac{\partial^{2}\log f(\bTheta^{*})}{\partial\bTheta_{h}\partial\bTheta_{k}}\right\} +\op(1),
+\]
+then
+\[
+\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}=nE\left\{ \frac{\partial^{2}\log f(\bTheta^{*})}{\partial\bTheta_{h}\partial\bTheta_{k}}\right\} +\op(n),
+\]
+Then the second term
+\begin{align*}
+\sum_{k=2}^{2p+1}\frac{\partial^{2}L_{n}\left(\boldsymbol{\Theta}^{*}\right)}{\partial\bTheta_{h}\partial\bTheta_{k}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right) & =\left[nE\left\{ \frac{\partial^{2}\log f(\bTheta_{*})}{\partial\bTheta_{h}\partial\bTheta_{k}}\right\} +\op(n)\right]O_{p}\left(n^{-1/2}\right)\\
+& =O_{P}(n^{1/2})+o_{P}(n^{1/2})
+\end{align*}
+The third term is 
+\[
+-\sum_{k=2}^{2p+1}\sum_{l=2}^{2p+1}  (2p+1)\frac{\partial^{3}L_{n}(\widetilde{\bTheta})}{\partial\bTheta_{h}\partial\bTheta_{k}\partial\bTheta_{l}}\left(\widehat{\bTheta}_{k}-\bTheta_{k}^{*}\right)\left(\widehat{\bTheta}_{l}-\bTheta_{l}^{*}\right)=O_{p}\left(n^{-1/2}\right)O_{p}\left(n^{-1/2}\right)=O_{p}\left(n^{-1}\right)
+\]
+By the regularity conditions and the condition $\left\Vert \widehat{\boldsymbol{\Theta}}_{n}-\boldsymbol{\Theta}^{*}\right\Vert =O_{p}\left(\frac{1}{\sqrt{n}}\right)$,
+\begin{itemize}
+	\item[for] $h=1$  
+	\begin{align}
+	\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}=\sqrt{n}\left\{ O_{p}(1)+\sqrt{n}\lambda_{j}^{\beta}\textrm{sgn}\left(\hat{\beta}_{j}\right)\right\} . \label{eq:theorem1h1}
+	\end{align}
+	\item[for] $h=2, \ldots, p+1$ 
+	\begin{align}
+	\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}=\sqrt{n}\left\{ O_{p}(1)+\sqrt{n}\lambda_{h}^{\theta}\frac{\widehat{\bTheta}_{h}}{\|\widehat{\bTheta}_{h} \|_2}\right\} .\label{eq:theorem1h2}
+	\end{align}
+\end{itemize}
+As $\sqrt{n}\lambda_h^\beta\to\infty$ for $h\in\mathcal{H}_{1}^{c}$ from the assumption, the sign of $\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}$ in~\eqref{eq:theorem1h1} is dominated by $\textrm{sgn(\ensuremath{\widehat{\bTheta_{h}})}}$. Similarly, as $\sqrt{n}\lambda_h^\theta\to\infty$ for $h\in\mathcal{H}_{2}^{c}$, the sign of $\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}$ in~\eqref{eq:theorem1h2} is dominated by the norm of $\widehat{\bTheta_{h}}$. 
+
+Therefore,
+\[
+P\left[\frac{\partial Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{n}\right)}{\partial\bTheta_{h}}>0\quad\text{ for }0<\widehat{\bTheta}_{h}<\varepsilon_{n}\right]\rightarrow1\quad\text{ as }n\rightarrow\infty.
+\]
+
+\eqref{eq:first_eq} can be shown in the same way. 
+
+Due to the strong heredity property and the proof above for the consistency of the main effects, it follows that $P\left(\widehat{\bTheta}_{\mathcal{H}_{3}^{c}}=0\right)\rightarrow1$. $\qed$
+
+\begin{comment}
+\begin{itemize}
+\item For $(k,k^{\prime})$ where $(k,k^{\prime})\in\mathcal{A}_{2}^{c}$
+and $k,k^{\prime}\in\mathcal{A}_{1}:$ we can prove $P\left(\hat{\gamma}_{kk^{\prime}}=0\right)\rightarrow1$
+by a similar reasoning
+\item For $(k,k^{\prime})$ where $(k,k^{\prime})\in\mathcal{A}_{2}^{c}$
+and either $k$ or $k^{\prime}$ is in $\mathcal{A}_{1}^{c}$: without
+loss of generality, assume that $\beta_{k}^{*}=0$. Notice that $\hat{\beta}_{k}=0$
+implies $\hat{\gamma}_{kk^{\prime}}=0$, because if $\hat{\gamma}_{kk^{\prime}}\neq0$,
+then the value of the loss function does not change but the value
+of the penalty function will increase. Since we already have $P\left(\hat{\beta}_{k}=0\right)\rightarrow1$,
+we can conclude $P\left(\hat{\gamma}_{kk^{\prime}}=0\right)\rightarrow1$
+as well. $\qed$
+\end{itemize}
+\end{comment}
+
+
+\subsection{Theorem 2 proof} \label{ap:theorem2proof}
+
+By Lemma~\eqref{th:lemma1} and Theorem~\eqref{th:theorem1}, there exists a $\widehat{\bTheta}_{\mathcal{H}}$ that is a $\sqrt{n}$-consistent local minimizer of $Q(\bTheta_{\mathcal{H}})$, and that satisfies (with probability tending to 1):
+\begin{equation}
+\left.\frac{\partial Q_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}\right)}{\partial\bTheta_{h}}\right|_{\boldsymbol{\Theta}_{\mathcal{H}}=\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}}=0,\quad\forall h\in\mathcal{H}\label{eq:eq_14}
+\end{equation}
+where
+\begin{align}
+Q_n(\bTheta_{\mathcal{H}})
+&=-L_n(\bTheta_{\mathcal{H}})+\underbrace{n\lambda_{h}^{\beta}\left|\beta_{h}\right| \cdot \textrm{I}_{\lbrace h \in \mathcal{H}_1 \rbrace} + n\sum_{h \in \mathcal{H}_2}      \lambda_{h}^{\theta}\left\Vert \btheta_{h}\right\Vert _{2}  +n\sum_{h \in \mathcal{H}_3}\lambda_{h}^{\gamma}\left|\gamma_{h}\right|}_{\equiv n P(\bTheta_{\mathcal{H}})} \nonumber \\
+& = -L_n(\bTheta_{\mathcal{H}})+n P(\bTheta_{\mathcal{H}}) \label{eq:eq_14.5}
+\end{align}
+
+\begin{comment}
+Let $Q_{n}(\btheta_{\mathcal{A}})$ denote the objective function
+$Q_{n}$ only on the $\mathcal{A}-$component of $\btheta$, that
+is, $Q_{n}(\btheta)$ with $\btheta_{\mathcal{A}^{c}}.$Based on Lemma
+1 and Theorem 1, we have $P\left(\hat{\boldsymbol{\theta}}_{\mathcal{A}^{c}}=0\right)\rightarrow1$.
+Thus, 
+\[
+P\left[\arg\min_{\boldsymbol{\theta}_{\mathcal{A}}}Q_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)=\left(\mathcal{A}\text{ -component of }\arg\min_{\boldsymbol{\theta}}Q_{n}(\boldsymbol{\theta})\right)\right]\rightarrow1.
+\]
+
+It means that $\widehat{\btheta}_{\mathcal{A}}$ should satisfy 
+with probability tending to 1. 
+Let $L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)$ and $P_{\boldsymbol{\lambda}}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)$
+denote the log-likelihood function of $\btheta_{\mathcal{A}}$and
+the penalty function of $\btheta_{\mathcal{A}}$ respectively so that
+we have 
+\[
+Q_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)=-L_{n}\left(\boldsymbol{\theta}_{\mathcal{A}}\right)+nP_{\boldsymbol{\lambda}}\left(\boldsymbol{\theta}_{\mathcal{A}}\right).
+\]
+\end{comment}
+
+From \eqref{eq:eq_14} and~\eqref{eq:eq_14.5} we have
+\begin{equation}
+\nabla_{\mathcal{H}}Q_{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right)=-\nabla_{\mathcal{H}}L_{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right)+n\nabla_{\mathcal{H}}P\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right)=\mathbf{0},\label{eq:eq_15}
+\end{equation}
+
+with probability tending to 1. 
+
+We then expand $-\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}\right)\text{ at }\boldsymbol{\Theta}_{\mathcal{H}}=\boldsymbol{\Theta}_{\mathcal{H}}^{*}$ in \eqref{eq:eq_15}:
+\[
+\begin{aligned}-\nabla_{\mathcal{H}}L_{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right) & =-\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)-\left[\nabla_{\mathcal{H}}^{2}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+o_{p}(1)\right]\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\\
+& =\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+\left(-\frac{1}{n}\nabla_{\mathcal{H}}^{2}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)-o_{p}(1)\right)\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\right]\\
+& =\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+I\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+o_{p}(1)\right]
+\end{aligned}
+\]
+
+The third line follows by
+\[\frac{1}{n} \nabla_{\mathcal{H}}^{2} L_{n}\left(\boldsymbol{\bTheta}_{\mathcal{H}}^{*}\right)=E\left\{\nabla_{\mathcal{H}}^{2} L\left(\boldsymbol{\bTheta}_{\mathcal{H}}^{*}\right)\right\}+o_{P}(1)=-I\left(\boldsymbol{\bTheta}_{\mathcal{H}}^{*}\right)+o_{P}(1)\]
+
+We also expand $n\nabla_{\mathcal{H}}P\left(\boldsymbol{\Theta}_{\mathcal{H}}\right)\text{ at }\boldsymbol{\Theta}_{\mathcal{H}}=\boldsymbol{\Theta}_{\mathcal{H}}^{*}$ in \eqref{eq:eq_15}:
+
+\[
+\begin{aligned}n\nabla_{\mathcal{H}}P\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}\right) & =n\left\{ \left[\begin{array}{c}
+{\lambda_{h}^{\beta}\textrm{sgn}\left(\beta_{h}\right)}\\
+{\lambda_{h}^{\theta}  \frac{\btheta_{h}}{\| \btheta_{h} \|_2}    }\\
+{\lambda_{h}^{\gamma}\textrm{sgn}\left(\gamma_{h}\right)}
+\end{array}\right]_{h\in\mathcal{H}}+o_{p}(1)\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\right\} \\
+& =\sqrt{n}o_{p}(1)
+\end{aligned}
+\]
+because $\sqrt{n}a_{n}=$$o(1)$ and $\left\Vert \widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right\Vert =O_{p}\left(n^{-1/2}\right)$.
+
+
+
+Thus, 
+\[
+0=\sqrt{n}\left[-\frac{1}{\sqrt{n}}\nabla_{\mathcal{H}}L_{n}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+\boldsymbol{I}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)+o_{p}(1)\right].
+\]
+It follows 
+\[
+\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)=\boldsymbol{I}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)^{-1}\sqrt{n}\frac{1}{n}\sum_{i=1}^{n}\nabla_{\mathcal{H}}\log f\left(\boldsymbol{V}_{i},\boldsymbol{\Theta}_{\mathcal{H}}\right)+o_{p}(1).
+\]
+Therefore, by the central limit theorem, 
+\[
+\sqrt{n}\left(\widehat{\boldsymbol{\Theta}}_{\mathcal{H}}-\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\rightarrow_{d}N\left(\mathbf{0},\boldsymbol{I}^{-1}\left(\boldsymbol{\Theta}_{\mathcal{H}}^{*}\right)\right).
+\]
+$\qed$
+
 
 \section{Simulation Results} \label{ap:simulation}
 
