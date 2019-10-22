@@ -178,6 +178,8 @@ plotInterPRS <- function(object,
                          legend.position = "bottomleft",
                          main = "",
                          rug = TRUE,
+                         labels = NULL,
+                         at = NULL,
                          color = sail:::cbbPalette[c(6,4,7)],
                          legend = TRUE) {
 
@@ -228,7 +230,7 @@ plotInterPRS <- function(object,
 
   cont_pred <- f.hat[cont_index]
   int_pred <- f.hat[int_index]
-
+# browser()
   min.length.top <- range(f.hat)[1] ; max.length.top <- range(f.hat)[2]
   par(mai=c(1,1,1,0.2), family="serif")
   plot(originalX, f.hat,
@@ -239,9 +241,9 @@ plotInterPRS <- function(object,
        bty="n",
        xaxt="n",
        type = "n",
-       cex.lab = 1.6,
-       font.lab = 1.6,
-       cex.axis = 1.6,
+       cex.lab = 1.3,
+       font.lab = 1.3,
+       cex.axis = 1.3,
        cex.main = .1,
        # cex.lab = 2,
        # cex.axis = 2,
@@ -250,14 +252,22 @@ plotInterPRS <- function(object,
        # cex.main = 2.5,
        # ylim = c(min.length.top-3, max.length.top+3),
        ylim = ylims)
-  axis(1, labels = T, cex.axis = 2)
-
+  if (is.null(labels)){
+    axis(1, labels = T, cex.axis = 1.3)
+  } else {
+    axis(1, labels = labels,
+         at = at, cex.axis = 1.3)
+  }
 
   lines(originalX[cont_index][order(originalX[cont_index])], cont_pred[order(originalX[cont_index])], col = color[1], lwd = 3)
   lines(originalX[int_index][order(originalX[int_index])], int_pred[order(originalX[int_index])], col = color[2], lwd = 3)
 
   if (legend) {
-    legend(legend.position,c("Intervention","Control"),col=c(color[2],color[1]),lwd=c(3,3))
+    legend(legend.position,c("Intervention","Control"),col=c(color[2],color[1]),lwd=c(3,3), cex = 1.3)
+  }
+
+  if(rug) {
+    rug(originalX)
   }
 
   return(list(control_x = originalX[cont_index][order(originalX[cont_index])],

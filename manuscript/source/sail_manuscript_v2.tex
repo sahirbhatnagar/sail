@@ -943,13 +943,36 @@ To visualize the estimated interaction effects, we ordered the 200 simulation ru
 %\end{comment}
 
 
-\section{Real Data Application} \label{sec:sail_rda}
-In this section we illustrate \sail ~on several real data examples.
+\section{Real data applications} \label{sec:sail_rda}
+%In this section we illustrate \sail ~on several real data examples.
 
-\subsection{title}
+\subsection{Gene-environment interactions}
 
-Intelligence is a highly heritable polygenic trait that measures the ability to learn, reason and solve problems. Over time, studies have shown an important role for both genetic and environmental factors in explaining IQ. For instance, genome-wide association studies (GWAS) have been used to explain variance in intelligence across the population through the use of a polygenic risk score (PRS) that assigns a number based on the effect multiple genetic loci on the phenotype of interest. To date, the PRS measure can account for over 20\% of the heritability of intelligence (1). In addition to the pre-determined effect of genes, environmental exposure, too, can have an important impact on IQ. Specifically, early intervention in young children has been shown to positively impact intellectual abilities (2). 
-While the individual influences of genetics and environment are well characterized, an interesting query that arises is how the two components interact together to mediate intelligence. To address this question, we have a dataset of PRS for educational attainment for a collection of individuals, separated by genes according to different p-value cutoffs. For each subject, we also have the Stanford Binet IQ score at 4 years of age and information on whether the children received early intervention or not. We ran the sail algorithm against this data to test for non-linear interactions between the introduction of early intervention and PRS at different significance levels on child IQ. For this, a total of 170 subjects were randomly stratified into training/validation/test sets of sizes 110, 40 and 20 respectively. We ran the strong heredity sail with cubic B-splines and α = 0.1. At the same time, the lasso, lassoBT, HierBasis and GLinternet were tested for comparison purposes. Using the same approach as in the simulation study and example above, each method was run on the training dataset, tuned with the validation set and the MSE was assessed on the test data. This process was repeated 200 times and outliers were removed for interpretability. In the plot of mean test set MSE vs. the mean number of active variables $\pm$ 1 SE above (Figure ), sail is shifted towards the lower end of the active variable counts with respect to the other methods. This illustrates, once again, that sail tends to generate the sparsest models. In terms of MSE, however, sail does not perform as well on average as the lasso, lassoBT and HierBasis in this example. Overall, though, these differences are insignificant. The GLinternet statistics are omitted here since the algorithm did not converge for several of the 200 simulations.
+%Hi Sahir,I’m sorry for making it impossible to meet your ‘Celia deadline’ by not sending these papers until now!O’Donnell et al.: gives you the information on the biosampling in the Nurse Family Partnership (it is the same biosamples that we generated the genetic data on)Olds et al., 1997, 1998 details on perhaps the most well known publications from the intervention Okbay et al., the GWAS used for the educational attainment PRS that shows the interaction Lee et al., the more recent GWAS for education attainment (just sending for your reference). Hope these help and happy to discuss more over the phone.
+
+
+
+%Intelligence is a highly heritable polygenic trait that measures the ability to learn, reason and solve problems. 
+
+It is well known that environmental exposures can have an important impact on academic achievement.
+Indeed, early intervention in young children has been shown to positively impact intellectual abilities~\citep{campbell1994effects}. 
+More recent studies have shown that intelligence, a trait that measures the ability to learn, reason and solve problems, is also strongly influenced by genetic factors. 
+For instance, genome-wide association studies (GWAS) have been able to explain 20\% of the variance in educational attainment, measured as the number of years of schooling completed~\citep{okbay2016genome}. 
+%across the population through the use of a polygenic risk score (PRS) that assigns a number based on the effect multiple genetic loci on the phenotype of interest. To date, the PRS measure can account for over 20\% of the heritability of intelligence~\citep{plomin2018new}. In addition to the pre-determined effect of genes, 
+While the individual influences of environment and genetics are well characterized, an interesting query that arises is how the two components interact together to mediate intelligence. 
+To address this question, we analyzed data from the Nurse Family Partnership (NFP), a psychosocial intervention program that specifically targets maternal health and mother-child interactions~\citep{olds1998long}. 
+The Stanford Binet IQ scores at 4 years of age were collected for 188 subjects born to women randomly assigned to control ($n$ = 99) or nurse-visited intervention groups ($n$ = 89). 
+For each subject, we calculated a polygenic risk score (PRS) for educational attainment at different p-value thresholds using weights from the GWAS conducted in Okbay et al.~\citep{okbay2016genome}. 
+In this context, individuals with a higher PRS have a propensity for higher educational attainment.  
+The goal of this analysis was to determine if there was an interaction between genetic predisposition to educational attainment ($X$) and maternal participation in the NFP program ($E$) on child IQ at 4 years of age ($Y$). 
+%have a dataset of PRS for educational attainment for a collection of individuals, separated by genes according to different p-value cutoffs. For each subject, we also have the Stanford Binet IQ score at 4 years of age and information on whether the children received early intervention or not. 
+We applied the weak heredity \sail ~with default settings to this data and selected the optimal tuning parameter using 10-fold cross-validation. 
+Our method identified an interaction between the intervention and PRS which included genetic variants at the 0.0001 level of significance. 
+This interaction is shown in Figure~\ref{fig:PRS-intervention-interaction}. 
+We see that the intervention has a much larger effect on IQ for lower PRS compared to a higher PRS. 
+In other words, perinatal home visitation by nurses can impact intelligence scores in children who are genetically predisposed to lower educational attainment. 
+
+We also compared \sail ~with two other interaction selection methods, \texttt{lassoBT} and \texttt{GLinternet} with default settings, on 200 bootstrap samples of the data. The average and standard deviation of the mean squared error (MSE) and size of the active set ($|\widehat{\mathcal{H}}$|) across the 200 bootstrap samples is given in Table~\ref{tab:rda}. We see that sail tends to generate the sparsest models with similar MSE. The \texttt{GLinternet} statistics are omitted here since the algorithm did not converge for many of the 200 simulations.
 
 
 
@@ -975,35 +998,6 @@ While the individual influences of genetics and environment are well characteriz
 
 
 
-
-
-\begin{knitrout}\scriptsize
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
-
-{\centering \includegraphics[width=1\linewidth]{figure/PRS-intervention-interaction-others-1} 
-
-}
-
-\caption[Illustration of estimated interaction effects identified by \texttt{sail} for the PRS data]{Illustration of estimated interaction effects identified by \texttt{sail} for the PRS data. Median prediction curves in dark colors based on 200 train/validate/test splits represent the estimated marginal interaction effects. Coefficients estimated in each of the 200 train/validate/test splits were used to generate prediction curves representing a 90\% confidence interval colored in corresponding light colors.}\label{fig:PRS-intervention-interaction-others}
-\end{figure}
-
-
-\end{knitrout}
-
-
-
-\begin{knitrout}\scriptsize
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
-
-{\centering \includegraphics[width=1\linewidth]{figure/PRS-model-selection-1} 
-
-}
-
-\caption[Illustration of estimated interaction effects identified by \texttt{sail} for the PRS data]{Illustration of estimated interaction effects identified by \texttt{sail} for the PRS data. Median prediction curves in dark colors based on 200 train/validate/test splits represent the estimated marginal interaction effects. Coefficients estimated in each of the 200 train/validate/test splits were used to generate prediction curves representing a 90\% confidence interval colored in corresponding light colors.}\label{fig:PRS-model-selection}
-\end{figure}
-
-
-\end{knitrout}
 
 
 
@@ -1843,6 +1837,43 @@ $\qed$
 	\includegraphics[scale=0.61]{/home/sahir/git_repositories/sail/my_sims/figures/upset_selection_sail_paramIndex1-2-2.pdf}
 	\caption{Selection rates across 200 simulations of scenario 1a) for strong heredity \sail.}\label{fig:upset}
 \end{figure}
+
+\FloatBarrier
+
+
+\section{Additional Results on PRS for Educational Attainment}
+
+
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/PRS-intervention-interaction-others-1} 
+
+}
+
+\caption[Illustration of estimated interaction effects identified by \texttt{sail} for the PRS data]{Illustration of estimated interaction effects identified by \texttt{sail} for the PRS data. Median prediction curves in dark colors based on 200 train/validate/test splits represent the estimated marginal interaction effects. Coefficients estimated in each of the 200 train/validate/test splits were used to generate prediction curves representing a 90\% confidence interval colored in corresponding light colors.}\label{fig:PRS-intervention-interaction-others}
+\end{figure}
+
+
+\end{knitrout}
+
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+
+{\centering \includegraphics[width=1\linewidth]{figure/PRS-model-selection-1} 
+
+}
+
+\caption[Illustration of estimated interaction effects identified by \texttt{sail} for the PRS data]{Illustration of estimated interaction effects identified by \texttt{sail} for the PRS data. Median prediction curves in dark colors based on 200 train/validate/test splits represent the estimated marginal interaction effects. Coefficients estimated in each of the 200 train/validate/test splits were used to generate prediction curves representing a 90\% confidence interval colored in corresponding light colors.}\label{fig:PRS-model-selection}
+\end{figure}
+
+
+\end{knitrout}
+
 
 \FloatBarrier
 

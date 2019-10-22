@@ -78,13 +78,15 @@ plotInterPRS(object = fitcv$sail.fit,
              s = fitcv$lambda.min,
              design = fitcv$sail.fit$design, # this contains the design matrix from sail
              evar = "Tx_group_bin", # this is the name of the E column in 'originalDataNotCentered'
-             xlab = "PRS_0.0001",
+             xlab = latex2exp::TeX("$PRS\\_{0.0001}$"),
              degree = 3,
              ylab = "Marginal Risk",
              legend.position = "bottomright",
-     #         main = "Effect of Intervention and PRS
-     # on IQ at 4 years of age",
-             rug = TRUE,
+             #         main = "Effect of Intervention and PRS
+             # on IQ at 4 years of age",
+             rug = FALSE,
+             labels = c("-0.0015", "-0.001", "-0.0005", "0", "0.0005", "0.001"),
+             at = c(-0.0015, -0.001, -5e-04, 0, 5e-04, 0.001),
              color = sail:::cbbPalette[c(2,4)],
              legend = TRUE)
 
