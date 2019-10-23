@@ -5,17 +5,18 @@
 #' AUC
 
 
-library(sail)
-library(splines)
-library(glmnet)
-library(LassoBacktracking)
-library(HierBasis)
-library(glinternet)
-library(pROC)
+pacman::p_load(sail)
+pacman::p_load(splines)
+pacman::p_load(glmnet)
+pacman::p_load(LassoBacktracking)
+pacman::p_load(HierBasis)
+pacman::p_load(glinternet)
+pacman::p_load(pROC)
+pacman::p_load(here)
 
-dat <- read.csv("support2.csv", header = T, row.names = 1)
+dat <- read.csv(here::here("manuscript/raw_data/support2.csv"), header = T, row.names = 1)
 
-library(dplyr)
+pacman::p_load(dplyr)
 
 dat %>%
   select(age, sex, dzclass, num.co, diabetes,
