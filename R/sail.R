@@ -193,8 +193,8 @@
 #' @rdname sail
 #' @export
 sail <- function(x, y, e,
-                 basis = function(i) splines::bs(i, df = 5),
-                 strong = TRUE,
+                 basis = function(i) splines::bs(i, df = 3),
+                 strong = FALSE,
                  group.penalty = c("gglasso", "grMCP", "grSCAD"),
                  family = c("gaussian", "binomial"),
                  center.x = TRUE, # if true, this centers X
