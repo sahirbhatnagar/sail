@@ -254,23 +254,51 @@ finalversion <- TRUE
 \pagestyle{fancy}
 
 \begin{abstract}
-A conceptual paradigm for onset of a new disease is often considered to be the result of changes in entire biological networks whose states are affected by a complex interaction of genetic and environmental factors. However, when modelling a relevant phenotype as a function of high dimensional measurements power to estimate interactions is low, the number of possible interactions could be enormous and their effects may be non-linear. Existing approaches such as the lasso might keep an interaction but remove a main effect, which is problematic for interpretation. In this work, we introduce a sparse additive interaction learning model called \sail ~for detecting non-linear interactions with a key environmental or exposure variable in high-dimensional settings. Our method can accommodate either the strong or weak heredity constraints. We develop a computationally efficient fitting algorithm with automatic tuning parameter selection, which scales to high-dimensional datasets. Through an extensive simulation study, we show that \sail ~outperforms existing penalized regression methods in terms of prediction error and support recovery when there are non-linear interactions with an exposure variable. We apply \sail ~to two datasets to further illustrate the utility of the proposed method to detect phenotype-relevant interactions. Our algorithms are available in an R package (\url{https://github.com/greenwoodlab/sail}).
+A conceptual paradigm for onset of a new disease is often considered to be the result of changes in entire biological networks whose states are affected by a complex interaction of genetic and environmental factors. 
+However, when modelling a relevant phenotype as a function of high dimensional measurements, power to estimate interactions is low, the number of possible interactions could be enormous and their effects may be non-linear. 
+Existing approaches such as the lasso might keep an interaction but remove a main effect, which is problematic for interpretation. 
+In this work, we introduce a method called \sail ~for detecting non-linear interactions with a key environmental or exposure variable in high-dimensional settings which respects either the strong or weak heredity constraints.
+We prove that asymptotically, our method possesses the oracle property, i.e., it performs as well as if the true model were known in advance. 
+We develop a computationally efficient fitting algorithm with automatic tuning parameter selection, which scales to high-dimensional datasets. 
+Through an extensive simulation study, we show that \sail ~outperforms existing penalized regression methods in terms of prediction error and support recovery when there are non-linear interactions with an exposure variable. 
+We then apply \sail ~to detect non-linear interactions between genes and a prenatal psychosocial intervention program on cognitive performance in children at 4 years of age. 
+Results from our method show that individuals who are genetically predisposed to lower educational attainment are those who stand to benefit the most from the intervention. 
+Our algorithms are available in an R package (\url{https://github.com/greenwoodlab/sail}).
 \end{abstract}
 
 
 \section{Introduction}
 
 Computational approaches to variable selection have become increasingly important with the advent of high-throughput technologies in genomics and brain imaging studies, where the data has become massive, yet where it is believed that the number of truly important variables is small relative to the total number of variables.
-Although many approaches have been developed for main effects, there is an enduring interest in powerful methods for estimating interactions, since interactions may reflect important modulation of a genomic system by an external factor~\citep{bhatnagar2018analytic}.
+Although many approaches have been developed for main effects, there is an enduring interest in powerful methods for estimating interactions, since interactions may reflect important modulation of a genomic system by an external factor and vice versa~\citep{bhatnagar2018analytic}.
 Accurate capture of interactions may hold the potential to better understanding  biological phenomena and improving prediction accuracy.
 For example, a model that considered interactions between brain imaging data and genetic features had better classification accuracy compared to a model that considered the main effects only~\citep{ning2018classifying}.
 Furthermore, the manifestations of disease are often considered to be the result of changes in entire biological networks whose states are affected by a complex interaction of genetic and environmental factors~\citep{schadt2009molecular}.
 However, there is a general deficit of such replicated interactions in the literature~\citep{timpson2018genetic}.
 Indeed, power to detect interactions is always lower than for  main effects, and in high-dimensional settings ($p >> n$), this lack of power to detect interactions is exacerbated, since the number of possible interactions could be enormous and their effects may be non-linear. 
-Hence, analytic methods that may improve power are essential.
+Hence, analytic methods that may improve power are essential. Furthermore, methods capable of detecting non-linear interactions are uncommon.
 
 Interactions may occur in numerous types and of varying complexities. 
-In this paper, we consider one specific type of interaction model, where one exposure variable $E$ is involved in possibly non-linear interactions with a high-dimensional set of measures $\mb{X}$ leading to effects on a response variable, $Y$. We propose a multivariable penalization procedure for detecting non-linear interactions $\mb{X}$ and $E$.
+In this paper, we consider one specific type of interaction model, where one exposure variable $E$ is involved in possibly non-linear interactions with a high-dimensional set of measures $\mb{X}$ leading to effects on a response variable, $Y$. 
+We propose a multivariable penalization procedure for detecting non-linear interactions $\mb{X}$ and $E$. 
+Our method is motivated by the Nurse Family Partnership (NFP); a program of prenatal and infancy home visiting by nurses for low-income mothers and their children~\citep{olds1998long}. In this intervention, NFP nurses guided pregnant women and parents of young children to improve the outcomes of pregnancy, their children's health and development, and their economic self-sufficiency, with the goal of reducing disparities over the life-course. Early intervention in young children has been shown to positively impact intellectual abilities~\citep{campbell1994effects}, and more recent studies have shown that cognitive performance is also strongly influenced by genetic factors~\citep{rietveld2013gwas}. Given the important role of both environment and genetics, we are interested in finding interactions between these two components on cognitive function in children. 
+
+
+
+%It is well known that environmental exposures can have an important impact on academic achievement.
+
+%More recent studies have shown that cognitive performance, a trait that measures the ability to learn, reason and solve problems, is also strongly influenced by genetic factors. Genome-wide association studies (GWAS) suggest that 20\% of the variance in educational attainment (years of education) may be accounted for by common genetic variation~\citep{rietveld2013gwas,okbay2016genome}. Unsurprisingly, there is significant overlap in the SNPs that predict educational attainment and measures of cognitive function. 
+%across the population through the use of a polygenic risk score (PRS) that assigns a number based on the effect multiple genetic loci on the phenotype of interest. To date, the PRS measure can account for over 20\% of the heritability of intelligence~\citep{plomin2018new}. In addition to the pre-determined effect of genes, 
+
+%To address this question, we analyzed data from the Nurse Family Partnership (NFP), a psychosocial intervention program that begins in pregnancy and targets maternal health, parenting and mother-infant interactions~\citep{olds1998long}. 
+%The Stanford Binet IQ scores at 4 years of age were collected for 189 subjects born to women randomly assigned to control ($n$ = 100) or nurse-visited intervention groups ($n$ = 89). 
+%For each subject, we calculated a polygenic risk score (PRS) for educational attainment at different p-value thresholds using weights from the GWAS conducted in Okbay et al.~\citep{okbay2016genome}. 
+%In this context, individuals with a higher PRS have a propensity for higher educational attainment.  
+%The goal of this analysis was to determine if there was an interaction between genetic predisposition to educational attainment ($X$) and maternal participation in the NFP program ($E$) on child IQ at 4 years of age ($Y$). 
+
+
+%Need to add sentences of motivation here for this concept. e.g. When might such situations occur? I would motivate from the Nurses Partnership study that you use below. Or alternatively, talk about something like a chemotherapy treatment having widespread impact on gene expression. lead to lung disease.  
+
 
 
 %Our approach improves on existing procedures for detecting such interactions in three ways; 1) it automatically enforces the strong heredity property, i.e., an interaction term can only be included in the model if the corresponding main effects are in the model 2) it reduces the dimensionality of the problem and leverages the high correlations by transforming the input feature space using network connectivity measures and 3) it leads to interpretable models which are biologically meaningful.
