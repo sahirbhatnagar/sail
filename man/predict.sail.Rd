@@ -64,7 +64,7 @@ Updated: April 6, 2018
   \code{predict(sail.object, type="coefficients",...)}
 }
 \examples{
-f.basis <- function(i) splines::bs(i, degree = 5)
+f.basis <- function(i) splines::bs(i, degree = 3)
 fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
             basis = f.basis, dfmax = 10)
 predict(fit) # predicted response for whole solution path

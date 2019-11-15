@@ -4,13 +4,14 @@
 \alias{sail}
 \title{Fit Sparse Additive Interaction Model with Strong Heredity}
 \usage{
-sail(x, y, e, basis = function(i) splines::bs(i, df = 5), strong = TRUE,
-  group.penalty = c("gglasso", "grMCP", "grSCAD"), family = c("gaussian",
-  "binomial"), center.x = TRUE, center.e = TRUE, expand = TRUE, group,
-  weights, penalty.factor = rep(1, 1 + 2 * nvars),
-  lambda.factor = ifelse(nobs < (1 + 2 * bscols * nvars), 0.01, 1e-04),
-  lambda = NULL, alpha = 0.5, nlambda = 100, thresh = 1e-04,
-  fdev = 1e-05, maxit = 1000, dfmax = 2 * nvars + 1, verbose = 0)
+sail(x, y, e, basis = function(i) splines::bs(i, df = 5),
+  strong = TRUE, group.penalty = c("gglasso", "grMCP", "grSCAD"),
+  family = c("gaussian", "binomial"), center.x = TRUE,
+  center.e = TRUE, expand = TRUE, group, weights,
+  penalty.factor = rep(1, 1 + 2 * nvars), lambda.factor = ifelse(nobs <
+  (1 + 2 * bscols * nvars), 0.01, 1e-04), lambda = NULL, alpha = 0.5,
+  nlambda = 100, thresh = 1e-04, fdev = 1e-05, maxit = 1000,
+  dfmax = 2 * nvars + 1, verbose = 0)
 }
 \arguments{
 \item{x}{input matrix of dimension \code{n x p}, where \code{n} is the number

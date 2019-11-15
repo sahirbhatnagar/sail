@@ -29,5 +29,5 @@ For numeric y, the sample is split into groups sections based on
   percentiles and sampling is done within these subgroups
 }
 \references{
-\url{http://topepo.github.io/caret/splitting.html}
+\url{https://topepo.github.io/caret/data-splitting.html}
 }

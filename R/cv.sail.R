@@ -259,7 +259,7 @@ cv.sail <- function(x, y, e, ...,
 #' @return A vector of CV fold ID's for each observation in \code{y}
 #' @details For numeric y, the sample is split into groups sections based on
 #'   percentiles and sampling is done within these subgroups
-#' @references \url{http://topepo.github.io/caret/splitting.html}
+#' @references \url{https://topepo.github.io/caret/data-splitting.html}
 createfolds <- function(y, k = 10, list = FALSE, returnTrain = FALSE) {
   if (class(y)[1] == "Surv") {
     y <- y[, "time"]

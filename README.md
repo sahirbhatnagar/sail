@@ -1,6 +1,9 @@
 # sail: Sparse Additive Interaction Learning
 
+<!-- badges: start -->
 [![Travis build status](https://travis-ci.org/sahirbhatnagar/sail.svg?branch=master)](https://travis-ci.org/sahirbhatnagar/sail)   [![Coverage status](https://codecov.io/gh/sahirbhatnagar/sail/branch/master/graph/badge.svg)](https://codecov.io/github/sahirbhatnagar/sail?branch=master)   [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/sail)](https://cran.r-project.org/package=sail)
+[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/sahirbhatnagar/sail?branch=master&svg=true)](https://ci.appveyor.com/project/sahirbhatnagar/sail)
+<!-- badges: end -->
 
 `R` software package to fit sparse additive interaction models with the strong heredity property. Interactions are limited to a single exposure or environment variable. The following figure (based on simulated data) gives an idea of the situation our method is trying to capture:
 
