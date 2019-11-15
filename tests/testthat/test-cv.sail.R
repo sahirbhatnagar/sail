@@ -1,5 +1,5 @@
-library(doMC)
-doMC::registerDoMC(cores = 2)
+# library(doMC)
+# doMC::registerDoMC(cores = 2)
 expect_matrix <- function(x) testthat::expect_identical(class(x), "matrix")
 set.seed(1234) # we set the seed so that the cv error curves remain identical when testing (randomness is introduced due to CV folds)
 
@@ -17,15 +17,15 @@ cvfit_oasis <- try(cv.sail(x = oasis$x, y = oasis$y, e = oasis$e, basis = f.basi
                            dfmax = 5, nfolds = 6, alpha = 0.8),
                    silent = TRUE)
 
-cvfit_parallel <- try(cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-                              dfmax = 5,
-                              basis = f.basis, nfolds = 3, parallel = TRUE),
-                      silent = FALSE)
-
-cvfit_parallel_weak <- try(cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, strong = TRUE,
-                              dfmax = 5,
-                              basis = f.basis, nfolds = 3, parallel = TRUE),
-                      silent = FALSE)
+# cvfit_parallel <- try(cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
+#                               dfmax = 5,
+#                               basis = f.basis, nfolds = 3, parallel = TRUE),
+#                       silent = FALSE)
+#
+# cvfit_parallel_weak <- try(cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, strong = TRUE,
+#                               dfmax = 5,
+#                               basis = f.basis, nfolds = 3, parallel = TRUE),
+#                       silent = FALSE)
 
 new_x <- replicate(20, rnorm(50))
 new_e <- rnorm(50, sd = 0.5)
@@ -34,11 +34,11 @@ test_that("no error in fitting cv.sail and parallel version for both simulated a
 
   expect_false(inherits(cvfit_sim, "try-error"))
   expect_false(inherits(cvfit_oasis, "try-error"))
-  expect_false(inherits(cvfit_parallel, "try-error"))
-  expect_false(inherits(cvfit_parallel_weak, "try-error"))
+  # expect_false(inherits(cvfit_parallel, "try-error"))
+  # expect_false(inherits(cvfit_parallel_weak, "try-error"))
   expect_is(cvfit_sim, "cv.sail")
   expect_is(cvfit_oasis, "cv.sail")
-  expect_is(cvfit_parallel, "cv.sail")
+  # expect_is(cvfit_parallel, "cv.sail")
 
 })
 
@@ -47,11 +47,11 @@ test_that("no error in predict for cv.sail", {
 
   expect_matrix(predict(cvfit_sim, type = "nonzero", s = "lambda.min"))
   expect_matrix(predict(cvfit_oasis, type = "nonzero", s = "lambda.min"))
-  expect_matrix(predict(cvfit_parallel, type = "nonzero", s = "lambda.min"))
+  # expect_matrix(predict(cvfit_parallel, type = "nonzero", s = "lambda.min"))
 
   expect_matrix(predict(cvfit_sim))
   expect_matrix(predict(cvfit_oasis))
-  expect_matrix(predict(cvfit_parallel))
+  # expect_matrix(predict(cvfit_parallel))
 
   expect_equivalent(predict(cvfit_sim, s = Inf),
                     matrix(rep(cvfit_sim$sail.fit$a0[1], cvfit_sim$sail.fit$nobs)))
@@ -59,8 +59,8 @@ test_that("no error in predict for cv.sail", {
   expect_equivalent(predict(cvfit_oasis, s = Inf),
                     matrix(rep(cvfit_oasis$sail.fit$a0[1], cvfit_oasis$sail.fit$nobs)))
 
-  expect_equivalent(predict(cvfit_parallel, s = Inf),
-                    matrix(rep(cvfit_parallel$sail.fit$a0[1], cvfit_parallel$sail.fit$nobs)))
+  # expect_equivalent(predict(cvfit_parallel, s = Inf),
+  #                   matrix(rep(cvfit_parallel$sail.fit$a0[1], cvfit_parallel$sail.fit$nobs)))
 
   expect_matrix(predict(cvfit_sim, newx = new_x, newe = new_e))
   expect_equal(dim(predict(cvfit_sim, newx = new_x, newe = new_e, s = c(5,3,1,0.5))), c(nrow(new_x),4))
