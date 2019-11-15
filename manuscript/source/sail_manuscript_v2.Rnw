@@ -263,7 +263,7 @@ Existing approaches for high dimensional modelling such as the lasso might keep 
 In this work, we introduce a method called \sail ~for detecting non-linear interactions with a key environmental or exposure variable in high-dimensional settings which respects either the strong or weak heredity constraints.
 We prove that asymptotically, our method possesses the oracle property, i.e., it performs as well as if the true model were known in advance. 
 We develop a computationally efficient fitting algorithm with automatic tuning parameter selection, which scales to high-dimensional datasets. 
-Through an extensive simulation study, we show that \sail ~outperforms existing penalized regression methods in terms of prediction error and support recovery when there are non-linear interactions with an exposure variable. 
+Through an extensive simulation study, we show that \sail ~outperforms existing penalized regression methods in terms of prediction accuracy and support recovery when there are non-linear interactions with an exposure variable. 
 We then apply \sail ~to detect non-linear interactions between genes and a prenatal psychosocial intervention program on cognitive performance in children at 4 years of age. 
 Results from our method show that individuals who are genetically predisposed to lower educational attainment are those who stand to benefit the most from the intervention. 
 Our algorithms are available in an R package (\url{https://github.com/greenwoodlab/sail}).
@@ -283,7 +283,7 @@ Hence, analytic methods that may improve power are essential. Furthermore, metho
 
 Interactions may occur in numerous types and of varying complexities. 
 In this paper, we consider one specific type of interaction model, where one exposure variable $E$ is involved in possibly non-linear interactions with a high-dimensional set of measures $\mb{X}$ leading to effects on a response variable, $Y$. 
-We propose a multivariable penalization procedure for detecting non-linear interactions $\mb{X}$ and $E$. 
+We propose a multivariable penalization procedure for detecting non-linear interactions between $\mb{X}$ and $E$. 
 Our method is motivated by the Nurse Family Partnership (NFP); a program of prenatal and infancy home visiting by nurses for low-income mothers and their children~\citep{olds1998long}. 
 In this intervention, NFP nurses guided pregnant women and parents of young children to improve the outcomes of pregnancy, their children's health and development, and their economic self-sufficiency, with the goal of reducing disparities over the life-course. 
 Early intervention in young children has been shown to positively impact intellectual abilities~\citep{campbell1994effects}, and more recent studies have shown that cognitive performance is also strongly influenced by genetic factors~\citep{rietveld2013gwas}. 
@@ -335,14 +335,14 @@ where $\beta_0 \in \mathbb{R}$ is the intercept, $\beta_E \in \mathbb{R}$ is the
 %	\mathcal{L}(\bTheta| \bD) = \frac{1}{n} \sum_i \log \left(1 + \exp \left\lbrace - Y_i \left( \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{j=1}^p (X_E \circ \bPsi_j) \btau_j \right) \right\rbrace   \right)
 %\end{equation}
 Here we assume that $p$ is large relative to $n$, and particularly that $\sum_{j=1}^{p}m_j / n$ is large.
-Due to the large number of parameters to estimate with respect to the number of observations, one commonly-used approach is to shrink the regression coefficients by placing a constraint on the values
+Due to the large number of parameters to estimate with respect to the number of observations, one commonly-used approach in the penalization literature is to shrink the regression coefficients by placing a constraint on the values
 of $(\beta_E, \btheta_j, \btau_j)$. Certain constraints have the added benefit of producing a sparse model in the sense that many of the coefficients will be set exactly to 0~\citep{buhlmann2011statistics}. Such a reduced predictor set can lead to a more interpretable model with smaller prediction variance, albeit at the cost of having biased parameter estimates~\citep{fan2014challenges}. In light of these goals, consider the following penalized objective function:
 \begin{equation}
 Q(\bPhi) =  	-L(\bPhi) + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \norm{\btau_{j}}_2 \label{eq:lassolikelihood3}
 \end{equation} 
 where $\bPhi = (\beta_0, \beta_E,\btheta_1, \ldots, \btheta_p, \btau_1, \ldots, \btau_p)$, $L(\bPhi)$ is the log-likelihood function of the observations $\bV_i = (Y_i,\bPsi_i,X_{iE})$ for $i=1\ddd n$, $\norm{\btheta_j}_2 = \sqrt{\sum_{k=1}^{m_j} \beta_{jk}^2}$, $\norm{\btau_j}_2 = \sqrt{\sum_{k=1}^{m_j} \tau_{jk}^2}$, $\lambda >0$ and $\alpha \in (0,1)$ are adjustable tuning parameters, $w_E, w_j, w_{jE}$ are non-negative penalty factors for $j=1, \ldots, p$ which serve as a way of allowing parameters to be penalized differently. The first term in the penalty penalizes the main effects while the second term penalizes the interactions. The parameter $\alpha$ controls the relative weight on the two penalties. Note that we do not penalize the intercept. 
 
-An issue with~\eqref{eq:lassolikelihood3} is that since no constraint is placed on the structure of the model, it is possible that an estimated interaction term is nonzero while the corresponding main effects are zero. While there may be certain situations where this is plausible, statisticians have generally argued that interactions should only be included if the corresponding main effects are also in the model~\citep{mccullagh1989generalized}. This is known as the strong heredity principle~\citep{chipman1996bayesian}. Indeed, large main effects are more likely to lead to detectable interactions~\citep{cox1984interaction}. In the next section we discuss how a simple reparametrization of the model~\eqref{eq:lassolikelihood3} can lead to this desirable property.
+An issue with~\eqref{eq:lassolikelihood3} is that since no constraint is placed on the structure of the model, it is possible that an estimated interaction term is non-zero while the corresponding main effects are zero. While there may be certain situations where this is plausible, statisticians have generally argued that interactions should only be included if the corresponding main effects are also in the model~\citep{mccullagh1989generalized}. This is known as the strong heredity principle~\citep{chipman1996bayesian}. Indeed, large main effects are more likely to lead to detectable interactions~\citep{cox1984interaction}. In the next section we discuss how a simple reparametrization of the model~\eqref{eq:lassolikelihood3} can lead to this desirable property.
 %Furthermore, adaptive weighting~\citep{zou2006adaptive} has been shown to construct oracle procedures~\citep{fan2001variable}, i.e., asymptotically, it performs as well as if the true model were given in advance. These weights are given by
 %\begin{equation}
 %	w_E = \left|   \frac{1}{\hat{\beta}_E} \right| ,\quad w_j = \frac{1}{\norm{\hat{\btheta}_j}_2} , \quad w_{jE} = \left | \frac{\hat{\beta}_E \norm{\hat{\btheta}_j}_2}{\norm{\hat{\alpha}_{j}}_2} \right| \quad \tm{ for }j=1, \ldots, p   \label{eq:weights}
@@ -430,9 +430,9 @@ Data were generated from a model which follows the strong heredity principle, bu
 For illustration, function $f_1(\cdot)$ is assumed to be linear, whereas function $f_2(\cdot)$ is non-linear: $f_1(x) = -3x$, $f_2(x) = 2(2x-1)^3$. 
 The error term $\varepsilon$ is generated from a normal distribution with variance chosen such that the signal-to-noise ratio (SNR) is 2. 
 We generated a single simulated dataset and used the strong heredity \sail ~method (described below) with cubic B-splines to estimate the functional forms. 
-10-fold cross-validation (CV) was used to choose the optimal value of penalization. We used $\alpha=0.5$ and default values were used for all other arguments. 
+10-fold cross-validation (CV) was used to choose the optimal value of penalization. We used $\alpha=0.5$ and default values for all other arguments. 
 We plot the solution path for both main effects and interactions in Figure~\ref{fig:toy-solution-path}, coloring lines to correspond to the selected model. We see that our method is able to correctly identify the true model. 
-We can also visually see the effect of the penalty and strong heredity principle working in tandem, i.e., the interaction term $E \cdot f_2(X_2)$ (orange lines in the bottom panel) can only be nonzero if the main effects $E$ and $f_2(X_2)$ (black and orange lines respectively in the top panel) are nonzero, while nonzero main effects does not imply a nonzero interaction.
+We can also visually see the effect of the penalty and strong heredity principle working in tandem, i.e., the interaction term $E \cdot f_2(X_2)$ (orange lines in the bottom panel) can only be non-zero if the main effects $E$ and $f_2(X_2)$ (black and orange lines respectively in the top panel) are non-zero, while non-zero main effects does not imply a non-zero interaction.
 
 <<toy-example, eval=finalversion>>=
 @
@@ -467,11 +467,11 @@ Y = \beta_0 + \sum_{j=1}^{p}\beta_j X_j + \sum_{j=1}^{K}\theta_j Z_j + \sum_{j=1
 \end{equation}
 where $\alpha_j$ is a $K$-dimensional vector.
 Our proposal is most closely related to this method with $\mathbf{Z}$ being a single column matrix; the key difference being the non-linearity effects of our predictor variables.
-As pointed out by the authors of the pliable lasso, either their or ours can be seen as a varying coefficient model, i.e., the effect of $X$ varies as a function of the exposure variable $E$ or $\mb{Z}$ in~\eqref{eq:pliable}.
+As pointed out by the authors of the pliable lasso, either their method or ours can be seen as a varying coefficient model, i.e., the effect of $X$ varies as a function of the exposure variable $E$ or $\mb{Z}$ in~\eqref{eq:pliable}.
 
 The main contributions of this paper are five-fold.
 First, we develop a model for non-linear interactions with a key exposure variable, following either the weak or strong heredity principle, that is computationally efficient and scales to the high-dimensional setting ($n << p$).
-Second, through simulation studies, we show improved performance in terms of prediction error and support recovery over existing methods that only consider linear interactions or additive main effects.
+Second, through simulation studies, we show improved performance in terms of prediction accuracy and support recovery over existing methods that only consider linear interactions or additive main effects.
 Third, we show that our method possesses the oracle property~\citep{fan2001variable}, i.e., it performs as well as if the true model were known in advance.
 Fourth, we demonstrate the performance of our method in two applications: 1) gene-environment interactions in a prenatal psychosocial intervention program~\cite{olds1998long} and 2) a study aimed at identifying which clinical variables influence mortality rates amongst seriously ill hospitalized patients~\citep{connors1995controlled}.
 Fifth, we implement our algorithms in the \texttt{sail} R package with extensive documentation (\url{http://sahirbhatnagar.com/sail/}). 
@@ -536,10 +536,10 @@ The strong heredity \texttt{sail} model with least-squares loss has the form
 \end{equation}
 and the objective function is given by
 \begin{equation}
-	Q(\bPhi) = \frac{1}{2n} \norm{Y - \hat{Y}}_2^2 + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{jE}} \label{eq:objective_least-squares}
+	Q(\bPhi) = \frac{1}{2n} \norm{Y - \hat{Y}}_2^2 + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{jE}} \label{eq:objective_least-squares1}
 \end{equation}
 
-Solving~\eqref{eq:objective_least-squares} in a blockwise manner allows us to leverage computationally fast algorithms for $\ell_1$ and $\ell_2$ norm penalized regression.
+Solving~\eqref{eq:objective_least-squares1} in a blockwise manner allows us to leverage computationally fast algorithms for $\ell_1$ and $\ell_2$ norm penalized regression.
 We show in Supplemental Section~\ref{ap:sail_algorithm} that by careful construction of pseudo responses and pseudo design matrices, existing efficient algorithms can be used to estimate the parameters.
 Indeed, the objective function simplifies to a modified lasso problem when holding all $\theta_j$ fixed, and a modified group lasso problem when holding $\beta_E$ and all $\gamma_{jE}$ fixed.
 We provide an overview of the computations in Algorithm~\ref{alg:psudeolssail}. %A more detailed version of this algorithm is given in Section~\ref{ap:subsec:lssail} of the Appendix.
@@ -650,7 +650,7 @@ Our method can be easily adapted to enforce the weak heredity property.
 %\begin{equation}
 %	\hat{\alpha}_{jE} \neq 0 \qquad \Rightarrow \qquad \hat{\beta}_j \neq 0 \qquad \tm{or} \qquad \hat{\beta}_E \neq 0   \label{eq:heredity2} \nonumber
 %\end{equation}
-That is, an interaction term can only be present if at least one of its corresponding main effects is nonzero. To do so, we reparametrize the coefficients for the interaction terms in~\eqref{eq:linpred} as $\balpha_{j} = \gamma_{jE}  (\beta_E \cdot \mb{1}_{m_j} + \btheta_j)$, where $\mb{1}_{m_j}$ is a vector of ones with dimension $m_j$ (i.e. the length of $\btheta_j$). We defer the algorithm details for fitting the \sail ~model with weak heredity in Supplemental Section~\ref{ap:subsec:lssailweak}, as it is very similar to Algorithm~\ref{alg:psudeolssail} for the strong heredity \sail ~model.
+That is, an interaction term can only be present if at least one of its corresponding main effects is non-zero. To do so, we reparametrize the coefficients for the interaction terms in~\eqref{eq:linpred} as $\balpha_{j} = \gamma_{jE}  (\beta_E \cdot \mb{1}_{m_j} + \btheta_j)$, where $\mb{1}_{m_j}$ is a vector of ones with dimension $m_j$ (i.e. the length of $\btheta_j$). We defer the algorithm details for fitting the \sail ~model with weak heredity in Supplemental Section~\ref{ap:subsec:lssailweak}, as it is very similar to Algorithm~\ref{alg:psudeolssail} for the strong heredity \sail ~model.
 
 
 \subsection{Adaptive \sail}
@@ -771,8 +771,8 @@ In this section we study the asymptotic behaviour of the \sail ~estimator $\wide
 	\A_{1}=\{m:\boldsymbol{\phi}_{m}^{*}\neq\mathbf{0}\ (1\leq m\leq p+1)\},\quad\A_{2}=\{m:\boldsymbol{\phi}_{m}^{*}\neq\mathbf{0}\ (p+2\leq m\leq2p+1)\},\quad\A=\A_{1}\cup\A_{2}
 	\]
 	that is, $\A_{1}$ contains the indices for main effects whose true
-	coefficients are nonzero, and $\A_{2}$ contains the indices for interaction
-	terms whose true coefficients are nonzero. Let 
+	coefficients are non-zero, and $\A_{2}$ contains the indices for interaction
+	terms whose true coefficients are non-zero. Let 
 	\[
 	a_{n}=\max\left\lbrace \lambda_{m},\lambda_{m'}:m\in\A_{1},m'\in\A_{2}\right\rbrace 
 	\]
@@ -793,7 +793,7 @@ In this section we study the asymptotic behaviour of the \sail ~estimator $\wide
 \end{lemma}}{\normalsize\par}
 
 {\normalsize{}Lemma \eqref{th:lemma1}
-	states that if the tuning parameters corresponding to the nonzero
+	states that if the tuning parameters corresponding to the non-zero
 	coefficients converge to 0 at a speed faster than $\frac{1}{\sqrt{n}}$,
 	then there exists a local minimizer of $Q_{n}(\boldsymbol{\Phi})$
 	which is $\sqrt{n}$-consistent~\citep{wang2007regression,choi2010variable}.
@@ -816,7 +816,7 @@ In this section we study the asymptotic behaviour of the \sail ~estimator $\wide
 	Together with Lemma~\eqref{th:lemma1}, we see that the asymptotic
 	behaviour of the penalty terms for the zero and non-zero predictors
 	must be different to satisfy the model selection consistency property~\eqref{eq:modelselectionconsistency}~\citep{nardi2008asymptotic}.
-	Specifically, when the tuning parameters for the nonzero coefficients
+	Specifically, when the tuning parameters for the non-zero coefficients
 	converge to 0 faster than $1/\sqrt{n}$ (i.e. $\sqrt{n}a_{n}\rightarrow0$)
 	and those for zero coefficients are large enough (i.e. $\sqrt{n}b_{n}\rightarrow\infty$),
 	the Lemma \eqref{th:lemma1} and Theorem \eqref{th:theorem1} imply
@@ -893,18 +893,21 @@ Since there are no other packages that directly address our chosen problem, we s
 	\item Non-linear main effects: \texttt{HierBasis}~\citep{haris2016nonparametric}, \texttt{SPAM}~\citep{ravikumar2009sparse}, \texttt{gamsel}~\citep{chouldechova2015generalized}
 \end{enumerate}
 
-For \texttt{GLinternet} we specified the \texttt{interactionCandidates} argument so as to only consider interactions between the environment and all other $X$ variables. For all other methods we supplied ($\bX, X_E$) as the data matrix, 100 for the number of tuning parameters to fit, and used the default values otherwise\footnote[1]{\texttt{R} code for each method available at \url{https://github.com/sahirbhatnagar/sail/blob/master/my_sims/method_functions.R}}. \texttt{lassoBT} considers all pairwise interactions as there is no way for the user to restrict the search space. \texttt{SPAM} applies the same basis expansion to every column of the data matrix; we chose 5 basis spline functions. \texttt{HierBasis} and \texttt{gamsel} selects whether a term in an additive model is nonzero, linear, or a non-linear spline up to a specified max degrees of freedom per variable.
+For \texttt{GLinternet} we specified the \texttt{interactionCandidates} argument so as to only consider interactions between the environment and all other $X$ variables. For all other methods we supplied ($\bX, X_E$) as the data matrix, 100 for the number of tuning parameters to fit, and used the default values otherwise\footnote[1]{\texttt{R} code for each method available at \url{https://github.com/sahirbhatnagar/sail/blob/master/my_sims/method_functions.R}}. \texttt{lassoBT} considers all pairwise interactions as there is no way for the user to restrict the search space. \texttt{SPAM} applies the same basis expansion to every column of the data matrix; we chose 5 basis spline functions. \texttt{HierBasis} and \texttt{gamsel} selects whether a term in an additive model is non-zero, linear, or a non-linear spline up to a specified max degrees of freedom per variable.
 
-We compare the above listed methods with our main proposal method \texttt{sail}, as well as with \texttt{adaptive sail} (Algorithm~\ref{alg:adaptivesail}), \texttt{sail weak} which has the weak heredity property and \texttt{linear sail} as described in Section~\ref{sec:linearsail}. For each function $f_j$, we use a B-spline basis matrix with \texttt{degree=5} implemented in the \texttt{bs} function in \texttt{R}~\citep{cran}. We center the environment variable and the basis functions before running the \sail ~method.
+We compare the above listed methods with our main proposal method \texttt{sail}, as well as with \texttt{adaptive sail} (Algorithm~\ref{alg:adaptivesail}) and \texttt{sail weak} which has the weak heredity property. 
+For each function $f_j$, we use a B-spline basis matrix with \texttt{degree=5} implemented in the \texttt{bs} function in \texttt{R}~\citep{cran}. 
+We center the environment variable and the basis functions before running the \sail ~method.
 
 
 \subsection{Simulation Design}
 To make the comparisons with other methods as fair as possible, we followed a simulation framework that has been previously used for variable selection methods in additive models~\citep{lin2006component,huang2010variable}.
 We extend this framework to include interaction effects as well.
-The covariates are simulated as follows. First, we generate $x_1,\ldots, x_{1000}$ independently from a standard normal distribution truncated to the interval [0,1] for $i=1,\ldots,n$. 
+The covariates are simulated as follows. 
+First, we generate $x_1,\ldots, x_{1000}$ independently from a standard normal distribution truncated to the interval [0,1] for $i=1,\ldots,n$. 
 %Then we set $x_j = (z_j + t\cdot u)/(1 + t)$ for $j = 1,\ldots, 4$ and $x_j = (z_j + t\cdot v)/(1 + t)$ for $j = 5,\ldots, p$, where the parameter $t$ controls the amount of correlation among predictors. 
-The first four variables are nonzero (i.e. active in the response), while the rest of the variables are zero (i.e. are noise variables). 
-%This leads to a compound symmetry correlation structure where $Corr(x_j,x_k) = t^2/(1+t^2)$, for $1 \leq j \leq 4, 1 \leq k \leq 4$, and $Corr(x_j,x_k) = t^2/(1+t^2)$, for $5 \leq j \leq p, 5 \leq k \leq p$, but the covariates of the nonzero and zero components are independent. 
+The first four variables are non-zero (i.e. active in the response), while the rest of the variables are zero (i.e. are noise variables). 
+%This leads to a compound symmetry correlation structure where $Corr(x_j,x_k) = t^2/(1+t^2)$, for $1 \leq j \leq 4, 1 \leq k \leq 4$, and $Corr(x_j,x_k) = t^2/(1+t^2)$, for $5 \leq j \leq p, 5 \leq k \leq p$, but the covariates of the non-zero and zero components are independent. 
 %We consider the case when $p=1000$ and $t=0$. 
 The outcome $Y$ is then generated following one of the models and assumptions described below.
 
@@ -913,10 +916,10 @@ Simulation scenarios are designed specifically to test the performance of these 
 
 
 \begin{enumerate}
-	\item \textbf{Hierarchy simulation}
+	\item \textbf{Heredity simulation}
 	\begin{enumerate}
-		\item[] Scenario (a) \underline{Truth obeys strong hierarchy}. In this situation, the true model for $Y$ contains main effect terms for all covariates involved in interactions. \[Y = \sum_{j=1}^{4} f_j(X_{j}) + \beta_E \cdot X_{E} +  X_{E} \cdot f_3(X_{3}) + X_{E} \cdot f_4(X_{4}) + \varepsilon\]
-		\item[] Scenario (b) \underline{Truth obeys weak hierarchy}. Here, in addition to the interaction, the $E$ variable has its own main effect but the covariates $X_3$ and $X_4$ do not.
+		\item[] Scenario (a) \underline{Truth obeys strong heredity}. In this situation, the true model for $Y$ contains main effect terms for all covariates involved in interactions. \[Y = \sum_{j=1}^{4} f_j(X_{j}) + \beta_E \cdot X_{E} +  X_{E} \cdot f_3(X_{3}) + X_{E} \cdot f_4(X_{4}) + \varepsilon\]
+		\item[] Scenario (b) \underline{Truth obeys weak heredity}. Here, in addition to the interaction, the $E$ variable has its own main effect but the covariates $X_3$ and $X_4$ do not.
 		\[Y = f_1(X_{1}) + f_2(X_{2}) + \beta_E \cdot X_{E} +  X_{E} \cdot f_3(X_{3}) + X_{E} \cdot f_4(X_{4}) + \varepsilon\]
 		\item[] Scenario (c) \underline{Truth only has interactions}. In this simulation, the covariates involved in interactions do not have main effects as well.  \[Y =  X_{E} \cdot f_3(X_{3}) + X_{E} \cdot f_4(X_{4}) + \varepsilon\]
 	\end{enumerate}
@@ -950,7 +953,7 @@ The prediction and variable selection results for each of the five simulation sc
 <<plot-mse-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Boxplots of the test set mean squared error from 200 simulations for each of the five simulation scenarios.", eval=finalversion>>=
 @
 
-We see that \sail~,\texttt{adaptive sail} and \texttt{sail weak} have the best performance in terms of both MSE and yielding correct sparse models when the truth follows a strong hierarchy (scenario 1a), as we would expect, since this is exactly the scenario that our method is trying to target.
+We see that \sail~,\texttt{adaptive sail} and \texttt{sail weak} have the best performance in terms of both MSE and yielding correct sparse models when the truth follows a strong heredity (scenario 1a), as we would expect, since this is exactly the scenario that our method is trying to target.
 
 <<plot-tpr-fpr-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Means $\\pm 1$ standard deviation of true positive rate vs. false positive rate from 200 simulations for each of the five scenarios. $|\\mathcal{H}|$ is the number of truly associated variables.", eval=FALSE>>=
 @
@@ -969,11 +972,11 @@ We see that \sail~,\texttt{adaptive sail} and \texttt{sail weak} have the best p
               \cmidrule{2-3}\cmidrule{5-6}\cmidrule{8-10}\cmidrule{12-14} % Important: no space before \cmidrule	              
  			  & lasso &  adaptive  & & lassoBT   & GLinternet & & HierBasis  & SPAM  & gamsel & & sail &  adaptive  & sail  \NN
  			  &      &  lasso     & &    &  & &   &   &  & &  &  sail  & weak \ML
-    \mcl{3}{1a) Strong Hierarchy ($|\mathcal{J}|=7$)}   \\
+    \mcl{3}{1a) Strong heredity ($|\mathcal{J}|=7$)}   \\
 	 $|\widehat{\mathcal{J}}|$ & 30 (14)    & 8 (4)       & & 37 (17)     & 41 (21)     & & 152 (28)   & 38 (17)    & 47 (19)    & & 37 (15)    & 8 (5) & 34 (13)  \\ 
 	TPR                        & 54.9 (7.4) & 49.7 (10.4) & & 62.0 (10.4) & 66.7 (12.8) & & 66.2 (7.6) & 60.9 (9.0) & 57.1 (6.5) & & 90.6 (7.7) & 69.7 (28.8) & 86.4 (10.1)  \\ 
 	FPR                        & 1.3 (0.7) & 0.2 (0.2)   & & 1.6 (0.8)   & 1.8 (1.0)   & & 7.4 (1.4)   & 1.7 (0.8) & 2.2 (0.9)  & & 1.5 (0.7)  & 1.1 (9.7) & 1.4 (0.6)  \ML
-\mcl{3}{1b) Weak Hierarchy ($|\mathcal{J}|=5$)} \\
+\mcl{3}{1b) Weak heredity ($|\mathcal{J}|=5$)} \\
 $|\widehat{\mathcal{J}}|$ & 19 (12) & 4 (2) & & 20 (13) & 37 (22) & &  23 (22) & 28 (15) & 22 (15) &  & 16 (9) & 7 (6) & 17 (11)  \\ 
 TPR & 41.0 (4.5) & 40.2 (1.9) & &  41.0 (4.5) & 65.1 (15.2) & &  42.6 (6.7) & 54.8 (8.8) & 43.8 (7.9) & &  47.8 (10.4) & 46.9 (11.2) & 51.0 (12.8)  \\ 
 FPR & 0.8 (0.6) & 0.1 (0.1) & &  0.9 (0.7) & 1.7 (1.1) &  & 1.1 (1.1) & 1.3 (0.7) & 1.0 (0.8) & &  0.7 (0.4) & 0.2 (0.3) & 0.7 (0.5)  \ML
@@ -999,7 +1002,7 @@ Our method is also competitive when only main effects are present (scenario 3) a
 
 We visually inspected whether our method could correctly capture the shape of the association between the predictors and the response for both main and interaction effects. To do so, we plotted the true and predicted curves for scenario 1a) only. Figure~\ref{fig:main_eff} shows each of the four main effects with the estimated curves from each of the 200 simulations along with the true curve. We can see the effect of the penalty on the parameters, i.e., decreasing prediction variance at the cost of increased bias. This is particularly well illustrated in the bottom right panel where \sail ~smooths out the very wiggly component function $f_4(x)$. Nevertheless, the primary shapes are clearly being captured.
 
-To visualize the estimated interaction effects, we ordered the 200 simulation runs by the euclidean distance between the estimated and true regression functions. Following Radchenko et al.~\citep{radchenko2010variable}, we then identified the 25th, 50th, and 75th best simulations and plotted, in Figures~\ref{fig:X3} and~\ref{fig:X4}, the interaction effects of $X_E$ with $f_3(X_3)$ and $f_4(X_4)$, respectively. We see that \sail ~does a good job at capturing the true interaction surface for $X_E \cdot f_3(X_3)$. Again, the smoothing and shrinkage effect is apparent when looking at the interaction surfaces for $X_E \cdot f_4(X_4)$
+To visualize the estimated interaction effects, we ordered the 200 simulation runs by the Euclidean distance between the estimated and true regression functions. Following Radchenko et al.~\citep{radchenko2010variable}, we then identified the 25th, 50th, and 75th best simulations and plotted, in Figures~\ref{fig:X3} and~\ref{fig:X4}, the interaction effects of $X_E$ with $f_3(X_3)$ and $f_4(X_4)$, respectively. We see that \sail ~does a good job at capturing the true interaction surface for $X_E \cdot f_3(X_3)$. Again, the smoothing and shrinkage effect is apparent when looking at the interaction surfaces for $X_E \cdot f_4(X_4)$
 
 
 % this is only commented because i dont want to change the paths to figures
@@ -1065,7 +1068,7 @@ This interaction is shown in Figure~\ref{fig:PRS-intervention-interaction}.
 We see that the intervention has a much larger effect on IQ for lower PRS compared to a higher PRS. 
 In other words, perinatal home visitation by nurses can impact IQ scores in children who are genetically predisposed to lower educational attainment. 
 
-We also compared \sail ~with two other interaction selection methods, \texttt{lassoBT} and \texttt{GLinternet} with default settings, on 200 bootstrap samples of the data. The average and standard deviation of the mean squared error (MSE) and size of the active set ($|\widehat{\mathcal{H}}$|) across the 200 bootstrap samples are given in Table~\ref{tab:rda}. We see that sail tends to select sparser models while maintaining similar prediction performance compared to \texttt{lassoBT}. The \texttt{GLinternet} statistics are omitted here since the algorithm did not converge for many of the 200 simulations.
+We also compared \sail ~with two other interaction selection methods, \texttt{lassoBT} and \texttt{GLinternet} with default settings, on 200 bootstrap samples of the data. The average and standard deviation of the MSE and size of the active set ($|\widehat{\mathcal{J}}$|) across the 200 bootstrap samples are given in Table~\ref{tab:rda}. We see that sail tends to select sparser models while maintaining similar prediction performance compared to \texttt{lassoBT}. The \texttt{GLinternet} statistics are omitted here since the algorithm did not converge for many of the 200 simulations.
 
 <<PRS-packages, eval=finalversion, results = 'hide', message=FALSE>>=
 @
@@ -1130,7 +1133,7 @@ The response was whether a patient survived after six months since hospitalizati
 
 A total of 8,873 samples had complete data on all variables of interest. 
 We randomly divided these samples into equal sized training/validation/test splits and ran \texttt{lassoBT}, \texttt{GLinternet}, and the weak heredity \sail ~with cubic B-splines and $\alpha=0.1$. 
-A binomial distribution family was specified \texttt{GLinternet}, whereas \texttt{lassoBT} had the same default settings as the simulation study since it did not support a specialized implementation for binary outcomes. 
+A binomial distribution family was specified for \texttt{GLinternet}, whereas \texttt{lassoBT} had the same default settings as the simulation study since it did not support a specialized implementation for binary outcomes. 
 We again ran each method on the training data, determined the optimal tuning parameter on the validation data based on the area under the receiver operating characteristic curve (AUC), and assessed AUC on the test data. 
 We repeated this process 200 times and report the results in Table~\ref{tab:rda}.
 We found that \sail ~achieved similar prediction accuracy to \texttt{lassoBT} and \texttt{GLinternet}. 
@@ -1179,7 +1182,7 @@ We further studied the asymptotic properties of our method and showed that under
 All our algorithms are implemented in a computationally efficient, well-documented and freely available \texttt{R} package.
 Furthermore, our method is flexible enough to handle any type of basis expansion including the identity map, which allows for linear interactions.
 Our implementation allows the user to selectively apply the basis expansions to the predictors, allowing for example, a combination of continuous and categorical predictors.
-An extensive simulation study shows that \sail, \texttt{adaptive sail} and \texttt{sail weak} outperform existing penalized regression methods in terms of prediction error, sensitivity and specificity when there are non-linear main effects only, as well as interactions with an exposure variable.
+An extensive simulation study shows that \sail, \texttt{adaptive sail} and \texttt{sail weak} outperform existing penalized regression methods in terms of prediction accuracy, sensitivity and specificity when there are non-linear main effects only, as well as interactions with an exposure variable.
 Two real-data applications show the utility of our method to identify non-linear interactions in biological and epidemiological data. 
 In general, we observed that \sail ~achieved similar prediction performance to other interaction selection methods, while producing much more parsimonious models. 
 
@@ -1998,7 +2001,7 @@ cvfit[["lambda.min"]]
 cvfit[["lambda.1se"]]
 @
 
-The estimated nonzero coefficients at \texttt{lambda.1se} and \texttt{lambda.min}:
+The estimated non-zero coefficients at \texttt{lambda.1se} and \texttt{lambda.min}:
 
 <<echo=T,eval=finalversion>>=
 predict(cvfit, type = "nonzero", s="lambda.1se") # lambda.1se is the default
@@ -2223,7 +2226,7 @@ We are interested in imposing the strong heredity principle~\citep{chipman1996ba
 \begin{equation}
 	\hat{\alpha}_{jE} \neq 0 \qquad \Rightarrow \qquad \hat{\beta}_j \neq 0 \qquad \tm{and} \qquad \hat{\beta}_E \neq 0   \label{eq:heredity}
 \end{equation}
-In words, the interaction term will only have a non-zero estimate if its corresponding main effects are estimated to be non-zero. One benefit brought by hierarchy is that the number of measured variables can be reduced, referred to as practical sparsity~\citep{she2014group,bien2013lasso}. For example, a model involving $X_1, E, X_1 \cdot E$ is more parsimonious than a model involving $X_1, E, X_2 \cdot E$, because in the first model a researcher would only have to measure two variables compared to three in the second model. In order to address these issues, we propose to extend the model of Choi \textit{et al.}~\citep{choi2010variable} to simultaneously perform variable selection, estimation and impose the strong heredity principle in the context of high dimensional interactions with the environment (HD$\times E$). To do so, we follow Choi and reparametrize the coefficients for the interaction terms as $\alpha_{jE} = \gamma_{jE} \beta_j \beta_E$. Plugging this into~\eqref{eq:linpred1}:
+In words, the interaction term will only have a non-zero estimate if its corresponding main effects are estimated to be non-zero. One benefit brought by heredity is that the number of measured variables can be reduced, referred to as practical sparsity~\citep{she2014group,bien2013lasso}. For example, a model involving $X_1, E, X_1 \cdot E$ is more parsimonious than a model involving $X_1, E, X_2 \cdot E$, because in the first model a researcher would only have to measure two variables compared to three in the second model. In order to address these issues, we propose to extend the model of Choi \textit{et al.}~\citep{choi2010variable} to simultaneously perform variable selection, estimation and impose the strong heredity principle in the context of high dimensional interactions with the environment (HD$\times E$). To do so, we follow Choi and reparametrize the coefficients for the interaction terms as $\alpha_{jE} = \gamma_{jE} \beta_j \beta_E$. Plugging this into~\eqref{eq:linpred1}:
 \begin{align}
 	g(\bmu)  = & \beta_0  + \beta_1 \widetilde{X}_{1} + \cdots + \beta_q \widetilde{X}_q + \beta_{E} E + \gamma_{1E}\beta_1 \beta_E (\widetilde{X}_1 E) + \cdots + \gamma_{qE}\beta_q \beta_E (\widetilde{X}_q E)    \label{eq:linpred2}
 \end{align}
@@ -2237,7 +2240,7 @@ where $g(\bmu)$ is from~\eqref{eq:linpred2}, $\lambda_\beta$ and $\lambda_\gamma
 \end{equation}
 where $\hat{\beta}_j$ and $\hat{\alpha}_{j}$ are the MLEs, \textit{using the transformed variables}, from~\eqref{eq:linpred1} or the ridge regression estimates when $q > n$. The rationale behind the data-dependent $\hat{\bs{w}}$ is that as the sample size grows, the weights for the truly zero predictors go to $\infty$ (which translates to a large penalty), whereas the weights for the truly non-zero predictors converge to a finite constant~\citep{zou2006adaptive}.
 
-There have been several more recent proposals for modeling interactions with the strong heredity constraint in the variable selection via penalization literature including Composite Absolute Penalties (CAP)~\citep{zhao2009composite}, Variable selection using Adaptive Nonlinear Interaction Structures in High dimensions (VANISH)~\citep{radchenko2010variable}, Strong Hierarchical Lasso (hierNet)~\citep{bien2013lasso}, Group-Lasso Interaction Network (glinternet)~\citep{lim2014learning}, Group Regularized Estimation under Structural Hierarchy (GRESH)~\citep{she2014group} and a Framework for Modeling Interactions with a Convex Penalty (FAMILY)~\citep{haris2014convex}. While each method has their own merit, including that they are all convex optimization problems, they all contain complex penalty functions which are hard to interpret and lead to computationally expensive fitting algorithms. On the other hand, the objective function in~\eqref{eq:lassolikelihood2} can be solved using an iterative approach (by first fixing $\bbeta$ and then $\balpha$) which simplifies to a LASSO type problem; one that has been extensively studied, is well understood and can be solved efficiently using existing software (e.g. \texttt{glmnet}~\citep{friedman2010regularization}). A limitation of this approach is that the optimization problem is non-convex, arising from the reparametrization of $\balpha$ as a product of optimization variables $(\bbeta, \bs{\gamma})$, and hence convergence to the global minimum is not guaranteed~\citep{choi2010variable}.
+There have been several more recent proposals for modeling interactions with the strong heredity constraint in the variable selection via penalization literature including Composite Absolute Penalties (CAP)~\citep{zhao2009composite}, Variable selection using Adaptive Nonlinear Interaction Structures in High dimensions (VANISH)~\citep{radchenko2010variable}, Strong Hierarchical Lasso (hierNet)~\citep{bien2013lasso}, Group-Lasso Interaction Network (glinternet)~\citep{lim2014learning}, Group Regularized Estimation under Structural heredity (GRESH)~\citep{she2014group} and a Framework for Modeling Interactions with a Convex Penalty (FAMILY)~\citep{haris2014convex}. While each method has their own merit, including that they are all convex optimization problems, they all contain complex penalty functions which are hard to interpret and lead to computationally expensive fitting algorithms. On the other hand, the objective function in~\eqref{eq:lassolikelihood2} can be solved using an iterative approach (by first fixing $\bbeta$ and then $\balpha$) which simplifies to a LASSO type problem; one that has been extensively studied, is well understood and can be solved efficiently using existing software (e.g. \texttt{glmnet}~\citep{friedman2010regularization}). A limitation of this approach is that the optimization problem is non-convex, arising from the reparametrization of $\balpha$ as a product of optimization variables $(\bbeta, \bs{\gamma})$, and hence convergence to the global minimum is not guaranteed~\citep{choi2010variable}.
 
 
 \subsection{Simulation Study}

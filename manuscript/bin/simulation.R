@@ -37,15 +37,15 @@ DT[, method := factor(Method, levels = c("lasso","adaptive lasso","lassoBT", "GL
 DT[, scenario:= as.numeric(as.character(stringr::str_extract_all(parameterIndex, "\\d", simplify = T)))]
 # DT[, table(scenario)]
 DT[, scenario := replace(scenario, which(scenario==6), 4)]
-DT[, scen := case_when(scenario==1 ~ "1a) Strong Hierarchy",
-                       scenario==2 ~ "1b) Weak Hierarchy",
+DT[, scen := case_when(scenario==1 ~ "1a) Strong Heredity",
+                       scenario==2 ~ "1b) Weak Heredity",
                        scenario==3 ~ "1c) Interactions Only",
                        scenario==4 ~ "2) Linear Effects",
                        scenario==5 ~ "3) Main Effects Only")]
-DT[, scen := factor(scen, levels = c("1a) Strong Hierarchy", "1b) Weak Hierarchy","1c) Interactions Only","2) Linear Effects", "3) Main Effects Only"))]
+DT[, scen := factor(scen, levels = c("1a) Strong Heredity", "1b) Weak Heredity","1c) Interactions Only","2) Linear Effects", "3) Main Effects Only"))]
 # DT$scen %>% table
-#Truth obeys strong hierarchy (parameterIndex = 1)
-#Truth obeys weak hierarchy (parameterIndex = 2)
+#Truth obeys strong Heredity (parameterIndex = 1)
+#Truth obeys weak Heredity (parameterIndex = 2)
 #Truth only has interactions (parameterIndex = 3)
 #Truth is linear (parameterIndex = 4)
 #Truth only has main effects (parameterIndex = 5)
@@ -164,13 +164,13 @@ df_mse_nactive <- DT[, c("method","scen","mse","nactive")] %>%
   group_by(method, scen) %>%
   summarise(mean.mse = mean(mse, na.rm = TRUE), sd.mse = sd(mse, na.rm = TRUE),
          mean.nactive = mean(nactive, na.rm = TRUE), sd.nactive = sd(nactive, na.rm = TRUE)) %>%
-  mutate(scen = case_when(scen == "1a) Strong Hierarchy" ~ "1a) Strong Hierarchy (|H| = 7)",
-                          scen == "1b) Weak Hierarchy" ~ "1b) Weak Hierarchy (|H| = 5)",
+  mutate(scen = case_when(scen == "1a) Strong Heredity" ~ "1a) Strong Heredity (|H| = 7)",
+                          scen == "1b) Weak Heredity" ~ "1b) Weak Heredity (|H| = 5)",
                           scen == "1c) Interactions Only" ~ "1c) Interactions Only (|H| = 2)",
                           scen == "2) Linear Effects" ~ "2) Linear Effects (|H| = 7)",
                           scen == "3) Main Effects Only" ~ "3) Main Effects Only (|H| = 5)")) %>%
-  mutate(scen = factor(scen, levels = c("1a) Strong Hierarchy (|H| = 7)",
-                                        "1b) Weak Hierarchy (|H| = 5)",
+  mutate(scen = factor(scen, levels = c("1a) Strong Heredity (|H| = 7)",
+                                        "1b) Weak Heredity (|H| = 5)",
                                         "1c) Interactions Only (|H| = 2)",
                                         "2) Linear Effects (|H| = 7)",
                                         "3) Main Effects Only (|H| = 5)")))
@@ -300,13 +300,13 @@ df_tpr_fpr <- DT[, c("method","scen","tpr","fpr")] %>%
   group_by(method, scen) %>%
   summarise(mean.tpr = mean(tpr, na.rm = TRUE), sd.tpr = sd(tpr, na.rm = TRUE),
             mean.fpr = mean(fpr, na.rm = TRUE), sd.fpr = sd(fpr, na.rm = TRUE)) %>%
-  mutate(scen = case_when(scen == "1a) Strong Hierarchy" ~ "1a) Strong Hierarchy (|H| = 7)",
-                          scen == "1b) Weak Hierarchy" ~ "1b) Weak Hierarchy (|H| = 5)",
+  mutate(scen = case_when(scen == "1a) Strong Heredity" ~ "1a) Strong Heredity (|H| = 7)",
+                          scen == "1b) Weak Heredity" ~ "1b) Weak Heredity (|H| = 5)",
                           scen == "1c) Interactions Only" ~ "1c) Interactions Only (|H| = 2)",
                           scen == "2) Linear Effects" ~ "2) Linear Effects (|H| = 7)",
                           scen == "3) Main Effects Only" ~ "3) Main Effects Only (|H| = 5)")) %>%
-  mutate(scen = factor(scen, levels = c("1a) Strong Hierarchy (|H| = 7)",
-                                        "1b) Weak Hierarchy (|H| = 5)",
+  mutate(scen = factor(scen, levels = c("1a) Strong Heredity (|H| = 7)",
+                                        "1b) Weak Heredity (|H| = 5)",
                                         "1c) Interactions Only (|H| = 2)",
                                         "2) Linear Effects (|H| = 7)",
                                         "3) Main Effects Only (|H| = 5)")))

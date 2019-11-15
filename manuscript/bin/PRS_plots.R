@@ -88,7 +88,7 @@ plotInterPRS(object = fitcv$sail.fit,
              labels = c("-0.0015", "-0.001", "-0.0005", "0", "0.0005", "0.001"),
              at = c(-0.0015, -0.001, -5e-04, 0, 5e-04, 0.001),
              color = sail:::cbbPalette[c(2,4)],
-             legend = TRUE)
+             legend = TRUE )
 
 
 

@@ -263,7 +263,7 @@ plotInterPRS <- function(object,
   lines(originalX[int_index][order(originalX[int_index])], int_pred[order(originalX[int_index])], col = color[2], lwd = 3)
 
   if (legend) {
-    legend(legend.position,c("Intervention","Control"),col=c(color[2],color[1]),lwd=c(3,3), cex = 1.3)
+    legend(legend.position,c("Intervention","Control"),col=c(color[2],color[1]),lwd=c(3,3), cex = 1.3, bty = "n")
   }
 
   if(rug) {
