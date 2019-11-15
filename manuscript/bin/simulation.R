@@ -46,6 +46,79 @@ DT[, scen := factor(scen, levels = c("1a) Strong Hierarchy", "1b) Weak Hierarchy
 #Truth is linear (parameterIndex = 4)
 #Truth only has main effects (parameterIndex = 5)
 
+## ---- summary-table ----
+
+DT %>%
+  dplyr::mutate(tpr = tpr*100, fpr = fpr*100) %>%
+  tidyr::pivot_longer(cols = c("mse","tpr","fpr","nactive","r2","time"),
+                      names_to = "metric") %>%
+  dplyr::group_by(scen, method, metric) %>%
+  dplyr::summarise(mean = mean(value, na.rm = T),
+                   median = median(value, na.rm = T),
+                   sd = sd(value, na.rm = T)) -> DT_summary
+
+
+DT_summary %>%
+  dplyr::filter(metric == "fpr") %>%
+  dplyr::mutate(result = sprintf("%0.1f (%0.1f)", mean, sd)) %>%
+  dplyr::select(-mean, -median, -sd) %>%
+  # tidyr::pivot_longer(cols = c("mean","median","sd"), names_to = "summary") %>%
+  tidyr::pivot_wider(names_from = "method", values_from = "result") -> dt_fpr
+
+
+DT_summary %>%
+  dplyr::filter(metric == "tpr") %>%
+  dplyr::mutate(result = sprintf("%0.1f (%0.1f)", mean, sd)) %>%
+  dplyr::select(-mean, -median, -sd) %>%
+  # tidyr::pivot_longer(cols = c("mean","median","sd"), names_to = "summary") %>%
+  tidyr::pivot_wider(names_from = "method", values_from = "result") -> dt_tpr
+
+
+DT_summary %>%
+  dplyr::filter(metric == "nactive") %>%
+  dplyr::mutate(result = sprintf("%0.0f (%0.0f)", mean, sd)) %>%
+  dplyr::select(-mean, -median, -sd) %>%
+  # tidyr::pivot_longer(cols = c("mean","median","sd"), names_to = "summary") %>%
+  tidyr::pivot_wider(names_from = "method", values_from = "result") -> dt_nactive
+
+DT_summary %>%
+  dplyr::filter(metric == "mse") %>%
+  dplyr::mutate(result = sprintf("%0.0f (%0.0f)", mean, sd)) %>%
+  dplyr::select(-mean, -median, -sd) %>%
+  # tidyr::pivot_longer(cols = c("mean","median","sd"), names_to = "summary") %>%
+  tidyr::pivot_wider(names_from = "method", values_from = "result") -> dt_mse
+
+
+bind_rows(list(dt_nactive, dt_tpr, dt_fpr)) %>%
+  mutate(metric = factor(metric, levels = c("nactive","tpr","fpr"))) %>%
+  dplyr::arrange(scen, metric) %>%
+  # ungroup %>%
+  # dplyr::select(-scen) %>%
+  xtable::xtable() -> xres
+
+
+
+
+
+# dt_fpr %>%  dplyr::mutate(result = sprintf("%0.1f (%0.1f)", mean, sd)) %>%
+#   dplyr::select(-mean, -median, -sd) %>%
+#   # tidyr::pivot_longer(cols = c("mean","median","sd"), names_to = "summary") %>%
+#   tidyr::pivot_wider(names_from = "method", values_from = "result") %>%
+#   dplyr::filter(metric %in% c("nactive","tpr","fpr")) %>%
+#   # ungroup() %>%
+#   # dplyr::select(-scen) %>%
+#   xtable::xtable() -> xres
+
+print(xres, rotate.rownames = FALSE, rotate.colnames = FALSE, include.rownames = FALSE)
+
+
+
+
+
+
+
+
+
 
 ## ---- plot-mse-sim ----
 
