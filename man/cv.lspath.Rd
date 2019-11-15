@@ -84,7 +84,7 @@ functions used to calculate cross validation error and used by
 }
 \details{
 The output of the \code{cv.lspath} function only returns values for
-  those tuning paramters that converged. \code{cvcompute, getmin,
+  those tuning parameters that converged. \code{cvcompute, getmin,
   lambda.interp} are taken verbatim from the \code{glmnet} package
 }
 \section{Functions}{

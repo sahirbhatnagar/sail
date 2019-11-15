@@ -48,11 +48,11 @@ for the estimated function and the second element is for the true function
 
 \item{title_z}{title for the plot, Default: ''}
 
-\item{xlab}{chracter for xlabel. if missing, variable name is used}
+\item{xlab}{character for xlabel. if missing, variable name is used}
 
-\item{ylab}{chracter for ylabel. if missing, variable name is used}
+\item{ylab}{character for ylabel. if missing, variable name is used}
 
-\item{zlab}{chracter for zlabel. if missing, variable name is used}
+\item{zlab}{character for zlabel. if missing, variable name is used}
 
 \item{...}{currently ignored}
 }

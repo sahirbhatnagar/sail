@@ -31,7 +31,7 @@ See the [online vignette](http://sahirbhatnagar.com/sail/) for details about the
 This method requires four inputs (let _n_ be the number of observations and _p_ the number of **X** variables):  
 1. **X**: _n_ x _p_ matrix of covariates. Can be high-dimensional, i.e., p >> n. Can also be continuous, categorical or a combination of both.  
 2. **Y**: a continuous response of length _n_  
-3. **E**: an exposure variable of length _n_. Can be continous or categorical.    
+3. **E**: an exposure variable of length _n_. Can be continuous or categorical.    
 4. A basis expansion function **f(X_j)** to be applied to each column of **X**, for example 
 
 ```R

@@ -2,7 +2,7 @@
 % Please edit documentation in R/simulations.R
 \name{gendataPaper}
 \alias{gendataPaper}
-\title{Simulation Scenarion from Bhatnagar et al. (2018+) sail paper}
+\title{Simulation Scenario from Bhatnagar et al. (2018+) sail paper}
 \usage{
 gendataPaper(n, p, corr = 0, E = truncnorm::rtruncnorm(n, a = -1, b =
   1), betaE = 2, SNR = 2, hierarchy = c("strong", "weak", "none"),

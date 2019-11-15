@@ -335,7 +335,7 @@ createfolds <- function(y, k = 10, list = FALSE, returnTrain = FALSE) {
 #' @rdname cv.lspath
 #' @seealso \code{\link{cv.sail}}
 #' @details The output of the \code{cv.lspath} function only returns values for
-#'   those tuning paramters that converged. \code{cvcompute, getmin,
+#'   those tuning parameters that converged. \code{cvcompute, getmin,
 #'   lambda.interp} are taken verbatim from the \code{glmnet} package
 #' @references Jerome Friedman, Trevor Hastie, Robert Tibshirani (2010).
 #'   Regularization Paths for Generalized Linear Models via Coordinate Descent.

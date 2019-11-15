@@ -164,7 +164,7 @@ Function to fit the Sparse Additive Interaction Model with
   regression method that ensures the interaction term is non-zero only if its
   corresponding main-effects are non-zero. This model only considers the
   interactions between a single exposure (E) variable and a high-dimensional
-  matrix (X). Additve (non-linear) main effects and interactions can be
+  matrix (X). Additive (non-linear) main effects and interactions can be
   specified by the user. This can also be seen as a varying-coefficient
   model.
 }
