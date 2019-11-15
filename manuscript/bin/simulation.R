@@ -6,6 +6,7 @@ df <- df %>% separate(Model, into = c("simnames","betaE","corr","lambda.type","n
                       sep = "/")
 
 DT <- as.data.table(df, stringsAsFactors = FALSE)
+DT <- DT[Method!="linearsail"]
 DT <- DT[parameterIndex != "parameterIndex_4"]
 # DT[parameterIndex=="parameterIndex_1", table(Method)] %>% names %>% dput
 # DT[, table(Method)]
@@ -16,7 +17,7 @@ DT[Method=="Adaptivelasso", Method := "adaptive lasso"]
 DT[Method=="sailweak", Method := "sail weak"]
 # DT[Method=="sail", Method := "sail strong"]
 # DT[Method=="Asail", Method := "Asail strong"]
-DT[Method=="linearsail", Method := "linear sail"]
+# DT[Method=="linearsail", Method := "linear sail"]
 DT[, Method := droplevels(Method)]
 # DT[, table(Method)]
 # DT[, table(Method)] %>% names %>% dput
@@ -25,8 +26,11 @@ appender <- function(string) TeX(paste(string))
 # DT[, method := factor(Method, levels = c("lasso","Alasso","lassoBT", "GLinternet", "HierBasis", "SPAM", "gamsel",
 #                                        "sail strong", "Asail strong", "sail weak", "Asail weak"))]
 
+# DT[, method := factor(Method, levels = c("lasso","adaptive lasso","lassoBT", "GLinternet", "HierBasis", "SPAM", "gamsel",
+                                         # "sail", "adaptive sail",  "sail weak", "linear sail"))]
+
 DT[, method := factor(Method, levels = c("lasso","adaptive lasso","lassoBT", "GLinternet", "HierBasis", "SPAM", "gamsel",
-                                         "sail", "adaptive sail",  "sail weak", "linear sail"))]
+                                         "sail", "adaptive sail",  "sail weak"))]
 
 # DT[, table(method)]
 # DT[, table(parameterIndex)]
@@ -122,6 +126,11 @@ print(xres, rotate.rownames = FALSE, rotate.colnames = FALSE, include.rownames =
 
 ## ---- plot-mse-sim ----
 
+ccols <- c(RColorBrewer::brewer.pal(9, "Blues")[c(3,4)],
+           RColorBrewer::brewer.pal(9, "Greens")[c(3,4)],
+           RColorBrewer::brewer.pal(9, "Purples")[c(3,4,5)],
+           RColorBrewer::brewer.pal(9, "Reds")[c(4:6)])
+
 p1_mse <- ggplot(DT, aes(method, mse, fill = method)) +
     ggplot2::geom_boxplot() +
     # gg_sy +
@@ -133,7 +142,8 @@ p1_mse <- ggplot(DT, aes(method, mse, fill = method)) +
                    repeat.tick.labels = 'left',
                    labeller = as_labeller(appender,
                                           default = label_parsed)) +
-    scale_fill_manual(values=RColorBrewer::brewer.pal(12, "Paired")[-11], guide=guide_legend(ncol=3)) +
+    # scale_fill_manual(values=RColorBrewer::brewer.pal(12, "Paired")[-11], guide=guide_legend(ncol=3)) +
+  scale_fill_manual(values=ccols, guide=guide_legend(ncol=3)) +
     # ggplot2::labs(y = "Test Set MSE", title = "") + xlab("") +
     labs(x="", y="Test Set MSE",
          title="Test Set MSE",
@@ -144,9 +154,6 @@ p1_mse <- ggplot(DT, aes(method, mse, fill = method)) +
     theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1),
                              legend.text=element_text(size=14),
                              strip.text = element_text(size=14))
-
-# , legend.text=element_text(size=18)
-
 
 reposition_legend(p1_mse, 'center', panel='panel-2-3')
 
