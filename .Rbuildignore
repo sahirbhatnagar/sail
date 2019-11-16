@@ -24,3 +24,5 @@
 ^manuscript$
 ^rda/scott/$
 ^appveyor\.yml$
+^CRAN-RELEASE$
+^cran-comments\.md$

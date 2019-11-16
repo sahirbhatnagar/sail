@@ -189,17 +189,33 @@
 \title{A Sparse Additive Model for High-Dimensional Interactions with an Exposure Variable}
 %\author{SRB}
 
+%David L Olds Department of Pediatrics, University of Colorado School of Medicine, Denver David.Olds@ucdenver.edu
+
+%Michael S. Kobor Department of Medical Genetics, University of British Columbia msk@cmmt.ubc.ca
+
+%Michael J. Meaney, Singapore Institute for Clinical Sciences, Singapore; McGill University, michael.meaney@mcgill.ca
+
 \author[1,2]{Sahir R Bhatnagar}
-\author[2]{Tianyuan Lu}
-\author[2]{Amanda Lovato}
-\author[3]{Kieran O'Donnell}
-\author[4]{Yi Yang}
-\author[1,2,5]{\mbox{Celia MT Greenwood}}
+\author[3,4]{Tianyuan Lu}
+\author[5]{Amanda Lovato}
+\author[6]{David L Olds}
+\author[7]{Michael S Kobor}
+\author[8]{Michael J Meaney}
+\author[9]{Kieran O'Donnell}
+\author[10]{Yi Yang}
+\author[1,3,5]{\mbox{Celia MT Greenwood}}
+
 \affil[1]{Department of Epidemiology, Biostatistics and Occupational Health, McGill University}
-\affil[2]{Lady Davis Institute, Jewish General Hospital, Montr\'{e}al, QC}
-\affil[3]{Department of Psychiatry, McGill University}
-\affil[4]{Department of Mathematics and Statistics, McGill University}
-\affil[5]{Departments of Oncology and Human Genetics, McGill University}
+\affil[2]{Department of Diagnostic Radiology, McGill University}
+\affil[3]{Quantitative Life Sciences, McGill University}
+\affil[4]{Lady Davis Institute, Jewish General Hospital, Montr\'{e}al, QC}
+\affil[5]{Statistics Canada, Ottawa, ON}
+\affil[6]{Department of Pediatrics, University of Colorado School of Medicine, Denver}
+\affil[7]{Department of Medical Genetics, University of British Columbia, BC}
+\affil[8]{Singapore Institute for Clinical Sciences, Singapore; McGill University}
+\affil[9]{Department of Psychiatry, McGill University}
+\affil[10]{Department of Mathematics and Statistics, McGill University}
+\affil[11]{Departments of Oncology and Human Genetics, McGill University}
 
 %\date{October 19, 2019}
 
@@ -266,7 +282,7 @@ We develop a computationally efficient fitting algorithm with automatic tuning p
 Through an extensive simulation study, we show that \sail ~outperforms existing penalized regression methods in terms of prediction accuracy and support recovery when there are non-linear interactions with an exposure variable. 
 We then apply \sail ~to detect non-linear interactions between genes and a prenatal psychosocial intervention program on cognitive performance in children at 4 years of age. 
 Results from our method show that individuals who are genetically predisposed to lower educational attainment are those who stand to benefit the most from the intervention. 
-Our algorithms are available in an R package (\url{https://github.com/greenwoodlab/sail}).
+Our algorithms are in an R package available on CRAN.
 \end{abstract}
 
 
@@ -474,7 +490,7 @@ First, we develop a model for non-linear interactions with a key exposure variab
 Second, through simulation studies, we show improved performance in terms of prediction accuracy and support recovery over existing methods that only consider linear interactions or additive main effects.
 Third, we show that our method possesses the oracle property~\citep{fan2001variable}, i.e., it performs as well as if the true model were known in advance.
 Fourth, we demonstrate the performance of our method in two applications: 1) gene-environment interactions in a prenatal psychosocial intervention program~\cite{olds1998long} and 2) a study aimed at identifying which clinical variables influence mortality rates amongst seriously ill hospitalized patients~\citep{connors1995controlled}.
-Fifth, we implement our algorithms in the \texttt{sail} R package with extensive documentation (\url{http://sahirbhatnagar.com/sail/}). 
+Fifth, we implement our algorithms in the \texttt{sail} R package on CRAN, along with extensive documentation available at \url{http://sahirbhatnagar.com/sail/}. 
 In particular, our implementation also allows for linear interaction models, user-defined basis expansions, a cross-validation procedure for selecting the optimal tuning parameter, and differential shrinkage parameters to apply the adaptive lasso~\citep{zou2006adaptive} idea.
 
 The rest of the paper is organized as follows. Section~\ref{sec:sail_algorithm} describes our optimization procedure and some details about the algorithm used to fit the \texttt{sail} model for the least squares case. Theoretical results are given in Section~\ref{sec:theory}. In Section~\ref{sec:sail_simulation}, through simulation studies we compare the performance of our proposed approach and demonstrate the scenarios where it can be advantageous to use \sail ~over existing methods. Section~\ref{sec:sail_rda} contains some real data examples and Section~\ref{sec:sail_discussion} discusses some limitations and future directions.
@@ -920,7 +936,7 @@ The first four variables are non-zero (i.e. active in the response), while the r
 The outcome $Y$ is then generated following one of the models and assumptions described below.
 
 We evaluate the performance of our method on three of its defining characteristics: 1) the strong heredity property, 2) non-linearity of predictor effects and 3) interactions. 
-Simulation scenarios are designed specifically to test the performance of these characteristics
+Simulation scenarios are designed specifically to test the performance of these characteristics.
 
 
 \begin{enumerate}
@@ -961,7 +977,8 @@ The prediction accuracy and variable selection results for each of the five simu
 <<plot-mse-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Boxplots of the test set mean squared error from 200 simulations for each of the five simulation scenarios.", eval=finalversion>>=
 @
 
-We see that \sail~,\texttt{adaptive sail} and \texttt{sail weak} have the best performance in terms of both MSE and yielding correct sparse models when the truth follows a strong heredity (scenario 1a), as we would expect, since this is exactly the scenario that our method is trying to target. Our method is also competitive when only main effects are present (scenario 3) and performs just as well as methods that only consider linear and non-linear main effects (\texttt{HierBasis}, \texttt{SPAM}), owing to the penalization applied to the interaction parameter. Due to the heredity property being violated in scenario 1c), no method can identify the correct model with the exception of \texttt{GLinternet}. When only linear effects and interactions are present (scenario 2), we see that \texttt{adaptive sail} has similar MSE compared to the other linear interaction methods (\texttt{lassoBT} and \texttt{GLinternet}) with a better TPR and FPR. The \texttt{lasso} and \texttt{adaptive lasso} have good test set MSE performance but poor sensitivity. Additional results are available in Supplemental Section~\ref{ap:simulation}. %Specifically, in Figure~\ref{fig:plot-mse-nactive-sim} we plot the mean MSE against the mean number of active variables $\pm 1$ standard deviation (SD). Figures~\ref{fig:plot-tpr-sim} and~\ref{fig:plot-fpr-sim} show the true positive and false positive rates, respectively. Figure~\ref{fig:plot-nactive-sim} shows the number of active variables.
+We see that \sail~,\texttt{adaptive sail} and \texttt{sail weak} have the best performance in terms of both MSE and yielding correct sparse models when the truth follows a strong heredity (scenario 1a), as we would expect, since this is exactly the scenario that our method is trying to target. Our method is also competitive when only main effects are present (scenario 3) and performs just as well as methods that only consider linear and non-linear main effects (\texttt{HierBasis}, \texttt{SPAM}), owing to the penalization applied to the interaction parameter. Due to the heredity property being violated in scenario 1c), no method can identify the correct model with the exception of \texttt{GLinternet}. When only linear effects and interactions are present (scenario 2), we see that \texttt{adaptive sail} has similar MSE compared to the other linear interaction methods (\texttt{lassoBT} and \texttt{GLinternet}) with a better TPR and FPR. Overall, our simulation study results suggests that \sail ~outperforms existing methods when the true model contains non-linear interactions, and is competitive even when the truth only has either linear or additive main effects. 
+%The \texttt{lasso} and \texttt{adaptive lasso} have good test set MSE performance but poor sensitivity. %Additional results are available in Supplemental Section~\ref{ap:simulation}. %Specifically, in Figure~\ref{fig:plot-mse-nactive-sim} we plot the mean MSE against the mean number of active variables $\pm 1$ standard deviation (SD). Figures~\ref{fig:plot-tpr-sim} and~\ref{fig:plot-fpr-sim} show the true positive and false positive rates, respectively. Figure~\ref{fig:plot-nactive-sim} shows the number of active variables.
 
 <<plot-tpr-fpr-sim, dev="cairo_pdf", fig.asp=1, fig.width=12, fig.heigh=11, fig.pos = 'H', fig.cap="Means $\\pm 1$ standard deviation of true positive rate vs. false positive rate from 200 simulations for each of the five scenarios. $|\\mathcal{H}|$ is the number of truly associated variables.", eval=FALSE>>=
 @
@@ -1185,14 +1202,17 @@ The interaction between ARF/MOSF and age shows the risk incurred by ARF/MOSF is 
 
 In this article we have introduced the sparse additive interaction learning model \sail ~for detecting non-linear interactions with a key environmental or exposure variable in high-dimensional settings.
 Using a simple reparametrization, we are able to achieve either the weak or strong heredity property without using a complex penalty function. 
-We developed a blockwise coordinate descent algorithm to solve the \sail ~objective function  for the least-squares loss function.
+We developed a blockwise coordinate descent algorithm to solve the \sail ~objective function  for the least-squares loss.
 We further studied the asymptotic properties of our method and showed that under certain conditions, it possesses the oracle property.
-All our algorithms are implemented in a computationally efficient, well-documented and freely available \texttt{R} package.
+All our algorithms have been implemented in a computationally efficient, well-documented and freely available \texttt{R} package on CRAN.
 Furthermore, our method is flexible enough to handle any type of basis expansion including the identity map, which allows for linear interactions.
 Our implementation allows the user to selectively apply the basis expansions to the predictors, allowing for example, a combination of continuous and categorical predictors.
 An extensive simulation study shows that \sail, \texttt{adaptive sail} and \texttt{sail weak} outperform existing penalized regression methods in terms of prediction accuracy, sensitivity and specificity when there are non-linear main effects only, as well as interactions with an exposure variable.
-Two real-data applications show the utility of our method to identify non-linear interactions in biological and epidemiological data. 
-In general, we observed that \sail ~achieved similar prediction performance to other interaction selection methods, while producing much more parsimonious models. 
+We then demonstrated the utility of our method to identify non-linear interactions in both biological and epidemiological data. 
+In the NFP program, we showed that individuals who are genetically predisposed to lower educational attainment are those who stand to benefit the most from the intervention. 
+Analysis of the SUPPORT data revealed that those having undergone ARF/MOSF, an increased number of comorbidities decreased their chances of survival, while there seemed to be no such relationship for non-ARF/MOSF patients. 
+In a bootstrap analysis of both datasets, we observed that \sail tended to select sparser models while maintaining similar prediction performance compared to other interaction selection methods. 
+%In general, we observed that \sail ~achieved similar prediction performance to other interaction selection methods, while producing much more parsimonious models. 
 
 Our method however does have its limitations. \sail ~can currently only handle $X_E \cdot f(X)$ or $f(X_E) \cdot X$ and does not allow for $f(X, X_E)$, i.e., only one of the variables in the interaction can have a non-linear effect and we do not consider the tensor product. 
 The reparametrization leads to a non-convex optimization problem which makes convergence rates difficult to assess, though we did not experience any major convergence issues in our simulations and real data analysis. 
@@ -1222,8 +1242,13 @@ We also provide a first software implementation for these models.
 
 \newpage
 
+\setcounter{page}{1}
+
 \appendix
 \counterwithin{figure}{section}
+
+
+
 
 \section{Proofs} \label{ap:proofs}
 
@@ -1849,7 +1874,7 @@ This is the same $\lambda_{max}$ as the least-squares strong heredity \sail ~mod
 
 
 
-
+\begin{comment}
 
 \section{Simulation Results} \label{ap:simulation}
 
@@ -1876,8 +1901,11 @@ This is the same $\lambda_{max}$ as the least-squares strong heredity \sail ~mod
 	\caption{Selection rates across 200 simulations of scenario 1a) for strong heredity \sail.}\label{fig:upset}
 \end{figure}
 
+
+
 \FloatBarrier
 
+\end{comment}
 
 \section{Additional Results on PRS for Educational Attainment}
 
