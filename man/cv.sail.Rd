@@ -62,7 +62,7 @@ Default: FALSE}
 
 \item{parallel}{If \code{TRUE}, use parallel \code{foreach} to fit each fold.
 Must register parallel before hand using the
-\code{\link[doMC]{registerDoMC}} function from the \code{doMC} package. See
+\code{\link[doParallel]{registerDoParallel}} function from the \code{doParallel} package. See
 the example below for details. Default: FALSE}
 }
 \value{
@@ -121,8 +121,8 @@ cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
                  basis = f.basis, nfolds = 10)
 
 # Parallel
-library(doMC)
-registerDoMC(cores = 4)
+library(doParallel)
+registerDoParallel(cores = 4)
 cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
                  parallel = TRUE, nlambda = 100, nfolds = 10)
 # plot cross validated curve

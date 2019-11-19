@@ -66,7 +66,7 @@ Updated: April 6, 2018
 \examples{
 f.basis <- function(i) splines::bs(i, degree = 3)
 fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-            basis = f.basis, dfmax = 10)
+            basis = f.basis, dfmax = 5, nlambda = 50)
 predict(fit) # predicted response for whole solution path
 predict(fit, s = 0.45) # predicted response for a single lambda value
 predict(fit, s = c(2.15, 0.32, 0.40), type="nonzero") # nonzero coefficients

@@ -181,8 +181,8 @@ plotSailCoef <- function(coefs, lambda, group, df, dev, vnames, environ,
 #' \dontrun{
 #' if(interactive()){
 #' # Parallel
-#' library(doMC)
-#' registerDoMC(cores = 4)
+#' library(doParallel)
+#' registerDoParallel(cores = 4)
 #' data("sailsim")
 #' f.basis <- function(i) splines::bs(i, degree = 5)
 #' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
@@ -305,8 +305,8 @@ plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
 #' \dontrun{
 #' if(interactive()){
 #' # Parallel
-#' library(doMC)
-#' registerDoMC(cores = 4)
+#' library(doParallel)
+#' registerDoParallel(cores = 4)
 #' data("sailsim")
 #' f.basis <- function(i) splines::bs(i, degree = 5)
 #' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,

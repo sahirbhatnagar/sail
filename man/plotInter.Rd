@@ -69,8 +69,8 @@ Takes a fitted sail object produced by \code{sail()} or
 \dontrun{
 if(interactive()){
 # Parallel
-library(doMC)
-registerDoMC(cores = 4)
+library(doParallel)
+registerDoParallel(cores = 4)
 data("sailsim")
 f.basis <- function(i) splines::bs(i, degree = 5)
 cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
