@@ -82,12 +82,13 @@ In this instance, since we provided a user-defined design matrix and `expand = F
 We can use cross-validation to find the optimal value of lambda:
 
 ```{r}
-# library(doMC) only works on Mac or Linux
-# registerDoMC(cores = 2)
+library(doParallel)
+registerDoParallel(cores = 2)
 cvfit_design <- cv.sail(x = x, y = sailsim$y, e = sailsim$e, 
                         expand = FALSE,
+                        dfmax = 10, # to speed up vignette build time
                         group = attr(x, "assign"), verbose = 0,
-                        nfolds = 10, parallel = FALSE)
+                        nfolds = 5, parallel = TRUE, nlambda = 50)
 ```
 
 We can plot the cross-validated mean squared error as a function of lambda:

@@ -24,7 +24,7 @@ Suggests:
     grpreg,
     truncnorm,
     foreach,
-    doMC,
+    doParallel,
     testthat,
     covr,
     vdiffr,
