@@ -80,18 +80,15 @@
 #'   models with the strong heredity property (2018+). Preprint.
 #' @seealso \code{\link[splines]{bs}} \code{\link{sail}}
 #' @examples
-#' \dontrun{
 #' if(interactive()){
-#' f.basis <- function(i) splines::bs(i, degree = 5)
+#' f.basis <- function(i) splines::bs(i, degree = 3)
 #' data("sailsim")
-#' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-#'                  basis = f.basis, nfolds = 10)
-#'
 #' # Parallel
 #' library(doParallel)
-#' registerDoParallel(cores = 4)
+#' registerDoParallel(cores = 2)
 #' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-#'                  parallel = TRUE, nlambda = 100, nfolds = 10)
+#'                  parallel = TRUE, nlambda = 50,
+#'                  nfolds = 3, dfmax = 5)
 #' # plot cross validated curve
 #' plot(cvfit)
 #' # plot solution path
@@ -115,7 +112,6 @@
 #' newe <- sailsim$e * 2
 #' predict(cvfit, newx = newx, newe = newe, s = "lambda.min")
 #'  }
-#' }
 #' @rdname cv.sail
 #' @export
 cv.sail <- function(x, y, e, ...,

@@ -31,15 +31,13 @@ The call that produced the object \code{x} is printed, followed by a
   \code{type="gaussian"} this is the r-squared.
 }
 \examples{
-\dontrun{
 if(interactive()){
 data("sailsim")
 f.basis <- function(i) splines::bs(i, degree = 3)
 fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-            basis = f.basis)
+            basis = f.basis, dfmax = 5, nlambda = 50)
 fit
  }
-}
 }
 \seealso{
 \code{\link{sail}}, \code{\link{cv.sail}}

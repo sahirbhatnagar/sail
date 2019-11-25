@@ -162,7 +162,6 @@
 #'
 #' #predicted response at a specific value of lambda
 #' predict(fit, s = 0.5)
-#' \dontrun{
 #' if(interactive()){
 #' # plot solution path for main effects and interactions
 #' plot(fit)
@@ -171,7 +170,6 @@
 #' # plot solution path only for interactions
 #' plot(fit, type = "interaction")
 #'  }
-#' }
 #'
 #' @references Jerome Friedman, Trevor Hastie, Robert Tibshirani (2010).
 #'   Regularization Paths for Generalized Linear Models via Coordinate Descent.

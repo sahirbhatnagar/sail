@@ -1190,7 +1190,7 @@ The interaction between ARF/MOSF and age shows the risk incurred by ARF/MOSF is 
 
 
 
-<<dzclass-interaction, fig.width=12, fig.height=8, fig.pos= 'H', fig.cap="Illustration of estimated interaction effects identified by \\texttt{sail} for the SUPPORT data. Median prediction curves in dark colors based on 200 train/validate/test splits represent the estimated marginal interaction effects. Coefficients estimated in each of the 200 train/validate/test splits were used to generate prediction curves representing a 90\\% confidence interval colored in corresponding light colors.", eval=finalversion, results='hide'>>=
+<<dzclass-interaction, fig.width=12, fig.height=8, fig.pos= 'h!', fig.cap="Illustration of estimated interaction effects identified by \\texttt{sail} for the SUPPORT data. Median prediction curves in dark colors based on 200 train/validate/test splits represent the estimated marginal interaction effects. Coefficients estimated in each of the 200 train/validate/test splits were used to generate prediction curves representing a 90\\% confidence interval colored in corresponding light colors.", eval=finalversion, results='hide'>>=
 @
 
 

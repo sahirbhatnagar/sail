@@ -178,15 +178,15 @@ plotSailCoef <- function(coefs, lambda, group, df, dev, vnames, environ,
 #'   plotted against \code{xvar}, where \code{basis} is the expansion provided
 #'   in the original call to \code{sail}.
 #' @examples
-#' \dontrun{
 #' if(interactive()){
 #' # Parallel
 #' library(doParallel)
-#' registerDoParallel(cores = 4)
+#' registerDoParallel(cores = 2)
 #' data("sailsim")
-#' f.basis <- function(i) splines::bs(i, degree = 5)
+#' f.basis <- function(i) splines::bs(i, degree = 3)
 #' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-#'                  basis = f.basis, nfolds = 10, parallel = TRUE)
+#'                  basis = f.basis, nfolds = 3, parallel = TRUE,
+#'                  dfmax = 5)
 #' # plot cv-error curve
 #' plot(cvfit)
 #' # non-zero estimated coefficients at lambda.min
@@ -195,7 +195,6 @@ plotSailCoef <- function(coefs, lambda, group, df, dev, vnames, environ,
 #' plotMain(cvfit$sail.fit, x = sailsim$x, xvar = "X4",
 #'          s = cvfit$lambda.min, f.truth = sailsim$f4)
 #'  }
-#' }
 #' @seealso \code{\link{coef.sail}} \code{\link{predict.sail}}, \code{\link[graphics]{rug}}
 #' @rdname plotMain
 #' @importFrom graphics abline axis legend lines mtext par plot.default segments text
@@ -302,15 +301,14 @@ plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
 #' @param ... currently ignored
 #' @return A plot is produced and nothing is returned
 #' @examples
-#' \dontrun{
 #' if(interactive()){
 #' # Parallel
 #' library(doParallel)
-#' registerDoParallel(cores = 4)
+#' registerDoParallel(cores = 2)
 #' data("sailsim")
-#' f.basis <- function(i) splines::bs(i, degree = 5)
+#' f.basis <- function(i) splines::bs(i, degree = 3)
 #' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-#'                  basis = f.basis, nfolds = 10, parallel = TRUE)
+#'                  basis = f.basis, nfolds = 3, parallel = TRUE, dfmax = 10)
 #' # plot cv-error curve
 #' plot(cvfit)
 #' # non-zero estimated coefficients at lambda.min
@@ -321,7 +319,6 @@ plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
 #'           s = cvfit$lambda.min,
 #'           title_z = "Estimated")
 #'  }
-#' }
 #' @seealso \code{\link[graphics]{persp}} \code{\link{coef.sail}}
 #'   \code{\link{predict.sail}}, \code{\link[graphics]{rug}}
 #' @rdname plotInter
@@ -390,12 +387,13 @@ plotInter <- function(object, x, xvar, s, f.truth, interation.only = TRUE, truth
     z_range <- c(min(z.est), max(z.est))
   }
 
-  op <- par(bg = "white")
+
 
   # c(bottom, left, top, right)
   if (truthonly) {
-    par(mfrow = c(1, 1), tcl = -0.5, family = "serif", omi = c(0.2, 0.2, 0, 0))
-    par(mai = c(0., 0.2, 0.4, 0.))
+    oldpar <- par(mfrow = c(1, 1), tcl = -0.5, family = "serif", omi = c(0.2, 0.2, 0, 0),
+        mai = c(0., 0.2, 0.4, 0.), bg = "white")
+    on.exit(par(oldpar))
     graphics::persp(x, e, z.truth,
       zlim = z_range,
       theta = 30, phi = 30,
@@ -412,8 +410,9 @@ plotInter <- function(object, x, xvar, s, f.truth, interation.only = TRUE, truth
       main = "Truth"
     )
   } else if (!missing(f.truth)) {
-    par(mfrow = c(1, 2), tcl = -0.5, family = "serif", omi = c(0.2, 0.2, 0, 0))
-    par(mai = c(0., 0.8, 0.6, 0.))
+    oldpar <- par(mfrow = c(1, 2), tcl = -0.5, family = "serif", omi = c(0.2, 0.2, 0, 0),
+        mai = c(0., 0.8, 0.6, 0.), bg = "white")
+    on.exit(par(oldpar))
     graphics::persp(x, e, z.truth,
       zlim = z_range,
       theta = 30, phi = 30,
@@ -444,8 +443,9 @@ plotInter <- function(object, x, xvar, s, f.truth, interation.only = TRUE, truth
       main = title_z
     )
   } else {
-    par(mfrow = c(1, 1), tcl = -0.5, family = "serif", omi = c(0.2, 0.2, 0, 0))
-    par(mai = c(0., 0.2, 0.4, 0.))
+    oldpar <- par(mfrow = c(1, 1), tcl = -0.5, family = "serif", omi = c(0.2, 0.2, 0, 0),
+        mai = c(0., 0.2, 0.4, 0.), bg = "white")
+    on.exit(par(oldpar))
     graphics::persp(x, e, z.est,
       cex.lab = 3,
       cex.main = 3,

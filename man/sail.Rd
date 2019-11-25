@@ -204,7 +204,6 @@ predict(fit)
 
 #predicted response at a specific value of lambda
 predict(fit, s = 0.5)
-\dontrun{
 if(interactive()){
 # plot solution path for main effects and interactions
 plot(fit)
@@ -213,7 +212,6 @@ plot(fit, type = "main")
 # plot solution path only for interactions
 plot(fit, type = "interaction")
  }
-}
 
 }
 \references{
