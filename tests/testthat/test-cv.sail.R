@@ -1,6 +1,6 @@
 library(doParallel)
 doParallel::registerDoParallel(cores = 2)
-expect_matrix <- function(x) testthat::expect_identical(class(x), "matrix")
+expect_matrix <- function(x) inherits(x,"matrix")
 set.seed(1234) # we set the seed so that the cv error curves remain identical when testing (randomness is introduced due to CV folds)
 
 context("cv.sail model fit, parallel, predict, plot with both packaged datasets")
@@ -45,13 +45,13 @@ test_that("no error in fitting cv.sail and parallel version for both simulated a
 
 test_that("no error in predict for cv.sail", {
 
-  expect_matrix(predict(cvfit_sim, type = "nonzero", s = "lambda.min"))
-  expect_matrix(predict(cvfit_oasis, type = "nonzero", s = "lambda.min"))
-  expect_matrix(predict(cvfit_parallel, type = "nonzero", s = "lambda.min"))
+  expect_true(expect_matrix(predict(cvfit_sim, type = "nonzero", s = "lambda.min")))
+  expect_true(expect_matrix(predict(cvfit_oasis, type = "nonzero", s = "lambda.min")))
+  expect_true(expect_matrix(predict(cvfit_parallel, type = "nonzero", s = "lambda.min")))
 
-  expect_matrix(predict(cvfit_sim))
-  expect_matrix(predict(cvfit_oasis))
-  expect_matrix(predict(cvfit_parallel))
+  expect_true(expect_matrix(predict(cvfit_sim)))
+  expect_true(expect_matrix(predict(cvfit_oasis)))
+  expect_true(expect_matrix(predict(cvfit_parallel)))
 
   expect_equivalent(predict(cvfit_sim, s = Inf),
                     matrix(rep(cvfit_sim$sail.fit$a0[1], cvfit_sim$sail.fit$nobs)))
