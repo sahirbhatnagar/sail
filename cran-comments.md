@@ -29,7 +29,10 @@ I have used the `on.exit()` function in the `plotInter()` function to fix this i
 
 ### You write information messages to the console that cannot be easily suppressed. It is more R like to generate objects that can be used to extract the information a user is interested in, and then print() that object. Instead of print()/cat() rather use message()/warning()  or if(verbose)cat(..) if you really have to write text to the console. (except for print() and summary() functions)
 
-I'm not sure which function is being referred to here. I have a print method for objects of class sail. I also have a `verbose` argument in the main function of the package `sail()`. All other messages are given as `warnings()`.
+I have replaced `cat()` in the `kkt()` function with `warning()`
 
 
+#### Please halve these tests runtimes: The overall threshold for the whole package check on CRAN is roughly 10 min. This had 15 min.
+
+Fixed. I have significantly reduced the tests times. 
 
