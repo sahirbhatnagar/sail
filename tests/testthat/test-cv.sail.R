@@ -5,6 +5,9 @@ set.seed(1234) # we set the seed so that the cv error curves remain identical wh
 
 context("cv.sail model fit, parallel, predict, plot with both packaged datasets")
 
+testthat::skip_on_cran()
+testthat::skip_on_appveyor()
+
 data("sailsim")
 data("oasis")
 f.basis <- function(i) splines::bs(i, degree = 3)

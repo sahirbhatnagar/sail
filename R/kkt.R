@@ -121,12 +121,12 @@ KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
 
   for (l in 1:length(lambda)) {
     if (abs(B0[l, ]) > thr) {
-      cat("violate at b0 ", B0[l, ], " lambda=", lambda[l], "\n")
+      warning("violate at b0 ", B0[l, ], " lambda=", lambda[l], "\n")
       ctr <- ctr + 1
     }
   }
 
-  cat("% of violations for beta0", ctr / length(lambda), "\n")
+  warning("% of violations for beta0", ctr / length(lambda), "\n")
 
 
   # KKT for betaE -----------------------------------------------------------
@@ -147,19 +147,19 @@ KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
     if (betaE[l] == 0) {
       BE <- dl_norm_betaE / (-lambda[l] * (1 - lambda2) * we)
       if (abs(BE) > 1 + thr) {
-        cat("violate at bE = 0", abs(BE), " lambda=", lambda[l], "\n")
+        warning("violate at bE = 0", abs(BE), " lambda=", lambda[l], "\n")
         ctr <- ctr + 1
       }
     } else {
       BE <- as.vector(dl_norm_betaE + lambda[l] * (1 - lambda2) * we * sign(betaE[l]))
       if (abs(BE) > thr) {
-        cat("violate at bE != 0", abs(BE), " lambda=", lambda[l], "\n")
+        warning("violate at bE != 0", abs(BE), " lambda=", lambda[l], "\n")
         ctr <- ctr + 1
-      } # else {cat("no violation at bE != 0", BE, " lambda=",lambda[l], "\n")}
+      } # else {warning("no violation at bE != 0", BE, " lambda=",lambda[l], "\n")}
     }
   }
 
-  cat("% of violations for betaE", ctr / length(lambda), "\n")
+  warning("% of violations for betaE", ctr / length(lambda), "\n")
   # return(list(v = ctr/length(lambda)))
 
   # browser()
@@ -181,20 +181,20 @@ KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
       if (gamma[g, l] == 0) {
         BE <- dl_norm_gammaj / (-lambda[l] * (1 - lambda2) * we)
         if (abs(BE) > 1 + thr) {
-          cat("violate at gamma_j = 0", BE, " lambda=", lambda[l], "\n")
+          warning("violate at gamma_j = 0", BE, " lambda=", lambda[l], "\n")
           ctr <- ctr + 1
         }
       } else {
         BE <- as.vector(dl_norm_gammaj + lambda[l] * (1 - lambda2) * we * sign(gamma[g, l]))
         if (abs(BE) > thr) {
-          cat("violate at gamma_j != 0", BE, " lambda=", lambda[l], "\n")
+          warning("violate at gamma_j != 0", BE, " lambda=", lambda[l], "\n")
           ctr <- ctr + 1
-        } # else {cat("no violation at bE != 0", BE, " lambda=",lambda[l], "\n")}
+        } # else {warning("no violation at bE != 0", BE, " lambda=",lambda[l], "\n")}
       }
     }
   }
 
-  cat("% of violations for gamma", ctr / length(lambda), "\n")
+  warning("% of violations for gamma", ctr / length(lambda), "\n")
 
 
 
@@ -223,22 +223,22 @@ KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
 
       if (b_norm != 0) {
         AA <- dl_prod + beta[ind, l] * lambda[l] * (1 - lambda2) * wj[g] / b_norm
-        # cat(AA,"\n")
+        # warning(AA,"\n")
         if (sum(abs(AA)) >= thr) {
-          cat("violate at bX != 0", sum(abs(AA)), " lambda=", lambda[l], "\n")
+          warning("violate at bX != 0", sum(abs(AA)), " lambda=", lambda[l], "\n")
           ctr <- ctr + 1
         }
       } else {
         BB <- dl_norm - lambda[l] * (1 - lambda2) * wj[g]
-        # cat(BB,"\n")
+        # warning(BB,"\n")
         if (BB > thr) {
-          cat("violate at bX = 0", BB, " lambda=", lambda[l], "\n")
+          warning("violate at bX = 0", BB, " lambda=", lambda[l], "\n")
           ctr <- ctr + 1
         }
       }
     }
   }
-  cat("% of violations for bTheta", ctr / length(lambda), "\n")
+  warning("% of violations for bTheta", ctr / length(lambda), "\n")
   return(ctr / length(lambda))
 }
 # nocov end

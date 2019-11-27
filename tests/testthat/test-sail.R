@@ -5,6 +5,9 @@ context("sail model fit strong and weak hierarchy with both packaged datasets")
 data("sailsim")
 data("oasis")
 
+testthat::skip_on_cran()
+testthat::skip_on_appveyor()
+
 # data for weak hierarchy
 DT <- gendata(n = 200, p = 10, corr = 0, SNR = 2, betaE = 2, parameterIndex = 2)
 
