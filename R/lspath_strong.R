@@ -17,7 +17,7 @@ lspath <- function(x,
                    expand,
                    group,
                    group.penalty,
-                   weights, # observation weights currently not being used
+                   weights,
                    nlambda,
                    thresh,
                    fdev,
@@ -215,6 +215,7 @@ lspath <- function(x,
           x = x_tilde,
           y = R,
           # thresh = 1e-12,
+          weights = weights
           penalty.factor = wje,
           lambda = c(.Machine$double.xmax, LAMBDA * alpha),
           standardize = F, intercept = F
@@ -276,7 +277,7 @@ lspath <- function(x,
               )$beta[-1, ]
             )
           } else {
-            theta_next_j <- stats::lm.fit(x_tilde_2[[j]], R)$coef
+            theta_next_j <- stats::lm.fit(x_tilde_2[[j]], R, w=weights)$coef
           }
 
           Delta <- x_tilde_2[[j]] %*% (theta_next[[j]] - theta_next_j)
@@ -350,13 +351,14 @@ lspath <- function(x,
 
       R <- R.star + betaE * x_tilde_E
 
+  #### This soft threshold should have the denominator be normalized
       if (we != 0) {
         betaE_next <- SoftThreshold(
-          x = (1 / (nobs * we)) * sum(x_tilde_E * R),
+          x = (1 / (nobs * we)) * sum(x_tilde_E * weights*R),
           lambda = LAMBDA * (1 - alpha)
         )
       } else {
-        betaE_next <- sum(x_tilde_E * R) / sum(x_tilde_E^2)
+        betaE_next <- sum(x_tilde_E * weights*R) / sum(x_tilde_E^2)
       }
 
       Delta <- (betaE - betaE_next) * x_tilde_E
@@ -368,7 +370,7 @@ lspath <- function(x,
       # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
       R <- R.star + b0
-      b0_next <- mean(R)
+      b0_next <- mean(weights*R)
 
       # used for gamma update
       x_tilde <- betaE_next * Phi_tilde_theta
@@ -379,7 +381,7 @@ lspath <- function(x,
       R.star <- R.star + Delta
 
       Q[m + 1] <- Q_theta(
-        R = R.star, nobs = nobs, lambda = LAMBDA, alpha = alpha,
+        R = R.star, nobs = nobs, weights=weights,lambda = LAMBDA, alpha = alpha,
         we = we, wj = wj, wje = wje, betaE = betaE_next,
         theta_list = theta_next, gamma = gamma_next
       )
