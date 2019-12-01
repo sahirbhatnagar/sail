@@ -355,6 +355,7 @@ lspath <- function(x,
       R <- R.star + betaE * x_tilde_E
 
   #### This soft threshold should have the denominator be normalized
+      ###need to be done
       if (we != 0) {
         betaE_next <- SoftThreshold(
           x = (1 / (nobs * we)) * sum(x_tilde_E * weights*R),
