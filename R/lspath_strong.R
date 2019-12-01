@@ -215,9 +215,10 @@ lspath <- function(x,
           x = x_tilde,
           y = R,
           # thresh = 1e-12,
-          weights = weights
+          weights = weights,
           penalty.factor = wje,
           lambda = c(.Machine$double.xmax, LAMBDA * alpha),
+          #### Why standardize=F ????
           standardize = F, intercept = F
         ))[-1, 2]
       }
