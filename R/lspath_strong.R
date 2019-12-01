@@ -219,6 +219,8 @@ lspath <- function(x,
           penalty.factor = wje,
           lambda = c(.Machine$double.xmax, LAMBDA * alpha),
           #### Why standardize=F ????
+          ## Seems like the default is standardize=TRUE
+          ## also the index: why [-1,2] since the intercept is F
           standardize = F, intercept = F
         ))[-1, 2]
       }
