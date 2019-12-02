@@ -45,7 +45,7 @@
 #' @examples
 #' f.basis <- function(i) splines::bs(i, degree = 3)
 #' fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-#'             basis = f.basis, dfmax = 5, nlambda = 50)
+#'             basis = f.basis, dfmax = 5, nlambda = 10, maxit = 20)
 #' predict(fit) # predicted response for whole solution path
 #' predict(fit, s = 0.45) # predicted response for a single lambda value
 #' predict(fit, s = c(2.15, 0.32, 0.40), type="nonzero") # nonzero coefficients
@@ -239,18 +239,16 @@ print.sail <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 #' @details A coefficient profile plot is produced
 #' @return A plot is produced and nothing is returned
 #' @examples
-#' if(interactive()){
 #' data("sailsim")
 #' f.basis <- function(i) splines::bs(i, degree = 3)
 #' fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-#'             basis = f.basis, dfmax = 5)
+#'             basis = f.basis, dfmax = 5, nlambda = 10, maxit = 20)
 #' plot(fit)
-#'  }
 #' @rdname plot.sail
 #' @seealso \code{\link{sail}}, \code{\link{cv.sail}}
 #' @export
 plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
-  op <- graphics::par(no.readonly = TRUE)
+  # op <- graphics::par(no.readonly = TRUE)
 
   type <- match.arg(type)
 
@@ -263,7 +261,9 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
 
 
   if (type == "main") {
-    graphics::par(mar = 0.1 + c(4, 5, 2.5, 1))
+    oldpar <- par(mar = 0.1 + c(4, 5, 2.5, 1))
+    on.exit(par(oldpar))
+
     plotSailCoef(
       coefs = x$beta,
       environ = x$bE,
@@ -278,7 +278,9 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
   }
 
   if (type == "interaction") {
-    graphics::par(mar = 0.1 + c(4, 5, 2.5, 1))
+    oldpar <- par(mar = 0.1 + c(4, 5, 2.5, 1))
+    on.exit(par(oldpar))
+
     plotSailCoef(
       coefs = x$alpha,
       lambda = x$lambda,
@@ -301,11 +303,14 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
     #   cex.main = 1.2
     # )
 
+    oldpar <- par("mfrow", "tcl", "family", "omi",
+                  "cex.lab", "font.lab", "cex.axis",
+                  "cex.main", "mar")
+    on.exit(par(oldpar))
+
     par(mfrow=c(2,1), tcl=-0.5, family="serif", omi=c(0.2,0.2,0,0),
         cex.lab = 1.2, font.lab = 1.2, cex.axis = 1.2,
-        cex.main = 1.2)
-
-    par(mar=c(2,4,2,3.2))
+        cex.main = 1.2, mar=c(2,4,2,3.2))
     plotSailCoef(
       coefs = x$beta,
       environ = x$bE,
@@ -333,7 +338,7 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
 
   }
 
-  graphics::par(op)
+  # graphics::par(op)
 }
 
 
@@ -349,15 +354,14 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
 #' @return A plot is produced and nothing is returned
 #' @details This is a port of \code{plot.cv.glmnet}
 #' @examples
-#' if(interactive()){
 #' data("sailsim")
 #' library(doParallel)
 #' registerDoParallel(cores = 2)
 #' f.basis <- function(i) splines::bs(i, degree = 3)
 #' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-#'                   basis = f.basis, nfolds = 3, dfmax = 5, parallel = TRUE)
+#'                   basis = f.basis, nfolds = 3, nlambda = 10,
+#'                   dfmax = 5, parallel = TRUE, maxit = 20)
 #' plot(cvfit)
-#'  }
 #' @rdname plot.cv.sail
 #' @seealso \code{\link{sail}}, \code{\link{cv.sail}}
 #' @references Jerome Friedman, Trevor Hastie, Robert Tibshirani (2010).

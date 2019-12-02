@@ -178,7 +178,6 @@ plotSailCoef <- function(coefs, lambda, group, df, dev, vnames, environ,
 #'   plotted against \code{xvar}, where \code{basis} is the expansion provided
 #'   in the original call to \code{sail}.
 #' @examples
-#' if(interactive()){
 #' # Parallel
 #' library(doParallel)
 #' registerDoParallel(cores = 2)
@@ -186,6 +185,7 @@ plotSailCoef <- function(coefs, lambda, group, df, dev, vnames, environ,
 #' f.basis <- function(i) splines::bs(i, degree = 3)
 #' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
 #'                  basis = f.basis, nfolds = 3, parallel = TRUE,
+#'                  maxit = 20, nlambda = 10,
 #'                  dfmax = 5)
 #' # plot cv-error curve
 #' plot(cvfit)
@@ -194,7 +194,6 @@ plotSailCoef <- function(coefs, lambda, group, df, dev, vnames, environ,
 #' # plot main effect for X4 with a line for the truth also
 #' plotMain(cvfit$sail.fit, x = sailsim$x, xvar = "X4",
 #'          s = cvfit$lambda.min, f.truth = sailsim$f4)
-#'  }
 #' @seealso \code{\link{coef.sail}} \code{\link{predict.sail}}, \code{\link[graphics]{rug}}
 #' @rdname plotMain
 #' @importFrom graphics abline axis legend lines mtext par plot.default segments text
@@ -301,14 +300,14 @@ plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
 #' @param ... currently ignored
 #' @return A plot is produced and nothing is returned
 #' @examples
-#' if(interactive()){
 #' # Parallel
 #' library(doParallel)
 #' registerDoParallel(cores = 2)
 #' data("sailsim")
 #' f.basis <- function(i) splines::bs(i, degree = 3)
 #' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-#'                  basis = f.basis, nfolds = 3, parallel = TRUE, dfmax = 10)
+#'                  basis = f.basis, nfolds = 3, parallel = TRUE, dfmax = 10,
+#'                  nlambda = 10, maxit = 20)
 #' # plot cv-error curve
 #' plot(cvfit)
 #' # non-zero estimated coefficients at lambda.min
@@ -318,7 +317,6 @@ plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
 #'           f.truth = sailsim$f4.inter,
 #'           s = cvfit$lambda.min,
 #'           title_z = "Estimated")
-#'  }
 #' @seealso \code{\link[graphics]{persp}} \code{\link{coef.sail}}
 #'   \code{\link{predict.sail}}, \code{\link[graphics]{rug}}
 #' @rdname plotInter

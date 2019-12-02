@@ -25,15 +25,14 @@ Plots the cross-validation curve, and upper and lower standard
 This is a port of \code{plot.cv.glmnet}
 }
 \examples{
-if(interactive()){
 data("sailsim")
 library(doParallel)
 registerDoParallel(cores = 2)
 f.basis <- function(i) splines::bs(i, degree = 3)
 cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-                  basis = f.basis, nfolds = 3, dfmax = 5, parallel = TRUE)
+                  basis = f.basis, nfolds = 3, nlambda = 10,
+                  dfmax = 5, parallel = TRUE, maxit = 20)
 plot(cvfit)
- }
 }
 \references{
 Jerome Friedman, Trevor Hastie, Robert Tibshirani (2010).

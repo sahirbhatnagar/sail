@@ -194,7 +194,7 @@ f.basis <- function(i) splines::bs(i, degree = 3)
 # we specify dfmax to early stop the solution path to
 # limit the execution time of the example
 fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-            basis = f.basis, nlambda = 50, dfmax = 5)
+            basis = f.basis, nlambda = 10, dfmax = 5, maxit = 10)
 
 # estimated coefficients at each value of lambda
 coef(fit)
@@ -204,14 +204,12 @@ predict(fit)
 
 #predicted response at a specific value of lambda
 predict(fit, s = 0.5)
-if(interactive()){
 # plot solution path for main effects and interactions
 plot(fit)
 # plot solution path only for main effects
 plot(fit, type = "main")
 # plot solution path only for interactions
 plot(fit, type = "interaction")
- }
 
 }
 \references{

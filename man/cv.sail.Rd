@@ -113,14 +113,14 @@ The skeleton of this function and the documentation were taken straight
   from the \code{glmnet} package. See references for details.
 }
 \examples{
-if(interactive()){
 f.basis <- function(i) splines::bs(i, degree = 3)
 data("sailsim")
 # Parallel
 library(doParallel)
 registerDoParallel(cores = 2)
 cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-                 parallel = TRUE, nlambda = 50,
+                 parallel = TRUE, nlambda = 10,
+                 maxit = 20,
                  nfolds = 3, dfmax = 5)
 # plot cross validated curve
 plot(cvfit)
@@ -144,7 +144,6 @@ predict(cvfit, s = 0.457)
 newx <- sailsim$x * 1.10
 newe <- sailsim$e * 2
 predict(cvfit, newx = newx, newe = newe, s = "lambda.min")
- }
 }
 \references{
 Jerome Friedman, Trevor Hastie, Robert Tibshirani (2010).

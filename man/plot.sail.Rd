@@ -30,13 +30,11 @@ Produces a coefficient profile plot of the coefficient paths for
 A coefficient profile plot is produced
 }
 \examples{
-if(interactive()){
 data("sailsim")
 f.basis <- function(i) splines::bs(i, degree = 3)
 fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-            basis = f.basis, dfmax = 5)
+            basis = f.basis, dfmax = 5, nlambda = 10, maxit = 20)
 plot(fit)
- }
 }
 \seealso{
 \code{\link{sail}}, \code{\link{cv.sail}}
