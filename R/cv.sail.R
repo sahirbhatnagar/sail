@@ -87,7 +87,7 @@
 #' registerDoParallel(cores = 2)
 #' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
 #'                  parallel = TRUE, nlambda = 10,
-#'                  maxit = 20,
+#'                  maxit = 20, basis = f.basis,
 #'                  nfolds = 3, dfmax = 5)
 #' # plot cross validated curve
 #' plot(cvfit)
