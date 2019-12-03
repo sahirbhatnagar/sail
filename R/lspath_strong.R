@@ -7,7 +7,6 @@
 # Updated: April 6, 2018
 #####################################
 
-
 lspath <- function(x,
                    y,
                    e,
