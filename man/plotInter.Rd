@@ -66,6 +66,7 @@ Takes a fitted sail object produced by \code{sail()} or
   linear predictor. Currently only implemented for \code{type="gaussian"}
 }
 \examples{
+if (interactive()){
 # Parallel
 library(doParallel)
 registerDoParallel(cores = 2)
@@ -83,6 +84,7 @@ plotInter(cvfit$sail.fit, x = sailsim$x, xvar = "X3",
           f.truth = sailsim$f4.inter,
           s = cvfit$lambda.min,
           title_z = "Estimated")
+}
 }
 \seealso{
 \code{\link[graphics]{persp}} \code{\link{coef.sail}}

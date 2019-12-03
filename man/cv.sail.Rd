@@ -126,7 +126,7 @@ cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
 plot(cvfit)
 # plot solution path
 plot(cvfit$sail.fit)
-
+if (interactive()){
 # solution at lambda.min
 coef(cvfit, s = "lambda.min")
 # solution at lambda.1se
@@ -144,6 +144,7 @@ predict(cvfit, s = 0.457)
 newx <- sailsim$x * 1.10
 newe <- sailsim$e * 2
 predict(cvfit, newx = newx, newe = newe, s = "lambda.min")
+}
 }
 \references{
 Jerome Friedman, Trevor Hastie, Robert Tibshirani (2010).
