@@ -139,13 +139,15 @@ coef.sail <- function(object, s = NULL, ...) {
 #'   to make a prediction.
 #' @examples
 #' data("sailsim")
-#' library(doParallel)
-#' registerDoParallel(cores = 2)
 #' f.basis <- function(i) splines::bs(i, degree = 3)
+#' library(doParallel)
+#' cl <- makeCluster(2)
+#' registerDoParallel(cl)
 #' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-#'                  maxit = 20, nlambda = 10,
-#'                   basis = f.basis, nfolds = 3, dfmax = 5, parallel = TRUE)
-#' stopCluster()
+#'                  parallel = TRUE, nlambda = 10,
+#'                  maxit = 20, basis = f.basis,
+#'                  nfolds = 3, dfmax = 5)
+#' stopCluster(cl)
 #' predict(cvfit) # predict at "lambda.1se"
 #' predict(cvfit, s = "lambda.min") # predict at "lambda.min"
 #' predict(cvfit, s = 0.5) # predict at specific value of lambda
@@ -241,7 +243,7 @@ print.sail <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 #' data("sailsim")
 #' f.basis <- function(i) splines::bs(i, degree = 3)
 #' fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-#'             basis = f.basis, dfmax = 5, nlambda = 10, maxit = 20)
+#'             basis = f.basis, dfmax = 10, nlambda = 10, maxit = 100)
 #' plot(fit)
 #' @rdname plot.sail
 #' @seealso \code{\link{sail}}, \code{\link{cv.sail}}
@@ -354,13 +356,15 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
 #' @details This is a port of \code{plot.cv.glmnet}
 #' @examples
 #' data("sailsim")
-#' library(doParallel)
-#' registerDoParallel(cores = 2)
 #' f.basis <- function(i) splines::bs(i, degree = 3)
+#' library(doParallel)
+#' cl <- makeCluster(2)
+#' registerDoParallel(cl)
 #' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-#'                   basis = f.basis, nfolds = 3, nlambda = 10,
-#'                   dfmax = 5, parallel = TRUE, maxit = 20)
-#' stopCluster()
+#'                  parallel = TRUE, nlambda = 10,
+#'                  maxit = 100, basis = f.basis,
+#'                  nfolds = 3, dfmax = 10)
+#' stopCluster(cl)
 #' plot(cvfit)
 #' @rdname plot.cv.sail
 #' @seealso \code{\link{sail}}, \code{\link{cv.sail}}

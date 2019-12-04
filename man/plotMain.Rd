@@ -58,15 +58,16 @@ The linear predictor \eqn{basis(xvar) * \beta_xvar} is
   in the original call to \code{sail}.
 }
 \examples{
+f.basis <- function(i) splines::bs(i, degree = 3)
 # Parallel
 library(doParallel)
-registerDoParallel(cores = 2)
-data("sailsim")
-f.basis <- function(i) splines::bs(i, degree = 3)
+cl <- makeCluster(2)
+registerDoParallel(cl)
 cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-                 basis = f.basis, nfolds = 3, parallel = TRUE,
-                 maxit = 20, nlambda = 10,
-                 dfmax = 5)
+                 parallel = TRUE, nlambda = 10,
+                 maxit = 100, basis = f.basis,
+                 nfolds = 3, dfmax = 10)
+stopCluster(cl)
 # plot cv-error curve
 plot(cvfit)
 # non-zero estimated coefficients at lambda.min

@@ -45,18 +45,20 @@ This function makes it easier to use the results of cross-validation
   to make a prediction.
 }
 \examples{
-if(interactive()){
 data("sailsim")
-library(doParallel)
-registerDoParallel(cores = 2)
 f.basis <- function(i) splines::bs(i, degree = 3)
+library(doParallel)
+cl <- makeCluster(2)
+registerDoParallel(cl)
 cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-                  basis = f.basis, nfolds = 3, dfmax = 5, parallel = TRUE)
+                 parallel = TRUE, nlambda = 10,
+                 maxit = 20, basis = f.basis,
+                 nfolds = 3, dfmax = 5)
+stopCluster(cl)
 predict(cvfit) # predict at "lambda.1se"
 predict(cvfit, s = "lambda.min") # predict at "lambda.min"
 predict(cvfit, s = 0.5) # predict at specific value of lambda
 predict(cvfit, type = "nonzero") # non-zero coefficients at lambda.1se
- }
 }
 \seealso{
 \code{\link{predict.sail}}

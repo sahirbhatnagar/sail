@@ -194,7 +194,8 @@ f.basis <- function(i) splines::bs(i, degree = 3)
 # we specify dfmax to early stop the solution path to
 # limit the execution time of the example
 fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-            basis = f.basis, nlambda = 10, dfmax = 5, maxit = 10)
+            basis = f.basis, nlambda = 10, dfmax = 10,
+            maxit = 100)
 
 # estimated coefficients at each value of lambda
 coef(fit)

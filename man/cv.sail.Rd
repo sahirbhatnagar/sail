@@ -117,16 +117,17 @@ f.basis <- function(i) splines::bs(i, degree = 3)
 data("sailsim")
 # Parallel
 library(doParallel)
-registerDoParallel(cores = 2)
+cl <- makeCluster(2)
+registerDoParallel(cl)
 cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
                  parallel = TRUE, nlambda = 10,
-                 maxit = 20, basis = f.basis,
-                 nfolds = 3, dfmax = 5)
+                 maxit = 100, basis = f.basis,
+                 nfolds = 3, dfmax = 10)
+stopCluster(cl)
 # plot cross validated curve
 plot(cvfit)
 # plot solution path
 plot(cvfit$sail.fit)
-if (interactive()){
 # solution at lambda.min
 coef(cvfit, s = "lambda.min")
 # solution at lambda.1se
@@ -144,7 +145,6 @@ predict(cvfit, s = 0.457)
 newx <- sailsim$x * 1.10
 newe <- sailsim$e * 2
 predict(cvfit, newx = newx, newe = newe, s = "lambda.min")
-}
 }
 \references{
 Jerome Friedman, Trevor Hastie, Robert Tibshirani (2010).

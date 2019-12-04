@@ -66,15 +66,16 @@ Takes a fitted sail object produced by \code{sail()} or
   linear predictor. Currently only implemented for \code{type="gaussian"}
 }
 \examples{
-if (interactive()){
+f.basis <- function(i) splines::bs(i, degree = 3)
 # Parallel
 library(doParallel)
-registerDoParallel(cores = 2)
-data("sailsim")
-f.basis <- function(i) splines::bs(i, degree = 3)
+cl <- makeCluster(2)
+registerDoParallel(cl)
 cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-                 basis = f.basis, nfolds = 3, parallel = TRUE, dfmax = 10,
-                 nlambda = 10, maxit = 20)
+                 parallel = TRUE, nlambda = 10,
+                 maxit = 100, basis = f.basis,
+                 nfolds = 3, dfmax = 10)
+stopCluster(cl)
 # plot cv-error curve
 plot(cvfit)
 # non-zero estimated coefficients at lambda.min
@@ -84,7 +85,6 @@ plotInter(cvfit$sail.fit, x = sailsim$x, xvar = "X3",
           f.truth = sailsim$f4.inter,
           s = cvfit$lambda.min,
           title_z = "Estimated")
-}
 }
 \seealso{
 \code{\link[graphics]{persp}} \code{\link{coef.sail}}

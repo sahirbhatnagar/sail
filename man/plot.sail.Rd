@@ -33,7 +33,7 @@ A coefficient profile plot is produced
 data("sailsim")
 f.basis <- function(i) splines::bs(i, degree = 3)
 fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-            basis = f.basis, dfmax = 5, nlambda = 10, maxit = 20)
+            basis = f.basis, dfmax = 10, nlambda = 10, maxit = 100)
 plot(fit)
 }
 \seealso{

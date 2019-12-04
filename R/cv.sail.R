@@ -84,12 +84,13 @@
 #' data("sailsim")
 #' # Parallel
 #' library(doParallel)
-#' registerDoParallel(cores = 2)
+#' cl <- makeCluster(2)
+#' registerDoParallel(cl)
 #' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
 #'                  parallel = TRUE, nlambda = 10,
-#'                  maxit = 20, basis = f.basis,
-#'                  nfolds = 3, dfmax = 5)
-#' stopCluster()
+#'                  maxit = 100, basis = f.basis,
+#'                  nfolds = 3, dfmax = 10)
+#' stopCluster(cl)
 #' # plot cross validated curve
 #' plot(cvfit)
 #' # plot solution path
