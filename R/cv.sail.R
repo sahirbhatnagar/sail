@@ -89,11 +89,11 @@
 #'                  parallel = TRUE, nlambda = 10,
 #'                  maxit = 20, basis = f.basis,
 #'                  nfolds = 3, dfmax = 5)
+#' stopCluster()
 #' # plot cross validated curve
 #' plot(cvfit)
 #' # plot solution path
 #' plot(cvfit$sail.fit)
-#' if (interactive()){
 #' # solution at lambda.min
 #' coef(cvfit, s = "lambda.min")
 #' # solution at lambda.1se
@@ -111,7 +111,6 @@
 #' newx <- sailsim$x * 1.10
 #' newe <- sailsim$e * 2
 #' predict(cvfit, newx = newx, newe = newe, s = "lambda.min")
-#' }
 #' @rdname cv.sail
 #' @export
 cv.sail <- function(x, y, e, ...,

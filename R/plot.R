@@ -187,6 +187,7 @@ plotSailCoef <- function(coefs, lambda, group, df, dev, vnames, environ,
 #'                  basis = f.basis, nfolds = 3, parallel = TRUE,
 #'                  maxit = 20, nlambda = 10,
 #'                  dfmax = 5)
+#' stopCluster()
 #' # plot cv-error curve
 #' plot(cvfit)
 #' # non-zero estimated coefficients at lambda.min
@@ -300,7 +301,6 @@ plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
 #' @param ... currently ignored
 #' @return A plot is produced and nothing is returned
 #' @examples
-#' if (interactive()){
 #' # Parallel
 #' library(doParallel)
 #' registerDoParallel(cores = 2)
@@ -308,7 +308,8 @@ plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
 #' f.basis <- function(i) splines::bs(i, degree = 3)
 #' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
 #'                  basis = f.basis, nfolds = 3, parallel = TRUE, dfmax = 10,
-#'                  nlambda = 10, maxit = 20)
+#'                  nlambda = 10)
+#' stopCluster()
 #' # plot cv-error curve
 #' plot(cvfit)
 #' # non-zero estimated coefficients at lambda.min
@@ -318,7 +319,6 @@ plotMain <- function(object, x, xvar, s, f.truth, col = c("#D55E00", "#009E73"),
 #'           f.truth = sailsim$f4.inter,
 #'           s = cvfit$lambda.min,
 #'           title_z = "Estimated")
-#' }
 #' @seealso \code{\link[graphics]{persp}} \code{\link{coef.sail}}
 #'   \code{\link{predict.sail}}, \code{\link[graphics]{rug}}
 #' @rdname plotInter
