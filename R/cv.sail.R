@@ -87,9 +87,9 @@
 #' cl <- makeCluster(2)
 #' registerDoParallel(cl)
 #' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-#'                  parallel = TRUE, nlambda = 9,
-#'                  maxit = 50, basis = f.basis,
-#'                  nfolds = 3, dfmax = 9)
+#'                  parallel = TRUE, nlambda = 10,
+#'                  maxit = 25, basis = f.basis,
+#'                  nfolds = 3, dfmax = 5)
 #' stopCluster(cl)
 #' # plot cross validated curve
 #' plot(cvfit)
