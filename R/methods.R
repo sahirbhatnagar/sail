@@ -152,6 +152,12 @@ coef.sail <- function(object, s = NULL, ...) {
 #' predict(cvfit, s = "lambda.min") # predict at "lambda.min"
 #' predict(cvfit, s = 0.5) # predict at specific value of lambda
 #' predict(cvfit, type = "nonzero") # non-zero coefficients at lambda.1se
+#'
+#' # predict response for new data set
+#' newx <- sailsim$x * 1.10
+#' newe <- sailsim$e * 2
+#' predict(cvfit, newx = newx, newe = newe, s = "lambda.min")
+#'
 #' @rdname predict.cv.sail
 #' @seealso \code{\link{predict.sail}}
 #' @export

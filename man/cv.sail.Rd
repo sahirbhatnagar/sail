@@ -121,13 +121,11 @@ cl <- makeCluster(2)
 registerDoParallel(cl)
 cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
                  parallel = TRUE, nlambda = 10,
-                 maxit = 100, basis = f.basis,
-                 nfolds = 3, dfmax = 10)
+                 maxit = 75, basis = f.basis,
+                 nfolds = 3, dfmax = 9)
 stopCluster(cl)
 # plot cross validated curve
 plot(cvfit)
-# plot solution path
-plot(cvfit$sail.fit)
 # solution at lambda.min
 coef(cvfit, s = "lambda.min")
 # solution at lambda.1se
@@ -135,16 +133,7 @@ coef(cvfit, s = "lambda.1se")
 # non-zero coefficients at lambda.min
 predict(cvfit, s = "lambda.min", type = "nonzero")
 
-# predicted response
-predict(cvfit, s = "lambda.min")
-predict(cvfit, s = "lambda.1se")
-# predict response at any value for lambda
-predict(cvfit, s = 0.457)
 
-# predict response for new data set
-newx <- sailsim$x * 1.10
-newe <- sailsim$e * 2
-predict(cvfit, newx = newx, newe = newe, s = "lambda.min")
 }
 \references{
 Jerome Friedman, Trevor Hastie, Robert Tibshirani (2010).
