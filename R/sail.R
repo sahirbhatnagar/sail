@@ -199,7 +199,7 @@ sail <- function(x, y, e,
                  center.e = TRUE, # if true, this centers E
                  expand = TRUE, # if true, use basis to expand X's, else user should provide main effects design with group membership
                  group,
-                 weights, # observation weights
+                 weights,
                  penalty.factor = rep(1, 1 + 2 * nvars), # predictor (adaptive lasso) weights, the first entry must be for the E variable, then Xs, then X:E (gammas)
                  lambda.factor = ifelse(nobs < (1 + 2 * bscols * nvars), 0.01, 0.0001),
                  lambda = NULL,
@@ -373,7 +373,7 @@ sail <- function(x, y, e,
                     ulam = ulam
                   )
     )
-  } else {
+  } else {   #### if weights &strong : lspath_strong weithts; else lspath_weak_weights
     fit <- switch(family,
                   gaussian = lspathweak(
                     x = x,
