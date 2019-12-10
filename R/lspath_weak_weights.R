@@ -8,7 +8,7 @@
 #####################################
 
 
-lspathweak <- function(x,
+lspathweakweights <- function(x,
                        y,
                        e,
                        basis,

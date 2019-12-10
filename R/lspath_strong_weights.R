@@ -7,7 +7,7 @@
 # Updated: April 6, 2018
 #####################################
 
-lspath <- function(x,
+lspathweights <- function(x,
                    y,
                    e,
                    basis,
