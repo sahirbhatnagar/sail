@@ -75,11 +75,11 @@ data("sailsim")
 names(sailsim)
 ```
 
-We first define a basis expansion. In this example we use cubic bsplines with degree 5.
+We first define a basis expansion. In this example we use cubic bsplines with degree 3.
 
 ```{r}
 library(splines)
-f.basis <- function(x) splines::bs(x, degree = 5)
+f.basis <- function(x) splines::bs(x, degree = 3)
 ```
 
 Next we fit the model using the most basic call to `sail`
@@ -141,14 +141,15 @@ fit[["active"]]
 
 ## Cross-Validation
 
-`cv.sail` is the main function to do cross-validation along with `plot`, `predict`, and `coef` methods for objects of class `cv.sail`. We run it in parallel:
+`cv.sail` is the main function to do cross-validation along with `plot`, `predict`, and `coef` methods for objects of class `cv.sail`. We can also run it in parallel:
 
 ```{r}
 set.seed(432) # to reproduce results (randomness due to CV folds)
-library(doMC)
-registerDoMC(cores = 2) 
+library(doParallel) 
+registerDoParallel(cores = 2) 
 cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis,
-                 nfolds = 5, parallel = TRUE)
+                 dfmax = 10, # to speed up vignette build time
+                 nfolds = 5, parallel = TRUE, nlambda = 50)
 ```
 
 We plot the cross-validated error curve which has the mean-squared error on the y-axis and $\log(\lambda)$ on the x-axis. It includes the cross-validation curve (red dotted line), and upper and lower standard deviation curves along the $\lambda$ sequence (error bars). Two selected $\lambda$'s are indicated by the vertical dotted lines (see below). The numbers at the top of the plot represent the total number of non-zero variables at that value of $\lambda$ (`df_main` + `df_environment` + `df_interaction`):
@@ -220,7 +221,9 @@ We then pass this function to `basis` argument in `cv.sail`:
 
 ```{r}
 cvfit_linear <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-                        basis = f.identity, nfolds = 5, parallel = TRUE)
+                        basis = f.identity, nfolds = 5, parallel = TRUE,
+                 dfmax = 10, # to speed up vignette build time
+                        nlambda = 50)
 ```
 
 
@@ -260,6 +263,8 @@ p.fac <- c(0, 1, 0.4, 0.6, 0.7, rep(1, 2*ncol(sailsim$x) - 4))
 
 ```{r}
 fit_pf <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis,
+               nlambda = 50,
+               dfmax = 10, # to speed up vignette build time
                penalty.factor = p.fac)
 ```
 

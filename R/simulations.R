@@ -1,4 +1,4 @@
-#' @title Simulation Scenarion from Bhatnagar et al. (2018+) sail paper
+#' @title Simulation Scenario from Bhatnagar et al. (2018+) sail paper
 #' @description generates the different simulation scenarios. This function is
 #'   not intended to be called directly by users. See \code{\link{gendata}}
 #' @inheritParams gendata

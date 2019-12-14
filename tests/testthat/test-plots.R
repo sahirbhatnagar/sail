@@ -8,9 +8,10 @@ context("effect plot")
 test_that("plot for main effects and interaction effects", {
 
   testthat::skip_on_cran()
+  testthat::skip_on_appveyor()
 
-  library(doMC)
-  registerDoMC(cores = 8)
+  library(doParallel)
+  doParallel::registerDoParallel(cores = 2)
   cvfit_sim <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e, basis = f.basis,
                            nfolds = 10)
 

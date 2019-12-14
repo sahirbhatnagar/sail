@@ -1,6 +1,9 @@
 # sail: Sparse Additive Interaction Learning
 
+<!-- badges: start -->
 [![Travis build status](https://travis-ci.org/sahirbhatnagar/sail.svg?branch=master)](https://travis-ci.org/sahirbhatnagar/sail)   [![Coverage status](https://codecov.io/gh/sahirbhatnagar/sail/branch/master/graph/badge.svg)](https://codecov.io/github/sahirbhatnagar/sail?branch=master)   [![CRAN\_Status\_Badge](http://www.r-pkg.org/badges/version/sail)](https://cran.r-project.org/package=sail)
+[![AppVeyor build status](https://ci.appveyor.com/api/projects/status/github/sahirbhatnagar/sail?branch=master&svg=true)](https://ci.appveyor.com/project/sahirbhatnagar/sail)
+<!-- badges: end -->
 
 `R` software package to fit sparse additive interaction models with the strong heredity property. Interactions are limited to a single exposure or environment variable. The following figure (based on simulated data) gives an idea of the situation our method is trying to capture:
 
@@ -28,7 +31,7 @@ See the [online vignette](http://sahirbhatnagar.com/sail/) for details about the
 This method requires four inputs (let _n_ be the number of observations and _p_ the number of **X** variables):  
 1. **X**: _n_ x _p_ matrix of covariates. Can be high-dimensional, i.e., p >> n. Can also be continuous, categorical or a combination of both.  
 2. **Y**: a continuous response of length _n_  
-3. **E**: an exposure variable of length _n_. Can be continous or categorical.    
+3. **E**: an exposure variable of length _n_. Can be continuous or categorical.    
 4. A basis expansion function **f(X_j)** to be applied to each column of **X**, for example 
 
 ```R
@@ -72,5 +75,5 @@ You can see the most recent changes to the package in the [NEWS.md file](https:/
 
 ## Code of Conduct
 
-Please note that this project is released with a [Contributor Code of Conduct](CODE_OF_CONDUCT.md).
+Please note that this project is released with a [Contributor Code of Conduct](https://sahirbhatnagar.com/sail/CODE_OF_CONDUCT.html).
 By participating in this project you agree to abide by its terms.

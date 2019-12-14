@@ -6,6 +6,7 @@ df <- df %>% separate(Model, into = c("simnames","betaE","corr","lambda.type","n
                       sep = "/")
 
 DT <- as.data.table(df, stringsAsFactors = FALSE)
+DT <- DT[Method!="linearsail"]
 DT <- DT[parameterIndex != "parameterIndex_4"]
 # DT[parameterIndex=="parameterIndex_1", table(Method)] %>% names %>% dput
 # DT[, table(Method)]
@@ -16,7 +17,7 @@ DT[Method=="Adaptivelasso", Method := "adaptive lasso"]
 DT[Method=="sailweak", Method := "sail weak"]
 # DT[Method=="sail", Method := "sail strong"]
 # DT[Method=="Asail", Method := "Asail strong"]
-DT[Method=="linearsail", Method := "linear sail"]
+# DT[Method=="linearsail", Method := "linear sail"]
 DT[, Method := droplevels(Method)]
 # DT[, table(Method)]
 # DT[, table(Method)] %>% names %>% dput
@@ -25,29 +26,110 @@ appender <- function(string) TeX(paste(string))
 # DT[, method := factor(Method, levels = c("lasso","Alasso","lassoBT", "GLinternet", "HierBasis", "SPAM", "gamsel",
 #                                        "sail strong", "Asail strong", "sail weak", "Asail weak"))]
 
+# DT[, method := factor(Method, levels = c("lasso","adaptive lasso","lassoBT", "GLinternet", "HierBasis", "SPAM", "gamsel",
+                                         # "sail", "adaptive sail",  "sail weak", "linear sail"))]
+
 DT[, method := factor(Method, levels = c("lasso","adaptive lasso","lassoBT", "GLinternet", "HierBasis", "SPAM", "gamsel",
-                                         "sail", "adaptive sail",  "sail weak", "linear sail"))]
+                                         "sail", "adaptive sail",  "sail weak"))]
 
 # DT[, table(method)]
 # DT[, table(parameterIndex)]
 DT[, scenario:= as.numeric(as.character(stringr::str_extract_all(parameterIndex, "\\d", simplify = T)))]
 # DT[, table(scenario)]
 DT[, scenario := replace(scenario, which(scenario==6), 4)]
-DT[, scen := case_when(scenario==1 ~ "1a) Strong Hierarchy",
-                       scenario==2 ~ "1b) Weak Hierarchy",
+DT[, scen := case_when(scenario==1 ~ "1a) Strong Heredity",
+                       scenario==2 ~ "1b) Weak Heredity",
                        scenario==3 ~ "1c) Interactions Only",
                        scenario==4 ~ "2) Linear Effects",
                        scenario==5 ~ "3) Main Effects Only")]
-DT[, scen := factor(scen, levels = c("1a) Strong Hierarchy", "1b) Weak Hierarchy","1c) Interactions Only","2) Linear Effects", "3) Main Effects Only"))]
+DT[, scen := factor(scen, levels = c("1a) Strong Heredity", "1b) Weak Heredity","1c) Interactions Only","2) Linear Effects", "3) Main Effects Only"))]
 # DT$scen %>% table
-#Truth obeys strong hierarchy (parameterIndex = 1)
-#Truth obeys weak hierarchy (parameterIndex = 2)
+#Truth obeys strong Heredity (parameterIndex = 1)
+#Truth obeys weak Heredity (parameterIndex = 2)
 #Truth only has interactions (parameterIndex = 3)
 #Truth is linear (parameterIndex = 4)
 #Truth only has main effects (parameterIndex = 5)
 
+## ---- summary-table ----
+
+DT %>%
+  dplyr::mutate(tpr = tpr*100, fpr = fpr*100) %>%
+  tidyr::pivot_longer(cols = c("mse","tpr","fpr","nactive","r2","time"),
+                      names_to = "metric") %>%
+  dplyr::group_by(scen, method, metric) %>%
+  dplyr::summarise(mean = mean(value, na.rm = T),
+                   median = median(value, na.rm = T),
+                   sd = sd(value, na.rm = T)) -> DT_summary
+
+
+DT_summary %>%
+  dplyr::filter(metric == "fpr") %>%
+  dplyr::mutate(result = sprintf("%0.1f (%0.1f)", mean, sd)) %>%
+  dplyr::select(-mean, -median, -sd) %>%
+  # tidyr::pivot_longer(cols = c("mean","median","sd"), names_to = "summary") %>%
+  tidyr::pivot_wider(names_from = "method", values_from = "result") -> dt_fpr
+
+
+DT_summary %>%
+  dplyr::filter(metric == "tpr") %>%
+  dplyr::mutate(result = sprintf("%0.1f (%0.1f)", mean, sd)) %>%
+  dplyr::select(-mean, -median, -sd) %>%
+  # tidyr::pivot_longer(cols = c("mean","median","sd"), names_to = "summary") %>%
+  tidyr::pivot_wider(names_from = "method", values_from = "result") -> dt_tpr
+
+
+DT_summary %>%
+  dplyr::filter(metric == "nactive") %>%
+  dplyr::mutate(result = sprintf("%0.0f (%0.0f)", mean, sd)) %>%
+  dplyr::select(-mean, -median, -sd) %>%
+  # tidyr::pivot_longer(cols = c("mean","median","sd"), names_to = "summary") %>%
+  tidyr::pivot_wider(names_from = "method", values_from = "result") -> dt_nactive
+
+DT_summary %>%
+  dplyr::filter(metric == "mse") %>%
+  dplyr::mutate(result = sprintf("%0.0f (%0.0f)", mean, sd)) %>%
+  dplyr::select(-mean, -median, -sd) %>%
+  # tidyr::pivot_longer(cols = c("mean","median","sd"), names_to = "summary") %>%
+  tidyr::pivot_wider(names_from = "method", values_from = "result") -> dt_mse
+
+
+bind_rows(list(dt_nactive, dt_tpr, dt_fpr)) %>%
+  mutate(metric = factor(metric, levels = c("nactive","tpr","fpr"))) %>%
+  dplyr::arrange(scen, metric) %>%
+  # ungroup %>%
+  # dplyr::select(-scen) %>%
+  xtable::xtable() -> xres
+
+
+
+
+
+# dt_fpr %>%  dplyr::mutate(result = sprintf("%0.1f (%0.1f)", mean, sd)) %>%
+#   dplyr::select(-mean, -median, -sd) %>%
+#   # tidyr::pivot_longer(cols = c("mean","median","sd"), names_to = "summary") %>%
+#   tidyr::pivot_wider(names_from = "method", values_from = "result") %>%
+#   dplyr::filter(metric %in% c("nactive","tpr","fpr")) %>%
+#   # ungroup() %>%
+#   # dplyr::select(-scen) %>%
+#   xtable::xtable() -> xres
+
+print(xres, rotate.rownames = FALSE, rotate.colnames = FALSE, include.rownames = FALSE)
+
+
+
+
+
+
+
+
+
 
 ## ---- plot-mse-sim ----
+
+ccols <- c(RColorBrewer::brewer.pal(9, "Blues")[c(3,4)],
+           RColorBrewer::brewer.pal(9, "Greens")[c(3,4)],
+           RColorBrewer::brewer.pal(9, "Purples")[c(3,4,5)],
+           RColorBrewer::brewer.pal(9, "Reds")[c(4:6)])
 
 p1_mse <- ggplot(DT, aes(method, mse, fill = method)) +
     ggplot2::geom_boxplot() +
@@ -60,7 +142,8 @@ p1_mse <- ggplot(DT, aes(method, mse, fill = method)) +
                    repeat.tick.labels = 'left',
                    labeller = as_labeller(appender,
                                           default = label_parsed)) +
-    scale_fill_manual(values=RColorBrewer::brewer.pal(12, "Paired")[-11], guide=guide_legend(ncol=3)) +
+    # scale_fill_manual(values=RColorBrewer::brewer.pal(12, "Paired")[-11], guide=guide_legend(ncol=3)) +
+  scale_fill_manual(values=ccols, guide=guide_legend(ncol=3)) +
     # ggplot2::labs(y = "Test Set MSE", title = "") + xlab("") +
     labs(x="", y="Test Set MSE",
          title="Test Set MSE",
@@ -72,9 +155,6 @@ p1_mse <- ggplot(DT, aes(method, mse, fill = method)) +
                              legend.text=element_text(size=14),
                              strip.text = element_text(size=14))
 
-# , legend.text=element_text(size=18)
-
-
 reposition_legend(p1_mse, 'center', panel='panel-2-3')
 
 ## ---- plot-mse-nactive-sim ----
@@ -84,16 +164,16 @@ df_mse_nactive <- DT[, c("method","scen","mse","nactive")] %>%
   group_by(method, scen) %>%
   summarise(mean.mse = mean(mse, na.rm = TRUE), sd.mse = sd(mse, na.rm = TRUE),
          mean.nactive = mean(nactive, na.rm = TRUE), sd.nactive = sd(nactive, na.rm = TRUE)) %>%
-  mutate(scen = case_when(scen == "1a) Strong Hierarchy" ~ "1a) Strong Hierarchy (|S_0| = 7)",
-                          scen == "1b) Weak Hierarchy" ~ "1b) Weak Hierarchy (|S_0| = 5)",
-                          scen == "1c) Interactions Only" ~ "1c) Interactions Only (|S_0| = 2)",
-                          scen == "2) Linear Effects" ~ "2) Linear Effects (|S_0| = 7)",
-                          scen == "3) Main Effects Only" ~ "3) Main Effects Only (|S_0| = 5)")) %>%
-  mutate(scen = factor(scen, levels = c("1a) Strong Hierarchy (|S_0| = 7)",
-                                        "1b) Weak Hierarchy (|S_0| = 5)",
-                                        "1c) Interactions Only (|S_0| = 2)",
-                                        "2) Linear Effects (|S_0| = 7)",
-                                        "3) Main Effects Only (|S_0| = 5)")))
+  mutate(scen = case_when(scen == "1a) Strong Heredity" ~ "1a) Strong Heredity (|H| = 7)",
+                          scen == "1b) Weak Heredity" ~ "1b) Weak Heredity (|H| = 5)",
+                          scen == "1c) Interactions Only" ~ "1c) Interactions Only (|H| = 2)",
+                          scen == "2) Linear Effects" ~ "2) Linear Effects (|H| = 7)",
+                          scen == "3) Main Effects Only" ~ "3) Main Effects Only (|H| = 5)")) %>%
+  mutate(scen = factor(scen, levels = c("1a) Strong Heredity (|H| = 7)",
+                                        "1b) Weak Heredity (|H| = 5)",
+                                        "1c) Interactions Only (|H| = 2)",
+                                        "2) Linear Effects (|H| = 7)",
+                                        "3) Main Effects Only (|H| = 5)")))
 
 p1_mse_nactive <- ggplot(data = df_mse_nactive, aes(x = mean.nactive, y = mean.mse, color = method, label = method)) +
   geom_point(size = 2.1) +
@@ -220,16 +300,16 @@ df_tpr_fpr <- DT[, c("method","scen","tpr","fpr")] %>%
   group_by(method, scen) %>%
   summarise(mean.tpr = mean(tpr, na.rm = TRUE), sd.tpr = sd(tpr, na.rm = TRUE),
             mean.fpr = mean(fpr, na.rm = TRUE), sd.fpr = sd(fpr, na.rm = TRUE)) %>%
-  mutate(scen = case_when(scen == "1a) Strong Hierarchy" ~ "1a) Strong Hierarchy (|S_0| = 7)",
-                          scen == "1b) Weak Hierarchy" ~ "1b) Weak Hierarchy (|S_0| = 5)",
-                          scen == "1c) Interactions Only" ~ "1c) Interactions Only (|S_0| = 2)",
-                          scen == "2) Linear Effects" ~ "2) Linear Effects (|S_0| = 7)",
-                          scen == "3) Main Effects Only" ~ "3) Main Effects Only (|S_0| = 5)")) %>%
-  mutate(scen = factor(scen, levels = c("1a) Strong Hierarchy (|S_0| = 7)",
-                                        "1b) Weak Hierarchy (|S_0| = 5)",
-                                        "1c) Interactions Only (|S_0| = 2)",
-                                        "2) Linear Effects (|S_0| = 7)",
-                                        "3) Main Effects Only (|S_0| = 5)")))
+  mutate(scen = case_when(scen == "1a) Strong Heredity" ~ "1a) Strong Heredity (|H| = 7)",
+                          scen == "1b) Weak Heredity" ~ "1b) Weak Heredity (|H| = 5)",
+                          scen == "1c) Interactions Only" ~ "1c) Interactions Only (|H| = 2)",
+                          scen == "2) Linear Effects" ~ "2) Linear Effects (|H| = 7)",
+                          scen == "3) Main Effects Only" ~ "3) Main Effects Only (|H| = 5)")) %>%
+  mutate(scen = factor(scen, levels = c("1a) Strong Heredity (|H| = 7)",
+                                        "1b) Weak Heredity (|H| = 5)",
+                                        "1c) Interactions Only (|H| = 2)",
+                                        "2) Linear Effects (|H| = 7)",
+                                        "3) Main Effects Only (|H| = 5)")))
 
 p1_tpr_fpr <- ggplot(data = df_tpr_fpr, aes(x = mean.fpr, y = mean.tpr, color = method, label = method)) +
   geom_point(size = 2.1) +

@@ -1,6 +1,6 @@
 Package: sail
 Title: Sparse Additive Interaction Learning
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: c(
   person("Sahir", "Bhatnagar", email = "sahir.bhatnagar@gmail.com",
   role = c("aut", "cre"), comment = "http://sahirbhatnagar.com/"),
@@ -9,10 +9,12 @@ Authors@R: c(
   person("Celia", "Greenwood", email = "celia.greenwood@mcgill.ca",
   role = c("aut"), comment = "https://www.mcgill.ca/statisticalgenetics/")
   )
-Description: Sparse Additive Interaction Learning with the strong heredity property, i.e., 
+Description: Sparse additive interaction learning with the strong heredity property, i.e., 
     an interaction is selected only if its corresponding main effects are also included. 
     Fits a linear model with non-linear interactions via penalized maximum likelihood. 
-    Interactions are limited to a single exposure or environment variable. 
+    Interactions are limited to a single exposure or environment variable. For more information, 
+    see the website below and the accompanying paper: Bhatnagar et al., "A sparse additive model for 
+    high-dimensional interactions with an exposure variable", 2019, <DOI:10.1101/445304>.
 Depends: R (>= 3.4.0)
 Imports:
     glmnet, 
@@ -22,7 +24,7 @@ Suggests:
     grpreg,
     truncnorm,
     foreach,
-    doMC,
+    doParallel,
     testthat,
     covr,
     vdiffr,
@@ -32,6 +34,6 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 BugReports: https://github.com/sahirbhatnagar/sail/issues
-URL: https://github.com/sahirbhatnagar/sail
-RoxygenNote: 6.0.1
+URL: https://sahirbhatnagar.com/sail
+RoxygenNote: 6.1.1
 VignetteBuilder: knitr

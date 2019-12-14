@@ -48,11 +48,11 @@ for the estimated function and the second element is for the true function
 
 \item{title_z}{title for the plot, Default: ''}
 
-\item{xlab}{chracter for xlabel. if missing, variable name is used}
+\item{xlab}{character for xlabel. if missing, variable name is used}
 
-\item{ylab}{chracter for ylabel. if missing, variable name is used}
+\item{ylab}{character for ylabel. if missing, variable name is used}
 
-\item{zlab}{chracter for zlabel. if missing, variable name is used}
+\item{zlab}{character for zlabel. if missing, variable name is used}
 
 \item{...}{currently ignored}
 }
@@ -66,15 +66,16 @@ Takes a fitted sail object produced by \code{sail()} or
   linear predictor. Currently only implemented for \code{type="gaussian"}
 }
 \examples{
-\dontrun{
-if(interactive()){
+f.basis <- function(i) splines::bs(i, degree = 3)
 # Parallel
-library(doMC)
-registerDoMC(cores = 4)
-data("sailsim")
-f.basis <- function(i) splines::bs(i, degree = 5)
+library(doParallel)
+cl <- makeCluster(2)
+registerDoParallel(cl)
 cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-                 basis = f.basis, nfolds = 10, parallel = TRUE)
+                 parallel = TRUE, nlambda = 10,
+                 maxit = 100, basis = f.basis,
+                 nfolds = 3, dfmax = 10)
+stopCluster(cl)
 # plot cv-error curve
 plot(cvfit)
 # non-zero estimated coefficients at lambda.min
@@ -84,8 +85,6 @@ plotInter(cvfit$sail.fit, x = sailsim$x, xvar = "X3",
           f.truth = sailsim$f4.inter,
           s = cvfit$lambda.min,
           title_z = "Estimated")
- }
-}
 }
 \seealso{
 \code{\link[graphics]{persp}} \code{\link{coef.sail}}

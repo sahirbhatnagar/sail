@@ -43,9 +43,9 @@
 #'   and right lambda indices. \code{coef(...)} is equivalent to
 #'   \code{predict(sail.object, type="coefficients",...)}
 #' @examples
-#' f.basis <- function(i) splines::bs(i, degree = 5)
+#' f.basis <- function(i) splines::bs(i, degree = 3)
 #' fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-#'             basis = f.basis, dfmax = 10)
+#'             basis = f.basis, dfmax = 5, nlambda = 10, maxit = 20)
 #' predict(fit) # predicted response for whole solution path
 #' predict(fit, s = 0.45) # predicted response for a single lambda value
 #' predict(fit, s = c(2.15, 0.32, 0.40), type="nonzero") # nonzero coefficients
@@ -138,18 +138,26 @@ coef.sail <- function(object, s = NULL, ...) {
 #' @details This function makes it easier to use the results of cross-validation
 #'   to make a prediction.
 #' @examples
-#' \dontrun{
-#' if(interactive()){
 #' data("sailsim")
 #' f.basis <- function(i) splines::bs(i, degree = 3)
-#' cvfit <- cv.sail(x = sailsim$x[,1:20,drop=F], y = sailsim$y, e = sailsim$e,
-#'                   basis = f.basis, nfolds = 10)
+#' library(doParallel)
+#' cl <- makeCluster(2)
+#' registerDoParallel(cl)
+#' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
+#'                  parallel = TRUE, nlambda = 10,
+#'                  maxit = 20, basis = f.basis,
+#'                  nfolds = 3, dfmax = 5)
+#' stopCluster(cl)
 #' predict(cvfit) # predict at "lambda.1se"
 #' predict(cvfit, s = "lambda.min") # predict at "lambda.min"
 #' predict(cvfit, s = 0.5) # predict at specific value of lambda
 #' predict(cvfit, type = "nonzero") # non-zero coefficients at lambda.1se
-#'  }
-#' }
+#'
+#' # predict response for new data set
+#' newx <- sailsim$x * 1.10
+#' newe <- sailsim$e * 2
+#' predict(cvfit, newx = newx, newe = newe, s = "lambda.min")
+#'
 #' @rdname predict.cv.sail
 #' @seealso \code{\link{predict.sail}}
 #' @export
@@ -202,15 +210,12 @@ coef.cv.sail <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
 #'   percent deviance explained (relative to the null deviance). For
 #'   \code{type="gaussian"} this is the r-squared.
 #' @examples
-#' \dontrun{
-#' if(interactive()){
 #' data("sailsim")
 #' f.basis <- function(i) splines::bs(i, degree = 3)
 #' fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-#'             basis = f.basis)
+#'             basis = f.basis, dfmax = 5, nlambda = 10,
+#'             maxit = 20)
 #' fit
-#'  }
-#' }
 #' @rdname print.sail
 #' @seealso \code{\link{sail}}, \code{\link{cv.sail}}
 #' @export
@@ -241,20 +246,16 @@ print.sail <- function(x, digits = max(3, getOption("digits") - 3), ...) {
 #' @details A coefficient profile plot is produced
 #' @return A plot is produced and nothing is returned
 #' @examples
-#' \dontrun{
-#' if(interactive()){
 #' data("sailsim")
 #' f.basis <- function(i) splines::bs(i, degree = 3)
-#' fit <- sail(x = sailsim$x[,1:10,drop=F], y = sailsim$y, e = sailsim$e,
-#'             basis = f.basis)
+#' fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
+#'             basis = f.basis, dfmax = 10, nlambda = 10, maxit = 100)
 #' plot(fit)
-#'  }
-#' }
 #' @rdname plot.sail
 #' @seealso \code{\link{sail}}, \code{\link{cv.sail}}
 #' @export
 plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
-  op <- graphics::par(no.readonly = TRUE)
+  # op <- graphics::par(no.readonly = TRUE)
 
   type <- match.arg(type)
 
@@ -267,7 +268,9 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
 
 
   if (type == "main") {
-    graphics::par(mar = 0.1 + c(4, 5, 2.5, 1))
+    oldpar <- par(mar = 0.1 + c(4, 5, 2.5, 1))
+    on.exit(par(oldpar))
+
     plotSailCoef(
       coefs = x$beta,
       environ = x$bE,
@@ -282,7 +285,9 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
   }
 
   if (type == "interaction") {
-    graphics::par(mar = 0.1 + c(4, 5, 2.5, 1))
+    oldpar <- par(mar = 0.1 + c(4, 5, 2.5, 1))
+    on.exit(par(oldpar))
+
     plotSailCoef(
       coefs = x$alpha,
       lambda = x$lambda,
@@ -305,11 +310,14 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
     #   cex.main = 1.2
     # )
 
+    oldpar <- par("mfrow", "tcl", "family", "omi",
+                  "cex.lab", "font.lab", "cex.axis",
+                  "cex.main", "mar")
+    on.exit(par(oldpar))
+
     par(mfrow=c(2,1), tcl=-0.5, family="serif", omi=c(0.2,0.2,0,0),
         cex.lab = 1.2, font.lab = 1.2, cex.axis = 1.2,
-        cex.main = 1.2)
-
-    par(mar=c(2,4,2,3.2))
+        cex.main = 1.2, mar=c(2,4,2,3.2))
     plotSailCoef(
       coefs = x$beta,
       environ = x$bE,
@@ -337,7 +345,7 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
 
   }
 
-  graphics::par(op)
+  # graphics::par(op)
 }
 
 
@@ -353,15 +361,17 @@ plot.sail <- function(x, type = c("both", "main", "interaction"), ...) {
 #' @return A plot is produced and nothing is returned
 #' @details This is a port of \code{plot.cv.glmnet}
 #' @examples
-#' \dontrun{
-#' if(interactive()){
 #' data("sailsim")
 #' f.basis <- function(i) splines::bs(i, degree = 3)
-#' cvfit <- cv.sail(x = sailsim$x[,1:10,drop=F], y = sailsim$y, e = sailsim$e,
-#'                   basis = f.basis, nfolds = 10)
+#' library(doParallel)
+#' cl <- makeCluster(2)
+#' registerDoParallel(cl)
+#' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
+#'                  parallel = TRUE, nlambda = 10,
+#'                  maxit = 100, basis = f.basis,
+#'                  nfolds = 3, dfmax = 10)
+#' stopCluster(cl)
 #' plot(cvfit)
-#'  }
-#' }
 #' @rdname plot.cv.sail
 #' @seealso \code{\link{sail}}, \code{\link{cv.sail}}
 #' @references Jerome Friedman, Trevor Hastie, Robert Tibshirani (2010).

@@ -33,7 +33,7 @@
 #'   Default: FALSE
 #' @param parallel If \code{TRUE}, use parallel \code{foreach} to fit each fold.
 #'   Must register parallel before hand using the
-#'   \code{\link[doMC]{registerDoMC}} function from the \code{doMC} package. See
+#'   \code{\link[doParallel]{registerDoParallel}} function from the \code{doParallel} package. See
 #'   the example below for details. Default: FALSE
 #' @return an object of class \code{"cv.sail"} is returned, which is a list with
 #'   the ingredients of the cross-validation fit. \describe{ \item{lambda}{the
@@ -80,23 +80,19 @@
 #'   models with the strong heredity property (2018+). Preprint.
 #' @seealso \code{\link[splines]{bs}} \code{\link{sail}}
 #' @examples
-#' \dontrun{
-#' if(interactive()){
-#' f.basis <- function(i) splines::bs(i, degree = 5)
+#' f.basis <- function(i) splines::bs(i, degree = 3)
 #' data("sailsim")
-#' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-#'                  basis = f.basis, nfolds = 10)
-#'
 #' # Parallel
-#' library(doMC)
-#' registerDoMC(cores = 4)
+#' library(doParallel)
+#' cl <- makeCluster(2)
+#' registerDoParallel(cl)
 #' cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-#'                  parallel = TRUE, nlambda = 100, nfolds = 10)
+#'                  parallel = TRUE, nlambda = 10,
+#'                  maxit = 25, basis = f.basis,
+#'                  nfolds = 3, dfmax = 5)
+#' stopCluster(cl)
 #' # plot cross validated curve
 #' plot(cvfit)
-#' # plot solution path
-#' plot(cvfit$sail.fit)
-#'
 #' # solution at lambda.min
 #' coef(cvfit, s = "lambda.min")
 #' # solution at lambda.1se
@@ -104,18 +100,7 @@
 #' # non-zero coefficients at lambda.min
 #' predict(cvfit, s = "lambda.min", type = "nonzero")
 #'
-#' # predicted response
-#' predict(cvfit, s = "lambda.min")
-#' predict(cvfit, s = "lambda.1se")
-#' # predict response at any value for lambda
-#' predict(cvfit, s = 0.457)
 #'
-#' # predict response for new data set
-#' newx <- sailsim$x * 1.10
-#' newe <- sailsim$e * 2
-#' predict(cvfit, newx = newx, newe = newe, s = "lambda.min")
-#'  }
-#' }
 #' @rdname cv.sail
 #' @export
 cv.sail <- function(x, y, e, ...,
@@ -259,7 +244,7 @@ cv.sail <- function(x, y, e, ...,
 #' @return A vector of CV fold ID's for each observation in \code{y}
 #' @details For numeric y, the sample is split into groups sections based on
 #'   percentiles and sampling is done within these subgroups
-#' @references \url{http://topepo.github.io/caret/splitting.html}
+#' @references \url{https://topepo.github.io/caret/data-splitting.html}
 createfolds <- function(y, k = 10, list = FALSE, returnTrain = FALSE) {
   if (class(y)[1] == "Surv") {
     y <- y[, "time"]
@@ -335,7 +320,7 @@ createfolds <- function(y, k = 10, list = FALSE, returnTrain = FALSE) {
 #' @rdname cv.lspath
 #' @seealso \code{\link{cv.sail}}
 #' @details The output of the \code{cv.lspath} function only returns values for
-#'   those tuning paramters that converged. \code{cvcompute, getmin,
+#'   those tuning parameters that converged. \code{cvcompute, getmin,
 #'   lambda.interp} are taken verbatim from the \code{glmnet} package
 #' @references Jerome Friedman, Trevor Hastie, Robert Tibshirani (2010).
 #'   Regularization Paths for Generalized Linear Models via Coordinate Descent.

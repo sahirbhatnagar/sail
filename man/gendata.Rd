@@ -4,8 +4,8 @@
 \alias{gendata}
 \title{Simulation Scenario from Bhatnagar et al. (2018+) sail paper}
 \usage{
-gendata(n, p, corr, E = truncnorm::rtruncnorm(n, a = -1, b = 1), betaE, SNR,
-  parameterIndex)
+gendata(n, p, corr, E = truncnorm::rtruncnorm(n, a = -1, b = 1), betaE,
+  SNR, parameterIndex)
 }
 \arguments{
 \item{n}{number of observations}

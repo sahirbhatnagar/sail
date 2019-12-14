@@ -4,13 +4,14 @@
 \alias{sail}
 \title{Fit Sparse Additive Interaction Model with Strong Heredity}
 \usage{
-sail(x, y, e, basis = function(i) splines::bs(i, df = 5), strong = TRUE,
-  group.penalty = c("gglasso", "grMCP", "grSCAD"), family = c("gaussian",
-  "binomial"), center.x = TRUE, center.e = TRUE, expand = TRUE, group,
-  weights, penalty.factor = rep(1, 1 + 2 * nvars),
-  lambda.factor = ifelse(nobs < (1 + 2 * bscols * nvars), 0.01, 1e-04),
-  lambda = NULL, alpha = 0.5, nlambda = 100, thresh = 1e-04,
-  fdev = 1e-05, maxit = 1000, dfmax = 2 * nvars + 1, verbose = 0)
+sail(x, y, e, basis = function(i) splines::bs(i, df = 5),
+  strong = TRUE, group.penalty = c("gglasso", "grMCP", "grSCAD"),
+  family = c("gaussian", "binomial"), center.x = TRUE,
+  center.e = TRUE, expand = TRUE, group, weights,
+  penalty.factor = rep(1, 1 + 2 * nvars), lambda.factor = ifelse(nobs <
+  (1 + 2 * bscols * nvars), 0.01, 1e-04), lambda = NULL, alpha = 0.5,
+  nlambda = 100, thresh = 1e-04, fdev = 1e-05, maxit = 1000,
+  dfmax = 2 * nvars + 1, verbose = 0)
 }
 \arguments{
 \item{x}{input matrix of dimension \code{n x p}, where \code{n} is the number
@@ -163,7 +164,7 @@ Function to fit the Sparse Additive Interaction Model with
   regression method that ensures the interaction term is non-zero only if its
   corresponding main-effects are non-zero. This model only considers the
   interactions between a single exposure (E) variable and a high-dimensional
-  matrix (X). Additve (non-linear) main effects and interactions can be
+  matrix (X). Additive (non-linear) main effects and interactions can be
   specified by the user. This can also be seen as a varying-coefficient
   model.
 }
@@ -193,7 +194,8 @@ f.basis <- function(i) splines::bs(i, degree = 3)
 # we specify dfmax to early stop the solution path to
 # limit the execution time of the example
 fit <- sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-            basis = f.basis, nlambda = 100, dfmax = 10)
+            basis = f.basis, nlambda = 10, dfmax = 10,
+            maxit = 100)
 
 # estimated coefficients at each value of lambda
 coef(fit)
@@ -203,16 +205,12 @@ predict(fit)
 
 #predicted response at a specific value of lambda
 predict(fit, s = 0.5)
-\dontrun{
-if(interactive()){
 # plot solution path for main effects and interactions
 plot(fit)
 # plot solution path only for main effects
 plot(fit, type = "main")
 # plot solution path only for interactions
 plot(fit, type = "interaction")
- }
-}
 
 }
 \references{

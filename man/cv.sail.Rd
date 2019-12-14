@@ -5,8 +5,8 @@
 \title{Cross-validation for sail}
 \usage{
 cv.sail(x, y, e, ..., weights, lambda = NULL, type.measure = c("mse",
-  "deviance", "class", "auc", "mae"), nfolds = 10, foldid, grouped = TRUE,
-  keep = FALSE, parallel = FALSE)
+  "deviance", "class", "auc", "mae"), nfolds = 10, foldid,
+  grouped = TRUE, keep = FALSE, parallel = FALSE)
 }
 \arguments{
 \item{x}{input matrix of dimension \code{n x p}, where \code{n} is the number
@@ -62,7 +62,7 @@ Default: FALSE}
 
 \item{parallel}{If \code{TRUE}, use parallel \code{foreach} to fit each fold.
 Must register parallel before hand using the
-\code{\link[doMC]{registerDoMC}} function from the \code{doMC} package. See
+\code{\link[doParallel]{registerDoParallel}} function from the \code{doParallel} package. See
 the example below for details. Default: FALSE}
 }
 \value{
@@ -113,23 +113,19 @@ The skeleton of this function and the documentation were taken straight
   from the \code{glmnet} package. See references for details.
 }
 \examples{
-\dontrun{
-if(interactive()){
-f.basis <- function(i) splines::bs(i, degree = 5)
+f.basis <- function(i) splines::bs(i, degree = 3)
 data("sailsim")
-cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-                 basis = f.basis, nfolds = 10)
-
 # Parallel
-library(doMC)
-registerDoMC(cores = 4)
+library(doParallel)
+cl <- makeCluster(2)
+registerDoParallel(cl)
 cvfit <- cv.sail(x = sailsim$x, y = sailsim$y, e = sailsim$e,
-                 parallel = TRUE, nlambda = 100, nfolds = 10)
+                 parallel = TRUE, nlambda = 10,
+                 maxit = 25, basis = f.basis,
+                 nfolds = 3, dfmax = 5)
+stopCluster(cl)
 # plot cross validated curve
 plot(cvfit)
-# plot solution path
-plot(cvfit$sail.fit)
-
 # solution at lambda.min
 coef(cvfit, s = "lambda.min")
 # solution at lambda.1se
@@ -137,18 +133,7 @@ coef(cvfit, s = "lambda.1se")
 # non-zero coefficients at lambda.min
 predict(cvfit, s = "lambda.min", type = "nonzero")
 
-# predicted response
-predict(cvfit, s = "lambda.min")
-predict(cvfit, s = "lambda.1se")
-# predict response at any value for lambda
-predict(cvfit, s = 0.457)
 
-# predict response for new data set
-newx <- sailsim$x * 1.10
-newe <- sailsim$e * 2
-predict(cvfit, newx = newx, newe = newe, s = "lambda.min")
- }
-}
 }
 \references{
 Jerome Friedman, Trevor Hastie, Robert Tibshirani (2010).
