@@ -342,68 +342,135 @@ sail <- function(x, y, e,
     nlam <- as.integer(length(lambda))
   }
 
-  if (strong) {
-    fit <- switch(family,
-                  gaussian = lspath(
-                    x = x,
-                    y = y,
-                    e = e,
-                    basis = basis,
-                    center.x = center.x,
-                    center.e = center.e,
-                    expand = expand,
-                    group = group,
-                    group.penalty = group.penalty,
-                    weights = weights,
-                    nlambda = nlam,
-                    thresh = thresh,
-                    fdev = fdev,
-                    maxit = maxit,
-                    verbose = verbose,
-                    alpha = alpha,
-                    nobs = nobs,
-                    nvars = nvars,
-                    vp = vp, # penalty.factor
-                    we = we, # we, wj, wje are subsets of vp
-                    wj = wj,
-                    wje = wje,
-                    flmin = flmin, # lambda.factor
-                    vnames = vnames, # variable names
-                    ne = ne, # dfmax
-                    ulam = ulam
-                  )
-    )
-  } else {   #### if weights &strong : lspath_strong weithts; else lspath_weak_weights
-    fit <- switch(family,
-                  gaussian = lspathweak(
-                    x = x,
-                    y = y,
-                    e = e,
-                    basis = basis,
-                    center.x = center.x,
-                    center.e = center.e,
-                    expand = expand,
-                    group = group,
-                    group.penalty = group.penalty,
-                    weights = weights,
-                    nlambda = nlam,
-                    thresh = thresh,
-                    fdev = fdev,
-                    maxit = maxit,
-                    verbose = verbose,
-                    alpha = alpha,
-                    nobs = nobs,
-                    nvars = nvars,
-                    vp = vp, # penalty.factor
-                    we = we, # we, wj, wje are subsets of vp
-                    wj = wj,
-                    wje = wje,
-                    flmin = flmin, # lambda.factor
-                    vnames = vnames, # variable names
-                    ne = ne, # dfmax
-                    ulam = ulam
-                  )
-    )
+  if (all(weights==1)){
+    if (strong) {
+      fit <- switch(family,
+                    gaussian = lspath_strong(
+                      x = x,
+                      y = y,
+                      e = e,
+                      basis = basis,
+                      center.x = center.x,
+                      center.e = center.e,
+                      expand = expand,
+                      group = group,
+                      group.penalty = group.penalty,
+                      weights = weights,
+                      nlambda = nlam,
+                      thresh = thresh,
+                      fdev = fdev,
+                      maxit = maxit,
+                      verbose = verbose,
+                      alpha = alpha,
+                      nobs = nobs,
+                      nvars = nvars,
+                      vp = vp, # penalty.factor
+                      we = we, # we, wj, wje are subsets of vp
+                      wj = wj,
+                      wje = wje,
+                      flmin = flmin, # lambda.factor
+                      vnames = vnames, # variable names
+                      ne = ne, # dfmax
+                      ulam = ulam
+                    )
+      )
+    } else {   #### if weights &strong : lspath_strong weithts; else lspath_weak_weights
+      fit <- switch(family,
+                    gaussian = lspath_weak(
+                      x = x,
+                      y = y,
+                      e = e,
+                      basis = basis,
+                      center.x = center.x,
+                      center.e = center.e,
+                      expand = expand,
+                      group = group,
+                      group.penalty = group.penalty,
+                      weights = weights,
+                      nlambda = nlam,
+                      thresh = thresh,
+                      fdev = fdev,
+                      maxit = maxit,
+                      verbose = verbose,
+                      alpha = alpha,
+                      nobs = nobs,
+                      nvars = nvars,
+                      vp = vp, # penalty.factor
+                      we = we, # we, wj, wje are subsets of vp
+                      wj = wj,
+                      wje = wje,
+                      flmin = flmin, # lambda.factor
+                      vnames = vnames, # variable names
+                      ne = ne, # dfmax
+                      ulam = ulam
+                    )
+      )
+    }
+    else{
+      if (strong) {
+        fit <- switch(family,
+                      gaussian = lspath_strong_weights(
+                        x = x,
+                        y = y,
+                        e = e,
+                        basis = basis,
+                        center.x = center.x,
+                        center.e = center.e,
+                        expand = expand,
+                        group = group,
+                        group.penalty = group.penalty,
+                        weights = weights,
+                        nlambda = nlam,
+                        thresh = thresh,
+                        fdev = fdev,
+                        maxit = maxit,
+                        verbose = verbose,
+                        alpha = alpha,
+                        nobs = nobs,
+                        nvars = nvars,
+                        vp = vp, # penalty.factor
+                        we = we, # we, wj, wje are subsets of vp
+                        wj = wj,
+                        wje = wje,
+                        flmin = flmin, # lambda.factor
+                        vnames = vnames, # variable names
+                        ne = ne, # dfmax
+                        ulam = ulam
+                      )
+        )
+      } else {   #### if weights &strong : lspath_strong weithts; else lspath_weak_weights
+        fit <- switch(family,
+                      gaussian = lspath_weak_weights(
+                        x = x,
+                        y = y,
+                        e = e,
+                        basis = basis,
+                        center.x = center.x,
+                        center.e = center.e,
+                        expand = expand,
+                        group = group,
+                        group.penalty = group.penalty,
+                        weights = weights,
+                        nlambda = nlam,
+                        thresh = thresh,
+                        fdev = fdev,
+                        maxit = maxit,
+                        verbose = verbose,
+                        alpha = alpha,
+                        nobs = nobs,
+                        nvars = nvars,
+                        vp = vp, # penalty.factor
+                        we = we, # we, wj, wje are subsets of vp
+                        wj = wj,
+                        wje = wje,
+                        flmin = flmin, # lambda.factor
+                        vnames = vnames, # variable names
+                        ne = ne, # dfmax
+                        ulam = ulam
+                      )
+        )
+      }
+    }
   }
 
   fit$call <- this.call
