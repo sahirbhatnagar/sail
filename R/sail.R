@@ -39,7 +39,6 @@
 #' @param group a vector of consecutive integers, starting from 1, describing
 #'   the grouping of the coefficients. Only required when \code{expand=FALSE}.
 #' @param weights observation weights. Default is 1 for each observation.
-#'   Currently NOT IMPLEMENTED.
 #' @param penalty.factor separate penalty factors can be applied to each
 #'   coefficient. This is a number that multiplies lambda to allow differential
 #'   shrinkage. Can be 0 for some variables, which implies no shrinkage, and
@@ -374,7 +373,7 @@ sail <- function(x, y, e,
                       ulam = ulam
                     )
       )
-    } else {   #### if weights &strong : lspath_strong weithts; else lspath_weak_weights
+    } else {
       fit <- switch(family,
                     gaussian = lspath_weak(
                       x = x,
