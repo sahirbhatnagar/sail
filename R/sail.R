@@ -404,8 +404,7 @@ sail <- function(x, y, e,
                       ulam = ulam
                     )
       )
-    }
-    else{
+    } else {
       if (strong) {
         fit <- switch(family,
                       gaussian = lspath_strong_weights(
