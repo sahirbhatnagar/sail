@@ -41,8 +41,7 @@ column matrix or numeric vector with -1 for failure and 1 for success.}
 \item{e}{exposure or environment vector. Must be a numeric vector. Factors
 must be converted to numeric.}
 
-\item{weights}{observation weights. Default is 1 for each observation.
-Currently NOT IMPLEMENTED.}
+\item{weights}{observation weights. Default is 1 for each observation.}
 
 \item{foldid}{numeric vector indicating which fold each observation belongs
 to}

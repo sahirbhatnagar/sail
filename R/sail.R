@@ -404,7 +404,7 @@ sail <- function(x, y, e,
                       ulam = ulam
                     )
       )
-    } else {
+    }} else {
       if (strong) {
         fit <- switch(family,
                       gaussian = lspath_strong_weights(
@@ -469,7 +469,6 @@ sail <- function(x, y, e,
         )
       }
     }
-  }
 
   fit$call <- this.call
   fit$nobs <- nobs
