@@ -38,7 +38,8 @@
 #'   also be supplied. Default: \code{TRUE}.
 #' @param group a vector of consecutive integers, starting from 1, describing
 #'   the grouping of the coefficients. Only required when \code{expand=FALSE}.
-#' @param weights observation weights. Default is 1 for each observation.
+#' @param weights observation weights, a vector of size n.
+#'   Default is 1 for each observation.
 #' @param penalty.factor separate penalty factors can be applied to each
 #'   coefficient. This is a number that multiplies lambda to allow differential
 #'   shrinkage. Can be 0 for some variables, which implies no shrinkage, and

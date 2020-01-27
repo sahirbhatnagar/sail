@@ -25,7 +25,8 @@ must be converted to numeric.}
 
 \item{...}{other arguments that can be passed to \code{\link{sail}}}
 
-\item{weights}{observation weights. Default is 1 for each observation.}
+\item{weights}{observation weights, a vector of size n.
+Default is 1 for each observation.}
 
 \item{lambda}{Optional user-supplied lambda sequence; default is NULL, and
 \code{\link{sail}} chooses its own sequence}
