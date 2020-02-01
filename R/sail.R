@@ -345,7 +345,7 @@ sail <- function(x, y, e,
   if (all(weights==1)){
     if (strong) {
       fit <- switch(family,
-                    gaussian = lspath_strong(
+                    gaussian = lspath(
                       x = x,
                       y = y,
                       e = e,
@@ -376,7 +376,7 @@ sail <- function(x, y, e,
       )
     } else {
       fit <- switch(family,
-                    gaussian = lspath_weak(
+                    gaussian = lspathweak(
                       x = x,
                       y = y,
                       e = e,
@@ -408,7 +408,7 @@ sail <- function(x, y, e,
     }} else {
       if (strong) {
         fit <- switch(family,
-                      gaussian = lspath_strong_weights(
+                      gaussian = lspathweights(
                         x = x,
                         y = y,
                         e = e,
@@ -437,9 +437,9 @@ sail <- function(x, y, e,
                         ulam = ulam
                       )
         )
-      } else {   #### if weights &strong : lspath_strong weithts; else lspath_weak_weights
+      } else {
         fit <- switch(family,
-                      gaussian = lspath_weak_weights(
+                      gaussian = lspathweakweights(
                         x = x,
                         y = y,
                         e = e,
