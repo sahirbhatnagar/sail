@@ -362,14 +362,15 @@ lspathweak <- function(x,
 
       R <- R.star + betaE * x_tilde_E
 
-      if (we != 0) {
-        betaE_next <- SoftThreshold(
-          x = (1 / (nobs * we)) * sum(x_tilde_E * R),
-          lambda = LAMBDA * (1 - alpha)
-        )
-      } else {
-        betaE_next <- sum(x_tilde_E * R) / sum(x_tilde_E^2)
-      }
+      betaE_next =
+        coef(glmnet::glmnet(
+          x = cbind(x_tilde_E,0),
+          y = R,
+          # thresh = 1e-12,
+          penalty.factor = we,
+          lambda = c(.Machine$double.xmax, LAMBDA *(1- alpha)),
+          standardize = F, intercept = F
+        ))[-1, 2][-1]
 
       Delta <- (betaE - betaE_next) * x_tilde_E
 

@@ -353,17 +353,16 @@ lspathweights <- function(x,
 
       R <- R.star + betaE * x_tilde_E
 
-  #### This soft threshold should have the denominator be normalized
       betaE_next =
         coef(glmnet::glmnet(
-          x = x_tilde_E,
+          x = cbind(x_tilde_E,0),
           y = R,
           weights = weights,
           # thresh = 1e-12,
           penalty.factor = we,
           lambda = c(.Machine$double.xmax, LAMBDA *(1- alpha)),
           standardize = F, intercept = F
-        ))[-1, 2]
+        ))[-1, 2][-1]
 
       Delta <- (betaE - betaE_next) * x_tilde_E
 

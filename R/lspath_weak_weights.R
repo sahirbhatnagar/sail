@@ -17,7 +17,7 @@ lspathweakweights <- function(x,
                        expand,
                        group,
                        group.penalty,
-                       weights,
+                       weights, # observation weights currently not being used
                        nlambda,
                        thresh,
                        fdev,
@@ -253,7 +253,7 @@ lspathweakweights <- function(x,
                                      x = x_tilde_2[[j]],
                                      y = R,
                                      # eps = 1e-12,
-                                     weights=weights,
+                                     weights = weights,
                                      maxit = 100000,
                                      group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
                                      pf = wj[j],
@@ -298,7 +298,7 @@ lspathweakweights <- function(x,
                                  gglasso = coef(gglasso::gglasso(
                                    x = x_tilde_2[[j]],
                                    y = R,
-                                   weights=weights,
+                                   weights = weights,
                                    # eps = 1e-12,
                                    group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
                                    pf = wj[j],
@@ -367,14 +367,14 @@ lspathweakweights <- function(x,
 
       betaE_next =
         coef(glmnet::glmnet(
-          x = x_tilde_E,
+          x = cbind(x_tilde_E,0),
           y = R,
           weights = weights,
           # thresh = 1e-12,
           penalty.factor = we,
           lambda = c(.Machine$double.xmax, LAMBDA *(1- alpha)),
           standardize = F, intercept = F
-        ))[-1, 2]
+        ))[-1, 2][-1]
 
       Delta <- (betaE - betaE_next) * x_tilde_E
 
@@ -396,7 +396,7 @@ lspathweakweights <- function(x,
       R.star <- R.star + Delta
 
       Q[m + 1] <- Q_theta(
-        R = R.star, nobs = nobs, weights=weights,lambda = LAMBDA, alpha = alpha,
+        R = R.star, nobs = nobs, lambda = LAMBDA, alpha = alpha,
         we = we, wj = wj, wje = wje, betaE = betaE_next,
         theta_list = theta_next, gamma = gamma_next
       )

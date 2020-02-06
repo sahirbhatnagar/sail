@@ -352,13 +352,13 @@ lspath <- function(x,
 
       betaE_next =
         coef(glmnet::glmnet(
-          x = x_tilde_E,
+          x = cbind(x_tilde_E,0),
           y = R,
           # thresh = 1e-12,
           penalty.factor = we,
           lambda = c(.Machine$double.xmax, LAMBDA *(1- alpha)),
           standardize = F, intercept = F
-        ))[-1, 2]
+        ))[-1, 2][-1]
 
       Delta <- (betaE - betaE_next) * x_tilde_E
 
