@@ -17,7 +17,7 @@ lspathweakweights <- function(x,
                        expand,
                        group,
                        group.penalty,
-                       weights, # observation weights currently not being used
+                       weights,
                        nlambda,
                        thresh,
                        fdev,
@@ -367,14 +367,14 @@ lspathweakweights <- function(x,
 
       betaE_next =
         coef(glmnet::glmnet(
-          x = cbind(x_tilde_E,0),
+          x = cbind(0,x_tilde_E),
           y = R,
           weights = weights,
           # thresh = 1e-12,
           penalty.factor = we,
           lambda = c(.Machine$double.xmax, LAMBDA *(1- alpha)),
           standardize = F, intercept = F
-        ))[-1, 2][-1]
+        ))[c(-1,-2), 2]
 
       Delta <- (betaE - betaE_next) * x_tilde_E
 
@@ -396,7 +396,7 @@ lspathweakweights <- function(x,
       R.star <- R.star + Delta
 
       Q[m + 1] <- Q_theta(
-        R = R.star, nobs = nobs, lambda = LAMBDA, alpha = alpha,
+        R = R.star, nobs = nobs,weights=weights, lambda = LAMBDA, alpha = alpha,
         we = we, wj = wj, wje = wje, betaE = betaE_next,
         theta_list = theta_next, gamma = gamma_next
       )
