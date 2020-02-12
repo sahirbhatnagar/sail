@@ -349,16 +349,25 @@ lspath <- function(x,
       x_tilde_E <- e + gamma_Phi_tilde_theta_sum
 
       R <- R.star + betaE * x_tilde_E
-
       betaE_next =
         coef(glmnet::glmnet(
           x = cbind(0,x_tilde_E),
           y = R,
-          # thresh = 1e-12,
-          penalty.factor = we,
-          lambda = c(.Machine$double.xmax, LAMBDA *(1- alpha)),
+          thresh = 1e-12,
+          penalty.factor = c(1,we),
+          lambda = c(.Machine$double.xmax,LAMBDA *(1- alpha)),
           standardize = F, intercept = F
         ))[c(-1,-2), 2]
+
+      # if (we != 0) {
+      #   betaE_next <- SoftThreshold(
+      #     x = (1 / (nobs * we)) * sum(x_tilde_E * R),
+      #     lambda = LAMBDA * (1 - alpha)
+      #   )
+      # } else {
+      #   betaE_next <- sum(x_tilde_E * R) / sum(x_tilde_E^2)
+      # }
+
 
       Delta <- (betaE - betaE_next) * x_tilde_E
 

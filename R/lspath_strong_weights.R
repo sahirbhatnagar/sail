@@ -359,7 +359,7 @@ lspathweights <- function(x,
           y = R,
           weights = weights,
           # thresh = 1e-12,
-          penalty.factor = we,
+          penalty.factor = c(1,we),
           lambda = c(.Machine$double.xmax, LAMBDA *(1- alpha)),
           standardize = F, intercept = F
         ))[c(-1,-2), 2]
