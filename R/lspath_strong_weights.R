@@ -384,7 +384,7 @@ lspathweights <- function(x,
       R.star <- R.star + Delta
 
       Q[m + 1] <- Q_theta(
-        R = R.star, nobs = nobs, weights=weights,lambda = LAMBDA, alpha = alpha,
+        R = R.star, nobs = nobs, weights=weights, lambda = LAMBDA, alpha = alpha,
         we = we, wj = wj, wje = wje, betaE = betaE_next,
         theta_list = theta_next, gamma = gamma_next
       )

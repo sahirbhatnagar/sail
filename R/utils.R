@@ -137,12 +137,12 @@ check_col_0 <- function(M) {
 #' @param theta_list estimates of main effects
 #' @param gamma estimates of gamma parameter
 #' @return value of the objective function
-Q_theta <- function(R, nobs, lambda, alpha,
+Q_theta <- function(R, nobs, lambda, alpha,weights,
                     we, wj, wje,
                     betaE, theta_list, gamma) {
 
   # browser()
-  (1 / (2 * nobs)) * crossprod(R) +
+  (1 / (2 * nobs)) * crossprod(sqrt(weights)*R) +
     lambda * (1 - alpha) * (
       we * abs(betaE) +
         sum(sapply(seq_along(theta_list), function(i) l2norm(theta_list[[i]]) * wj[i]))
