@@ -140,8 +140,12 @@ check_col_0 <- function(M) {
 Q_theta <- function(R, nobs, lambda, alpha,weights,
                     we, wj, wje,
                     betaE, theta_list, gamma) {
-
-  # browser()
+  if (missing(weights)) {
+    weights <- rep(1, nobs)
+  } else if (length(weights) != nobs) {
+    stop(sprintf("number of elements in weights (%f) not equal to the number
+                 of rows of x (%f)", length(weights), nobs))
+  }
   (1 / (2 * nobs)) * crossprod(sqrt(weights)*R) +
     lambda * (1 - alpha) * (
       we * abs(betaE) +
