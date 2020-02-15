@@ -4,7 +4,8 @@
 \alias{Q_theta}
 \title{Objective function}
 \usage{
-Q_theta(R, nobs, lambda, alpha, we, wj, wje, betaE, theta_list, gamma)
+Q_theta(R, nobs, lambda, alpha, weights, we, wj, wje, betaE, theta_list,
+  gamma)
 }
 \arguments{
 \item{R}{residual}
@@ -26,6 +27,9 @@ The penalty is defined as \deqn{\lambda(1-\alpha)(w_e|\beta_e|+ \sum w_j
 \code{alpha} will favor selection of main effects over interactions.
 Smaller values of \code{alpha} will allow more interactions to enter the
 final model. Default: \code{0.5}}
+
+\item{weights}{observation weights, a vector of size n.
+Default is 1 for each observation.}
 
 \item{we}{penalty factor for exposure variable}
 
