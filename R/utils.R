@@ -133,6 +133,7 @@ check_col_0 <- function(M) {
 #' @param we penalty factor for exposure variable
 #' @param wj penalty factor for main effects
 #' @param wje penalty factor for interactions
+#' @param weights observations weights, default is 1
 #' @param betaE estimate of exposure effect
 #' @param theta_list estimates of main effects
 #' @param gamma estimates of gamma parameter
