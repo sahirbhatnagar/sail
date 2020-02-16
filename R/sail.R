@@ -201,7 +201,7 @@ sail <- function(x, y, e,
                  group,
                  weights,
                  penalty.factor = rep(1, 1 + 2 * nvars), # predictor (adaptive lasso) weights, the first entry must be for the E variable, then Xs, then X:E (gammas)
-                 lambda.factor = ifelse(nobs < (1 + 2 * bscols * nvars), 0.01, 0.0001),
+                 lambda.factor = ifelse(nobs < (1 + 2 * bscols * nvars), 0.00001, 0.00000001),
                  lambda = NULL,
                  alpha = 0.5,
                  nlambda = 100,
@@ -332,7 +332,7 @@ sail <- function(x, y, e,
 
   if (is.null(lambda)) {
     if (lambda.factor >= 1) stop("lambda.factor should be less than 1")
-    flmin <- as.double(lambda.factor)
+    flmin<- as.double(lambda.factor)
     # ulam <- double(1)
     ulam <- NULL
   } else {
@@ -408,7 +408,7 @@ sail <- function(x, y, e,
     }} else {
       if (strong) {
         fit <- switch(family,
-                      gaussian = lspathweights(
+                      gaussian = lspathweights_dtr(
                         x = x,
                         y = y,
                         e = e,

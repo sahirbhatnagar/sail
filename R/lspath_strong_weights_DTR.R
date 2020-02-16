@@ -7,7 +7,7 @@
 # Updated: April 6, 2018
 #####################################
 
-lspathweights <- function(x,
+lspathweights_dtr <- function(x,
                    y,
                    e,
                    basis,
@@ -249,7 +249,8 @@ lspathweights <- function(x,
           standardize = F, intercept = F
         ))[-1, 2]
 
-      Delta <- rowSums(sweep(x_tilde_2, 2, (unlist(theta) - unlist(theta_next)), FUN = "*"))
+      Delta <- rowSums(sweep(x_tilde_2, 2,
+                             (unlist(theta) - unlist(theta_next)), FUN = "*"))
 
       R.star <- R.star + Delta
 
@@ -355,7 +356,7 @@ lspathweights <- function(x,
 
 
       # used to check convergence
-      theta_next_vec <- do.call(c, theta_next)
+      theta_next_vec <- theta_next
 
       # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       # update betaE
