@@ -100,7 +100,7 @@ margin <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df, loss 
 
 
 
-KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
+KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,weights,
                 lambda, lambda2, group, we, wj, wje, thr, loss = c("ls", "logit")) {
   loss <- match.arg(loss)
   bn <- as.integer(max(group))
@@ -115,7 +115,7 @@ KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
   # KKT for beta0 -----------------------------------------------------------
 
   # this is the gradient for beta0, this should be of length nlambda
-  B0 <- t(dl) %*% matrix(1, nrow = nobs) / nobs
+  B0 <- weights*t(dl) %*% matrix(1, nrow = nobs) / nobs
 
   ctr <- 0
 
@@ -142,7 +142,7 @@ KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
       as.matrix(gamma[j, l] * (xe_phij[, index, drop = F] %*% beta[index, l, drop = F]))
     })))
 
-    dl_norm_betaE <- t(xdMat_betaE) %*% dl[, l, drop = FALSE] / nobs
+    dl_norm_betaE <- weights*t(xdMat_betaE) %*% dl[, l, drop = FALSE] / nobs
 
     if (betaE[l] == 0) {
       BE <- dl_norm_betaE / (-lambda[l] * (1 - lambda2) * we)
@@ -176,7 +176,7 @@ KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
 
       xdMat_gammaj <- as.matrix(betaE[l] * (xe_phij[, ind, drop = F] %*% beta[ind, l, drop = F]))
 
-      dl_norm_gammaj <- t(xdMat_gammaj) %*% dl[, l, drop = FALSE] / nobs
+      dl_norm_gammaj <- weights*t(xdMat_gammaj) %*% dl[, l, drop = FALSE] / nobs
 
       if (gamma[g, l] == 0) {
         BE <- dl_norm_gammaj / (-lambda[l] * (1 - lambda2) * we)
@@ -214,7 +214,7 @@ KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
       xdMat <- phij[, ind, drop = F] + gamma[g, l] * betaE[l] * xe_phij[, ind, drop = F]
 
       # this is the first part of eq (17)
-      dl_prod <- t(xdMat) %*% dl[, l, drop = FALSE] / nobs
+      dl_prod <- weights*t(xdMat) %*% dl[, l, drop = FALSE] / nobs
 
       dl_norm <- l2norm(dl_prod)
 
