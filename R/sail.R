@@ -408,7 +408,7 @@ sail <- function(x, y, e,
     }} else {
       if (strong) {
         fit <- switch(family,
-                      gaussian = lspathweights_dtr(
+                      gaussian = lspathweights(
                         x = x,
                         y = y,
                         e = e,
