@@ -28,8 +28,7 @@ The penalty is defined as \deqn{\lambda(1-\alpha)(w_e|\beta_e|+ \sum w_j
 Smaller values of \code{alpha} will allow more interactions to enter the
 final model. Default: \code{0.5}}
 
-\item{weights}{observation weights, a vector of size n.
-Default is 1 for each observation.}
+\item{weights}{observational weights, default is 1 for all observations}
 
 \item{we}{penalty factor for exposure variable}
 

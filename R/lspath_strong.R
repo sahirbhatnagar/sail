@@ -60,7 +60,7 @@ lspath <- function(x,
   # this is used for the predict function
   design <- expansion$design
 
-  nulldev <- as.numeric(crossprod(y - mean(y)))
+  nulldev <- as.numeric(crossprod(sqrt(weights)*(y - mean(y))))
 
   # Initialize -------------------------------------------------------------
   # the initial values here dont matter, since at Lambda_max everything is 0
@@ -430,7 +430,7 @@ lspath <- function(x,
       if (abs(environ[lambdaIndex]) > 0) "E"
     )
 
-    deviance <- crossprod(R.star)
+    deviance <- crossprod(sqrt(weights)*R.star)
     devRatio <- 1 - deviance / nulldev
     dfbeta <- sum(abs(betaMat[, lambdaIndex]) > 0) / ifelse(expand, ncols, 1)
     dfalpha <- sum(abs(alphaMat[, lambdaIndex]) > 0) / ifelse(expand, ncols, 1)

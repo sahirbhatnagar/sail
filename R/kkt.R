@@ -43,6 +43,14 @@ dls <- function(r, delta) {
   dl
 }
 
+dwls <- function(r, delta,weights) {
+  dl <- -r
+  dl
+}
+
+
+
+
 # m1 <- gglasso(x = bardet$x, y = bardet$y, group = group1, loss = "ls")
 # violations <- gglasso:::KKT(b0 = m1$b0, beta = m1$beta, y = bardet$y, x = bardet$x, lambda = m1$lambda,
 #                       pf = rep(sqrt(5),20), group = group1, thr = 1e-3, loss = "ls")
@@ -54,7 +62,7 @@ dls <- function(r, delta) {
 #              e = DT$e, df = fit$df, loss = "ls")
 
 # this gives -R = -(Y - hat(Y))
-margin <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df, loss = c("ls", "logit")) {
+margin <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df, loss = c("ls", "logit",'wls')) {
   loss <- match.arg(loss)
   nobs <- length(as.vector(y))
   beta <- as.matrix(beta)
@@ -101,7 +109,7 @@ margin <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df, loss 
 
 
 KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,weights,
-                lambda, lambda2, group, we, wj, wje, thr, loss = c("ls", "logit")) {
+                lambda, lambda2, group, we, wj, wje, thr, loss = c("ls", "logit",'wls')) {
   loss <- match.arg(loss)
   bn <- as.integer(max(group))
   nobs <- length(as.vector(y))
@@ -115,7 +123,7 @@ KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,weights,
   # KKT for beta0 -----------------------------------------------------------
 
   # this is the gradient for beta0, this should be of length nlambda
-  B0 <- weights*t(dl) %*% matrix(1, nrow = nobs) / nobs
+  B0 <-weights* t(dl) %*% matrix(1, nrow = nobs) / nobs
 
   ctr <- 0
 

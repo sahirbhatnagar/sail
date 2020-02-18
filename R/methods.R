@@ -50,6 +50,9 @@
 #' predict(fit, s = 0.45) # predicted response for a single lambda value
 #' predict(fit, s = c(2.15, 0.32, 0.40), type="nonzero") # nonzero coefficients
 #' @seealso \code{\link{predict.cv.sail}}
+#' @note When the coef method is called, the alpha values, which represent the
+#'   interaction term are returned. This alpha is the product of beta_e,gamma_j
+#'   and theta_j
 #' @rdname predict.sail
 #' @export
 predict.sail <- function(object, newx, newe, s = NULL,

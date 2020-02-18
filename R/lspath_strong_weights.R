@@ -59,7 +59,7 @@ lspathweights <- function(x,
   # this is used for the predict function
   design <- expansion$design
 
-  nulldev <- as.numeric(crossprod(y - mean(y)))
+  nulldev <- as.numeric(crossprod(sqrt(weights)*(y-mean(y))))
 
   # Initialize -------------------------------------------------------------
   # the initial values here dont matter, since at Lambda_max everything is 0
@@ -253,9 +253,6 @@ lspathweights <- function(x,
       #
       # R.star <- R.star + Delta
 
-
-
-
       # converged_theta <- FALSE
       # k <- 1
       # while (!converged_theta && k < maxit){
@@ -269,7 +266,7 @@ lspathweights <- function(x,
               gglasso = coef(gglasso::gglasso(
                 x = x_tilde_2[[j]],
                 y = R,
-                weights=weights,
+                weight=diag(weights),
                 # eps = 1e-12,
                 maxit = 100000,
                 group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
@@ -315,8 +312,9 @@ lspathweights <- function(x,
             gglasso = coef(gglasso::gglasso(
               x = x_tilde_2[[j]],
               y = R,
+
               # eps = 1e-12,
-              weights=weights,
+              weight=diag(weights),
               group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
               pf = wj[j],
               lambda = LAMBDA * (1 - alpha),
@@ -448,7 +446,7 @@ lspathweights <- function(x,
       if (abs(environ[lambdaIndex]) > 0) "E"
     )
 
-    deviance <- crossprod(R.star)
+    deviance <- crossprod(sqrt(weights)*R.star)
     devRatio <- 1 - deviance / nulldev
     dfbeta <- sum(abs(betaMat[, lambdaIndex]) > 0) / ifelse(expand, ncols, 1)
     dfalpha <- sum(abs(alphaMat[, lambdaIndex]) > 0) / ifelse(expand, ncols, 1)
