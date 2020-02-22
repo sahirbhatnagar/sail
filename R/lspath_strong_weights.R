@@ -49,6 +49,7 @@ lspathweights <- function(x,
   main_effect_names <- expansion$main_effect_names
   interaction_names <- expansion$interaction_names
   ncols <- expansion$ncols
+  e <- expansion$E
   # group_list <- split(group, group)
 
   # group membership
@@ -77,11 +78,11 @@ lspathweights <- function(x,
   Theta_init <- c(b0, betaE, do.call(c, theta), gamma)
 
   # Lambda Sequence ---------------------------------------------------------
-  # browser()
+
   if (is.null(ulam)) {
     # R1 <- R2 <- y - b0 # this is used as the starting residual for Gamma and Theta update
-    term1 <- (1 / we) * (crossprod(e, R.star))
-    term2 <- (1 / wj) * sapply(Phi_j_list, function(i) l2norm(crossprod(i, R.star)))
+    term1 <- (1 / we) * (crossprod(e, weights*R.star))
+    term2 <- (1 / wj) * sapply(Phi_j_list, function(i) l2norm(crossprod(i, weights*R.star)))
     lambda_max <- (1 / (nobs * (1 - alpha))) * max(term1[term1 != Inf], max(term2[term2 != Inf]))
     lambdas <- rev(exp(seq(log(flmin * lambda_max), log(lambda_max), length.out = nlambda)))
     lambdaNames <- paste0("s", seq_along(lambdas))
@@ -174,7 +175,7 @@ lspathweights <- function(x,
     Q <- vector("numeric", length = maxit + 1)
 
     # store the value of the likelihood at the 0th iteration
-    Q[1] <- (1 / (2 * nobs)) * crossprod(R.star)
+    Q[1] <- (1 / (2 * nobs)) * crossprod(sqrt(weights)*R.star)
 
     # iteration counter
     m <- 1
@@ -422,6 +423,8 @@ lspathweights <- function(x,
         ))
       }
 
+      # browser()
+
       b0 <- b0_next
       betaE <- betaE_next
       theta <- theta_next
@@ -434,11 +437,14 @@ lspathweights <- function(x,
 
     # Store Results -----------------------------------------------------------
 
-    a0[lambdaIndex] <- b0_next
     environ[lambdaIndex] <- betaE_next
     betaMat[, lambdaIndex] <- theta_next_vec
     gammaMat[, lambdaIndex] <- gamma_next
     alphaMat[, lambdaIndex] <- do.call(c, lapply(seq_along(theta_next), function(i) betaE_next * gamma_next[i] * theta_next[[i]]))
+    a0[lambdaIndex] <- b0_next -
+        crossprod(as.vector(expansion$mPhi_j),as.vector(do.call(cbind,theta_next))) -
+        expansion$mE * betaE_next -
+        crossprod(as.vector(expansion$mXE_Phi_j),alphaMat[,lambdaIndex])
 
     active[[lambdaIndex]] <- c(
       unique(gsub("\\_\\d*", "", names(which(abs(betaMat[, lambdaIndex]) > 0)))),
