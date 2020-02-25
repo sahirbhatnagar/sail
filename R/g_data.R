@@ -1,6 +1,6 @@
 
 g_data=function(){
-  X=matrix(rnorm(10000),1000)
+  X=matrix(rnorm(10000),100)
   x1=X[,1];x2=X[,2];x3=X[,3];x4=X[,4]
 
   ## treatment model
@@ -10,12 +10,12 @@ g_data=function(){
 
   ##  A~X1-X4
   expit=function(x) {
-    return(1/(1+(exp(-(0.4+x[1]+x[2]+x[3]+x[4])))))
+    return(1/(1+(exp(-(0.2+x[1]+x[2]+x[3]+x[4])))))
   }
 
   prob=apply(X[,1:4], 1, expit)
 
-  A=rbinom(1000,1,prob)
+  A=rbinom(100,1,prob)
 
 
   # library(tableone)
@@ -35,10 +35,10 @@ g_data=function(){
   #      xlab="Propensity Score",  las=1 , col="tomato3")
 
   ## Generate Y
-  tfree=1+exp(x1)+exp(x2)-2*x3+4*x4
-  psi=c(5,5,5,-1,-1)
+  tfree=1+exp(x1)+exp(x2)-2*x3+2*x4
+  psi=c(10,10,10,10,10)
   ymean=tfree+A*(cbind(1,X[,1:4])%*%psi)
-  y=rnorm(1000,ymean,1)
+  y=rnorm(100,ymean,2)
 
   ## Both Correct
 

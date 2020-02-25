@@ -115,7 +115,7 @@
 #' @rdname cv.sail
 #' @export
 cv.sail <- function(x, y, e, ...,
-                    weights=NULL,
+                    weights=weights,
                     lambda = NULL,
                     type.measure = c("mse", "deviance", "class", "auc", "mae"),
                     nfolds = 10, foldid, grouped = TRUE, keep = FALSE, parallel = FALSE) {
