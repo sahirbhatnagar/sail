@@ -1,6 +1,6 @@
 
-g_data=function(){
-  X=matrix(rnorm(10000),100)
+g_data=function(n,p){
+  X=matrix(rnorm(n*p),n)
   x1=X[,1];x2=X[,2];x3=X[,3];x4=X[,4]
 
   ## treatment model
@@ -15,7 +15,7 @@ g_data=function(){
 
   prob=apply(X[,1:4], 1, expit)
 
-  A=rbinom(100,1,prob)
+  A=rbinom(n,1,prob)
 
 
   # library(tableone)
@@ -38,7 +38,7 @@ g_data=function(){
   tfree=1+exp(x1)+exp(x2)-2*x3+2*x4
   psi=c(10,10,10,10,10)
   ymean=tfree+A*(cbind(1,X[,1:4])%*%psi)
-  y=rnorm(100,ymean,2)
+  y=rnorm(n,ymean,2)
 
   ## Both Correct
 
