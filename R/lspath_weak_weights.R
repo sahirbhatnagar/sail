@@ -64,7 +64,7 @@ lspathweakweights <- function(x,
   # this is used for the predict function
   design <- expansion$design
 
-  nulldev <- as.numeric(crossprod(y - mean(y)))
+  nulldev <- as.numeric(crossprod(sqrt(weights)*(y - mean(y))))
 
   # Initialize -------------------------------------------------------------
   # the initial values here dont matter, since at Lambda_max everything is 0
@@ -85,8 +85,8 @@ lspathweakweights <- function(x,
   # browser()
   if (is.null(ulam)) {
     # R1 <- R2 <- y - b0 # this is used as the starting residual for Gamma and Theta update
-    term1 <- (1 / we) * (crossprod(e, R.star))
-    term2 <- (1 / wj) * sapply(Phi_j_list, function(i) l2norm(crossprod(i, R.star)))
+    term1 <- (1 / we) * (crossprod(e, weights*R.star))
+    term2 <- (1 / wj) * sapply(Phi_j_list, function(i) l2norm(crossprod(i, weights*R.star)))
     lambda_max <- (1 / (nobs * (1 - alpha))) * max(term1[term1 != Inf], max(term2[term2 != Inf]))
     lambdas <- rev(exp(seq(log(flmin * lambda_max), log(lambda_max), length.out = nlambda)))
     lambdaNames <- paste0("s", seq_along(lambdas))
@@ -179,7 +179,7 @@ lspathweakweights <- function(x,
     Q <- vector("numeric", length = maxit + 1)
 
     # store the value of the likelihood at the 0th iteration
-    Q[1] <- (1 / (2 * nobs)) * crossprod(R.star)
+    Q[1] <- (1 / (2 * nobs)) * crossprod(sqrt(weights)*R.star)
 
     # iteration counter
     m <- 1
@@ -253,7 +253,7 @@ lspathweakweights <- function(x,
                                      x = x_tilde_2[[j]],
                                      y = R,
                                      # eps = 1e-12,
-                                     weights = weights,
+                                     weight=diag(weights),
                                      maxit = 100000,
                                      group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
                                      pf = wj[j],
@@ -298,7 +298,7 @@ lspathweakweights <- function(x,
                                  gglasso = coef(gglasso::gglasso(
                                    x = x_tilde_2[[j]],
                                    y = R,
-                                   weights = weights,
+                                   weight=diag(weights),
                                    # eps = 1e-12,
                                    group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
                                    pf = wj[j],
@@ -437,7 +437,7 @@ lspathweakweights <- function(x,
       if (abs(environ[lambdaIndex]) > 0) "E"
     )
 
-    deviance <- crossprod(R.star)
+    deviance <- crossprod(sqrt(weights)*R.star)
     devRatio <- 1 - deviance / nulldev
     dfbeta <- sum(abs(betaMat[, lambdaIndex]) > 0) / ifelse(expand, ncols, 1)
     dfalpha <- sum(abs(alphaMat[, lambdaIndex]) > 0) / ifelse(expand, ncols, 1)

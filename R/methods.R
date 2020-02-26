@@ -75,7 +75,7 @@ predict.sail <- function(object, newx, newe, s = NULL,
     )$design
   }
 
-  a0 <- t(as.matrix(object$b0))
+  a0 <- t(as.matrix(object$a0))
   rownames(a0) <- "(Intercept)"
   # this has only values for which lambda did converge
   nbeta <- rbind(a0, object$beta, E = object$bE, object$alpha)

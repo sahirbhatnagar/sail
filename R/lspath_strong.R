@@ -106,7 +106,7 @@ lspath <- function(x,
   # Objects to store results ------------------------------------------------
 
   # a0 <- stats::setNames(rep(0, nlambda), lambdaNames)
-  originalintercept <- stats::setNames(rep(0, nlambda), lambdaNames)
+  # originalintercept <- stats::setNames(rep(0, nlambda), lambdaNames)
 
   environ <- stats::setNames(rep(0, nlambda), lambdaNames)
 
@@ -419,15 +419,16 @@ lspath <- function(x,
 
 
     # Store Results -----------------------------------------------------------
-    originalintercept[lambdaIndex]=b0_next
+    # originalintercept[lambdaIndex]=b0_next
     environ[lambdaIndex] <- betaE_next
     betaMat[, lambdaIndex] <- theta_next_vec
     gammaMat[, lambdaIndex] <- gamma_next
     alphaMat[, lambdaIndex] <- do.call(c, lapply(seq_along(theta_next), function(i) betaE_next * gamma_next[i] * theta_next[[i]]))
 
 
-    # a0[lambdaIndex] <- b0_next -
-    #   crossprod(as.vector(expansion$mPhi_j),as.vector(do.call(cbind,theta_next))) -
+    a0[lambdaIndex] <- b0_next
+
+    #   - crossprod(as.vector(expansion$mPhi_j),as.vector(do.call(cbind,theta_next))) -
     #   expansion$mE * betaE_next -
     #   crossprod(as.vector(expansion$mXE_Phi_j),alphaMat[,lambdaIndex])
 
@@ -483,8 +484,8 @@ lspath <- function(x,
   lambdas[1] <- lambda_max
 
   out <- list(
-    b0=originalintercept[converged],
-    # a0 = a0[converged],
+    # b0=originalintercept[converged],
+    a0 = a0[converged],
     beta = beta_final[, converged, drop = FALSE],
     alpha = alpha_final[, converged, drop = FALSE],
     gamma = gamma_final[, converged, drop = FALSE],
