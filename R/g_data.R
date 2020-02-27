@@ -2,7 +2,6 @@
 g_data=function(n,p){
   X=matrix(rnorm(n*p),n)
   x1=X[,1];x2=X[,2];x3=X[,3];x4=X[,4]
-  pfac=c(0,rep(1,2*dim(X)[2]))
 
 
   ## treatment model
@@ -37,7 +36,7 @@ g_data=function(n,p){
   #      xlab="Propensity Score",  las=1 , col="tomato3")
 
   ## Generate Y
-  tfree=4+4*abs(x1)+4*x2-4*x3+4*x4
+  tfree=3+3*abs(x1)+3*x2+3*x3+3*x4
   psi=c(6,6,6,6,6)
   ymean=tfree+A*(cbind(1,X[,1:4])%*%psi)
   y=rnorm(n,ymean,1)
@@ -46,7 +45,7 @@ g_data=function(n,p){
   ps=fitted(fit_treat)
   w=abs(A-ps)
   w=w*length(w)/sum(w)
-  return(list(X,y,w,A,pfac))
+  return(list(X,y,w,A))
 }
 
 
