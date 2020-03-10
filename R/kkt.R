@@ -79,7 +79,6 @@ margin <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df, loss 
   # dim(beta)
   # b0[1:5]
   # b0MAT[1:5,1:5]
-  # browser()
 
   link <- b0MAT + phij %*% beta + matrix(e) %*% matrix(betaE, nrow = 1) + xe_phij %*% alpha
 

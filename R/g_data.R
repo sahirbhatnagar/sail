@@ -11,7 +11,7 @@ g_data=function(n,p){
 
   ##  A~X1-X4
   expit=function(x) {
-    return(1/(1+(exp(-(0.2+x[1]+x[2]+x[3]+x[4])))))
+    return(1/(1+(exp(-(1+x[1]+x[2]+x[3]+x[4])))))
   }
 
   prob=apply(X[,1:4], 1, expit)
@@ -36,8 +36,8 @@ g_data=function(n,p){
   #      xlab="Propensity Score",  las=1 , col="tomato3")
 
   ## Generate Y
-  tfree=3+3*abs(x1)+3*x2+3*x3+3*x4
-  psi=c(6,6,6,6,6)
+  tfree=3+3*exp(x1)+3*x2+3*x3+3*x4
+  psi=c(3,1,1,1,1)
   ymean=tfree+A*(cbind(1,X[,1:4])%*%psi)
   y=rnorm(n,ymean,1)
   ## Both Correct

@@ -429,7 +429,7 @@ lspathweakweights <- function(x,
     environ[lambdaIndex] <- betaE_next
     betaMat[, lambdaIndex] <- theta_next_vec
     gammaMat[, lambdaIndex] <- gamma_next
-    alphaMat[, lambdaIndex] <- do.call(c, lapply(seq_along(theta_next), function(i) betaE_next * gamma_next[i] * theta_next[[i]]))
+    alphaMat[, lambdaIndex] <- do.call(c, lapply(seq_along(theta_next), function(i) gamma_next[i]*(betaE_next+theta_next[[i]])))
 
     active[[lambdaIndex]] <- c(
       unique(gsub("\\_\\d*", "", names(which(abs(betaMat[, lambdaIndex]) > 0)))),

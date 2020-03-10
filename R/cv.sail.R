@@ -119,6 +119,7 @@ cv.sail <- function(x, y, e, ...,
                     lambda = NULL,
                     type.measure = c("mse", "deviance", "class", "auc", "mae"),
                     nfolds = 10, foldid, grouped = TRUE, keep = FALSE, parallel = FALSE) {
+  y=scale(y,scale = F)
   if (!requireNamespace("foreach", quietly = TRUE)) {
     stop("Package \"foreach\" needed for this function to work in parallel. Please install it.",
       call. = FALSE
@@ -337,6 +338,8 @@ createfolds <- function(y, k = 10, list = FALSE, returnTrain = FALSE) {
 #'   Regularization Paths for Generalized Linear Models via Coordinate Descent.
 #'   Journal of Statistical Software, 33(1), 1-22.
 #'   \url{http://www.jstatsoft.org/v33/i01/}.
+
+
 cv.lspath <- function(outlist, lambda, x, y, e, weights,
                       foldid, type.measure, grouped, keep = FALSE) {
   typenames <- c(
@@ -409,12 +412,16 @@ cvcompute <- function(mat, weights, foldid, nlams) {
 }
 
 #' @describeIn cv.lspath get lambda.min and lambda.1se
+
+## 1se: gives the most regularized model
+#such that error is within one standard error of the minimum
+
 getmin <- function(lambda, cvm, cvsd) {
   cvmin <- min(cvm, na.rm = TRUE)
   idmin <- cvm <= cvmin
   lambda.min <- max(lambda[idmin], na.rm = TRUE)
   idmin <- match(lambda.min, lambda)
-  semin <- (cvm + cvsd)[idmin]
+  semin <- (cvm +cvsd)[idmin]
   idmin <- cvm <= semin
   lambda.1se <- max(lambda[idmin], na.rm = TRUE)
   list(lambda.min = lambda.min, lambda.1se = lambda.1se)
