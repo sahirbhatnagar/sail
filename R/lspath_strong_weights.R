@@ -62,7 +62,7 @@ lspathweights <- function(x,
   # this is used for the predict function
   design <- expansion$design
 
-  nulldev <- as.numeric(crossprod(sqrt(weights)*(y-mean(y))))
+  nulldev <- as.numeric(crossprod(sqrt(weights)*(y)))
 
   # Initialize -------------------------------------------------------------
   # the initial values here dont matter, since at Lambda_max everything is 0

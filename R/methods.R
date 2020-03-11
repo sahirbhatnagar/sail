@@ -174,7 +174,7 @@ predict.cv.sail <- function(object, newx, newe, s = c("lambda.1se", "lambda.min"
 #' @inheritParams predict.cv.sail
 #' @rdname predict.cv.sail
 #' @export
-coef.cv.sail <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
+coef.cv.sail <- function(object, s = c( "lambda.1se","lambda.min"), ...) {
   if (is.numeric(s)) {
     lambda <- s
   } else

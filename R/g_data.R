@@ -37,7 +37,7 @@ g_data=function(n,p){
 
   ## Generate Y
   tfree=3+3*exp(x1)+3*x2+3*x3+3*x4
-  psi=c(3,1,1,1,1)
+  psi=c(3,.81,.81,.81,.81)
   ymean=tfree+A*(cbind(1,X[,1:4])%*%psi)
   y=rnorm(n,ymean,1)
   ## Both Correct

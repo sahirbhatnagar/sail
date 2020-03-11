@@ -119,6 +119,7 @@ cv.sail <- function(x, y, e, ...,
                     lambda = NULL,
                     type.measure = c("mse", "deviance", "class", "auc", "mae"),
                     nfolds = 10, foldid, grouped = TRUE, keep = FALSE, parallel = FALSE) {
+
   y=scale(y,scale = F)
   if (!requireNamespace("foreach", quietly = TRUE)) {
     stop("Package \"foreach\" needed for this function to work in parallel. Please install it.",
@@ -383,6 +384,7 @@ cv.lspath <- function(outlist, lambda, x, y, e, weights,
     N <- cvob$N
   }
   cvm <- apply(cvraw, 2, stats::weighted.mean, w = weights, na.rm = TRUE)
+
   cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, stats::weighted.mean,
     w = weights, na.rm = TRUE
   ) / (N - 1))
