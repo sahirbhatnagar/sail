@@ -204,10 +204,11 @@ standardize <- function(x, center = TRUE, normalize = FALSE) {
 #' @param nvars number of variables
 #' @param vnames variable names
 design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, center.e) {
-  # browser()
     # e <- drop(standardize(e, center = TRUE, normalize = FALSE)$x)
     e <- drop(scale(e, center = center.e, scale = FALSE))
     me <- attr(e, "scaled:center") # mean of X_E
+
+
 
   if (!expand) {
     # Dont Expand X's if expand=FALSE. use user supplied design matrix
@@ -219,8 +220,11 @@ design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, cen
     main_effect_names <- vnames
     dimnames(Phi_j)[[2]] <- main_effect_names
 
+
     # mPhi_j is the column means of basis expansion of X
     mPhi_j <- sapply(Phi_j_list, attr, which = "scaled:center")
+
+
 
     # X_E x Phi_j
     XE_Phi_j_list <- lapply(Phi_j_list, function(i) scale(e * i, center = center.x, scale = FALSE))
@@ -230,6 +234,8 @@ design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, cen
 
     # mXEPhi_j is the column means of the product of X and E
     mXE_Phi_j <- sapply(XE_Phi_j_list, attr, which = "scaled:center")
+
+
 
   } else {
 

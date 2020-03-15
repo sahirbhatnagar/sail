@@ -120,7 +120,8 @@ cv.sail <- function(x, y, e, ...,
                     type.measure = c("mse", "deviance", "class", "auc", "mae"),
                     nfolds = 10, foldid, grouped = TRUE, keep = FALSE, parallel = FALSE) {
 
-  y=scale(y,scale = F)
+  y=y-weighted.mean(y,weights)
+
   if (!requireNamespace("foreach", quietly = TRUE)) {
     stop("Package \"foreach\" needed for this function to work in parallel. Please install it.",
       call. = FALSE
@@ -423,7 +424,7 @@ getmin <- function(lambda, cvm, cvsd) {
   idmin <- cvm <= cvmin
   lambda.min <- max(lambda[idmin], na.rm = TRUE)
   idmin <- match(lambda.min, lambda)
-  semin <- (cvm +cvsd)[idmin]
+  semin <- (cvm +0.25*cvsd)[idmin]
   idmin <- cvm <= semin
   lambda.1se <- max(lambda[idmin], na.rm = TRUE)
   list(lambda.min = lambda.min, lambda.1se = lambda.1se)

@@ -1,8 +1,11 @@
 
-g_data=function(n,p){
-  X=matrix(rnorm(n*p),n)
-  x1=X[,1];x2=X[,2];x3=X[,3];x4=X[,4]
+g_data=function(n,p,rho=.15){
 
+  sig <- matrix(rho, p, p)
+  diag(sig) <- 1
+
+  X <- MASS::mvrnorm(n, mu=rep(0,p),Sigma = sig)
+  x1=X[,1];x2=X[,2];x3=X[,3];x4=X[,4];x5=X[,5]
 
   ## treatment model
   # b0=0.4
@@ -11,10 +14,10 @@ g_data=function(n,p){
 
   ##  A~X1-X4
   expit=function(x) {
-    return(1/(1+(exp(-(1+x[1]+x[2]+x[3]+x[4])))))
+    return(1/(1+(exp(-(1+x[1]+x[2]+x[3]+x[4]+x[5])))))
   }
 
-  prob=apply(X[,1:4], 1, expit)
+  prob=apply(X[,1:5], 1, expit)
 
   A=rbinom(n,1,prob)
 
@@ -36,15 +39,15 @@ g_data=function(n,p){
   #      xlab="Propensity Score",  las=1 , col="tomato3")
 
   ## Generate Y
-  tfree=3+3*exp(x1)+3*x2+3*x3+3*x4
-  psi=c(3,.81,.81,.81,.81)
-  ymean=tfree+A*(cbind(1,X[,1:4])%*%psi)
+  tfree=3+3*exp(x1)+3*x2+3*x3+3*x4+3*x5
+  psi=c(3,1,1,1)
+  ymean=tfree+A*(cbind(1,X[,1:3])%*%psi)
   y=rnorm(n,ymean,1)
   ## Both Correct
   fit_treat=glm(A~X,family = binomial)
   ps=fitted(fit_treat)
   w=abs(A-ps)
-  w=w*length(w)/sum(w)
+  w=w*length(w) / sum(w)
   return(list(X,y,w,A))
 }
 

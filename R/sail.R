@@ -205,9 +205,9 @@ sail <- function(x, y, e,
                  lambda = NULL,
                  alpha = 0.5,
                  nlambda = 100,
-                 thresh = 1e-4,
+                 thresh = 1e-6,
                  fdev = 1e-5,
-                 maxit = 1000,
+                 maxit = 200,
                  dfmax = 2 * nvars + 1,
                  verbose = 0) {
 
@@ -342,10 +342,9 @@ sail <- function(x, y, e,
     nlam <- as.integer(length(lambda))
   }
 
-  if (all(weights==1)){
-    if (strong) {
+  if (strong) {
       fit <- switch(family,
-                    gaussian = lspath(
+                    gaussian = lspathweights(
                       x = x,
                       y = y,
                       e = e,
@@ -405,70 +404,6 @@ sail <- function(x, y, e,
                       ulam = ulam
                     )
       )
-    }} else {
-      if (strong) {
-        fit <- switch(family,
-                      gaussian = lspathweights(
-                        x = x,
-                        y = y,
-                        e = e,
-                        basis = basis,
-                        center.x = center.x,
-                        center.e = center.e,
-                        expand = expand,
-                        group = group,
-                        group.penalty = group.penalty,
-                        weights = weights,
-                        nlambda = nlam,
-                        thresh = thresh,
-                        fdev = fdev,
-                        maxit = maxit,
-                        verbose = verbose,
-                        alpha = alpha,
-                        nobs = nobs,
-                        nvars = nvars,
-                        vp = vp, # penalty.factor
-                        we = we, # we, wj, wje are subsets of vp
-                        wj = wj,
-                        wje = wje,
-                        flmin = flmin, # lambda.factor
-                        vnames = vnames, # variable names
-                        ne = ne, # dfmax
-                        ulam = ulam
-                      )
-        )
-      } else {
-        fit <- switch(family,
-                      gaussian = lspathweakweights(
-                        x = x,
-                        y = y,
-                        e = e,
-                        basis = basis,
-                        center.x = center.x,
-                        center.e = center.e,
-                        expand = expand,
-                        group = group,
-                        group.penalty = group.penalty,
-                        weights = weights,
-                        nlambda = nlam,
-                        thresh = thresh,
-                        fdev = fdev,
-                        maxit = maxit,
-                        verbose = verbose,
-                        alpha = alpha,
-                        nobs = nobs,
-                        nvars = nvars,
-                        vp = vp, # penalty.factor
-                        we = we, # we, wj, wje are subsets of vp
-                        wj = wj,
-                        wje = wje,
-                        flmin = flmin, # lambda.factor
-                        vnames = vnames, # variable names
-                        ne = ne, # dfmax
-                        ulam = ulam
-                      )
-        )
-      }
     }
 
   fit$call <- this.call

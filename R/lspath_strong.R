@@ -35,9 +35,10 @@ lspath <- function(x,
                    ulam) {
 
   # Basis Expansion and Design Matrix ---------------------------------------
-  y=scale(y,scale = F)
+  y=y-weighted.mean(y,weights)
+
   expansion <- design_sail(
-    x = x, e = e, expand = expand, group = group, basis = basis, nvars = nvars,
+    x = x, e = e, expand = expand, weights=weights,group = group, basis = basis, nvars = nvars,
     vnames = vnames, center.x = center.x, center.e = center.e
   )
 
@@ -52,6 +53,9 @@ lspath <- function(x,
   interaction_names <- expansion$interaction_names
   ncols <- expansion$ncols
   e <- expansion$E
+
+
+
   # group_list <- split(group, group)
 
   # group membership
@@ -201,6 +205,7 @@ lspath <- function(x,
     # }
 
     # While loop for convergence at a given Lambda value ----------------------
+    R <- R.star + add_back
 
     while (!converged[lambdaIndex] && m < maxit) {
 
@@ -208,7 +213,7 @@ lspath <- function(x,
       # update gamma (interaction parameter)
       # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-      R <- R.star + add_back
+
 
       # indices of the x_tilde matrices that have all 0 columns
       zero_x_tilde <- dim(check_col_0(x_tilde))[2]
@@ -243,7 +248,7 @@ lspath <- function(x,
 
       ###  Note:  This is only use in the DTRs!!!!!!!!
       x_tilde_2=matrix(unlist(x_tilde_2), ncol=length(x_tilde_2))
-      add_back <- rowSums(sweep(x_tilde_2, 2, unlist(theta_next), FUN = "*"))
+      add_back <- rowSums(sweep(x_tilde_2, 2, unlist(theta), FUN = "*"))
       R <- R.star + add_back
       theta_next <- coef(glmnet::glmnet(
           x = x_tilde_2,
@@ -428,7 +433,7 @@ lspath <- function(x,
           "Iteration: %f, Criterion: %f", m, criterion
         ))
       }
-
+      R <- R.star + add_back
       # b0 <- b0_next
       betaE <- betaE_next
       theta <- theta_next

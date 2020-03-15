@@ -35,7 +35,7 @@ lspathweights <- function(x,
                    ulam) {
 
   # Basis Expansion and Design Matrix ---------------------------------------
-  y=scale(y,scale = F)
+
   expansion <- design_sail(
     x = x, e = e, expand = expand, group = group, basis = basis, nvars = nvars,
     vnames = vnames, center.x = center.x, center.e = center.e
@@ -54,7 +54,23 @@ lspathweights <- function(x,
   e <- expansion$E
   # group_list <- split(group, group)
 
-  # group membership
+
+  y=y-weighted.mean(y,weights)
+
+  ff=function(s){
+    return(s-weighted.mean(s,weights))
+  }
+
+  Phi_j_list <- lapply(Phi_j_list,ff)
+  XE_Phi_j_list=lapply(XE_Phi_j_list,ff)
+  Phi_j=apply(Phi_j, 2, ff)
+  e=e-weighted.mean(e,weights)
+  XE_Phi_j=apply(XE_Phi_j, 2, ff)
+
+
+
+
+
   if (expand) {
     group <- rep(seq_len(nvars), each = ncols)
   }
@@ -62,7 +78,7 @@ lspathweights <- function(x,
   # this is used for the predict function
   design <- expansion$design
 
-  nulldev <- as.numeric(crossprod(sqrt(weights)*(y)))
+  nulldev <- as.numeric(crossprod(sqrt(weights)*y))
 
   # Initialize -------------------------------------------------------------
   # the initial values here dont matter, since at Lambda_max everything is 0
@@ -84,8 +100,8 @@ lspathweights <- function(x,
 
   if (is.null(ulam)) {
     # R1 <- R2 <- y - b0 # this is used as the starting residual for Gamma and Theta update
-    term1 <- (1 / we) * (crossprod(e, weights*R.star))
-    term2 <- (1 / wj) * sapply(Phi_j_list, function(i) l2norm(crossprod(i, weights*R.star)))
+    term1 <- (1 / we) * (crossprod(weights*e, R.star))
+    term2 <- (1 / wj) * sapply(Phi_j_list, function(i) l2norm(crossprod(weights*i, R.star)))
     ###   r. star????
     lambda_max <- (1 / (nobs * (1 - alpha))) * max(term1[term1 != Inf], max(term2[term2 != Inf]))
     lambdas <- rev(exp(seq(log(flmin * lambda_max), log(lambda_max), length.out = nlambda)))
@@ -201,6 +217,7 @@ lspathweights <- function(x,
     # }
 
     # While loop for convergence at a given Lambda value ----------------------
+    R <- R.star + add_back
 
     while (!converged[lambdaIndex] && m < maxit) {
 
@@ -208,7 +225,7 @@ lspathweights <- function(x,
       # update gamma (interaction parameter)
       # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-      R <- R.star + add_back
+
 
       # indices of the x_tilde matrices that have all 0 columns
       zero_x_tilde <- dim(check_col_0(x_tilde))[2]
@@ -219,8 +236,10 @@ lspathweights <- function(x,
         coef(glmnet::glmnet(
           x = x_tilde,
           y = R,
-          # thresh = 1e-12,
+          thresh = 1e-10,
           weights = weights,
+
+
           penalty.factor = wje,
           lambda = c(.Machine$double.xmax, LAMBDA * alpha),
           standardize = F, intercept = F
@@ -243,13 +262,15 @@ lspathweights <- function(x,
 
       ###  Note:  This is only use in the DTRs!!!!!!!!
       x_tilde_2=matrix(unlist(x_tilde_2), ncol=length(x_tilde_2))
-      add_back <- rowSums(sweep(x_tilde_2, 2, unlist(theta_next), FUN = "*"))
+      add_back <- rowSums(sweep(x_tilde_2, 2, unlist(theta), FUN = "*"))
       R <- R.star + add_back
       theta_next <- coef(glmnet::glmnet(
           x = x_tilde_2,
           y = R,
-          # thresh = 1e-12,
+          thresh = 1e-10,
+
           weights = weights,
+
           penalty.factor = wj,
           lambda = c(.Machine$double.xmax, LAMBDA *(1- alpha)),
           standardize = F, intercept = F
@@ -385,8 +406,10 @@ lspathweights <- function(x,
         coef(glmnet::glmnet(
           x = cbind(0,x_tilde_E),
           y = R,
+
+          thresh = 1e-10,
           weights = weights,
-          # thresh = 1e-12,
+
           penalty.factor = c(1,we),
           lambda = c(.Machine$double.xmax, LAMBDA *(1- alpha)),
           standardize = F, intercept = F
@@ -412,7 +435,7 @@ lspathweights <- function(x,
       # R.star <- R.star + Delta
 
       Q[m + 1] <- Q_theta(
-        R = R.star, nobs = nobs, weights=weights, lambda = LAMBDA, alpha = alpha,
+        R = R.star, nobs = nobs,  lambda = LAMBDA, alpha = alpha,weights = weights,
         we = we, wj = wj, wje = wje, betaE = betaE_next,
         theta_list = theta_next, gamma = gamma_next
       )
@@ -428,7 +451,7 @@ lspathweights <- function(x,
           "Iteration: %f, Criterion: %f", m, criterion
         ))
       }
-
+      R <- R.star + add_back
       # b0 <- b0_next
       betaE <- betaE_next
       theta <- theta_next
