@@ -114,13 +114,14 @@
 #'  }
 #' @rdname cv.sail
 #' @export
+
+
 cv.sail <- function(x, y, e, ...,
                     weights=weights,
                     lambda = NULL,
                     type.measure = c("mse", "deviance", "class", "auc", "mae"),
                     nfolds = 10, foldid, grouped = TRUE, keep = FALSE, parallel = FALSE) {
 
-  y=y-weighted.mean(y,weights)
 
   if (!requireNamespace("foreach", quietly = TRUE)) {
     stop("Package \"foreach\" needed for this function to work in parallel. Please install it.",
@@ -344,6 +345,7 @@ createfolds <- function(y, k = 10, list = FALSE, returnTrain = FALSE) {
 
 cv.lspath <- function(outlist, lambda, x, y, e, weights,
                       foldid, type.measure, grouped, keep = FALSE) {
+
   typenames <- c(
     deviance = "Mean-Squared Error", mse = "Mean-Squared Error",
     mae = "Mean Absolute Error"
@@ -369,6 +371,8 @@ cv.lspath <- function(outlist, lambda, x, y, e, weights,
     nlami <- sum(which_lam)
     predmat[which, seq(nlami)] <- preds
     nlams[i] <- nlami
+
+
   }
   N <- length(y) - apply(is.na(predmat), 2, sum)
   cvraw <- switch(type.measure, mse = (y - predmat)^2, deviance = (y - predmat)^2, mae = abs(y - predmat))

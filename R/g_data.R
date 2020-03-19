@@ -3,8 +3,9 @@ g_data=function(n,p,rho=.15){
 
   sig <- matrix(rho, p, p)
   diag(sig) <- 1
-
-  X <- MASS::mvrnorm(n, mu=rep(0,p),Sigma = sig)
+  X <- MASS::mvrnorm(n+10000, mu=rep(0,p),Sigma = sig)
+  x_test=X[-(1:n),]
+  X=X[1:n,]
   x1=X[,1];x2=X[,2];x3=X[,3];x4=X[,4];x5=X[,5]
 
   ## treatment model
@@ -48,7 +49,7 @@ g_data=function(n,p,rho=.15){
   ps=fitted(fit_treat)
   w=abs(A-ps)
   w=w*length(w) / sum(w)
-  return(list(X,y,w,A))
+  return(list(X,y,w,A,x_test))
 }
 
 

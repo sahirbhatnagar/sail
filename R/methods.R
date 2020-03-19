@@ -55,7 +55,7 @@
 #'   and theta_j
 #' @rdname predict.sail
 #' @export
-predict.sail <- function(object, newx, newe, s = NULL,
+predict.sail <- function(object, newx, newe, s = NULL,weights,
                          type = c(
                            "link", "response", "coefficients",
                            "nonzero", "class"
@@ -70,7 +70,7 @@ predict.sail <- function(object, newx, newe, s = NULL,
     stop("newe is missing. please supply the vector of the environment variable.")
   } else if (!missing(newx) & !missing(newe)) {
     newx <- design_sail(
-      x = newx, e = newe, expand = object$expand, group = object$group, basis = object$basis, nvars = object$nvars,
+      x = newx, e = newe, expand = object$expand, weights=weights, group = object$group, basis = object$basis, nvars = object$nvars,
       vnames = object$vnames, center.x = object$center.x, center.e = object$center.e
     )$design
   }

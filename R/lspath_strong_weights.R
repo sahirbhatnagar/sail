@@ -37,11 +37,11 @@ lspathweights <- function(x,
   # Basis Expansion and Design Matrix ---------------------------------------
 
   expansion <- design_sail(
-    x = x, e = e, expand = expand, group = group, basis = basis, nvars = nvars,
+    x = x, e = e,expand = expand,weights=weights, group = group, basis = basis, nvars = nvars,
     vnames = vnames, center.x = center.x, center.e = center.e
   )
 
-
+  y=y-weighted.mean(y,weights)
 
   # y <- drop(scale(y, center = TRUE, scale = FALSE))
   Phi_j_list <- expansion$Phi_j_list
@@ -53,22 +53,6 @@ lspathweights <- function(x,
   ncols <- expansion$ncols
   e <- expansion$E
   # group_list <- split(group, group)
-
-
-  y=y-weighted.mean(y,weights)
-
-  ff=function(s){
-    return(s-weighted.mean(s,weights))
-  }
-
-  Phi_j_list <- lapply(Phi_j_list,ff)
-  XE_Phi_j_list=lapply(XE_Phi_j_list,ff)
-  Phi_j=apply(Phi_j, 2, ff)
-  e=e-weighted.mean(e,weights)
-  XE_Phi_j=apply(XE_Phi_j, 2, ff)
-
-
-
 
 
   if (expand) {

@@ -203,7 +203,7 @@ standardize <- function(x, center = TRUE, normalize = FALSE) {
 #' @inheritParams sail
 #' @param nvars number of variables
 #' @param vnames variable names
-design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, center.e) {
+design_sail <- function(x, e, expand, group, basis,weights=weights, nvars, vnames, center.x, center.e) {
     # e <- drop(standardize(e, center = TRUE, normalize = FALSE)$x)
     e <- drop(scale(e, center = center.e, scale = FALSE))
     me <- attr(e, "scaled:center") # mean of X_E
@@ -270,6 +270,15 @@ design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, cen
     mXE_Phi_j <- sapply(XE_Phi_j_list, attr, which = "scaled:center")
 
   }
+
+    ff=function(s){
+      return(s-weighted.mean(s,weights))
+    }
+    Phi_j_list <- lapply(Phi_j_list,ff)
+    XE_Phi_j_list=lapply(XE_Phi_j_list,ff)
+    Phi_j=apply(Phi_j, 2, ff)
+    e=e-weighted.mean(e,weights)
+    XE_Phi_j=apply(XE_Phi_j, 2, ff)
 
   # this is used for the predict function
   design <- cbind(Phi_j, "E" = e, XE_Phi_j)
