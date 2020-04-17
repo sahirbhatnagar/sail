@@ -24,12 +24,13 @@ pacman::p_load_gh("hrbrmstr/hrbrthemes")
 pacman::p_load(ggrepel)
 pacman::p_load(Cairo)
 pacman::p_load(extrafont)
+pacman::p_load(mice)
 extrafont::loadfonts()
 # pacman::p_load(multipanelfigure)
 
 ## ---- globals ----
 
 cbbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-trop <- RSkittleBrewer::RSkittleBrewer("trop")
+# trop <- RSkittleBrewer::RSkittleBrewer("trop")
 gg_sy <- theme(legend.position = "bottom", axis.text = element_text(size = 20),
                axis.title = element_text(size = 20), legend.text = element_text(size = 20), legend.title = element_text(size = 20))

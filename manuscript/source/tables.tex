@@ -1,0 +1,57 @@
+\ctable[caption={Reparametrization for strong and weak heredity principle for \texttt{sail} model},label=tab:reparam,pos=h!,doinside=\footnotesize, ]{lll}{
+}{
+\FL
+Type      & Feature  & Reparametrization \ML
+\multicolumn{1}{m{3cm}}{Strong heredity}    & \multicolumn{1}{m{6cm}}{$\hat{\btau}_{j} \neq 0 \textrm{ only if }  \hat{\btheta}_j \neq 0  \tm{ and }  \hat{\beta}_E \neq 0$}        &   $\btau_{j} = \gamma_{jE} \beta_E \btheta_j $    \\
+\multicolumn{1}{m{3cm}}{Weak heredity} & \multicolumn{1}{m{6cm}}{$\hat{\btau}_{j} \neq 0 \textrm{ only if }  \hat{\btheta}_j \neq 0  \tm{ or }  \hat{\beta}_E \neq 0$}        &   $\btau_{j} = \gamma_{jE}(\beta_E \cdot \mb{1}_{m_j} +  \btheta_j)$    \LL
+}
+
+
+
+% latex table generated in R 3.6.1 by xtable 1.8-4 package
+% Thu Nov 14 17:01:43 2019
+% latex table generated in R 3.6.1 by xtable 1.8-4 package
+% Thu Nov 14 17:16:26 2019
+%\multicolumn{#1}{c}{#2}
+\ctable[caption={Mean (standard deviation) of the number of selected variables ($|\widehat{\mathcal{J}}|$), true positive rate (TPR) and false positive rate (FPR) as a percentage from 200 simulations for each of the five scenarios. $|\mathcal{J}|$ is the number of truly associated variables.},label=tab:resultmultinom,pos=h,doinside=\tiny]{lcccccccccccccc}{
+	
+}{
+	\FL  
+	&  \mc{2}{Linear}       &  &  \mc{2}{Linear}        & &  \mc{3}{Non-linear}   & & \mc{3}{Non-linear}  \NN
+	&  \mc{2}{Main Effects}  &  &  \mc{2}{Interactions} & &  \mc{3}{Main Effects} & & \mc{3}{Interactions}  \NN
+	\cmidrule{2-3}\cmidrule{5-6}\cmidrule{8-10}\cmidrule{12-14} % Important: no space before \cmidrule	              
+	& lasso &  adaptive  & & lassoBT   & GLinternet & & HierBasis  & SPAM  & gamsel & & sail &  adaptive  & sail  \NN
+	&      &  lasso     & &    &  & &   &   &  & &  &  sail  & weak \ML
+	\mcl{3}{1a) Strong heredity ($|\mathcal{J}|=7$)}   \\
+	$|\widehat{\mathcal{J}}|$ & 30 (14)    & 8 (4)       & & 37 (17)     & 41 (21)     & & 152 (28)   & 38 (17)    & 47 (19)    & & 37 (15)    & 8 (5) & 34 (13)  \\ 
+	TPR                        & 54.9 (7.4) & 49.7 (10.4) & & 62.0 (10.4) & 66.7 (12.8) & & 66.2 (7.6) & 60.9 (9.0) & 57.1 (6.5) & & 90.6 (7.7) & 69.7 (28.8) & 86.4 (10.1)  \\ 
+	FPR                        & 1.3 (0.7) & 0.2 (0.2)   & & 1.6 (0.8)   & 1.8 (1.0)   & & 7.4 (1.4)   & 1.7 (0.8) & 2.2 (0.9)  & & 1.5 (0.7)  & 1.1 (9.7) & 1.4 (0.6)  \ML
+	\mcl{3}{1b) Weak heredity ($|\mathcal{J}|=5$)} \\
+	$|\widehat{\mathcal{J}}|$ & 19 (12) & 4 (2) & & 20 (13) & 37 (22) & &  23 (22) & 28 (15) & 22 (15) &  & 16 (9) & 7 (6) & 17 (11)  \\ 
+	TPR & 41.0 (4.5) & 40.2 (1.9) & &  41.0 (4.5) & 65.1 (15.2) & &  42.6 (6.7) & 54.8 (8.8) & 43.8 (7.9) & &  47.8 (10.4) & 46.9 (11.2) & 51.0 (12.8)  \\ 
+	FPR & 0.8 (0.6) & 0.1 (0.1) & &  0.9 (0.7) & 1.7 (1.1) &  & 1.1 (1.1) & 1.3 (0.7) & 1.0 (0.8) & &  0.7 (0.4) & 0.2 (0.3) & 0.7 (0.5)  \ML
+	\mcl{3}{1c) Interactions Only ($|\mathcal{J}|=2$)}\\
+	$|\widehat{\mathcal{J}}|$ & 14 (13) & 3 (2) &  & 15 (14) & 42 (21) & &  14 (14) & 14 (12) & 14 (13) & &  6 (7) & 3 (5) & 6 (7)  \\ 
+	TPR & 0.0 (0.0) & 0.0 (0.0) & &  0.2 (3.5) & 82.6 (26.3) & &  0.0 (0.0) & 0.0 (0.0) & 0.0 (0.0) & &  0.0 (0.0) & 0.7 (5.9) & 0.0 (0.0)  \\ 
+	FPR & 0.7 (0.6) & 0.6 (6.9) & &  0.8 (0.7) & 2.0 (1.1) &  & 0.7 (0.7) & 0.7 (0.6) & 0.7 (0.6) &  & 0.3 (0.4) & 0.2 (0.2) & 0.3 (0.4)  \ML
+	\mcl{3}{2) Linear Effects ($|\mathcal{J}|=7$)}\\
+	$|\widehat{\mathcal{J}}|$ & 36 (16) & 8 (3) & &  48 (17) & 47 (20) & &  36 (17) & 42 (18) & 36 (16) & &  30 (12) & 12 (4) & 19 (14)  \\ 
+	TPR & 69.9 (4.7) & 67.4 (6.7) & &  72.7 (6.6) & 92.6 (9.1) & &  69.9 (4.6) & 64.6 (8.4) & 69.9 (4.7) & &  87.4 (14.1) & 88.6 (13.5) & 64.3 (13.6)  \\ 
+	FPR & 1.6 (0.8) & 0.2 (0.1) & &  2.1 (0.8) & 2.1 (1.0) & &  1.6 (0.9) & 1.9 (0.9) & 1.6 (0.8) & &  1.2 (0.6) & 0.3 (0.2) & 0.7 (0.7)  \ML
+	\mcl{3}{3) Main Effects Only ($|\mathcal{J}|=5$)}\\
+	$|\widehat{\mathcal{J}}|$ & 30 (15) & 7 (4) & &  31 (15) & 35 (18) & &  160 (17) & 42 (18) & 54 (20) & &  40 (16) & 8 (5) & 40 (16) \\ 
+	TPR & 76.6 (10.0) & 67.4 (13.6) & &  77.0 (10.1) & 78.3 (8.8) & &  97.0 (7.5) & 92.3 (10.9) & 82.4 (10.0) & &  89.3 (13.0) & 78.0 (14.8) & 89.1 (13.0)  \\ 
+	FPR & 1.3 (0.7) & 0.2 (0.2) & &  1.4 (0.8) & 1.6 (0.9) & &  7.8 (0.8) & 1.9 (0.9) & 2.5 (1.0) & &  1.8 (0.8) & 0.2 (0.2) & 1.8 (0.8)  \LL	
+}
+
+
+\ctable[caption={Comparison of analytic methods for selecting interactions using the Nurse Family Partnership program and the SUPPORT datasets. Averages (standard deviations in parentheses) are based on 200 bootstrap samples.},label=tab:rda,pos=h,doinside=\footnotesize, ]{lccccc}{\tnote{\texttt{GLinternet} results not reported for NFP data since the algorithm did not converge in many of the bootstrap samples.}\tnote[b]{$|\widehat{\mathcal{J}}|$ is the number of variables selected by the method.}
+}{
+	\FL
+	& \multicolumn{2}{c}{Nurse Family Partnership} &  &\multicolumn{2}{c}{SUPPORT} \NN
+	\cmidrule(r){2-3} \cmidrule(l){5-6}	            
+	Method          &  Mean Squared Error                                                                 & $|\widehat{\mathcal{J}}|$                                                       & & AUC                                                                            & $|\widehat{\mathcal{H}}|$ \ML
+	\texttt{sail}  &  3.5 (0.6)     &  4 (3) & & 0.66 (0.01)     &  25 (3)  \NN
+	\texttt{lassoBT}    &  3.53 (0.477)     &  11 (6)   & &  0.65 (0.009)     &  49 (14)  \NN
+	\texttt{GLinternet}\tmark &  	--                                                                               & --                                                                               & &  0.65 (0.009)     &  58 (7)   \LL
+}
