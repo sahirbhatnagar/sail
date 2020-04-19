@@ -81,7 +81,7 @@
 	linkcolor=red,          % color of internal links (change box color with linkbordercolor)
 	citecolor=blue,        % color of links to bibliography
 	filecolor=black,      % color of file links
-	urlcolor=cyan           % color of external links
+	urlcolor=blue           % color of external links
 }
 \usepackage[utf8]{inputenc} % for french accents
 \usepackage[T1]{fontenc} % for french accents
@@ -110,7 +110,7 @@
 
 %\usepackage{csquotes}
 
-
+\usepackage{pdflscape}
 
 %\usepackage[style=apa,sortcites=true,sorting=nyt,backend=biber]{biblatex}
 %\usepackage{epstopdf}
@@ -333,7 +333,7 @@ Results from our method show that individuals who are genetically predisposed to
 Our algorithms are implemented in an R package available on CRAN (\url{https://cran.r-project.org/package=sail}).
 \end{abstract}
 
-\textit{Keywords}: Variable selection, Gene-environment interaction, Penalized regression, High-dimensional data, Hierarchical interaction, Blockwise coordinate descent
+\textit{Keywords}: Blockwise coordinate descent, Gene-environment interaction, Hierarchical interaction, High-dimensional data, Penalized regression, Variable selection
 
 \section{Introduction}
 
@@ -345,6 +345,7 @@ Furthermore, the manifestations of disease are often considered to be the result
 However, there is a general deficit of such replicated interactions in the literature~\citep{timpson2018genetic}.
 Indeed, power to detect interactions is always lower than for  main effects, and in high-dimensional settings ($p >> n$), this lack of power to detect interactions is exacerbated, since the number of possible interactions could be enormous and their effects may be non-linear. 
 Hence, analytic methods that may improve power are essential. Furthermore, methods capable of detecting non-linear interactions are uncommon.
+
 Interactions may occur in numerous types and of varying complexities. 
 In this paper, we consider one specific type of interaction model, where one exposure variable $E$ is involved in possibly non-linear interactions with a high-dimensional set of measures $\mb{X}$ leading to effects on a response variable, $Y$. 
 We propose a multivariable penalization procedure for detecting non-linear interactions between $\mb{X}$ and $E$. 
@@ -434,7 +435,7 @@ This reparametrization for both strong and weak heredity is summarized in Table~
 
 To perform variable selection in this new parametrization, we penalize $\bs{\gamma} = \left(\gamma_{1E}, \ldots, \gamma_{pE}\right)$ instead of penalizing $\btau$ as in~\eqref{eq:lassolikelihood3}, leading to the following penalized objective function:
 \begin{equation}
-	Q(\bPhi) = -L(\bPhi) + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{jE}} \label{eq:saillikelihood}
+	Q(\bPhi) = -L(\bPhi) + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{jE}}. \label{eq:saillikelihood}
 \end{equation}
 %where
 %\begin{equation}
@@ -489,7 +490,7 @@ where $\hat{\beta}_j$ and $\hat{\alpha}_{j}$ are the MLEs, from~\eqref{eq:linpre
 
 We present here a toy example to better illustrate the methods proposed in this paper. 
 With a sample size of $n=100$, we sample $p=20$ covariates $X_1, \ldots X_p$ independently from a $N(0,1)$ distribution truncated to the interval [0,1]. 
-Data were generated from a model which follows the strong heredity principle, but where only one covariate, $X_2$, is involved in an interaction with a binary exposure variable ($E$): $Y = f_1(X_1) + f_2(X_2) + 1.75 E + 1.5 E \cdot f_2(X_2) + \varepsilon$.
+Data were generated from a model which follows the strong heredity principle, but where only one covariate, $X_2$, is involved in an interaction with a binary exposure variable ($E$): \[Y = f_1(X_1) + f_2(X_2) + 1.75 E + 1.5 E \cdot f_2(X_2) + \varepsilon.\]
 For illustration, function $f_1(\cdot)$ is assumed to be linear, whereas function $f_2(\cdot)$ is non-linear: $f_1(x) = -3x$, $f_2(x) = 2(2x-1)^3$. 
 The error term $\varepsilon$ is generated from a normal distribution with variance chosen such that the signal-to-noise ratio (SNR) is 2. 
 We generated a single simulated dataset and used the strong heredity \sail ~method (described below) with cubic B-splines to estimate the functional forms. 
@@ -536,10 +537,11 @@ This is useful when the researcher wants to impose prior information on the mode
 Two-stage procedures, where interaction candidates are considered from an original screen of main effects, have shown good performance when $p$ is large~\citep{hao2018model,shah2016modelling} in the linear setting.
 There are many fewer methods available for estimating non-linear interactions. 
 For example, Radchenko and James (2010)~\citep{radchenko2010variable} proposed a model of the form
-$Y = \beta_0 + \sum_{j=1}^{p} f_j(X_j) + \sum_{j>k}f_{jk}(X_j, X_k) + \varepsilon$, 
+\[Y = \beta_0 + \sum_{j=1}^{p} f_j(X_j) + \sum_{j>k}f_{jk}(X_j, X_k) + \varepsilon,\]
 where $f(\cdot)$ are smooth component functions. 
 This method is more computationally expensive than \sail ~since it considers all pairwise interactions between the basis functions, and its effectiveness in simulations or real-data applications is unknown as there is no software implementation.
 
+\begin{comment}
 While working on this paper, we were made aware of the recently proposed pliable lasso~\citep{tibshirani2017pliable} which considers the interactions between $\bX_{n \times p}$ and another matrix $\mathbf{Z}_{n\times K}$ and takes the form
 \begin{equation}
 Y = \beta_0 + \sum_{j=1}^{p}\beta_j X_j + \sum_{j=1}^{K}\theta_j Z_j + \sum_{j=1}^{p} (X_j \circ \mathbf{Z}) \balpha_j + \varepsilon \label{eq:pliable}
@@ -547,6 +549,7 @@ Y = \beta_0 + \sum_{j=1}^{p}\beta_j X_j + \sum_{j=1}^{K}\theta_j Z_j + \sum_{j=1
 where $\alpha_j$ is a $K$-dimensional vector.
 Our proposal is most closely related to this method with $\mathbf{Z}$ being a single column matrix; the key difference being the non-linearity effects of our predictor variables.
 As pointed out by the authors of the pliable lasso, either their method or ours can be seen as a varying coefficient model, i.e., the effect of $X$ varies as a function of the exposure variable $E$ or $\mb{Z}$ in~\eqref{eq:pliable}.
+\end{comment}
 
 The main contributions of this paper are five-fold.
 First, we develop a model for non-linear interactions with a key exposure variable, following either the weak or strong heredity principle, that is computationally efficient and scales to the high-dimensional setting ($n << p$).
@@ -611,11 +614,11 @@ In this section we describe a blockwise coordinate descent algorithm for fitting
 %\section{Regularization Path}
 The strong heredity \texttt{sail} model with least-squares loss has the form
 \begin{equation}
-	\hat{Y}   =  \beta_0 \cdot \boldsymbol{1} + \sum_{j=1}^p \bPsi_j \btheta_j + \beta_E X_E + \sum_{j=1}^p \gamma_{jE}  \beta_E (X_E \circ \bPsi_j) \btheta_j
+	\hat{Y}   =  \beta_0 \cdot \boldsymbol{1} + \sum_{j=1}^p \bPsi_j \btheta_j + \beta_E X_E + \sum_{j=1}^p \gamma_{jE}  \beta_E (X_E \circ \bPsi_j) \btheta_j,
 \end{equation}
 and the objective function is given by
 \begin{equation}
-	Q(\bPhi) = \frac{1}{2n} \norm{Y - \hat{Y}}_2^2 + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{jE}} \label{eq:objective_least-squares1}
+	Q(\bPhi) = \frac{1}{2n} \norm{Y - \hat{Y}}_2^2 + \lambda (1-\alpha)  \left( w_E \abs{\beta_E} + \sum_{j=1}^{p} w_j \norm{\btheta_j}_2 \right) +  \lambda\alpha \sum_{j=1}^{p} w_{jE} \abs{\gamma_{jE}}. \label{eq:objective_least-squares1}
 \end{equation}
 
 Solving~\eqref{eq:objective_least-squares1} in a blockwise manner allows us to leverage computationally fast algorithms for $\ell_1$ and $\ell_2$ norm penalized regression.
@@ -969,7 +972,7 @@ holds only if \[\sqrt{n} \lambda \lambda_{h} \rightarrow \infty, \quad \forall h
 
 
 \section{Simulation Study} \label{sec:sail_simulation}
-%In this section, we use simulated data to understand the performance of  \texttt{sail} in different scenarios.
+In this section, we use simulated data to understand the performance of  \texttt{sail} in different scenarios.
 
 \subsection{Comparator Methods}
 
@@ -980,7 +983,7 @@ Since there are no other packages that directly address our chosen problem, we s
 	\item Non-linear main effects: \texttt{HierBasis}~\citep{haris2016nonparametric}, \texttt{SPAM}~\citep{ravikumar2009sparse}, \texttt{gamsel}~\citep{chouldechova2015generalized}
 \end{enumerate}
 
-For \texttt{GLinternet} we specified the \texttt{interactionCandidates} argument so as to only consider interactions between the environment and all other $X$ variables. For all other methods we supplied ($\bX, X_E$) as the data matrix, 100 for the number of tuning parameters to fit, and used the default values otherwise\footnote[1]{\texttt{R} code for each method available at \url{https://github.com/sahirbhatnagar/sail/blob/master/my_sims/method_functions.R}}. \texttt{lassoBT} considers all pairwise interactions as there is no way for the user to restrict the search space. \texttt{SPAM} applies the same basis expansion to every column of the data matrix; we chose 5 basis spline functions. \texttt{HierBasis} and \texttt{gamsel} selects whether a term in an additive model is non-zero, linear, or a non-linear spline up to a specified max degrees of freedom per variable.
+For \texttt{GLinternet} we specified the \texttt{interactionCandidates} argument so as to only consider interactions between the environment and all other $X$ variables. For all other methods we supplied ($\bX, X_E$) as the data matrix, 100 for the number of tuning parameters to fit, and used the default values otherwise (\texttt{R} code for each method available at \url{https://github.com/sahirbhatnagar/sail/blob/master/my_sims/method_functions.R}). \texttt{lassoBT} considers all pairwise interactions as there is no way for the user to restrict the search space. \texttt{SPAM} applies the same basis expansion to every column of the data matrix; we chose 5 basis spline functions. \texttt{HierBasis} and \texttt{gamsel} selects whether a term in an additive model is non-zero, linear, or a non-linear spline up to a specified max degrees of freedom per variable.
 
 We compare the above listed methods with our main proposal method \texttt{sail}, as well as with \texttt{adaptive sail} (Algorithm~\ref{alg:adaptivesail}) and \texttt{sail weak} which has the weak heredity property. 
 For each function $f_j$, we use a B-spline basis matrix with \texttt{degree=5} implemented in the \texttt{bs} function in \texttt{R}~\citep{cran}. 
@@ -1097,7 +1100,7 @@ For each subject, we calculated a polygenic risk score (PRS) for educational att
 In this context, individuals with a higher PRS have a propensity for higher educational attainment.  
 The goal of this analysis was to determine if there was an interaction between genetic predisposition to educational attainment ($X$) and maternal participation in the NFP program ($E$) on child IQ at 4 years of age ($Y$). 
 %have a dataset of PRS for educational attainment for a collection of individuals, separated by genes according to different p-value cutoffs. For each subject, we also have the Stanford Binet IQ score at 4 years of age and information on whether the children received early intervention or not. 
-We applied the weak heredity \sail ~with cubic B-splines and $\alpha=0.1$, and selected the optimal tuning parameter using 10-fold cross-validation. 
+We applied the weak heredity \sail ~with cubic B-splines and $\alpha=0.1$ to encourage interactions, and selected the optimal tuning parameter using 10-fold cross-validation. 
 Our method identified an interaction between the intervention and PRS which included genetic variants at the 0.0001 level of significance. 
 This interaction is shown in Figure~\ref{fig:PRS-intervention-interaction}. 
 We see that the intervention has a much larger effect on IQ for lower PRS compared to a higher PRS. 
@@ -1173,7 +1176,7 @@ These variables included the number of comorbidities (excluding ARF/MOSF), age, 
 The response was whether a patient survived after six months since hospitalization.
 
 A total of 8,873 samples had complete data on all variables of interest. 
-We randomly divided these samples into equal sized training/validation/test splits and ran \texttt{lassoBT}, \texttt{GLinternet}, and the weak heredity \sail ~with cubic B-splines and $\alpha=0.1$. 
+We randomly divided these samples into equal sized training/validation/test splits and ran \texttt{lassoBT}, \texttt{GLinternet}, and the weak heredity \sail ~with cubic B-splines and $\alpha=0.1$ (as was done in the Nurse Family Partnership program case study). 
 A binomial distribution family was specified for \texttt{GLinternet}, whereas \texttt{lassoBT} had the same default settings as the simulation study since it did not support a specialized implementation for binary outcomes. 
 We again ran each method on the training data, determined the optimal tuning parameter on the validation data based on the area under the receiver operating characteristic curve (AUC), and assessed AUC on the test data. 
 We repeated this process 200 times and report the results in Table~\ref{tab:rda}.
@@ -1241,6 +1244,16 @@ We also provide a first software implementation for these models.
 
 
 \linespread{1}\selectfont
+
+\section*{Description of Supplementary Materials}
+The reader is referred to the on-line Supplementary Materials for:
+\begin{enumerate}
+	\item[A] \textbf{Proofs} - Regularity conditions and proofs for Lemma 1, Theorem 1 and Theorem 2
+	\item[B] \textbf{Algorithm Details} - Detailed description of the algorithms used to solve the strong and weak heredity \sail ~objective function.
+	\item[C] \textbf{Additional Results on PRS for Educational Attainment} - Estimated coefficient estimates and visualization of interaction effects for the Nurse Family Partnership data for the 5 imputed datasets.
+	\item[D] \textbf{Data Availability and Code to Reproduce Results} - Detailed description of the materials required (code, datasets) to reproduce the results in the manuscript.
+\end{enumerate}
+
 \section*{Acknowledgments}
 
 SRB was supported by the Ludmer Centre for Neuroinformatics and Mental Health and
@@ -1249,13 +1262,7 @@ part by support provided by Calcul Québec (www.calculquebec.ca) and Compute Can
 (www.computecanada.ca). The funders had no role in study design, data collection and
 analysis, decision to publish, or preparation of the manuscript.
 
-\section*{Description of Supplementary Materials}
 
-\begin{enumerate}
-	\item[A] \textbf{Proofs} - Regularity conditions and proofs for Lemma 1, Theorem 1 and Theorem 2
-	\item[B] \textbf{Algorithm Details} - Detailed description of the algorithms used to solve the strong and weak heredity \sail ~objective function.
-	\item[C] \textbf{Additional Results on PRS for Educational Attainment} - Estimated coefficient estimates and visualization of interaction effects for the Nurse Family Partnership data for the 5 imputed datasets.
-\end{enumerate}
 
 
 
@@ -1280,6 +1287,7 @@ analysis, decision to publish, or preparation of the manuscript.
 
 \newpage
 
+\section{Tables and Figures}
 
 \input{tables.tex}
 
@@ -2043,6 +2051,69 @@ This is the same $\lambda_{max}$ as the least-squares strong heredity \sail ~mod
 
 
 \end{knitrout}
+
+
+\section{Data Availability and Code to Reproduce Results} \label{ap:rep}
+
+The R scripts used to simulate the data for the simulation studies in Section 4 are provided along with the code for each of the methods being compared. The data used for the two real data analyses in Section 5 are publicly available. The first dataset from the Nurse Family Partnership program is provided by one of the authors of the manuscript (David Olds). The second dataset from the Study to Understand Prognoses Preferences Outcomes and Risks of Treatment (SUPPORT) is publicly available from the Vanderbilt University Department of Biostatistics website. 
+
+\subsection{Datasets}
+
+The datasets are available at \url{https://github.com/sahirbhatnagar/sail/tree/jasa/manuscript/raw_data}
+
+
+\begin{enumerate}
+	\item Nurse Family Partnership program data consists of three files. They are merged together using the script \url{https://github.com/sahirbhatnagar/sail/blob/jasa/manuscript/bin/PRS_bootstrap.R}
+	\begin{itemize}
+		\item \detokenize{Gen_3PC_scores.txt}
+		\item \detokenize{IQ_and_mental_development_variables_for_Sahir_with_study_ID.txt}
+	\item \tiny \detokenize{NFP_170614_INFO08_nodup_hard09_noambi_GWAS_EduYears_Pooled_beta_withaf_5000pruned_noambi_16Jan2018.score}
+	\end{itemize}
+\normalsize
+\item The SUPPORT data consists of a single file:
+\begin{itemize}
+	\item \url{https://github.com/sahirbhatnagar/sail/blob/jasa/manuscript/raw_data/support2.csv}
+\end{itemize}
+\end{enumerate}
+
+All datasets are in \texttt{.txt} format. Code used to read in the datasets are provided in the section below. All output from this project published online is available according to the conditions of the Creative Commons License (\url{https://creativecommons.org/licenses/by-nc-sa/2.0/})
+
+\subsection{Code}
+
+The software which implements our algorithm is available in an R package published on CRAN (\url{https://cran.r-project.org/package=sail}) version 0.1.0 with MIT license. The paper itself is written in knitr format, and therefore includes both the code and text in the same \texttt{.Rnw} file. 
+
+The scripts and data used to produce the results in the manuscript are available at \url{https://github.com/sahirbhatnagar/sail/tree/jasa/manuscript}. %This is the jasa branch with commit number 7be7ecd1b5404796a88936026bf680a7e2529798. 
+
+The knitr file which contains both the main text and code is available at: \url{https://github.com/sahirbhatnagar/sail/blob/jasa/manuscript/source/sail_manuscript_v2.Rnw}
+
+The manuscript was compiled using R version 3.6.1 with knitr version 1.25.
+
+The bootstrap analysis was run in parallel on a compute cluster with 40 cores. Though this is not necessary to reproduce the results, it definitely speeds up the computation time.  
+
+\subsubsection{Instructions for Use}
+
+All tables and figures from the paper can be reproduced by compiling the knitr file. The easiest way to reproduce the results is to download the GitHub repository and compile the knitr file from within an R session as follows:
+
+\begin{enumerate}
+	\item Download the GitHub repository \url{https://github.com/sahirbhatnagar/sail/archive/jasa.zip}
+\item From within an R session, run the command: \texttt{knitr::knit2pdf('sail\_manuscript\_v2.Rnw')}
+\end{enumerate}
+
+Note that to speed up compilation time, we have saved the simulation and bootstrap results in \texttt{.RData} files available at \url{https://github.com/sahirbhatnagar/sail/tree/jasa/manuscript/results}. These \texttt{.RData} files are called directly by the knitr file. 
+
+Note also that the R scripts used to generate the results are called from the knitr file using the `code externalization' functionality of knitr (\url{https://yihui.org/knitr/demo/externalization/}). That is, the actual R code is stored in R scripts and not within the knitr file. These R scripts are available at \url{https://github.com/sahirbhatnagar/sail/tree/jasa/manuscript/bin}. 
+
+The expected run time to compile the manuscript is about 5 minutes on a standard desktop machine, assuming that you are using the pre-run simulation and bootstrap results. 
+
+\subsubsection{R Package Vignette}
+A website with two vignettes has been created for our sail package available at \url{https://sahirbhatnagar.com/sail/}
+
+The 2 vignettes are:
+
+\begin{enumerate}
+\item \url{https://sahirbhatnagar.com/sail/articles/introduction-to-sail.html}
+\item \url{https://sahirbhatnagar.com/sail/articles/user-defined-design.html}
+\end{enumerate}
 
 \end{document}
 
