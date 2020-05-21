@@ -1,0 +1,42 @@
+\efloatseparator
+ 
+\begin{table*}
+ \centering
+ \def\~{\hphantom{0}}
+ \begin{minipage}{175mm}
+  \caption{It is for us, the living, rather to be
+dedicated here to the unfinished work which, so nobly
+carried out}
+\label{t:tableone}
+  \begin{tabular*}{\textwidth}{@{}l@{\extracolsep{\fill}}c@{\extracolsep{\fill}}r@{\extracolsep{\fill}}r@{\extracolsep{\fill}}r@{\extracolsep{\fill}}r@{\extracolsep{\fill}}l@{\extracolsep{\fill}}c@{\extracolsep{\fill}}c@{\extracolsep{\fill}}c@{}}
+  \Hline
+ & & \multicolumn{4}{c}{{Flux density (Jy)} \footnote{Observed by {\em NIFT}.}}\\ [1pt]
+\cline{3-7} \\ [-6pt]
+{Name}        &  & & & & & {Sp.} & \multicolumn{1}{r}{Period}& \multicolumn{1}{l}{Light-}  \\ [-3pt]
+{Variable}\footnote{Observed by {\em NIFT}.}        &
+{\it NIFT} & {12$\,\umu$m} & {25$\,\umu$m} & {60$\,\umu$m}
+     & {100$\,\umu$m} &     {group} & \multicolumn{1}{r}{(d)}    &
+ \multicolumn{1}{l}{curve type}& {\em T$_0$\,(\rm{K})}  \\
+ \hline
+ TW Cam & 04166$+$5719 & 8.27   & 5.62 & 1.82  & $<$1.73   & A & \~85.6 & a & 555 \\
+ RV Tau & 04440$+$2605 & 22.53  & 18.08& 6.40  & 2.52      & A & \~78.9 & b & 460 \\
+ DY Ori & 06034$+$1354 & 12.44  & 14.93& 4.12  & $<$11.22  & B & \~60.3 &  & 295 \\
+ CT Ori & 06072$+$0953 & 6.16   & 5.57 & 1.22  & $<$1.54   & B & 135.6 &  & 330 \\
+ SU Gem & 06108$+$2734 & 7.90   & 5.69 & 2.16  & $<$11.66  & A & \~50.1 & b & 575 \\
+ UY CMa & 06160$-$1701 & 3.51   & 2.48 & 0.57  & $<$1.00   & B & 113.9 & a & 420 \\
+ U Mon  & 07284$-$0940 & 124.30 & 88.43& 26.28 & 9.24      & A & \~92.3 & b & 480 \\
+ AR Pup & 08011$-$3627 & 131.33 & 94.32& 25.81 & 11.65     & B & \~75.0 & b & 450 \\
+ IW Car & 09256$-$6324 & 101/06 & 96.24& 34.19 & 13.07     & B & \~67.5 & b & 395 \\
+ GK Car & 11118$-$5726 & 2.87   & 2.48 & 0.78  & $<$12.13  & B & \~55.6 &  & 405 \\
+ RU Cen & 12067$-$4508 & 5.36   & 11.02& 5.57  & 2.01      & B & \~64.7 &  & 255 \\
+ SX Cen & 12185$-$4856 & 5.95   & 3.62 & 1.09  & $<$1.50   & B & \~32.9 & b & 590 \\
+ AI Sco & 17530$-$3348 & 17.68  & 11.46& 2.88  & $<$45.62  & A & \~71.0 & b & 480 \\
+ AC Her & 18281$+$2149 & 41.47  & 65.33& 21.12 & 7.79      & B & \~75.5 & a & 260 \\
+ R Sct  & 18448$-$0545 & 20.88  & 9.30 & 8.10  & $<$138.78 & A & 140.2 & a \\
+ R Sge  & 20117$+$1634 & 10.63  & 7.57 & 2.10  & $<$1.66   & A & \~70.6 & b & 455 \\
+ V Vul  & 20343$+$2625 & 12.39  & 5.72 & 1.29  & $<$6.96   & A & \~75.7 & a & 690\\
+\hline
+\end{tabular*}
+\end{minipage}
+\vspace*{-6pt}
+\end{table*}
