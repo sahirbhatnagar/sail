@@ -206,7 +206,7 @@ sail <- function(x, y, e,
                  alpha = 0.5,
                  nlambda = 100,
                  thresh = 1e-6,
-                 fdev = 1e-5,
+                 fdev = 1e-6,
                  maxit = 200,
                  dfmax = 2 * nvars + 1,
                  verbose = 0) {
@@ -263,6 +263,9 @@ sail <- function(x, y, e,
     stop(sprintf("number of elements in weights (%f) not equal to the number
                  of rows of x (%f)", length(weights), nobs))
   }
+
+  weights=weights*length(weights) / sum(weights)
+
 
   if (!expand) {
     # nvars needs to be the number of original X variables.

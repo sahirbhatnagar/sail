@@ -117,7 +117,7 @@
 
 
 cv.sail <- function(x, y, e, ...,
-                    weights=weights,
+                    weights,
                     lambda = NULL,
                     type.measure = c("mse", "deviance", "class", "auc", "mae"),
                     nfolds = 10, foldid, grouped = TRUE, keep = FALSE, parallel = FALSE) {
@@ -163,8 +163,8 @@ cv.sail <- function(x, y, e, ...,
   nz <- sapply(sail.object$active, length)
   # if (missing(foldid)) foldid <- sample(rep(seq(nfolds), length = N)) else nfolds <- max(foldid)
   if (missing(foldid)) foldid <- createfolds(y = y, k = nfolds) else nfolds <- max(foldid)
-  if (nfolds < 3) {
-    stop("nfolds must be bigger than 3; nfolds=10 recommended")
+  if (nfolds < 2) {
+    stop("nfolds must be bigger than 2; nfolds=10 recommended")
   }
   outlist <- as.list(seq(nfolds))
   if (parallel) {
@@ -367,7 +367,8 @@ cv.lspath <- function(outlist, lambda, x, y, e, weights,
     which <- foldid == i
     fitobj <- outlist[[i]]
     # fitobj$offset = FALSE
-    preds <- predict(fitobj, newx = x[which, , drop = FALSE], newe = e[which], s = lambda[which_lam])
+    preds <- predict(fitobj, newx = x[which, , drop = FALSE], newweights=weights[which],
+                     newe = e[which], s = lambda[which_lam])
     nlami <- sum(which_lam)
     predmat[which, seq(nlami)] <- preds
     nlams[i] <- nlami

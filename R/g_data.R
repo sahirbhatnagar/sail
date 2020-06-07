@@ -1,55 +1,27 @@
-
-g_data=function(n,p,rho=.15){
-
-  sig <- matrix(rho, p, p)
-  diag(sig) <- 1
-  X <- MASS::mvrnorm(n+10000, mu=rep(0,p),Sigma = sig)
-  x_test=X[-(1:n),]
-  X=X[1:n,]
-  x1=X[,1];x2=X[,2];x3=X[,3];x4=X[,4];x5=X[,5]
-
-  ## treatment model
-  # b0=0.4
-  # b1=b2=b3=b4=1
-  # b=c(b1,b2,b3,b4)
-
-  ##  A~X1-X4
-  expit=function(x) {
-    return(1/(1+(exp(-(1+x[1]+x[2]+x[3]+x[4]+x[5])))))
+g_data=function(n,p){
+  sig <- matrix(NA, p, p)
+  for (i in 1:p) {
+    for (j in 1:p) {
+      sig[i,j]=0.25^(abs(i-j))
+    }
   }
+  X <- MASS::mvrnorm(n, mu=rep(0,p),Sigma = sig)
+  x1=X[,1];x2=X[,2]
 
-  prob=apply(X[,1:5], 1, expit)
-
+  expit=function(x) {
+    return(1/(1+(exp(-(1+x[1]+x[2])))))
+  }
+  prob=apply(X[,1:2], 1, expit)
   A=rbinom(n,1,prob)
-
-
-  # library(tableone)
-  # ds=data.frame(cbind(A,X))
-  # colnames(ds)[-1]=colnames(ds)[-1]=c('X1',"X2"  ,"X3" , "X4" , "X5" , "X6" , "X7" , "X8" , "X9" , "X10")
-  # print(CreateTableOne(names(ds)[-1],strata = 'A',data = ds,test = F),smd = T)
-  ### Propensity score distribution
-  # treat_model=glm(A~X,family = binomial)
-  # ps=fitted(treat_model)
-  # par(mfrow=c(2,1))
-  # par(mar=c(0,5,3,3))
-  # hist(ps[A==1] , main="" , xlim=c(0,1),
-  #      ylab="Treatment", xlab="",
-  #      xaxt="n", las=1 , col="slateblue1")
-  # par(mar=c(5,5,0,3))
-  # hist(ps[A==0], main="" , xlim=c(0,1),ylim = c(100,0), ylab="Non-Treatment",
-  #      xlab="Propensity Score",  las=1 , col="tomato3")
-
   ## Generate Y
-  tfree=3+3*exp(x1)+3*x2+3*x3+3*x4+3*x5
-  psi=c(3,1,1,1)
-  ymean=tfree+A*(cbind(1,X[,1:3])%*%psi)
-  y=rnorm(n,ymean,1)
-  ## Both Correct
+  tfree=1-2*(exp(x1)+log(abs(x1)))+2*x2
+  psi=c(1,-1.5)
+  ymean=tfree+A*(cbind(1,X[,1])%*%psi)
+  y=rnorm(n,mean=ymean,sd = 1)
   fit_treat=glm(A~X,family = binomial)
   ps=fitted(fit_treat)
   w=abs(A-ps)
-  w=w*length(w) / sum(w)
-  return(list(X,y,w,A,x_test))
+  return(list(X,y,w,A))
 }
 
 

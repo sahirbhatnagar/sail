@@ -220,7 +220,7 @@ lspathweights <- function(x,
         coef(glmnet::glmnet(
           x = x_tilde,
           y = R,
-          thresh = 1e-10,
+          thresh = 1e-8,
           weights = weights,
 
 
@@ -251,7 +251,7 @@ lspathweights <- function(x,
       theta_next <- coef(glmnet::glmnet(
           x = x_tilde_2,
           y = R,
-          thresh = 1e-10,
+          thresh = 1e-8,
 
           weights = weights,
 
@@ -391,7 +391,7 @@ lspathweights <- function(x,
           x = cbind(0,x_tilde_E),
           y = R,
 
-          thresh = 1e-10,
+          thresh = 1e-8,
           weights = weights,
 
           penalty.factor = c(1,we),
