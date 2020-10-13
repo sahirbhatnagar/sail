@@ -1,0 +1,17 @@
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{../figure/PRS-intervention-interaction-others-1}
+
+}
+
+\caption{Estimated interaction effect identified by the weak heredity \texttt{sail} using cubic B-splines and $\alpha=0.1$ for the Nurse Family Partnership data for the 5 imputed datasets. Of the 189 subjects, 19 IQ scores were imputed using \texttt{mice}~\citep{buuren2010mice}. The selected model, chosen via 10-fold cross-validation, contained three variables: the main effects for the intervention and the PRS for educational attainment using genetic variants significant at the 0.0001 level, as well as their interaction.}\label{fig:PRS-intervention-interaction-others}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+
+{\centering \includegraphics[width=1\linewidth]{../figure/PRS-model-selection-1}
+}
+
+\caption{Coefficient estimates obtained by the weak heredity \texttt{sail} using cubic B-splines and $\alpha=0.1$ for the Nurse Family Partnership data for the 5 imputed datasets. Of the 189 subjects, 19 IQ scores were imputed using \texttt{mice}~\citep{buuren2010mice}. The selected model, chosen via 10-fold cross-validation, contained three variables: the main effects for the intervention and the PRS for educational attainment using genetic variants significant at the 0.0001 level, as well as their interaction. This results was consistent across all 5 imputed datasets. The white boxes indicate a coefficient estimate of 0.}\label{fig:PRS-model-selection}
+\end{figure}
