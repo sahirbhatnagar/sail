@@ -115,6 +115,8 @@ lspath <- function(x,
   # originalintercept <- stats::setNames(rep(0, nlambda), lambdaNames)
 
   a0 <- stats::setNames(rep(0, nlambda), lambdaNames)
+  rss <- stats::setNames(rep(0, nlambda), lambdaNames)
+
 
   environ <- stats::setNames(rep(0, nlambda), lambdaNames)
 
@@ -467,6 +469,7 @@ lspath <- function(x,
     dfalpha <- sum(abs(alphaMat[, lambdaIndex]) > 0) / ifelse(expand, ncols, 1)
     dfenviron <- sum(abs(environ[lambdaIndex]) > 0)
 
+    rss[lambdaIndex]=deviance
 
     outPrint[lambdaIndex, ] <- c(
       if (dfbeta == 0) 0 else dfbeta,
@@ -523,6 +526,7 @@ lspath <- function(x,
     converged = converged,
     nlambda = sum(converged),
     design = design,
+    rss=rss[converged],
     # we = we,
     # wj = wj,
     # wje = wje,

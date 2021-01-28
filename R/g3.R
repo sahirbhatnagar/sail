@@ -23,7 +23,7 @@ g3=function(n,p){
   opt2=1-1.5*X2[,1]>0
 
   ## Generate Y
-  yopt=3+3*x1+3*x2
+  yopt=.5+2*x1+2*x2
   ymean=yopt-(opt1-A1)*(.8-2*x1)-(opt2-A2)*(1-1.5*X2[,1])
   y=rnorm(n,ymean,1)
 

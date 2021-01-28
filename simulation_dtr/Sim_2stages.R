@@ -6,8 +6,14 @@ devtools::load_all()
 k=1
 l2=l1=s2=s1=a2=a1=lr2=lr1=sr2=sr1=ar2=ar1=al2=al1=as2=as1=list()
 
+expit=function(x){exp(x)/(1+exp(x))}
+q1=0.5*(expit(2)+expit(0));q2=0.5*(expit(-2)+expit(0))
+q3=0.5*(expit(2)-expit(0));q4=0.5*(expit(0)-expit(-2))
+f1=-.5;f2=2.5
+-1+(q1-q2)*(2-f2)
+
 while (k<=100) {
-  ds=g2(800,10);Y=ds[[1]];X1=ds[[2]];X2=ds[[3]];A1=ds[[4]];A2=ds[[5]]
+  ds=g2(50000,10);Y=ds[[1]];X1=ds[[2]];X2=ds[[3]];A1=ds[[4]];A2=ds[[5]]
 
   ## lasso and refit
   m=cv.glmnet(x=cbind(X2,A2,A2*X2),y=Y,nfolds = 4,parallel = T)
@@ -117,6 +123,26 @@ while (k<=100) {
   k=k+1
 }
 
+for (i in 1:400) {
+  l2[[i]]=res[[i]][[1]]
+  l1[[i]]=res[[i]][[2]]
+  s2[[i]]=res[[i]][[3]]
+  s1[[i]]=res[[i]][[4]]
+  a2[[i]]=res[[i]][[5]]
+  a1[[i]]=res[[i]][[6]]
+  lr2[[i]]=res[[i]][[7]]
+  lr1[[i]]=res[[i]][[8]]
+  sr2[[i]]=res[[i]][[9]]
+  sr1[[i]]=res[[i]][[10]]
+  ar2[[i]]=res[[i]][[11]]
+  ar1[[i]]=res[[i]][[12]]
+  al2[[i]]=res[[i]][[13]]
+  al1[[i]]=res[[i]][[14]]
+  as2[[i]]=res[[i]][[15]]
+  as1[[i]]=res[[i]][[16]]
+}
+
+
 lasso2=do.call(cbind,l2);lasso1=do.call(cbind,l1)
 sail2=do.call(cbind,s2);sail1=do.call(cbind,s1)
 pal2=do.call(cbind,a2);pal1=do.call(cbind,a1)
@@ -132,25 +158,6 @@ rowMeans(lasso2_refit);rowMeans(sail2_refit);rowMeans(pal2_refit)
 rowMeans(lasso1);rowMeans(sail1);rowMeans(pal1)
 rowMeans(lasso1_refit);rowMeans(sail1_refit);rowMeans(pal1_refit)
 
-lbias2=rowMeans(lasso2)[1:2]-c(-0.9,1)
-sbias2=rowMeans(sail2)[1:2]-c(-0.9,1)
-
-lbias1=rowMeans(lasso1)[1:2]-c(-1.46,1.5)
-sbias1=rowMeans(sail1)[1:2]-c(-1.46,1.5)
-
-lsd1=apply(lasso1[1:2,], 1, sd);lsd2=apply(lasso2[1:2,], 1, sd)
-
-sail_sd1=apply(sail1[1:2,], 1, sd);sail_sd2=apply(sail2[1:2,], 1, sd)
-
-l1=paste(round(lbias1,2),'(',round(lsd1,2),')')
-l2=paste(round(lbias2,2),'(',round(lsd2,2),')')
-s1=paste(round(sbias1,2),'(',round(sail_sd1,2),')')
-s2=paste(round(sbias2,2),'(',round(sail_sd2,2),')')
-
-bias_sd=cbind(l1,s1,l2,s2)
-colnames(bias_sd)=c('lasso (stage 1)','sail (stage 1)','lasso (stage 2)','sail (stage 2)')
-rownames(bias_sd)=c('A','X1')
-
 # Selection Rate
 
 lasso_sel2=apply(lasso2!=0, 1, mean);lasso_sel1=apply(lasso1!=0, 1, mean)
@@ -162,9 +169,9 @@ sail_sel2_refit=apply(sail2_refit!=0, 1, mean);sail_sel1_refit=apply(sail1_refit
 pal_sel2_refit=apply(pal2_refit!=0, 1, mean);pal_sel1_refit=apply(pal1_refit!=0, 1, mean)
 
 
-sel_rate=cbind(lasso_sel1,lasso_sel1_refit,sail_sel1,sail_sel1_refit,
-               pal_sel1,pal_sel1_refit,  lasso_sel2,lasso_sel2_refit,sail_sel2,
-               sail_sel2_refit,pal_sel2,pal_sel2_refit)
+sel_rate=cbind(sail_sel1,lasso_sel1,pal_sel1,sail_sel1_refit,lasso_sel1_refit,
+               pal_sel1_refit, sail_sel2, lasso_sel2,pal_sel2,sail_sel2_refit,lasso_sel2_refit,
+               pal_sel2_refit)
 
 colnames(sel_rate)=c('lasso (stage 1)', 'relaxed lasso (stage 1)',
                      'sail (stage 1)','relaxed sail (stage 1)', 'PAL (stage 1)',
@@ -175,12 +182,12 @@ colnames(sel_rate)=c('lasso (stage 1)', 'relaxed lasso (stage 1)',
 
 rownames(sel_rate)=c('A','X1','Noise1','Noise2','Noise3','Noise4','Noise5','Noise6','Noise7','Noise8',
                     'Noise9')
-sel_rate=round(sel_rate,2)
+sel_rate=round(sel_rate*100,2)
 
 ## Error Rate
 set.seed(999);ds_test=g2(10000,10);Xtest_1=ds_test[[2]];Xtest_2=ds_test[[3]]
 
-opt1=-1.46+1.5*Xtest_1[,1]>0;opt2=-0.9+Xtest_2[,1]>0
+opt1=-1.190399+1.5*Xtest_1[,1]>0;opt2=1-1.5*Xtest_2[,1]>0
 
 lasso_opt1=apply(lasso1, 2, function(i) cbind(1,Xtest_1)%*%i)>0
 lasso_opt2=apply(lasso2, 2, function(i) cbind(1,Xtest_2)%*%i)>0
@@ -222,36 +229,79 @@ sail_error2_refit=1-mean(colMeans(apply(sail_opt2_refit, 2, function(i) i==opt2)
 pal_error1_refit=1-mean(colMeans(apply(pal_opt1_refit, 2, function(i) i==opt1)))
 pal_error2_refit=1-mean(colMeans(apply(pal_opt2_refit, 2, function(i) i==opt2)))
 
+err_rate=cbind(sail_error1,lasso_error1,pal_error1,sail_error1_refit,lasso_error1_refit,
+               pal_error1_refit,sail_error2,lasso_error2,pal_error2,
+               sail_error2_refit,lasso_error2_refit,pal_error2_refit)
+
+
 ## total error
 lopt1=apply(lasso_opt1, 2, function(i) i==opt1)==T
 lopt2=apply(lasso_opt2, 2, function(i) i==opt2)==T
-lasso_error=1-mean(lopt1==lopt2)
+k=0
+for (i in 1:length(lopt1)) {
+  if (lopt1[i]==F|lopt2[i]==F) {
+    k=k+1
+  }
+}
+
+lasso_error=k/length(lopt1)
 
 sopt1=apply(sail_opt1, 2, function(i) i==opt1)==T
 sopt2=apply(sail_opt2, 2, function(i) i==opt2)==T
-sail_error=1-mean(sopt1==sopt2)
+k=0
+for (i in 1:length(lopt1)) {
+  if (sopt1[i]==F|sopt2[i]==F) {
+    k=k+1
+  }
+}
+sail_error=k/length(lopt1)
 
 aopt1=apply(pal_opt1, 2, function(i) i==opt1)==T
 aopt2=apply(pal_opt2, 2, function(i) i==opt2)==T
-pal_error=1-mean(aopt1==aopt2)
+k=0
+for (i in 1:length(lopt1)) {
+  if (aopt1[i]==F|aopt2[i]==F) {
+    k=k+1
+  }
+}
+
+pal_error=k/length(lopt1)
 
 lopt1=apply(lasso_opt1_refit, 2, function(i) i==opt1)==T
 lopt2=apply(lasso_opt2_refit, 2, function(i) i==opt2)==T
-lasso_error_refit=1-mean(lopt1==lopt2)
+k=0
+for (i in 1:length(lopt1)) {
+  if (lopt1[i]==F|lopt2[i]==F) {
+    k=k+1
+  }
+}
+
+lasso_error_refit=k/length(lopt1)
 
 sopt1=apply(sail_opt1_refit, 2, function(i) i==opt1)==T
 sopt2=apply(sail_opt2_refit, 2, function(i) i==opt2)==T
-sail_error_refit=1-mean(sopt1==sopt2)
+k=0
+for (i in 1:length(lopt1)) {
+  if (sopt1[i]==F|sopt2[i]==F) {
+    k=k+1
+  }
+}
+sail_error_refit=k/length(lopt1)
 
 aopt1=apply(pal_opt1_refit, 2, function(i) i==opt1)==T
 aopt2=apply(pal_opt2_refit, 2, function(i) i==opt2)==T
-pal_error_refit=1-mean(aopt1==aopt2)
+k=0
+for (i in 1:length(lopt1)) {
+  if (aopt1[i]==F|aopt2[i]==F) {
+    k=k+1
+  }
+}
 
-c(lasso_error,sail_error,pal_error,lasso_error_refit,sail_error_refit,pal_error_refit)
+pal_error_refit=k/length(lopt1)
 
-err_rate=cbind(lasso_error1,lasso_error1_refit,sail_error1,sail_error1_refit,
-               pal_error1,pal_error1_refit,lasso_error2,lasso_error2_refit,
-               sail_error2,sail_error2_refit,pal_error2,pal_error2_refit)
+
+error_t=c(sail_error,lasso_error,pal_error,
+          sail_error_refit,lasso_error_refit,pal_error_refit)
 
 colnames(err_rate)=c('lasso (stage 1)', 'relaxed lasso (stage 1)',
                      'sail (stage 1)','relaxed sail (stage 1)', 'PAL (stage 1)',
@@ -260,37 +310,47 @@ colnames(err_rate)=c('lasso (stage 1)', 'relaxed lasso (stage 1)',
                      'sail (stage 2)','relaxed sail (stage 2)', 'PAL (stage 2)',
                      'relaxed PAL (stage 2)')
 
+
+err_rate=round(err_rate*100,1)
+
 rownames(err_rate)=c('Error Rate')
 
 err_rate=round(err_rate,2)
 
 # Value Function
+mu=-1+2*X1[,1]+X2[,1]-A1+1.5*X1[,1]*A1+A2-1.5*X2[,1]*A2
 
-Value_T=mean(3+3*Xtest_1[,1]-1.5*opt1+1.5*Xtest_1[,1]*opt1-0.9*opt2+Xtest_2[,1]*opt2)
 
-value_lasso=mean(colMeans(3+3*Xtest_1[,1]-1.5*lasso_opt1+1.5*Xtest_1[,1]*lasso_opt1-
-                   0.9*lasso_opt2+Xtest_2[,1]*lasso_opt2))
+Value_T=mean(-1+Xtest_2[,1]+2*Xtest_1[,1]-opt1+1.5*Xtest_1[,1]*opt1+opt2-1.5*Xtest_2[,1]*opt2)
 
-value_sail=mean(colMeans(3+3*Xtest_1[,1]-1.5*sail_opt1+1.5*Xtest_1[,1]*sail_opt1-
-                           0.9*sail_opt2+Xtest_2[,1]*sail_opt2))
+v_0=mean(-1+Xtest_2[,1]+2*Xtest_1[,1])
 
-value_pal=mean(colMeans(3+3*Xtest_1[,1]-1.5*pal_opt1+1.5*Xtest_1[,1]*pal_opt1-
-                           0.9*pal_opt2+Xtest_2[,1]*pal_opt2))
+v_1=mean(-1+Xtest_2[,1]+2*Xtest_1[,1]-1+1.5*Xtest_1[,1]*1+1-1.5*Xtest_2[,1]*1)
+
+value_lasso=mean(-1+Xtest_2[,1]+2*Xtest_1[,1]-lasso_opt1+1.5*Xtest_1[,1]*lasso_opt1+lasso_opt2-1.5*Xtest_2[,1]*lasso_opt2)
+
+value_sail=mean(-1+Xtest_2[,1]+2*Xtest_1[,1]-sail_opt1+1.5*Xtest_1[,1]*sail_opt1+sail_opt2-1.5*Xtest_2[,1]*sail_opt2)
+
+value_pal=mean(-1+Xtest_2[,1]+2*Xtest_1[,1]-pal_opt1+1.5*Xtest_1[,1]*pal_opt1+pal_opt2-1.5*Xtest_2[,1]*pal_opt2)
 
 
 ## refit
 
-value_lasso_refit=mean(colMeans(3+3*Xtest_1[,1]-1.5*lasso_opt1_refit+1.5*Xtest_1[,1]*lasso_opt1_refit-
-                            0.9*lasso_opt2_refit+Xtest_2[,1]*lasso_opt2_refit))
+value_lasso_refit=mean(-1+Xtest_2[,1]+2*Xtest_1[,1]-lasso_opt1_refit
+                       +1.5*Xtest_1[,1]*lasso_opt1_refit+lasso_opt2_refit-1.5*Xtest_2[,1]*lasso_opt2_refit)
 
-value_sail_refit=mean(colMeans(3+3*Xtest_1[,1]-1.5*sail_opt1_refit+1.5*Xtest_1[,1]*sail_opt1_refit-
-                           0.9*sail_opt2_refit+Xtest_2[,1]*sail_opt2_refit))
 
-value_pal_refit=mean(colMeans(3+3*Xtest_1[,1]-1.5*pal_opt1_refit+1.5*Xtest_1[,1]*pal_opt1_refit-
-                          0.9*pal_opt2_refit+Xtest_2[,1]*pal_opt2_refit))
+value_sail_refit=mean(-1+Xtest_2[,1]+2*Xtest_1[,1]-sail_opt1_refit
+                      +1.5*Xtest_1[,1]*sail_opt1_refit+sail_opt2_refit-1.5*Xtest_2[,1]*sail_opt2_refit)
 
-value_function=rbind(Value_T,value_lasso,value_lasso_refit,
-                     value_sail,value_sail_refit,value_pal,value_pal_refit)
+
+value_pal_refit=mean(-1+Xtest_2[,1]+2*Xtest_1[,1]-pal_opt1_refit
+                     +1.5*Xtest_1[,1]*pal_opt1_refit+pal_opt2_refit-1.5*Xtest_2[,1]*pal_opt2_refit)
+
+
+value_function=rbind(value_sail,value_lasso,value_pal,
+                     value_sail_refit,value_lasso_refit,
+                     value_pal_refit)
 
 rownames(value_function)=c('True Value Function', 'Estimated Value Function (lasso)',
                            'Estimated Value Function (relaxed lasso)',
@@ -313,7 +373,7 @@ devtools::load_all()
 k=1
 l2=l1=s2=s1=a2=a1=lr2=lr1=sr2=sr1=ar2=ar1=al1=al2=as1=as2=list()
 while (k<=100) {
-  ds=g3(800,10);X1=ds[[1]];X2=ds[[2]];Y=ds[[3]];w1=ds[[4]];w2=ds[[5]];A1=ds[[6]];A2=ds[[7]]
+  ds=g3(8000,10);X1=ds[[1]];X2=ds[[2]];Y=ds[[3]];w1=ds[[4]];w2=ds[[5]];A1=ds[[6]];A2=ds[[7]]
   pfac2=coef(lm(Y~cbind(X2,A2,A2*X2),weights = w2))[-1]
   pfac2=abs(1/pfac2)
   pfac2=pfac2/sum(pfac2) *21
@@ -347,7 +407,7 @@ while (k<=100) {
   ### sail
   pfac2=c(pfac2[11],pfac2[-11])
   m=cv.sail(y=Y,e=A2,x=X2,nfolds = 4,weights = w2,
-            parallel = T, basis=function(i) i, penalty.factor=pfac2)
+            parallel = T, basis=function(i) i)
 
   sail2=coef(m,s='lambda.min');sail2_refit=sail2
   index <- (1:21)[sail2[2:(22)]!=0]
@@ -360,7 +420,7 @@ while (k<=100) {
   pfac=pfac/sum(pfac)*21
   pfac=c(pfac[11],pfac[-11])
 
-  m=cv.sail(y=yopt,e=A1,x=X1,nfolds = 4,weights = w1,penalty.factor=pfac,
+  m=cv.sail(y=yopt,e=A1,x=X1,nfolds = 4,weights = w1,
             parallel = T,basis=function(i) i)
   sail1=coef(m,s='lambda.min')[12:22]
 
@@ -402,6 +462,8 @@ while (k<=100) {
   k=k+1
 }
 
+
+save.image('dwols.RData')
 lasso2=do.call(cbind,l2);lasso1=do.call(cbind,l1)
 sail2=do.call(cbind,s2);sail1=do.call(cbind,s1)
 pal2=do.call(cbind,a2);pal1=do.call(cbind,a1)
@@ -417,26 +479,6 @@ rowMeans(lasso2_refit);rowMeans(sail2_refit);rowMeans(pal2_refit)
 rowMeans(lasso1);rowMeans(sail1);rowMeans(pal1)
 rowMeans(lasso1_refit);rowMeans(sail1_refit);rowMeans(pal1_refit)
 
-## nah
-
-lbias2=rowMeans(lasso2)[1:2]-c(1,-1.5)
-sbias2=rowMeans(sail2)[1:2]-c(1,-1.5)
-
-lbias1=rowMeans(lasso1)[1:2]-c(0.8,-2)
-sbias1=rowMeans(sail1)[1:2]-c(0.8,-2)
-
-lsd1=apply(lasso1[1:2,], 1, sd);lsd2=apply(lasso2[1:2,], 1, sd)
-
-sail_sd1=apply(sail1[1:2,], 1, sd);sail_sd2=apply(sail2[1:2,], 1, sd)
-
-l1=paste(round(lbias1,2),'(',round(lsd1,2),')')
-l2=paste(round(lbias2,2),'(',round(lsd2,2),')')
-s1=paste(round(sbias1,2),'(',round(sail_sd1,2),')')
-s2=paste(round(sbias2,2),'(',round(sail_sd2,2),')')
-
-bias_sd=cbind(l1,s1,l2,s2)
-colnames(bias_sd)=c('lasso (stage 1)','sail (stage 1)','lasso (stage 2)','sail (stage 2)')
-rownames(bias_sd)=c('A','X1')
 
 # Selection Rate
 
@@ -463,7 +505,7 @@ colnames(sel_rate)=c('lasso (stage 1)', 'relaxed lasso (stage 1)',
 rownames(sel_rate)=c('A','X1','Noise1','Noise2','Noise3','Noise4','Noise5','Noise6','Noise7','Noise8',
                      'Noise9')
 
-sel_rate=round(sel_rate*100,2)
+sel_rate=round(sel_rate*100,0)
 
 ## Error Rate
 set.seed(999);ds_test=g3(10000,10);Xtest_1=ds_test[[1]];Xtest_2=ds_test[[2]]
@@ -516,6 +558,76 @@ err_rate=cbind(lasso_error1,lasso_error1_refit,sail_error1,sail_error1_refit,
                pal_error1,pal_error1_refit,lasso_error2,lasso_error2_refit,
                sail_error2,sail_error2_refit,pal_error2,pal_error2_refit)
 
+
+## total error
+lopt1=apply(lasso_opt1, 2, function(i) i==opt1)==T
+lopt2=apply(lasso_opt2, 2, function(i) i==opt2)==T
+k=0
+for (i in 1:length(lopt1)) {
+  if (lopt1[i]==F|lopt2[i]==F) {
+    k=k+1
+  }
+}
+
+lasso_error=k/length(lopt1)
+
+sopt1=apply(sail_opt1, 2, function(i) i==opt1)==T
+sopt2=apply(sail_opt2, 2, function(i) i==opt2)==T
+k=0
+for (i in 1:length(lopt1)) {
+  if (sopt1[i]==F|sopt2[i]==F) {
+    k=k+1
+  }
+}
+sail_error=k/length(lopt1)
+
+aopt1=apply(pal_opt1, 2, function(i) i==opt1)==T
+aopt2=apply(pal_opt2, 2, function(i) i==opt2)==T
+k=0
+for (i in 1:length(lopt1)) {
+  if (aopt1[i]==F|aopt2[i]==F) {
+    k=k+1
+  }
+}
+
+pal_error=k/length(lopt1)
+
+lopt1=apply(lasso_opt1_refit, 2, function(i) i==opt1)==T
+lopt2=apply(lasso_opt2_refit, 2, function(i) i==opt2)==T
+k=0
+for (i in 1:length(lopt1)) {
+  if (lopt1[i]==F|lopt2[i]==F) {
+    k=k+1
+  }
+}
+
+lasso_error_refit=k/length(lopt1)
+
+sopt1=apply(sail_opt1_refit, 2, function(i) i==opt1)==T
+sopt2=apply(sail_opt2_refit, 2, function(i) i==opt2)==T
+k=0
+for (i in 1:length(lopt1)) {
+  if (sopt1[i]==F|sopt2[i]==F) {
+    k=k+1
+  }
+}
+sail_error_refit=k/length(lopt1)
+
+aopt1=apply(pal_opt1_refit, 2, function(i) i==opt1)==T
+aopt2=apply(pal_opt2_refit, 2, function(i) i==opt2)==T
+k=0
+for (i in 1:length(lopt1)) {
+  if (aopt1[i]==F|aopt2[i]==F) {
+    k=k+1
+  }
+}
+
+pal_error_refit=k/length(lopt1)
+
+
+error_t=c(sail_error,lasso_error,pal_error,
+          sail_error_refit,lasso_error_refit,pal_error_refit)
+
 colnames(err_rate)=c('lasso (stage 1)', 'relaxed lasso (stage 1)',
                      'sail (stage 1)','relaxed sail (stage 1)', 'PAL (stage 1)',
                      'relaxed PAL (stage 1)',
@@ -529,44 +641,59 @@ err_rate=round(err_rate*100,2)
 
 # Value Function
 
-Value_T=mean(3+3*(Xtest_1[,1]+3*Xtest_1[,2]))
+Value_T=mean(.5+2*(Xtest_1[,1]+2*Xtest_1[,2]))
 
-value_lasso=mean(colMeans(3+3*(Xtest_1[,1]+3*Xtest_1[,2])
+v_0=mean(.5+2*(Xtest_1[,1]+2*Xtest_1[,2])
+              +(0-opt1)*(.8-2*Xtest_1[,1])+
+                (0-opt2)*(1-1.5*Xtest_2[,1]))
+
+
+v_1=mean(.5+2*(Xtest_1[,1]+2*Xtest_1[,2])
+         +(1-opt1)*(.8-2*Xtest_1[,1])+
+           (1-opt2)*(1-1.5*Xtest_2[,1]))
+
+
+
+value_lasso=mean(colMeans(.5+2*(Xtest_1[,1]+2*Xtest_1[,2])
                           +(lasso_opt1-opt1)*(.8-2*Xtest_1[,1])+
                             (lasso_opt2-opt2)*(1-1.5*Xtest_2[,1])))
 
-value_sail=mean(colMeans(3+3*(Xtest_1[,1]+3*Xtest_1[,2])
+value_sail=mean(colMeans(.5+2*(Xtest_1[,1]+2*Xtest_1[,2])
                          +(sail_opt1-opt1)*(.8-2*Xtest_1[,1])+
                            (sail_opt2-opt2)*(1-1.5*Xtest_2[,1])))
 
-value_pal=mean(colMeans(3+3*(Xtest_1[,1]+3*Xtest_1[,2])
+value_pal=mean(colMeans(.5+2*(Xtest_1[,1]+2*Xtest_1[,2])
                          +(pal_opt1-opt1)*(.8-2*Xtest_1[,1])+
                            (pal_opt2-opt2)*(1-1.5*Xtest_2[,1])))
 
 
-value_lasso_refit=mean(colMeans(3+3*(Xtest_1[,1]+3*Xtest_1[,2])
+value_lasso_refit=mean(colMeans(.5+2*(Xtest_1[,1]+2*Xtest_1[,2])
                           +(lasso_opt1_refit-opt1)*(.8-2*Xtest_1[,1])+
                             (lasso_opt2_refit-opt2)*(1-1.5*Xtest_2[,1])))
 
-value_sail_refit=mean(colMeans(3+3*(Xtest_1[,1]+3*Xtest_1[,2])
+value_sail_refit=mean(colMeans(.5+2*(Xtest_1[,1]+2*Xtest_1[,2])
                          +(sail_opt1_refit-opt1)*(.8-2*Xtest_1[,1])+
                            (sail_opt2_refit-opt2)*(1-1.5*Xtest_2[,1])))
 
-value_pal_refit=mean(colMeans(3+3*(Xtest_1[,1]+3*Xtest_1[,2])
+value_pal_refit=mean(colMeans(.5+2*(Xtest_1[,1]+2*Xtest_1[,2])
                         +(pal_opt1_refit-opt1)*(.8-2*Xtest_1[,1])+
                           (pal_opt2_refit-opt2)*(1-1.5*Xtest_2[,1])))
 
-value_function=c(value_lasso,value_lasso_refit,
-                     value_sail,value_sail_refit,value_pal,value_pal_refit)/Value_T
+value_function=cbind(value_sail,value_lasso,value_pal,
+                     value_sail_refit,value_lasso_refit,
+                     value_pal_refit)
 
-rownames(value_function)=c('Estimated Value Function (lasso)',
-                           'Estimated Value Function (relaxed lasso)',
-                           'Estimated Value Function (sail)', 'Estimated Value Function (relaxed sail)',
-                           'Estimated Value Function (PAL)','Estimated Value Function (relaxed PAL)')
+error_t=100*error_t
 
-colnames(value_function)=c('Value Function')
+value_function=rbind(value_function,error_t)
 
-value_function=round(value_function*100,2)
+colnames(value_function)=c('pdWOLS','Q-Learning (lasso)','PAL',
+                           'refitted pdWOLS','Q-Learning (refitted lasso)',
+                           'refitted PAL')
+
+rownames(value_function)=c('Value Function','Total Error')
+
+value_function=round(value_function,2)
 
 save.image("~/Desktop/weights/dwols.RData")
 load("~/Desktop/weights/dwols.RData")

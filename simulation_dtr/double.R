@@ -6,12 +6,9 @@ devtools::load_all()
 k=1
 l1=l2=l3=l4=s1=s2=s3=s4=lr1=lr2=lr3=lr4=sr1=sr2=sr3=sr4=ar1=ar2=ar3=ar4=a1=a2=a3=a4=
   al1=al2=al3=al4=as1=as2=as3=as4=list()
-save.image("~/Desktop/weights/500.RData")
-
-load("~/Desktop/weights/500.RData")
 
 while (k<=10) {
-  ds=g_data(5000,10);X=ds[[1]];Y=ds[[2]];w=ds[[3]];A=ds[[4]]
+  ds=g_data(1000,10);X=ds[[1]];Y=ds[[2]];w=ds[[3]];A=ds[[4]]
   ## 1. both wrong
   coeff=abs(coef(lm(Y~cbind(X,A,A*X)))[-1])
   pfac=1/coeff
@@ -139,9 +136,7 @@ while (k<=10) {
   k=k+1
 }
 
-save.image("~/Desktop/weights/500.RData")
-
-load("~/Desktop/weights/500.RData")
+save.image("100.RData")
 
 
 

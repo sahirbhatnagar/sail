@@ -113,6 +113,8 @@ lspathweights <- function(x,
   a0 <- stats::setNames(rep(0, nlambda), lambdaNames)
 
   environ <- stats::setNames(rep(0, nlambda), lambdaNames)
+  rss <- stats::setNames(rep(0, nlambda), lambdaNames)
+
 
   betaMat <- matrix(
     nrow = length(main_effect_names), ncol = nlambda,
@@ -201,16 +203,13 @@ lspathweights <- function(x,
     # }
 
     # While loop for convergence at a given Lambda value ----------------------
-    R <- R.star + add_back
 
     while (!converged[lambdaIndex] && m < maxit) {
 
       # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
       # update gamma (interaction parameter)
       # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
+      R <- R.star + add_back
       # indices of the x_tilde matrices that have all 0 columns
       zero_x_tilde <- dim(check_col_0(x_tilde))[2]
 
@@ -222,8 +221,6 @@ lspathweights <- function(x,
           y = R,
           thresh = 1e-8,
           weights = weights,
-
-
           penalty.factor = wje,
           lambda = c(.Machine$double.xmax, LAMBDA * alpha),
           standardize = F, intercept = F
@@ -468,6 +465,7 @@ lspathweights <- function(x,
     dfbeta <- sum(abs(betaMat[, lambdaIndex]) > 0) / ifelse(expand, ncols, 1)
     dfalpha <- sum(abs(alphaMat[, lambdaIndex]) > 0) / ifelse(expand, ncols, 1)
     dfenviron <- sum(abs(environ[lambdaIndex]) > 0)
+    rss[lambdaIndex]=deviance
 
 
     outPrint[lambdaIndex, ] <- c(
@@ -518,6 +516,8 @@ lspathweights <- function(x,
     active = active[converged],
     lambda = lambdas[converged],
     lambda2 = alpha,
+    rss=rss[converged],
+
     dfbeta = outPrint[converged, "dfBeta"],
     dfalpha = outPrint[converged, "dfAlpha"],
     dfenviron = outPrint[converged, "dfEnviron"],

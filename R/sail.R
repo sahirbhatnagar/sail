@@ -378,7 +378,7 @@ sail <- function(x, y, e,
       )
     } else {
       fit <- switch(family,
-                    gaussian = lspathweak(
+                    gaussian = lspathweakweights(
                       x = x,
                       y = y,
                       e = e,
