@@ -66,10 +66,10 @@ nonzero <- function(beta, bystep = FALSE) {
   if (nr == 1) {
     if (bystep) {
       apply(beta, 2, function(x) if (abs(x) > 0) {
-          1
-        } else {
-          NULL
-        })
+        1
+      } else {
+        NULL
+      })
     } else {
       if (any(abs(beta) > 0)) {
         1
@@ -88,10 +88,10 @@ nonzero <- function(beta, bystep = FALSE) {
       if (length(which) > 0) {
         beta <- as.matrix(beta[which, , drop = FALSE])
         nzel <- function(x, which) if (any(x)) {
-            which[x]
-          } else {
-            NULL
-          }
+          which[x]
+        } else {
+          NULL
+        }
         which <- apply(beta, 2, nzel, which)
         if (!is.list(which)) {
           which <- data.frame(which)
@@ -204,9 +204,9 @@ standardize <- function(x, center = TRUE, normalize = FALSE) {
 #' @param nvars number of variables
 #' @param vnames variable names
 design_sail <- function(x, e, expand, group, basis,weights=weights, nvars, vnames, center.x, center.e) {
-    # e <- drop(standardize(e, center = TRUE, normalize = FALSE)$x)
-    # e <- drop(scale(e, center = center.e, scale = FALSE))
-    # me <- attr(e, "scaled:center") # mean of X_E
+  # e <- drop(standardize(e, center = TRUE, normalize = FALSE)$x)
+  # e <- drop(scale(e, center = center.e, scale = FALSE))
+  # me <- attr(e, "scaled:center") # mean of X_E
 
 
 
@@ -299,6 +299,5 @@ design_sail <- function(x, e, expand, group, basis,weights=weights, nvars, vname
     ncols = if (expand) ncols else sapply(Phi_j_list, ncol)
   ))
 }
-
 
 
