@@ -66,10 +66,10 @@ nonzero <- function(beta, bystep = FALSE) {
   if (nr == 1) {
     if (bystep) {
       apply(beta, 2, function(x) if (abs(x) > 0) {
-          1
-        } else {
-          NULL
-        })
+        1
+      } else {
+        NULL
+      })
     } else {
       if (any(abs(beta) > 0)) {
         1
@@ -88,10 +88,10 @@ nonzero <- function(beta, bystep = FALSE) {
       if (length(which) > 0) {
         beta <- as.matrix(beta[which, , drop = FALSE])
         nzel <- function(x, which) if (any(x)) {
-            which[x]
-          } else {
-            NULL
-          }
+          which[x]
+        } else {
+          NULL
+        }
         which <- apply(beta, 2, nzel, which)
         if (!is.list(which)) {
           which <- data.frame(which)
@@ -133,16 +133,21 @@ check_col_0 <- function(M) {
 #' @param we penalty factor for exposure variable
 #' @param wj penalty factor for main effects
 #' @param wje penalty factor for interactions
+#' @param weights observational weights, default is 1 for all observations
 #' @param betaE estimate of exposure effect
 #' @param theta_list estimates of main effects
 #' @param gamma estimates of gamma parameter
 #' @return value of the objective function
-Q_theta <- function(R, nobs, lambda, alpha,
+Q_theta <- function(R, nobs, lambda, alpha,weights,
                     we, wj, wje,
                     betaE, theta_list, gamma) {
-
-  # browser()
-  (1 / (2 * nobs)) * crossprod(R) +
+  if (missing(weights)) {
+    weights <- rep(1, nobs)
+  } else if (length(weights) != nobs) {
+    stop(sprintf("number of elements in weights (%f) not equal to the number
+                 of rows of x (%f)", length(weights), nobs))
+  }
+  (1 / (2 * nobs)) * crossprod(sqrt(weights)*R) +
     lambda * (1 - alpha) * (
       we * abs(betaE) +
         sum(sapply(seq_along(theta_list), function(i) l2norm(theta_list[[i]]) * wj[i]))
@@ -193,76 +198,106 @@ standardize <- function(x, center = TRUE, normalize = FALSE) {
 }
 
 
-
-
 #' @title Sail design matrix
 #' @description Create design matrix used in \code{\link{sail}} function
 #' @inheritParams sail
 #' @param nvars number of variables
 #' @param vnames variable names
-design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, center.e) {
-  if (center.e) {
-    e <- drop(standardize(e, center = TRUE, normalize = FALSE)$x)
-  }
+design_sail <- function(x, e, expand, group, basis,weights=weights, nvars, vnames, center.x, center.e) {
+  # e <- drop(standardize(e, center = TRUE, normalize = FALSE)$x)
+  # e <- drop(scale(e, center = center.e, scale = FALSE))
+  # me <- attr(e, "scaled:center") # mean of X_E
+
+
 
   if (!expand) {
     # Dont Expand X's if expand=FALSE. use user supplied design matrix
-    if (center.x) {
-      Phi_j_list <- lapply(split(seq(group), group), function(j) standardize(x[, j, drop = FALSE],
-          center = TRUE
-        )$x)
-    } else {
-      Phi_j_list <- lapply(split(seq(group), group), function(j) x[, j, drop = FALSE])
-    }
+    Phi_j_list <- lapply(split(seq(group), group),
+                         function(j) scale(x[, j, drop = FALSE],
+                                           center = center.x, scale = FALSE))
 
     Phi_j <- do.call(cbind, Phi_j_list)
     main_effect_names <- vnames
     dimnames(Phi_j)[[2]] <- main_effect_names
 
+
+    # mPhi_j is the column means of basis expansion of X
+    mPhi_j <- sapply(Phi_j_list, attr, which = "scaled:center")
+
+
+
     # X_E x Phi_j
-    XE_Phi_j_list <- lapply(Phi_j_list, function(i) e * i)
+    XE_Phi_j_list <- lapply(Phi_j_list, function(i) scale(e * i, center = center.x, scale = FALSE))
     XE_Phi_j <- do.call(cbind, XE_Phi_j_list)
     interaction_names <- paste(main_effect_names, "E", sep = ":")
     dimnames(XE_Phi_j)[[2]] <- interaction_names
+
+    # mXEPhi_j is the column means of the product of X and E
+    mXE_Phi_j <- sapply(XE_Phi_j_list, attr, which = "scaled:center")
+
+
+
   } else {
 
-    # Expand X's
-    if (center.x) {
-      Phi_j_list <- lapply(
-        seq_len(nvars),
-        function(j) standardize(basis(x[, j, drop = FALSE]),
-            center = TRUE
-          )$x
-      )
-    } else {
-      Phi_j_list <- lapply(
-        seq_len(nvars),
-        function(j) basis(x[, j, drop = FALSE])
-      )
-    }
+    # ff=function(s){
+    #   return(s-weighted.mean(s,weights))
+    # }
+    Phi_j_list <- lapply(
+      seq_len(nvars),
+      function(j) basis(x[, j, drop = FALSE]))
 
-    ncols <- ncol(Phi_j_list[[1]]) # this is to get the number of columns for each expansion
+    ncols <- ncol(Phi_j_list[[1]])
     Phi_j <- do.call(cbind, Phi_j_list)
+
     main_effect_names <- paste(rep(vnames, each = ncols), rep(seq_len(ncols), times = nvars), sep = "_")
     dimnames(Phi_j)[[2]] <- main_effect_names
 
-    # E x Phi_j
-    XE_Phi_j_list <- lapply(Phi_j_list, function(i) e * i)
+    XE_Phi_j_list <- lapply(Phi_j_list, function(i) e*i-weighted.mean(e*i,weights))
+    # XE_Phi_j_list <- lapply(Phi_j_list, function(i) e * i)
     XE_Phi_j <- do.call(cbind, XE_Phi_j_list)
     interaction_names <- paste(main_effect_names, "E", sep = ":")
     dimnames(XE_Phi_j)[[2]] <- interaction_names
+
+    # mXEPhi_j is the column means of the product of X and E
+    # Expand X's
+    Phi_j_list <- lapply(
+      Phi_j_list,
+      function(j) j-weighted.mean(j,weights))
+
+    # mPhi_j is the column means of basis expansion of X
+
+    Phi_j <- do.call(cbind, Phi_j_list)
+
+
+    # E x Phi_j
+    # at this point E and Phi_j have already been centered
+    # in the following line we center the product of centered variables
+    # this is what we've seen being done in hierNet
+    # https://github.com/cran/hierNet/blob/5ea5ef716d134879d16ff497f620174f1cc5d813/R/funcs.R#L35-L40
+
+
   }
+
+  e=e-weighted.mean(e,weights)
+
 
   # this is used for the predict function
   design <- cbind(Phi_j, "E" = e, XE_Phi_j)
 
   return(list(
-    Phi_j_list = Phi_j_list, Phi_j = Phi_j,
-    XE_Phi_j_list = XE_Phi_j_list, XE_Phi_j = XE_Phi_j,
-    main_effect_names = main_effect_names, interaction_names = interaction_names,
-    design = design, ncols = if (expand) ncols else sapply(Phi_j_list, ncol)
+    Phi_j_list = Phi_j_list,
+    Phi_j = Phi_j,
+    # mPhi_j = if (center.x) mPhi_j else 0,
+    XE_Phi_j_list = XE_Phi_j_list,
+    XE_Phi_j = XE_Phi_j,
+    # mXE_Phi_j = if (center.x) mXE_Phi_j else 0,
+    main_effect_names = main_effect_names,
+    interaction_names = interaction_names,
+    E = e, # this is the possibly centered e
+    # mE = me,
+    design = design,
+    ncols = if (expand) ncols else sapply(Phi_j_list, ncol)
   ))
 }
-
 
 

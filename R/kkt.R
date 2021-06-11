@@ -43,6 +43,14 @@ dls <- function(r, delta) {
   dl
 }
 
+dwls <- function(r, delta,weights) {
+  dl <- -r
+  dl
+}
+
+
+
+
 # m1 <- gglasso(x = bardet$x, y = bardet$y, group = group1, loss = "ls")
 # violations <- gglasso:::KKT(b0 = m1$b0, beta = m1$beta, y = bardet$y, x = bardet$x, lambda = m1$lambda,
 #                       pf = rep(sqrt(5),20), group = group1, thr = 1e-3, loss = "ls")
@@ -54,7 +62,8 @@ dls <- function(r, delta) {
 #              e = DT$e, df = fit$df, loss = "ls")
 
 # this gives -R = -(Y - hat(Y))
-margin <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df, loss = c("ls", "logit")) {
+
+margin <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df, loss = c("ls", "logit",'wls')) {
   loss <- match.arg(loss)
   nobs <- length(as.vector(y))
   beta <- as.matrix(beta)
@@ -70,13 +79,13 @@ margin <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df, loss 
   # dim(beta)
   # b0[1:5]
   # b0MAT[1:5,1:5]
-  # browser()
 
   link <- b0MAT + phij %*% beta + matrix(e) %*% matrix(betaE, nrow = 1) + xe_phij %*% alpha
 
   if (loss %in% c("logit")) {
     r <- y * link
-  } else {
+  }
+  else {
     r <- as.vector(y) - link
   }
 
@@ -100,8 +109,8 @@ margin <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df, loss 
 
 
 
-KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
-                lambda, lambda2, group, we, wj, wje, thr, loss = c("ls", "logit")) {
+KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,weights,
+                lambda, lambda2, group, we, wj, wje, thr, loss = c("ls", "logit",'wls')) {
   loss <- match.arg(loss)
   bn <- as.integer(max(group))
   nobs <- length(as.vector(y))
@@ -113,15 +122,14 @@ KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
   )
 
   # KKT for beta0 -----------------------------------------------------------
-
   # this is the gradient for beta0, this should be of length nlambda
-  B0 <- t(dl) %*% matrix(1, nrow = nobs) / nobs
+  B0 <- t(dl) %*% ( matrix(1, nrow = nobs) )/ nobs
 
-  ctr <- 0
+    ctr <- 0
 
   for (l in 1:length(lambda)) {
     if (abs(B0[l, ]) > thr) {
-      warning("violate at b0 ", B0[l, ], " lambda=", lambda[l], "\n")
+      message("violate at b0 ", B0[l, ], " lambda=", lambda[l], "\n")
       ctr <- ctr + 1
     }
   }
@@ -142,11 +150,11 @@ KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
       as.matrix(gamma[j, l] * (xe_phij[, index, drop = F] %*% beta[index, l, drop = F]))
     })))
 
-    dl_norm_betaE <- t(xdMat_betaE) %*% dl[, l, drop = FALSE] / nobs
+    dl_norm_betaE <- t(xdMat_betaE) %*% (dl[, l, drop = FALSE]) / nobs
 
     if (betaE[l] == 0) {
       BE <- dl_norm_betaE / (-lambda[l] * (1 - lambda2) * we)
-      if (abs(BE) > 1 + thr) {
+      if (abs(BE) >  thr) {
         warning("violate at bE = 0", abs(BE), " lambda=", lambda[l], "\n")
         ctr <- ctr + 1
       }
@@ -176,11 +184,11 @@ KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
 
       xdMat_gammaj <- as.matrix(betaE[l] * (xe_phij[, ind, drop = F] %*% beta[ind, l, drop = F]))
 
-      dl_norm_gammaj <- t(xdMat_gammaj) %*% dl[, l, drop = FALSE] / nobs
+      dl_norm_gammaj <- t(xdMat_gammaj) %*% (dl[, l, drop = FALSE] )/ nobs
 
       if (gamma[g, l] == 0) {
         BE <- dl_norm_gammaj / (-lambda[l] * (1 - lambda2) * we)
-        if (abs(BE) > 1 + thr) {
+        if (abs(BE) > thr) {
           warning("violate at gamma_j = 0", BE, " lambda=", lambda[l], "\n")
           ctr <- ctr + 1
         }
@@ -214,7 +222,7 @@ KKT <- function(b0, betaE, beta, gamma, alpha, y, phij, xe_phij, e, df,
       xdMat <- phij[, ind, drop = F] + gamma[g, l] * betaE[l] * xe_phij[, ind, drop = F]
 
       # this is the first part of eq (17)
-      dl_prod <- t(xdMat) %*% dl[, l, drop = FALSE] / nobs
+      dl_prod <- t(xdMat) %*% (dl[, l, drop = FALSE]) / nobs
 
       dl_norm <- l2norm(dl_prod)
 

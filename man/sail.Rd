@@ -9,7 +9,7 @@ sail(x, y, e, basis = function(i) splines::bs(i, df = 5),
   family = c("gaussian", "binomial"), center.x = TRUE,
   center.e = TRUE, expand = TRUE, group, weights,
   penalty.factor = rep(1, 1 + 2 * nvars), lambda.factor = ifelse(nobs <
-  (1 + 2 * bscols * nvars), 0.01, 1e-04), lambda = NULL, alpha = 0.5,
+  (1 + 2 * bscols * nvars), 1e-05, 1e-08), lambda = NULL, alpha = 0.5,
   nlambda = 100, thresh = 1e-04, fdev = 1e-05, maxit = 1000,
   dfmax = 2 * nvars + 1, verbose = 0)
 }
@@ -55,8 +55,8 @@ also be supplied. Default: \code{TRUE}.}
 \item{group}{a vector of consecutive integers, starting from 1, describing
 the grouping of the coefficients. Only required when \code{expand=FALSE}.}
 
-\item{weights}{observation weights. Default is 1 for each observation.
-Currently NOT IMPLEMENTED.}
+\item{weights}{observation weights, a vector of size n.
+Default is 1 for each observation.}
 
 \item{penalty.factor}{separate penalty factors can be applied to each
 coefficient. This is a number that multiplies lambda to allow differential

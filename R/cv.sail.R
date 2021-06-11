@@ -103,11 +103,15 @@
 #'
 #' @rdname cv.sail
 #' @export
+
+
 cv.sail <- function(x, y, e, ...,
                     weights,
                     lambda = NULL,
                     type.measure = c("mse", "deviance", "class", "auc", "mae"),
                     nfolds = 10, foldid, grouped = TRUE, keep = FALSE, parallel = FALSE) {
+
+
   if (!requireNamespace("foreach", quietly = TRUE)) {
     stop("Package \"foreach\" needed for this function to work in parallel. Please install it.",
       call. = FALSE
@@ -148,8 +152,8 @@ cv.sail <- function(x, y, e, ...,
   nz <- sapply(sail.object$active, length)
   # if (missing(foldid)) foldid <- sample(rep(seq(nfolds), length = N)) else nfolds <- max(foldid)
   if (missing(foldid)) foldid <- createfolds(y = y, k = nfolds) else nfolds <- max(foldid)
-  if (nfolds < 3) {
-    stop("nfolds must be bigger than 3; nfolds=10 recommended")
+  if (nfolds < 2) {
+    stop("nfolds must be bigger than 2; nfolds=10 recommended")
   }
   outlist <- as.list(seq(nfolds))
   if (parallel) {
@@ -326,8 +330,11 @@ createfolds <- function(y, k = 10, list = FALSE, returnTrain = FALSE) {
 #'   Regularization Paths for Generalized Linear Models via Coordinate Descent.
 #'   Journal of Statistical Software, 33(1), 1-22.
 #'   \url{http://www.jstatsoft.org/v33/i01/}.
+
+
 cv.lspath <- function(outlist, lambda, x, y, e, weights,
                       foldid, type.measure, grouped, keep = FALSE) {
+
   typenames <- c(
     deviance = "Mean-Squared Error", mse = "Mean-Squared Error",
     mae = "Mean Absolute Error"
@@ -349,10 +356,13 @@ cv.lspath <- function(outlist, lambda, x, y, e, weights,
     which <- foldid == i
     fitobj <- outlist[[i]]
     # fitobj$offset = FALSE
-    preds <- predict(fitobj, newx = x[which, , drop = FALSE], newe = e[which], s = lambda[which_lam])
+    preds <- predict(fitobj, newx = x[which, , drop = FALSE], newweights=weights[which],
+                     newe = e[which], s = lambda[which_lam])
     nlami <- sum(which_lam)
     predmat[which, seq(nlami)] <- preds
     nlams[i] <- nlami
+
+
   }
   N <- length(y) - apply(is.na(predmat), 2, sum)
   cvraw <- switch(type.measure, mse = (y - predmat)^2, deviance = (y - predmat)^2, mae = abs(y - predmat))
@@ -369,6 +379,7 @@ cv.lspath <- function(outlist, lambda, x, y, e, weights,
     N <- cvob$N
   }
   cvm <- apply(cvraw, 2, stats::weighted.mean, w = weights, na.rm = TRUE)
+
   cvsd <- sqrt(apply(scale(cvraw, cvm, FALSE)^2, 2, stats::weighted.mean,
     w = weights, na.rm = TRUE
   ) / (N - 1))
@@ -398,12 +409,16 @@ cvcompute <- function(mat, weights, foldid, nlams) {
 }
 
 #' @describeIn cv.lspath get lambda.min and lambda.1se
+
+## 1se: gives the most regularized model
+#such that error is within one standard error of the minimum
+
 getmin <- function(lambda, cvm, cvsd) {
   cvmin <- min(cvm, na.rm = TRUE)
   idmin <- cvm <= cvmin
   lambda.min <- max(lambda[idmin], na.rm = TRUE)
   idmin <- match(lambda.min, lambda)
-  semin <- (cvm + cvsd)[idmin]
+  semin <- (cvm +0.25*cvsd)[idmin]
   idmin <- cvm <= semin
   lambda.1se <- max(lambda[idmin], na.rm = TRUE)
   list(lambda.min = lambda.min, lambda.1se = lambda.1se)

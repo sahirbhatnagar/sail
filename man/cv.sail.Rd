@@ -4,9 +4,10 @@
 \alias{cv.sail}
 \title{Cross-validation for sail}
 \usage{
-cv.sail(x, y, e, ..., weights, lambda = NULL, type.measure = c("mse",
-  "deviance", "class", "auc", "mae"), nfolds = 10, foldid,
-  grouped = TRUE, keep = FALSE, parallel = FALSE)
+cv.sail(x, y, e, ..., weights = NULL, lambda = NULL,
+  type.measure = c("mse", "deviance", "class", "auc", "mae"),
+  nfolds = 10, foldid, grouped = TRUE, keep = FALSE,
+  parallel = FALSE)
 }
 \arguments{
 \item{x}{input matrix of dimension \code{n x p}, where \code{n} is the number
@@ -24,8 +25,8 @@ must be converted to numeric.}
 
 \item{...}{other arguments that can be passed to \code{\link{sail}}}
 
-\item{weights}{observation weights. Default is 1 for each observation.
-Currently NOT IMPLEMENTED.}
+\item{weights}{observation weights, a vector of size n.
+Default is 1 for each observation.}
 
 \item{lambda}{Optional user-supplied lambda sequence; default is NULL, and
 \code{\link{sail}} chooses its own sequence}

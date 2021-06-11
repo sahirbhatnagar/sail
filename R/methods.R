@@ -50,9 +50,12 @@
 #' predict(fit, s = 0.45) # predicted response for a single lambda value
 #' predict(fit, s = c(2.15, 0.32, 0.40), type="nonzero") # nonzero coefficients
 #' @seealso \code{\link{predict.cv.sail}}
+#' @note When the coef method is called, the alpha values, which represent the
+#'   interaction term are returned. This alpha is the product of beta_e,gamma_j
+#'   and theta_j
 #' @rdname predict.sail
 #' @export
-predict.sail <- function(object, newx, newe, s = NULL,
+predict.sail <- function(object, newx, newe, s = NULL,newweights,
                          type = c(
                            "link", "response", "coefficients",
                            "nonzero", "class"
@@ -67,7 +70,7 @@ predict.sail <- function(object, newx, newe, s = NULL,
     stop("newe is missing. please supply the vector of the environment variable.")
   } else if (!missing(newx) & !missing(newe)) {
     newx <- design_sail(
-      x = newx, e = newe, expand = object$expand, group = object$group, basis = object$basis, nvars = object$nvars,
+      x = newx, e = newe, expand = object$expand, weights=newweights, group = object$group, basis = object$basis, nvars = object$nvars,
       vnames = object$vnames, center.x = object$center.x, center.e = object$center.e
     )$design
   }
@@ -179,7 +182,7 @@ predict.cv.sail <- function(object, newx, newe, s = c("lambda.1se", "lambda.min"
 #' @inheritParams predict.cv.sail
 #' @rdname predict.cv.sail
 #' @export
-coef.cv.sail <- function(object, s = c("lambda.1se", "lambda.min"), ...) {
+coef.cv.sail <- function(object, s = c( "lambda.1se","lambda.min"), ...) {
   if (is.numeric(s)) {
     lambda <- s
   } else

@@ -38,8 +38,8 @@
 #'   also be supplied. Default: \code{TRUE}.
 #' @param group a vector of consecutive integers, starting from 1, describing
 #'   the grouping of the coefficients. Only required when \code{expand=FALSE}.
-#' @param weights observation weights. Default is 1 for each observation.
-#'   Currently NOT IMPLEMENTED.
+#' @param weights observation weights, a vector of size n.
+#'   Default is 1 for each observation.
 #' @param penalty.factor separate penalty factors can be applied to each
 #'   coefficient. This is a number that multiplies lambda to allow differential
 #'   shrinkage. Can be 0 for some variables, which implies no shrinkage, and
@@ -198,15 +198,15 @@ sail <- function(x, y, e,
                  center.e = TRUE, # if true, this centers E
                  expand = TRUE, # if true, use basis to expand X's, else user should provide main effects design with group membership
                  group,
-                 weights, # observation weights
+                 weights,
                  penalty.factor = rep(1, 1 + 2 * nvars), # predictor (adaptive lasso) weights, the first entry must be for the E variable, then Xs, then X:E (gammas)
-                 lambda.factor = ifelse(nobs < (1 + 2 * bscols * nvars), 0.01, 0.0001),
+                 lambda.factor = ifelse(nobs < (1 + 2 * bscols * nvars), 0.00001, 0.00000001),
                  lambda = NULL,
                  alpha = 0.5,
                  nlambda = 100,
-                 thresh = 1e-4,
-                 fdev = 1e-5,
-                 maxit = 1000,
+                 thresh = 1e-6,
+                 fdev = 1e-6,
+                 maxit = 200,
                  dfmax = 2 * nvars + 1,
                  verbose = 0) {
 
@@ -262,6 +262,9 @@ sail <- function(x, y, e,
     stop(sprintf("number of elements in weights (%f) not equal to the number
                  of rows of x (%f)", length(weights), nobs))
   }
+
+  weights=weights*length(weights) / sum(weights)
+
 
   if (!expand) {
     # nvars needs to be the number of original X variables.
@@ -331,7 +334,7 @@ sail <- function(x, y, e,
 
   if (is.null(lambda)) {
     if (lambda.factor >= 1) stop("lambda.factor should be less than 1")
-    flmin <- as.double(lambda.factor)
+    flmin<- as.double(lambda.factor)
     # ulam <- double(1)
     ulam <- NULL
   } else {
@@ -342,68 +345,68 @@ sail <- function(x, y, e,
   }
 
   if (strong) {
-    fit <- switch(family,
-                  gaussian = lspath(
-                    x = x,
-                    y = y,
-                    e = e,
-                    basis = basis,
-                    center.x = center.x,
-                    center.e = center.e,
-                    expand = expand,
-                    group = group,
-                    group.penalty = group.penalty,
-                    weights = weights,
-                    nlambda = nlam,
-                    thresh = thresh,
-                    fdev = fdev,
-                    maxit = maxit,
-                    verbose = verbose,
-                    alpha = alpha,
-                    nobs = nobs,
-                    nvars = nvars,
-                    vp = vp, # penalty.factor
-                    we = we, # we, wj, wje are subsets of vp
-                    wj = wj,
-                    wje = wje,
-                    flmin = flmin, # lambda.factor
-                    vnames = vnames, # variable names
-                    ne = ne, # dfmax
-                    ulam = ulam
-                  )
-    )
-  } else {
-    fit <- switch(family,
-                  gaussian = lspathweak(
-                    x = x,
-                    y = y,
-                    e = e,
-                    basis = basis,
-                    center.x = center.x,
-                    center.e = center.e,
-                    expand = expand,
-                    group = group,
-                    group.penalty = group.penalty,
-                    weights = weights,
-                    nlambda = nlam,
-                    thresh = thresh,
-                    fdev = fdev,
-                    maxit = maxit,
-                    verbose = verbose,
-                    alpha = alpha,
-                    nobs = nobs,
-                    nvars = nvars,
-                    vp = vp, # penalty.factor
-                    we = we, # we, wj, wje are subsets of vp
-                    wj = wj,
-                    wje = wje,
-                    flmin = flmin, # lambda.factor
-                    vnames = vnames, # variable names
-                    ne = ne, # dfmax
-                    ulam = ulam
-                  )
-    )
-  }
+      fit <- switch(family,
+                    gaussian = lspathweights(
+                      x = x,
+                      y = y,
+                      e = e,
+                      basis = basis,
+                      center.x = center.x,
+                      center.e = center.e,
+                      expand = expand,
+                      group = group,
+                      group.penalty = group.penalty,
+                      weights = weights,
+                      nlambda = nlam,
+                      thresh = thresh,
+                      fdev = fdev,
+                      maxit = maxit,
+                      verbose = verbose,
+                      alpha = alpha,
+                      nobs = nobs,
+                      nvars = nvars,
+                      vp = vp, # penalty.factor
+                      we = we, # we, wj, wje are subsets of vp
+                      wj = wj,
+                      wje = wje,
+                      flmin = flmin, # lambda.factor
+                      vnames = vnames, # variable names
+                      ne = ne, # dfmax
+                      ulam = ulam
+                    )
+      )
+    } else {
+      fit <- switch(family,
+                    gaussian = lspathweakweights(
+                      x = x,
+                      y = y,
+                      e = e,
+                      basis = basis,
+                      center.x = center.x,
+                      center.e = center.e,
+                      expand = expand,
+                      group = group,
+                      group.penalty = group.penalty,
+                      weights = weights,
+                      nlambda = nlam,
+                      thresh = thresh,
+                      fdev = fdev,
+                      maxit = maxit,
+                      verbose = verbose,
+                      alpha = alpha,
+                      nobs = nobs,
+                      nvars = nvars,
+                      vp = vp, # penalty.factor
+                      we = we, # we, wj, wje are subsets of vp
+                      wj = wj,
+                      wje = wje,
+                      flmin = flmin, # lambda.factor
+                      vnames = vnames, # variable names
+                      ne = ne, # dfmax
+                      ulam = ulam
+                    )
+      )
+    }
 
   fit$call <- this.call
   fit$nobs <- nobs
