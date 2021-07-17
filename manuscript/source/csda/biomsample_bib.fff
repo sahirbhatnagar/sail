@@ -1,0 +1,9 @@
+\efloatseparator
+ 
+\begin{figure*}
+%  \centerline{\includegraphics[width=4.5in]{mouse.eps}}
+  \caption{An example of figure caption. An example of
+  figure caption. An example of figure caption. An example of
+   figure caption. An example of figure caption.}
+\label{f:bigmouse}
+\end{figure*}

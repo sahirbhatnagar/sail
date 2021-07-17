@@ -219,8 +219,8 @@
 \rhead[]{\leftmark}
 \makeatletter
 \makeatother
-\lfoot{} \cfoot{ } \rfoot{{\small{\em Page \thepage \ of \pageref{LastPage}}}}
-
+%\lfoot{} \cfoot{ } \rfoot{{\small{\em Page \thepage \ of \pageref{LastPage}}}}
+\lfoot{} \cfoot{ } \rfoot{{\small{\em Page \thepage}}}
 
 %########################################################################################
 %            						SPACING
@@ -274,6 +274,14 @@
 %########################################################################################
 % NOTE: To produce blinded version, replace "1" with "0" below.
 \newcommand{\blind}{1}
+
+\usepackage{lineno}
+\linenumbers
+
+
+\let\oldbibliography\thebibliography
+\renewcommand{\thebibliography}[1]{\oldbibliography{#1}
+	\setlength{\itemsep}{0pt}} %Reducing spacing in the bibliography.
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \begin{document}
 
@@ -314,7 +322,7 @@ We develop a computationally efficient fitting algorithm with automatic tuning p
 Through an extensive simulation study, we show that \sail ~outperforms existing penalized regression methods in terms of prediction accuracy and support recovery when there are non-linear interactions with an exposure variable. 
 We then apply \sail ~to detect non-linear interactions between genes and a prenatal psychosocial intervention program on cognitive performance in children at 4 years of age. 
 Results from our method show that individuals who are genetically predisposed to lower educational attainment are those who stand to benefit the most from the intervention. 
-Our algorithms are in an R package available on CRAN.
+Our algorithms are implemented in an R package available on CRAN (\url{https://cran.r-project.org/package=sail}).
 \end{abstract}
 
 
@@ -541,10 +549,10 @@ First, we develop a model for non-linear interactions with a key exposure variab
 Second, through simulation studies, we show improved performance in terms of prediction accuracy and support recovery over existing methods that only consider linear interactions or additive main effects.
 Third, we show that our method possesses the oracle property~\citep{fan2001variable}, i.e., it performs as well as if the true model were known in advance.
 Fourth, we demonstrate the performance of our method in two applications: 1) gene-environment interactions in a prenatal psychosocial intervention program~\cite{olds1998long} and 2) a study aimed at identifying which clinical variables influence mortality rates amongst seriously ill hospitalized patients~\citep{connors1995controlled}.
-Fifth, we implement our algorithms in the \texttt{sail} R package on CRAN, along with extensive documentation available at \url{http://sahirbhatnagar.com/sail/}. 
-In particular, our implementation also allows for linear interaction models, user-defined basis expansions, a cross-validation procedure for selecting the optimal tuning parameter, and differential shrinkage parameters to apply the adaptive lasso~\citep{zou2006adaptive} idea.
+Fifth, we implement our algorithms in the \texttt{sail} R package on CRAN (\url{https://cran.r-project.org/package=sail}), along with extensive documentation. 
+In particular, our implementation also allows for linear interaction models, user-defined basis expansions, a cross-validation procedure for selecting the optimal tuning parameter, and differential shrinkage parameters to apply the adaptive lasso idea~\citep{zou2006adaptive}.
 
-The rest of the paper is organized as follows. Section~\ref{sec:sail_algorithm} describes our optimization procedure and some details about the algorithm used to fit the \texttt{sail} model for the least squares case. Theoretical results are given in Section~\ref{sec:theory}. In Section~\ref{sec:sail_simulation}, through simulation studies we compare the performance of our proposed approach and demonstrate the scenarios where it can be advantageous to use \sail ~over existing methods. Section~\ref{sec:sail_rda} contains some real data examples and Section~\ref{sec:sail_discussion} discusses some limitations and future directions.
+The rest of the paper is organized as follows. Section~\ref{sec:sail_algorithm} describes our optimization procedure and some details about the algorithm used to fit the \texttt{sail} model for the least squares case. Theoretical results are given in Section~\ref{sec:theory}. In Section~\ref{sec:sail_simulation}, through simulation studies we compare the performance of our proposed approach and demonstrate the scenarios where it can be advantageous to use \sail ~over existing methods. Section~\ref{sec:sail_rda} contains two real data examples and Section~\ref{sec:sail_discussion} discusses some limitations and future directions.
 
 %~
 \begin{comment}
@@ -689,11 +697,11 @@ We provide an overview of the computations in Algorithm~\ref{alg:psudeolssail}. 
 			\end{enumerate}
 			\item update $\beta_E$
 			\begin{enumerate}
-				\item Compute the pseudo design: $\widetilde{X}_E \gets X_E + \sum_{j} \gamma_{jE}^{(k)} \widetilde\bPsi_j \btheta_j^{(k)}$
+				\item Compute the pseudo design: $\widetilde{X}_E \gets X_E + \sum_{j} \gamma_{jE}^{(k)} (X_E \circ \bPsi_j) \btheta_j^{(k)}$
 				\item Compute the pseudo response ($\widetilde{Y}$) by removing the contribution of every term not involving $\beta_E$ from $Y$
 				\item Soft-threshold update ($S(x,t) = \textrm{sign}(x) (\abs{x} - t)_+$):
 				\begin{equation}
-					\beta_E^{(k)(new)} \gets S\left(\frac{1}{n \cdot w_E} \widetilde{X}_E^\top \widetilde{Y}, \lambda(1-\alpha)\right) \label{eq:betaeupdate}
+					\beta_E^{(k)(new)} \gets \frac{1}{\widetilde{X}_E^\top \widetilde{X}_E} S\left(\frac{1}{n \cdot w_E} \widetilde{X}_E^\top \widetilde{Y}, \lambda(1-\alpha)\right) \label{eq:betaeupdate}
 				\end{equation}
 				\item Set $\beta_E^{(k+1)} \gets \beta_E^{(k)(new)}$, $k \gets k + 1$
 			\end{enumerate}
@@ -738,8 +746,8 @@ We describe the adaptive \sail ~in Algorithm~\ref{alg:adaptivesail}. This is a g
 		\item Let $\widehat{\beta_E}^{[opt]}, \widehat{\btheta}_{j}^{[opt]}$ and $\widehat{\btau}_j^{[opt]}$ for $j=1, \ldots,p$ be the coefficient estimates corresponding to the model at $\lambda^{[opt]}$
 		\item Set the weights to be
 			\begin{enumerate}
-				\item[] $w_E = \left(\abs{\widehat{\beta_E}^{[opt]}}\right)^{-1}$, $w_j = \left(\Vert \widehat{\btheta}_{j}^{[opt]} \Vert_2\right)^{-1}$,
-				$w_{jE} = \left(\Vert\widehat{\btau_j}^{[opt]}\Vert_2\right)^{-1}$ for $j=1, \ldots, p$
+				\item[] $w_E = \left(\abs{\widehat{\beta_E}^{[opt]}}+1/n\right)^{-1}$, $w_j = \left(\Vert \widehat{\btheta}_{j}^{[opt]} \Vert_2 +1/n \right)^{-1}$,
+				$w_{jE} = \left(\Vert\widehat{\btau_j}^{[opt]}\Vert_2 +1/n \right)^{-1}$ for $j=1, \ldots, p$
 		\end{enumerate}
 	\item Run the \sail ~algorithm with the weights defined in step 4), and use cross-validation or a data splitting procedure to choose the optimal value of $\lambda$
 	\end{enumerate}
@@ -758,7 +766,7 @@ This is a reasonable approach when all the variables are continuous.
 However, there are often situations when the data contains a combination of categorical and continuous variables. 
 In these cases it may be sub-optimal to apply a basis expansion to the categorical variables.
 Owing to the flexible nature of our algorithm, we can handle this scenario in our implementation by allowing a user-defined design matrix. 
-The only extra information needed is the group membership of each column in the design matrix. We provide such an example in the \sail ~package showcase in Section~\ref{ap:userdesign} of the Appendix.
+The only extra information needed is the group membership of each column in the design matrix. We illustrate such an example in a vignette of the \sail ~\texttt{R} package.
 
 
 
@@ -833,8 +841,8 @@ In this section we study the asymptotic behaviour of the \sail ~estimator $\wide
 	and $\boldsymbol{\phi}_{p+2}^{*}=\gamma_{1E}^{*}\ddd\boldsymbol{\phi}_{2p+1}^{*}=\gamma_{pE}^{*}$.
 	Denote by $\A=\left\lbrace m:\boldsymbol{\phi}_{m}^{*}\neq\mathbf{0}\right\rbrace $
 	the unknown sparsity pattern of $\boldsymbol{\Phi}^{*}$, and $\widehat{\A}=\left\lbrace m:\widehat{\boldsymbol{\phi}}_{m}\neq\mathbf{0}\right\rbrace $
-	the estimated \sail model selector. We can rewrite the penalty terms
-	in \eqref{eq:saillikelihood}, and consider the \sail estimates $\widehat{\boldsymbol{\Phi}}_{n}$
+	the estimated \sail ~model selector. We can rewrite the penalty terms
+	in \eqref{eq:saillikelihood}, and consider the \sail ~estimates $\widehat{\boldsymbol{\Phi}}_{n}$
 	given b
 	\begin{equation}
 	\widehat{\boldsymbol{\Phi}}_{n}=\argmin_{\boldsymbol{\Phi}}Q_{n}(\boldsymbol{\Phi})=-L_{n}(\boldsymbol{\Phi})+n\lambda_{m}\sum_{m=1}^{2p+1}\left\Vert \boldsymbol{\phi}_{m}\right\Vert _{2},
@@ -1018,14 +1026,8 @@ The true component functions are the same as in~\citep{lin2006component,huang201
 
 \subsection{Results}
 
-The prediction accuracy and variable selection results for each of the five simulation scenarios are shown in Figure~\ref{fig:plot-mse-sim} and Table~\ref{tab:resultmultinom}, respectively. 
-
-%while Figure~\ref{fig:plot-tpr-fpr-sim} shows the mean true positive rate (TPR) vs. the mean false positive rate (FPR) $\pm 1$ standard deviation (SD).
-
-
-
 \begin{knitrout}\scriptsize
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[h]
 
 {\centering \includegraphics[width=1\linewidth]{figure/plot-mse-sim-1} 
 
@@ -1036,8 +1038,7 @@ The prediction accuracy and variable selection results for each of the five simu
 
 
 \end{knitrout}
-
-We see that \sail~,\texttt{adaptive sail} and \texttt{sail weak} have the best performance in terms of both MSE and yielding correct sparse models when the truth follows a strong heredity (scenario 1a), as we would expect, since this is exactly the scenario that our method is trying to target. Our method is also competitive when only main effects are present (scenario 3) and performs just as well as methods that only consider linear and non-linear main effects (\texttt{HierBasis}, \texttt{SPAM}), owing to the penalization applied to the interaction parameter. Due to the heredity property being violated in scenario 1c), no method can identify the correct model with the exception of \texttt{GLinternet}. When only linear effects and interactions are present (scenario 2), we see that \texttt{adaptive sail} has similar MSE compared to the other linear interaction methods (\texttt{lassoBT} and \texttt{GLinternet}) with a better TPR and FPR. Overall, our simulation study results suggests that \sail ~outperforms existing methods when the true model contains non-linear interactions, and is competitive even when the truth only has either linear or additive main effects. 
+The prediction accuracy and variable selection results for each of the five simulation scenarios are shown in Figure~\ref{fig:plot-mse-sim} and Table~\ref{tab:resultmultinom}, respectively. We see that \sail~,\texttt{adaptive sail} and \texttt{sail weak} have the best performance in terms of both MSE and yielding correct sparse models when the truth follows a strong heredity (scenario 1a), as we would expect, since this is exactly the scenario that our method is trying to target. Our method is also competitive when only main effects are present (scenario 3) and performs just as well as methods that only consider linear and non-linear main effects (\texttt{HierBasis}, \texttt{SPAM}), owing to the penalization applied to the interaction parameter. Due to the heredity property being violated in scenario 1c), no method can identify the correct model with the exception of \texttt{GLinternet}. When only linear effects and interactions are present (scenario 2), we see that \texttt{adaptive sail} has similar MSE compared to the other linear interaction methods (\texttt{lassoBT} and \texttt{GLinternet}) with a better TPR and FPR. Overall, our simulation study results suggests that \sail ~outperforms existing methods when the true model contains non-linear interactions, and is competitive even when the truth only has either linear or additive main effects. 
 %The \texttt{lasso} and \texttt{adaptive lasso} have good test set MSE performance but poor sensitivity. %Additional results are available in Supplemental Section~\ref{ap:simulation}. %Specifically, in Figure~\ref{fig:plot-mse-nactive-sim} we plot the mean MSE against the mean number of active variables $\pm 1$ standard deviation (SD). Figures~\ref{fig:plot-tpr-sim} and~\ref{fig:plot-fpr-sim} show the true positive and false positive rates, respectively. Figure~\ref{fig:plot-nactive-sim} shows the number of active variables.
 
 
@@ -1047,7 +1048,7 @@ We see that \sail~,\texttt{adaptive sail} and \texttt{sail weak} have the best p
 % latex table generated in R 3.6.1 by xtable 1.8-4 package
 % Thu Nov 14 17:16:26 2019
 %\multicolumn{#1}{c}{#2}
-\ctable[caption={Mean (standard deviation) of the number of selected variables ($|\widehat{\mathcal{J}}|$), true positive rate (TPR) and false positive rate (FPR) as a percentage from 200 simulations for each of the five scenarios. $|\mathcal{J}|$ is the number of truly associated variables.},label=tab:resultmultinom,pos=h!,doinside=\tiny]{lcccccccccccccc}{
+\ctable[caption={Mean (standard deviation) of the number of selected variables ($|\widehat{\mathcal{J}}|$), true positive rate (TPR) and false positive rate (FPR) as a percentage from 200 simulations for each of the five scenarios. $|\mathcal{J}|$ is the number of truly associated variables.},label=tab:resultmultinom,pos=h,doinside=\tiny]{lcccccccccccccc}{
 	 
 }{
 	\FL  
@@ -1092,14 +1093,14 @@ To visualize the estimated interaction effects, we ordered the 200 simulation ru
 % this is only commented because i dont want to change the paths to figures
 % for carbon laptop
 %\begin{comment}
-\begin{figure}[H]
+\begin{figure}[h]
 	\centering
 	\includegraphics[scale=0.61]{/home/sahir/git_repositories/sail/my_sims/figures/sail_main_eff_paramIndex1_200sims.pdf}
 	\caption{True and estimated main effect component functions for scenario 1a). The estimated curves represent the results from each one of the 200 simulations conducted.}\label{fig:main_eff}
 \end{figure}
 
 
-\begin{figure}[H]
+\begin{figure}[h]
 	\centering
 	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_intertruth_X3_paramIndex1_200sims.pdf}}
 	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter25_X3_paramIndex1_200sims.pdf}}\quad
@@ -1110,7 +1111,7 @@ To visualize the estimated interaction effects, we ordered the 200 simulation ru
 \end{figure}
 
 
-\begin{figure}[H]
+\begin{figure}[h]
 	\centering
 	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_intertruth_X4_paramIndex1_200sims.pdf}}
 	\subfloat{\includegraphics[width=0.37\linewidth]{/home/sahir/git_repositories/sail/my_sims/figures/sail_inter25_X4_paramIndex1_200sims.pdf}}\quad
@@ -1123,6 +1124,7 @@ To visualize the estimated interaction effects, we ordered the 200 simulation ru
 
 %\end{comment}
 
+\FloatBarrier
 
 \section{Real data applications} \label{sec:sail_rda}
 %In this section we illustrate \sail ~on several real data examples.
@@ -1141,7 +1143,7 @@ More recent studies have shown that cognitive performance, a trait that measures
 %across the population through the use of a polygenic risk score (PRS) that assigns a number based on the effect multiple genetic loci on the phenotype of interest. To date, the PRS measure can account for over 20\% of the heritability of intelligence~\citep{plomin2018new}. In addition to the pre-determined effect of genes, 
 An interesting query that arises is how the environment interacts with these genetics variants to predict measures of cognitive function. 
 To address this question, we analyzed data from the Nurse Family Partnership (NFP), a psychosocial intervention program that begins in pregnancy and targets maternal health, parenting and mother-infant interactions~\citep{olds1998long}. 
-The Stanford Binet IQ scores at 4 years of age were collected for 189 subjects born to women randomly assigned to control ($n$ = 100) or nurse-visited intervention groups ($n$ = 89). 
+The Stanford Binet IQ scores at 4 years of age were collected for 189 subjects (including 19 imputed using \texttt{mice}~\citep{buuren2010mice}) born to women randomly assigned to control ($n$ = 100) or nurse-visited intervention groups ($n$ = 89). 
 For each subject, we calculated a polygenic risk score (PRS) for educational attainment at different p-value thresholds using weights from the GWAS conducted in Okbay et al.~\citep{okbay2016genome}. 
 In this context, individuals with a higher PRS have a propensity for higher educational attainment.  
 The goal of this analysis was to determine if there was an interaction between genetic predisposition to educational attainment ($X$) and maternal participation in the NFP program ($E$) on child IQ at 4 years of age ($Y$). 
@@ -1150,7 +1152,7 @@ We applied the weak heredity \sail ~with cubic B-splines and $\alpha=0.1$, and s
 Our method identified an interaction between the intervention and PRS which included genetic variants at the 0.0001 level of significance. 
 This interaction is shown in Figure~\ref{fig:PRS-intervention-interaction}. 
 We see that the intervention has a much larger effect on IQ for lower PRS compared to a higher PRS. 
-In other words, perinatal home visitation by nurses can impact IQ scores in children who are genetically predisposed to lower educational attainment. 
+In other words, perinatal home visitation by nurses can impact IQ scores in children who are genetically predisposed to lower educational attainment. Similar results were obtained for the other imputed datasets (Supplemental Section~\ref{ap:prseduc}). 
 
 We also compared \sail ~with two other interaction selection methods, \texttt{lassoBT} and \texttt{GLinternet} with default settings, on 200 bootstrap samples of the data. The average and standard deviation of the MSE and size of the active set ($|\widehat{\mathcal{J}}$|) across the 200 bootstrap samples are given in Table~\ref{tab:rda}. We see that sail tends to select sparser models while maintaining similar prediction performance compared to \texttt{lassoBT}. The \texttt{GLinternet} statistics are omitted here since the algorithm did not converge for many of the 200 simulations.
 
@@ -1164,7 +1166,7 @@ We also compared \sail ~with two other interaction selection methods, \texttt{la
 
 
 \begin{knitrout}\scriptsize
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[H]
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[h]
 
 {\centering \includegraphics[width=1\linewidth]{figure/PRS-intervention-interaction-1} 
 
@@ -1254,7 +1256,7 @@ The interaction between ARF/MOSF and age shows the risk incurred by ARF/MOSF is 
 
 
 
-\ctable[caption={Comparison of analytic methods for selecting interactions using the Nurse Family Partnership program and the SUPPORT datasets. Averages (standard deviations in parentheses) are based on 200 bootstrap samples.},label=tab:rda,pos=htbp,doinside=\footnotesize, ]{lccccc}{\tnote{\texttt{GLinternet} results not reported for NFP data since the algorithm did not converge in many of the bootstrap samples.}\tnote[b]{$|\widehat{\mathcal{J}}|$ is the number of variables selected by the method.}
+\ctable[caption={Comparison of analytic methods for selecting interactions using the Nurse Family Partnership program and the SUPPORT datasets. Averages (standard deviations in parentheses) are based on 200 bootstrap samples.},label=tab:rda,pos=h,doinside=\footnotesize, ]{lccccc}{\tnote{\texttt{GLinternet} results not reported for NFP data since the algorithm did not converge in many of the bootstrap samples.}\tnote[b]{$|\widehat{\mathcal{J}}|$ is the number of variables selected by the method.}
 }{
 	\FL
 	& \multicolumn{2}{c}{Nurse Family Partnership} &  &\multicolumn{2}{c}{SUPPORT} \NN
@@ -1270,7 +1272,7 @@ The interaction between ARF/MOSF and age shows the risk incurred by ARF/MOSF is 
 
 
 \begin{knitrout}\scriptsize
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[h!]
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[h]
 
 {\centering \includegraphics[width=1\linewidth]{figure/dzclass-interaction-1} 
 
@@ -1283,7 +1285,7 @@ The interaction between ARF/MOSF and age shows the risk incurred by ARF/MOSF is 
 \end{knitrout}
 
 
-
+%\FloatBarrier
 
 
 
@@ -1322,11 +1324,11 @@ We also provide a first software implementation for these models.
 
 %\includegraphics[scale=0.5]{l2}
 
-\newpage
+%\newpage
 %\bibliographystyle{plainnat}
-%\bibliographystyle{abbrv}
+\bibliographystyle{abbrv}
 %\addcontentsline{toc}{chapter}{References}
-\bibliographystyle{unsrt}
+%\bibliographystyle{apalike}
 \bibliography{GEbib}
 
 \newpage
@@ -1669,10 +1671,10 @@ and the partial residual without the $j$th interaction for $j=1, \ldots, p$, as
 \[R_{(-jE)} = Y - \beta_0 \cdot \boldsymbol{1} - \sum_{j=1}^p \bPsi_j \btheta_j - \beta_E X_E - \sum_{\ell\neq j} \gamma_{\ell}  \beta_E (X_E \circ \bPsi_\ell) \btheta_\ell \]
 From the subgradient equations~\eqref{eq:sub_b0}--\eqref{eq:sub_gammaj} we see that
 \begin{align}
-\hat{\beta}_0 &=  \left( Y - \sum_{j=1}^p \bPsi_j \hat\btheta_j - \hat\beta_E X_E - \sum_{j=1}^p \hat\gamma_{j}  \hat\beta_E (X_E \circ \bPsi_j) \hat\btheta_j\right)^\top \boldsymbol{1} \label{eq:beta0} \\
-\hat{\beta}_E & = S\left(\frac{1}{n \cdot w_E} \left(X_E + \sum_{j=1}^{p}\hat\gamma_j (X_E \circ \bPsi_j)\hat\btheta_j\right)^\top R_{(-E)}, \lambda(1-\alpha)\right) \label{eq:betaE} \\
-\lambda (1-\alpha) w_j \dfrac{\btheta_j}{\norm{\btheta_j}_2} & =  \frac{1}{n} \left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R_{(-j)} \label{eq:thetaj} \\
-\hat\gamma_j & = S \left(\frac{1}{n \cdot w_{jE}} \left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-jE)}, \lambda \alpha\right) \label{eq:gammaj}
+&\hat{\beta}_0 =  \left( Y - \sum_{j=1}^p \bPsi_j \hat\btheta_j - \hat\beta_E X_E - \sum_{j=1}^p \hat\gamma_{j}  \hat\beta_E (X_E \circ \bPsi_j) \hat\btheta_j\right)^\top \boldsymbol{1} \label{eq:beta0} \\
+&\hat{\beta}_E  = \frac{S\left(\frac{1}{n \cdot w_E}\left(X_E + \sum_{j=1}^{p}\hat\gamma_j (X_E \circ \bPsi_j)\hat\btheta_j\right)^\top R_{(-E)} , \lambda(1-\alpha)\right)}{\left(X_E + \sum_{j=1}^{p}\hat\gamma_j (X_E \circ \bPsi_j)\hat\btheta_j\right)^\top\left(X_E + \sum_{j=1}^{p}\hat\gamma_j (X_E \circ \bPsi_j)\hat\btheta_j\right)} \label{eq:betaE} \\
+&\lambda (1-\alpha) w_j \dfrac{\btheta_j}{\norm{\btheta_j}_2}  =  \frac{1}{n} \left(\bPsi_j + \gamma_j \beta_E (X_E \circ \bPsi_j)\right)^\top R_{(-j)} \label{eq:thetaj} \\
+&\hat\gamma_j  = \frac{S \left(\frac{1}{n \cdot w_{jE}}\left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)^\top R_{(-jE)}, \lambda \alpha\right)}{\left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)^\top\left(\beta_E (X_E \circ \bPsi_j)\btheta_j\right)} \label{eq:gammaj}
 \end{align}
 where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operator. We see from~\eqref{eq:beta0} and~\eqref{eq:betaE} that there are closed form solutions for the intercept and $\beta_E$. From~\eqref{eq:gammaj}, each $\gamma_j$ also has a closed form solution and can be solved efficiently for $j=1, \ldots, p$ using a coordinate descent procedure~\citep{friedman2010regularization}.
 Since there is no closed form solution for $\beta_j$, we use a quadratic majorization technique~\citep{yang2015fast} to solve~\eqref{eq:thetaj}. Furthermore, we update each $\btheta_{j}$ in a coordinate wise fashion and leverage this to implement further computational speedups which are detailed in Supplemental Section~\ref{ap:subsec:Delta}.
@@ -1728,7 +1730,7 @@ A more detailed algorithm for fitting the least-squares \texttt{sail} model with
 		%\State $R \gets R^\ast + \beta_E^{(k)} X_E + \sum_{j}  ( \gamma_{j}^{(k)} \beta_E^{(k)}  \widetilde\bPsi_{j}) \btheta_{j}^{(k)} = R^\ast + \beta_E^{(k)} \widetilde{X}_E$
 		\State $R \gets R^\ast + \beta_E^{(k)} \widetilde{X}_E$
 		%\State $R_3 \gets Y - \beta_0^{(k)} - \sum_j \bPsi_j \btheta_j^{(k)} - \sum_{j} \gamma_j^{(k)}  \bPsi_j \btheta_j^{(k)}$
-		\State \[\beta_E^{(k)(new)} \gets S\left(\frac{1}{n \cdot w_E} \widetilde{X}_E^\top R, \lambda(1-\alpha)\right)\] \Comment{$S(x,t) = \textrm{sign}(x) (\abs{x} - t)_+$}
+		\State \[\beta_E^{(k)(new)} \gets \frac{1}{ \widetilde{X}_E^\top\widetilde{X}_E}S\left(\frac{1}{n \cdot w_E} \widetilde{X}_E^\top R, \lambda(1-\alpha)\right)\] \Comment{$S(x,t) = \textrm{sign}(x) (\abs{x} - t)_+$}
 		%\State $\beta_E^{(k)} \gets \argmin_{\beta_E} \frac{1}{2n} \norm{R_3 - \beta_E \widetilde{X}_E}_2^2 + \lambda(1-\alpha) w_E \abs{\beta_E}$
 		\State $\Delta = (\beta_E^{(k)} - \beta_E^{(k)(new)})\widetilde{X}_E$
 		\State $R^\ast \gets R^\ast + \Delta$
@@ -1869,10 +1871,10 @@ From the subgradient Equation~\eqref{eq:sub_gammajweak}, we see that $\gamma_j =
 \end{equation}
 From the subgradient equations we see that
 \begin{align}
-	\hat{\beta}_0 &=  \left( Y - \sum_{j=1}^p \bPsi_j \hat\btheta_j - \hat\beta_E X_E - \sum_{j=1}^p \hat\gamma_{j}   (X_E \circ \bPsi_j)(\hat\beta_E\cdot \mb{1}_{m_j}+ \hat\btheta_j)\right)^\top \boldsymbol{1} \\
-	\hat{\beta}_E & = S\left(\frac{1}{n \cdot w_E} \left(X_E + \sum_{j=1}^{p}\hat\gamma_j (X_E \circ \bPsi_j)\mb{1}_{m_j}\right)^\top R_{(-E)}, \lambda(1-\alpha)\right) \\
-	\lambda (1-\alpha) w_j \dfrac{\btheta_j}{\norm{\btheta_j}_2} & =  \frac{1}{n} \left(\bPsi_j + \gamma_j (X_E \circ \bPsi_j)\right)^\top R_{(-j)} \label{eq:thetajweak} \\
-	\hat\gamma_j & = S \left(\frac{1}{n \cdot w_{jE}} \left((X_E \circ \bPsi_j)(\beta_E \cdot \mb{1}_{m_j}+\btheta_j)\right)^\top R_{(-jE)}, \lambda \alpha\right)
+	&\hat{\beta}_0 =  \left( Y - \sum_{j=1}^p \bPsi_j \hat\btheta_j - \hat\beta_E X_E - \sum_{j=1}^p \hat\gamma_{j}   (X_E \circ \bPsi_j)(\hat\beta_E\cdot \mb{1}_{m_j}+ \hat\btheta_j)\right)^\top \boldsymbol{1} \\
+	&\hat{\beta}_E  = \frac{S\left(\frac{1}{n\cdot w_E}\left(X_E + \sum_{j=1}^{p}\hat\gamma_j (X_E \circ \bPsi_j)\mb{1}_{m_j}\right)^\top R_{(-E)}, \lambda(1-\alpha)\right)}{\left(X_E + \sum_{j=1}^{p}\hat\gamma_j (X_E \circ \bPsi_j)\mb{1}_{m_j}\right)^\top\left(X_E + \sum_{j=1}^{p}\hat\gamma_j (X_E \circ \bPsi_j)\mb{1}_{m_j}\right)} \\
+	&\lambda (1-\alpha) w_j \dfrac{\btheta_j}{\norm{\btheta_j}_2}  =  \frac{1}{n} \left(\bPsi_j + \gamma_j (X_E \circ \bPsi_j)\right)^\top R_{(-j)} \label{eq:thetajweak} \\
+	&\hat\gamma_j  = \frac{ S \left(\frac{1}{n \cdot w_{jE}}  \left((X_E \circ \bPsi_j)(\beta_E \cdot \mb{1}_{m_j}+\btheta_j)\right)^\top R_{(-jE)}, \lambda \alpha\right)}{\left((X_E \circ \bPsi_j)(\beta_E \cdot \mb{1}_{m_j}+\btheta_j)\right)^\top \left((X_E \circ \bPsi_j)(\beta_E \cdot \mb{1}_{m_j}+\btheta_j)\right)}
 \end{align}
 where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operator. As was the case in the strong heredity \sail ~model, there are closed form solutions for the intercept and $\beta_E$, each $\gamma_j$ also has a closed form solution and can be solved efficiently for $j=1, \ldots, p$ using the coordinate descent procedure implemented in the \texttt{glmnet} package~\citep{friedman2010regularization}, while we use the quadratic majorization technique implemented in the \texttt{gglasso} package~\citep{yang2015fast} to solve~\eqref{eq:thetajweak}. Algorithm~\ref{alg:sailweak} details the procedure used to fit the least-squares weak heredity \sail ~model.
 
@@ -1921,7 +1923,7 @@ where $S(x,t) = \textrm{sign}(x) (\abs{x} - t)$ is the soft-thresholding operato
 		%\State $R \gets R^\ast + \beta_E^{(k)} X_E + \sum_{j}  ( \gamma_{j}^{(k)} \beta_E^{(k)}  \widetilde\bPsi_{j}) \btheta_{j}^{(k)} = R^\ast + \beta_E^{(k)} \widetilde{X}_E$
 		\State $R \gets R^\ast + \beta_E^{(k)} \widetilde{X}_E$
 		%\State $R_3 \gets Y - \beta_0^{(k)} - \sum_j \bPsi_j \btheta_j^{(k)} - \sum_{j} \gamma_j^{(k)}  \bPsi_j \btheta_j^{(k)}$
-		\State \[\beta_E^{(k)(new)} \gets S\left(\frac{1}{n \cdot w_E} \widetilde{X}_E^\top R, \lambda(1-\alpha)\right)\] \Comment{$S(x,t) = \textrm{sign}(x) (\abs{x} - t)_+$}
+		\State \[\beta_E^{(k)(new)} \gets \frac{1}{\widetilde{X}_E^\top \widetilde{X}_E}S\left(\frac{1}{n \cdot w_E} \widetilde{X}_E^\top R, \lambda(1-\alpha)\right)\] \Comment{$S(x,t) = \textrm{sign}(x) (\abs{x} - t)_+$}
 		%\State $\beta_E^{(k)} \gets \argmin_{\beta_E} \frac{1}{2n} \norm{R_3 - \beta_E \widetilde{X}_E}_2^2 + \lambda(1-\alpha) w_E \abs{\beta_E}$
 		\State $\Delta = (\beta_E^{(k)} - \beta_E^{(k)(new)})\widetilde{X}_E$
 		\State $R^\ast \gets R^\ast + \Delta$
@@ -2035,7 +2037,7 @@ This is the same $\lambda_{max}$ as the least-squares strong heredity \sail ~mod
 
 \end{comment}
 
-\section{Additional Results on PRS for Educational Attainment}
+\section{Additional Results on PRS for Educational Attainment} \label{ap:prseduc}
 
 
 
@@ -2047,7 +2049,7 @@ This is the same $\lambda_{max}$ as the least-squares strong heredity \sail ~mod
 
 }
 
-\caption[Illustration of estimated interaction effects identified by \texttt{sail} for the PRS data]{Illustration of estimated interaction effects identified by \texttt{sail} for the PRS data. Median prediction curves in dark colors based on 200 train/validate/test splits represent the estimated marginal interaction effects. Coefficients estimated in each of the 200 train/validate/test splits were used to generate prediction curves representing a 90\% confidence interval colored in corresponding light colors.}\label{fig:PRS-intervention-interaction-others}
+\caption{Estimated interaction effect identified by the weak heredity \texttt{sail} using cubic B-splines and $\alpha=0.1$ for the Nurse Family Partnership data for the 5 imputed datasets. Of the 189 subjects, 19 IQ scores were imputed using \texttt{mice}~\citep{buuren2010mice}. The selected model, chosen via 10-fold cross-validation, contained three variables: the main effects for the intervention and the PRS for educational attainment using genetic variants significant at the 0.0001 level, as well as their interaction.}\label{fig:PRS-intervention-interaction-others}
 \end{figure}
 
 
@@ -2062,12 +2064,13 @@ This is the same $\lambda_{max}$ as the least-squares strong heredity \sail ~mod
 
 }
 
-\caption[Illustration of estimated interaction effects identified by \texttt{sail} for the PRS data]{Illustration of estimated interaction effects identified by \texttt{sail} for the PRS data. Median prediction curves in dark colors based on 200 train/validate/test splits represent the estimated marginal interaction effects. Coefficients estimated in each of the 200 train/validate/test splits were used to generate prediction curves representing a 90\% confidence interval colored in corresponding light colors.}\label{fig:PRS-model-selection}
+\caption{Coefficient estimates obtained by the weak heredity \texttt{sail} using cubic B-splines and $\alpha=0.1$ for the Nurse Family Partnership data for the 5 imputed datasets. Of the 189 subjects, 19 IQ scores were imputed using \texttt{mice}~\citep{buuren2010mice}. The selected model, chosen via 10-fold cross-validation, contained three variables: the main effects for the intervention and the PRS for educational attainment using genetic variants significant at the 0.0001 level, as well as their interaction. This results was consistent across all 5 imputed datasets. The white boxes indicate a coefficient estimate of 0.}\label{fig:PRS-model-selection}
 \end{figure}
 
 
 \end{knitrout}
 
+\end{document}
 
 \FloatBarrier
 
@@ -2103,8 +2106,8 @@ We give a quick overview of the main functions and go into details in other vign
 \hlkwd{names}\hlstd{(sailsim)}
 \end{alltt}
 \begin{verbatim}
-## [1] "x"        "y"        "e"        "f1"       "f2"       "f3"      
-## [7] "f4"       "f3.inter" "f4.inter"
+## [1] "x"        "y"        "e"        "f1"       "f2"       "f3"       "f4"      
+## [8] "f3.inter" "f4.inter"
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -2161,20 +2164,13 @@ The estimated coefficients at each value of lambda is given by (matrix partially
 \end{alltt}
 \begin{verbatim}
 ## 6 x 6 sparse Matrix of class "dgCMatrix"
-##                    s50        s51        s52        s53        s54
-## (Intercept)  5.2908242  5.2837492  5.2803715  5.2753572  5.2717869
-## X1_1        -0.9792849 -0.9604046 -0.9449616 -0.9220738 -0.9171304
-## X1_2         1.6903252  1.7894886  1.8924485  1.9952094  2.1042358
-## X1_3         1.6463057  1.7049842  1.7722916  1.8251613  1.8951562
-## X1_4         1.5224653  1.5433528  1.5663095  1.5854332  1.6102159
-## X1_5         3.3386403  3.4183219  3.4908074  3.5763781  3.6633809
-##                    s55
-## (Intercept)  5.2695399
-## X1_1        -0.9270958
-## X1_2         2.2058453
-## X1_3         1.9642875
-## X1_4         1.6322047
-## X1_5         3.7453708
+##                    s50        s51        s52        s53        s54        s55
+## (Intercept)  5.2908242  5.2837492  5.2803715  5.2753572  5.2717869  5.2695399
+## X1_1        -0.9792849 -0.9604046 -0.9449616 -0.9220738 -0.9171304 -0.9270958
+## X1_2         1.6903252  1.7894886  1.8924485  1.9952094  2.1042358  2.2058453
+## X1_3         1.6463057  1.7049842  1.7722916  1.8251613  1.8951562  1.9642875
+## X1_4         1.5224653  1.5433528  1.5663095  1.5854332  1.6102159  1.6322047
+## X1_5         3.3386403  3.4183219  3.4908074  3.5763781  3.6633809  3.7453708
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -2242,32 +2238,31 @@ You can also extract a list of active variables (i.e. variables with a non-zero 
 \end{alltt}
 \begin{verbatim}
 ## [[1]]
-##  [1] "X1"    "X2"    "X3"    "X4"    "X8"    "X10"   "X11"   "X20"  
-##  [9] "X1:E"  "X2:E"  "X3:E"  "X4:E"  "X8:E"  "X11:E" "E"    
+##  [1] "X1"    "X2"    "X3"    "X4"    "X8"    "X10"   "X11"   "X20"   "X1:E" 
+## [10] "X2:E"  "X3:E"  "X4:E"  "X8:E"  "X11:E" "E"    
 ## 
 ## [[2]]
-##  [1] "X1"    "X2"    "X3"    "X4"    "X6"    "X8"    "X10"   "X11"  
-##  [9] "X20"   "X1:E"  "X2:E"  "X3:E"  "X4:E"  "X8:E"  "X11:E" "E"    
+##  [1] "X1"    "X2"    "X3"    "X4"    "X6"    "X8"    "X10"   "X11"   "X20"  
+## [10] "X1:E"  "X2:E"  "X3:E"  "X4:E"  "X8:E"  "X11:E" "E"    
 ## 
 ## [[3]]
-##  [1] "X1"    "X2"    "X3"    "X4"    "X6"    "X8"    "X10"   "X11"  
-##  [9] "X16"   "X20"   "X1:E"  "X2:E"  "X3:E"  "X4:E"  "X8:E"  "X11:E"
-## [17] "E"    
+##  [1] "X1"    "X2"    "X3"    "X4"    "X6"    "X8"    "X10"   "X11"   "X16"  
+## [10] "X20"   "X1:E"  "X2:E"  "X3:E"  "X4:E"  "X8:E"  "X11:E" "E"    
 ## 
 ## [[4]]
-##  [1] "X1"    "X2"    "X3"    "X4"    "X6"    "X8"    "X10"   "X11"  
-##  [9] "X15"   "X16"   "X19"   "X20"   "X1:E"  "X2:E"  "X3:E"  "X4:E" 
-## [17] "X8:E"  "X11:E" "E"    
+##  [1] "X1"    "X2"    "X3"    "X4"    "X6"    "X8"    "X10"   "X11"   "X15"  
+## [10] "X16"   "X19"   "X20"   "X1:E"  "X2:E"  "X3:E"  "X4:E"  "X8:E"  "X11:E"
+## [19] "E"    
 ## 
 ## [[5]]
-##  [1] "X1"    "X2"    "X3"    "X4"    "X5"    "X6"    "X8"    "X10"  
-##  [9] "X11"   "X15"   "X16"   "X19"   "X20"   "X1:E"  "X2:E"  "X3:E" 
-## [17] "X4:E"  "X8:E"  "X11:E" "E"    
+##  [1] "X1"    "X2"    "X3"    "X4"    "X5"    "X6"    "X8"    "X10"   "X11"  
+## [10] "X15"   "X16"   "X19"   "X20"   "X1:E"  "X2:E"  "X3:E"  "X4:E"  "X8:E" 
+## [19] "X11:E" "E"    
 ## 
 ## [[6]]
-##  [1] "X1"    "X2"    "X3"    "X4"    "X5"    "X6"    "X8"    "X10"  
-##  [9] "X11"   "X15"   "X16"   "X19"   "X20"   "X1:E"  "X2:E"  "X3:E" 
-## [17] "X4:E"  "X8:E"  "X11:E" "E"
+##  [1] "X1"    "X2"    "X3"    "X4"    "X5"    "X6"    "X8"    "X10"   "X11"  
+## [10] "X15"   "X16"   "X19"   "X20"   "X1:E"  "X2:E"  "X3:E"  "X4:E"  "X8:E" 
+## [19] "X11:E" "E"
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -2816,7 +2811,7 @@ The estimated non-zero coefficients at \texttt{lambda.1se}:
 
 
 
-\end{document}
+
 
 \begin{comment}
 \subsection{Main Idea}
