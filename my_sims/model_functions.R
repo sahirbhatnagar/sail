@@ -130,7 +130,7 @@ make_gendata_Paper_data_split <- function(n, p, corr, betaE, SNR, lambda.type, p
   # used for glmnet and lasso backtracking
   # f.identity <- function(i) i
 
-  new_model(name = "gendata_thesis_split_v4",
+  new_model(name = "csda-review",
             label = sprintf("n = %s, p = %s, corr = %s, betaE = %s, SNR = %s, index = %s, lambda = %s",
                             n, p, corr, betaE, SNR, parameterIndex, lambda.type),
             params = list(n = n, p = p, corr = corr, betaE = betaE, SNR = SNR,

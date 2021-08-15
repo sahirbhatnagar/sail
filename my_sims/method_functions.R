@@ -68,7 +68,7 @@ sailsplit <- new_method("sail", "Sail",
                      tryCatch({
                        fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
                                    basis = function(i) splines::bs(i, degree = 5),
-                                   nlambda = 20, center.x = TRUE, center.e = TRUE)
+                                   nlambda = 100, center.x = TRUE, center.e = TRUE, dfmax = 20)
 
                        ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
                        msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
@@ -109,6 +109,7 @@ sailsplitlinear <- new_method("linearsail", "Linear Sail",
                         method = function(model, draw) {
                           tryCatch({
                             fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
+                                        nlambda = 100, center.x = TRUE, center.e = TRUE, dfmax = 20,
                                         basis = function(i) i)
 
                             ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
@@ -149,8 +150,7 @@ sailsplitadaptive <- new_method("Adaptivesail", "Adaptive Sail",
                           tryCatch({
                             fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
                                         basis = function(i) splines::bs(i, degree = 5),
-                                        thresh = 5e-03,
-                                        dfmax = 50)
+                                        nlambda = 100, center.x = TRUE, center.e = TRUE, dfmax = 20)
 
                             ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
                             msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
@@ -177,8 +177,7 @@ sailsplitadaptive <- new_method("Adaptivesail", "Adaptive Sail",
                             fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
                                         basis = function(i) splines::bs(i, degree = 5),
                                         penalty.factor = c(pfe, pfmain, pfinter),
-                                        thresh = 5e-03,
-                                        dfmax = 50)
+                                        nlambda = 100, center.x = TRUE, center.e = TRUE, dfmax = 20)
 
                             ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
                             msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
@@ -217,7 +216,8 @@ sailsplitweak <- new_method("sailweak", "Sail Weak",
                         method = function(model, draw) {
                           tryCatch({
                             fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
-                                        basis = function(i) splines::bs(i, degree = 5), strong = FALSE)
+                                        basis = function(i) splines::bs(i, degree = 5), strong = FALSE,
+                                        nlambda = 100, center.x = TRUE, center.e = TRUE, dfmax = 20)
 
                             ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
                             msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
@@ -258,8 +258,7 @@ sailsplitadaptiveweak <- new_method("Adaptivesailweak", "Adaptive Sail Weak",
                                     fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
                                                 strong = FALSE,
                                                 basis = function(i) splines::bs(i, degree = 5),
-                                                thresh = 5e-03,
-                                                dfmax = 50)
+                                                nlambda = 100, center.x = TRUE, center.e = TRUE, dfmax = 20)
 
                                     ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
                                     msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
@@ -287,8 +286,7 @@ sailsplitadaptiveweak <- new_method("Adaptivesailweak", "Adaptive Sail Weak",
                                                 strong = FALSE,
                                                 basis = function(i) splines::bs(i, degree = 5),
                                                 penalty.factor = c(pfe, pfmain, pfinter),
-                                                thresh = 5e-03,
-                                                dfmax = 50)
+                                                nlambda = 100, center.x = TRUE, center.e = TRUE, dfmax = 20)
 
                                     ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
                                     msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
@@ -373,7 +371,7 @@ lasso <- new_method("lasso", "Lasso",
                       fitglmnet <- cv.glmnet(x = draw[["xtrain_lasso"]], y = draw[["ytrain"]],
                                              alpha = 1, nfolds = 10)
 
-                      nzcoef <- coef(fitglmnet, s = model$lambda.type)[nonzeroCoef(coef(fitglmnet, s = model$lambda.type)),,drop=F]
+                      nzcoef <- coef(fitglmnet, s = model$lambda.type)[glmnet:::nonzeroCoef(coef(fitglmnet, s = model$lambda.type)),,drop=F]
 
                       return(list(beta = coef(fitglmnet, s = model$lambda.type)[-1,,drop=F],
                            # cvfit = fitglmnet,
@@ -399,7 +397,7 @@ lasso <- new_method("lasso", "Lasso",
 
 
 
-lassosplit <- new_method("lasso", "Lasso",
+lassosplit5 <- new_method("lasso5", "Lasso5",
                     method = function(model, draw) {
 
                       tryCatch({
@@ -415,7 +413,7 @@ lassosplit <- new_method("lasso", "Lasso",
                         yvalid_hat <- predict(fit, newx = draw[["xvalid_lasso"]], s = lambda.min)
                         msevalid <- mean((draw[["yvalid"]] - drop(yvalid_hat))^2)
 
-                        nzcoef <- coef(fit, s = lambda.min)[nonzeroCoef(coef(fit, s = lambda.min)),,drop=F]
+                        nzcoef <- coef(fit, s = lambda.min)[glmnet:::nonzeroCoef(coef(fit, s = lambda.min)),,drop=F]
 
                         return(list(beta = coef(fit, s = lambda.min)[-1,,drop=F],
                                     vnames = draw[["vnames_lasso"]],
@@ -467,7 +465,7 @@ lassosplitadaptive <- new_method("Adaptivelasso", "Adaptive Lasso",
                              yvalid_hat <- predict(fit, newx = draw[["xvalid_lasso"]], s = lambda.min)
                              msevalid <- mean((draw[["yvalid"]] - drop(yvalid_hat))^2)
 
-                             nzcoef <- coef(fit, s = lambda.min)[nonzeroCoef(coef(fit, s = lambda.min)),,drop=F]
+                             nzcoef <- coef(fit, s = lambda.min)[glmnet:::nonzeroCoef(coef(fit, s = lambda.min)),,drop=F]
 
                              return(list(beta = coef(fit, s = lambda.min)[-1,,drop=F],
                                          vnames = draw[["vnames_lasso"]],
@@ -674,7 +672,7 @@ GLinternetsplit <- new_method("GLinternet", "GLinternet",
                              yvalid_hat <- predict(fitGL, X = draw[["xvalid_lasso"]], lambda = lambda.min)
                              msevalid <- mean((draw[["yvalid"]] - drop(yvalid_hat))^2)
 
-                             # nzcoef <- coef(fit, s = lambda.min)[nonzeroCoef(coef(fit, s = lambda.min)),,drop=F]
+                             # nzcoef <- coef(fit, s = lambda.min)[glmnet:::nonzeroCoef(coef(fit, s = lambda.min)),,drop=F]
 
                              tc <- coef(fitGL, lambdaIndex = lambda.min.index)
                              mains <- colnames(draw[["xtrain_lasso"]])[tc[[1]]$mainEffects$cont]

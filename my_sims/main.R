@@ -42,7 +42,8 @@ pacman::p_load(sail)
 pacman::p_load(truncnorm)
 # remotes::install_local()
 library(sail)
-
+# remotes::install_github("sahirbhatnagar/sail@csda-review")
+# sail:::lspath
 
 # source helper functions -------------------------------------------------
 
@@ -53,21 +54,23 @@ source(here::here("my_sims/eval_functions.R"))
 # run simulation in parallel on tmux --------------------------------------
 # this was for original simulation study
 
-# sim <- new_simulation(name = "may_15_2018",
-#                       label = "may_15_2018",
-#                       dir = ".") %>%
-#   generate_model(make_gendata_Paper_data_split, seed = 1234,
-#                  n = 400, p = 1000, corr = 0, betaE = 2, SNR = 2, lambda.type = "lambda.min",
-#                  parameterIndex = list(1,2,3,4,5),
-#                  vary_along = "parameterIndex") %>%
-#   simulate_from_model(nsim = 6, index = 1:35) %>%
-#   run_method(list(sailsplit, sailsplitlinear,sailsplitweak,lassosplitadaptive, sailsplitadaptive,
-#                   lassosplit, lassoBTsplit, GLinternetsplit, Hiersplit, SPAMsplit, gamselsplit),
-#              parallel = list(socket_names = 35,
-#                              libraries = c("LassoBacktracking", "glinternet","glmnet","splines",
-#                                            "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
-# simulator::save_simulation(sim)
-# sim
+sim <- new_simulation(name = "aug_14_2021",
+                      label = "aug_14_2021",
+                      dir = ".") %>%
+  generate_model(make_gendata_Paper_data_split, seed = 1234,
+                 n = 400, p = 1000, corr = 0, betaE = 2, SNR = 2, lambda.type = "lambda.min",
+                 parameterIndex = list(1,2,3,4,5),
+                 vary_along = "parameterIndex") %>%
+  simulate_from_model(nsim = 1:2, index = 1:2) %>%
+  run_method(list(sailsplit, sailsplitlinear,
+                  # sailsplitweak,
+                  lassosplitadaptive, sailsplitadaptive,
+                  lassosplit, lassoBTsplit, GLinternetsplit, Hiersplit, SPAMsplit, gamselsplit),
+             parallel = list(socket_names = 35,
+                             libraries = c("LassoBacktracking", "glinternet","glmnet","splines",
+                                           "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
+simulator::save_simulation(sim)
+sim
 
 
 # run simulation in parallel on tmux for CSDA review increase sample size --------------------------------------
@@ -77,7 +80,7 @@ sim <- new_simulation(name = "aug_12_2021",
                       label = "aug_12_2021",
                       dir = ".") %>%
   generate_model(make_gendata_Paper_data_split, seed = 1234,
-                 n = 40000, p = 25, corr = 0, betaE = 2, SNR = 4, lambda.type = "lambda.min",
+                 n = 400, p = 25, corr = 0, betaE = 2, SNR = 4, lambda.type = "lambda.min",
                  parameterIndex = 1) %>%
   simulate_from_model(nsim = 6, index = 1:35) %>%
   run_method(sailsplit,
@@ -124,14 +127,28 @@ oref <- simulator::run_method(dref, list(sailsplit, sailsplitlinear,sailsplitwea
 sim <- simulator::add(sim, oref)
 simulator::save_simulation(sim)
 sim
+subset_evals(evals(sim), method_names = "lasso") %>%
+  as.data.frame()
 
 sim@model_refs
 sim@draws_refs
 
+sim <- load_simulation("aug_14_2021")
 sim <- sim %>% evaluate(list(msevalid, tpr, fpr, nactive, r2))
 
 
+sim <- sim %>%
+  run_method(list(lassosplit5)) %>%
+  evaluate(list(msevalid, tpr, fpr, nactive, r2))
+
+sim
+
+
 # analyze results ---------------------------------------------------------
+
+draw <- draws(sim, index = 1)
+draw[[1]]@draws$r1.1
+evals(sim)
 
 df <- as.data.frame(evals(sim))
 # saveRDS(df, file = "my_sims/simulation_results/apr_25_2018_results.rds")
@@ -168,7 +185,7 @@ DT$scen %>% table
 #Truth only has main effects (parameterIndex = 5)
 
 
-(p1_mse <- ggplot(DT, aes(Method, mse, fill = Method)) +
+(p1_mse <- ggplot(DT, aes(Method, nactive, fill = Method)) +
     ggplot2::geom_boxplot() +
     facet_rep_wrap(~scen, scales = "free", ncol = 2,repeat.tick.labels = 'left',
                labeller = as_labeller(appender,
@@ -180,7 +197,7 @@ DT$scen %>% table
 reposition_legend(p1_mse, 'center', panel='panel-2-3')
 
 
-
+df
 cowplot::background_grid()
 save_plot("mcgillsims/figures/p1_cvmse.pdf", p1_cvmse,
           base_height = 7, base_width = 9)

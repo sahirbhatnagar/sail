@@ -43,6 +43,8 @@ lspathweak <- function(x,
   )
 
   # y <- drop(scale(y, center = TRUE, scale = FALSE))
+  mY <- mean(y)
+  y <- drop(scale(y, center = TRUE, scale = FALSE))
   Phi_j_list <- expansion$Phi_j_list
   Phi_j <- expansion$Phi_j
   XE_Phi_j_list <- expansion$XE_Phi_j_list
@@ -50,6 +52,7 @@ lspathweak <- function(x,
   main_effect_names <- expansion$main_effect_names
   interaction_names <- expansion$interaction_names
   ncols <- expansion$ncols
+  e <- expansion$E # this would be centered if center.e was TRUE
   # group_list <- split(group, group)
 
   # group membership
@@ -68,7 +71,7 @@ lspathweak <- function(x,
 
   # Initialize -------------------------------------------------------------
   # the initial values here dont matter, since at Lambda_max everything is 0
-  b0 <- mean(y)
+  b0 <- mean(y) # if y is centered then b0 is 0
   betaE <- 0
   theta <- split(stats::setNames(rep(0, length(main_effect_names)), main_effect_names), group)
   gamma <- rep(0, nvars)
@@ -79,7 +82,7 @@ lspathweak <- function(x,
   x_tilde <- matrix(0, nrow = nobs, ncol = nvars)
   add_back <- rep(0, nobs)
 
-  Theta_init <- c(b0, betaE, do.call(c, theta), gamma)
+  Theta_init <- c(betaE, do.call(c, theta), gamma)
 
   # Lambda Sequence ---------------------------------------------------------
   # browser()
@@ -306,7 +309,7 @@ lspathweak <- function(x,
                                    X = x_tilde_2[[j]],
                                    y = R,
                                    group = if (expand) rep(1, ncols) else rep(1, ncols[j]),
-                                   penalty = "gel",
+                                   penalty = "grMCP",
                                    family = "gaussian",
                                    group.multiplier = as.vector(wj[j]),
                                    lambda = LAMBDA * (1 - alpha),
@@ -362,14 +365,25 @@ lspathweak <- function(x,
 
       R <- R.star + betaE * x_tilde_E
 
-      if (we != 0) {
-        betaE_next <- SoftThreshold(
-          x = (1 / (nobs * we)) * sum(x_tilde_E * R),
-          lambda = LAMBDA * (1 - alpha)
-        )
-      } else {
-        betaE_next <- sum(x_tilde_E * R) / sum(x_tilde_E^2)
-      }
+      # if (we != 0) {
+      #   betaE_next <- SoftThreshold(
+      #     x = (1 / (nobs * we)) * sum(x_tilde_E * R),
+      #     lambda = LAMBDA * (1 - alpha)
+      #   )
+      # } else {
+      #   betaE_next <- sum(x_tilde_E * R) / sum(x_tilde_E^2)
+      # }
+
+      betaE_next <-
+        coef(glmnet::glmnet(
+          x = cbind(0,x_tilde_E),
+          y = R,
+          # thresh = 1e-8,
+          # weights = weights,
+          penalty.factor = c(1,we),
+          lambda = c(.Machine$double.xmax, LAMBDA *(1- alpha)),
+          standardize = F, intercept = F
+        ))[c(-1,-2), 2]
 
       Delta <- (betaE - betaE_next) * x_tilde_E
 
@@ -379,16 +393,16 @@ lspathweak <- function(x,
       # update beta0
       # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-      R <- R.star + b0
-      b0_next <- mean(R)
+      # R <- R.star + b0
+      # b0_next <- mean(R)
 
       # used for gamma update
-      x_tilde <- Phi_tilde_theta + betaE_next * Phi_tilde_one
+      x_tilde <- Phi_tilde_theta + betaE_next * Phi_tilde_one # line 8 in Algorithm 2
       add_back <- rowSums(sweep(x_tilde, 2, gamma_next, FUN = "*"))
 
-      Delta <- (b0 - b0_next)
+      # Delta <- (b0 - b0_next)
 
-      R.star <- R.star + Delta
+      # R.star <- R.star + Delta
 
       Q[m + 1] <- Q_theta(
         R = R.star, nobs = nobs, lambda = LAMBDA, alpha = alpha,
@@ -396,7 +410,7 @@ lspathweak <- function(x,
         theta_list = theta_next, gamma = gamma_next
       )
 
-      Theta_next <- c(b0_next, betaE_next, theta_next_vec, gamma_next)
+      Theta_next <- c(betaE_next, theta_next_vec, gamma_next)
 
       criterion <- abs(Q[m] - Q[m + 1]) / abs(Q[m])
       # criterion <- l2norm(Theta_next - Theta_init)
@@ -408,23 +422,25 @@ lspathweak <- function(x,
         ))
       }
 
+      b0_next <- mean(y) # not being used anymore
       b0 <- b0_next
       betaE <- betaE_next
       theta <- theta_next
       gamma <- gamma_next
       Theta_init <- Theta_next
-
       m <- m + 1
     }
 
 
     # Store Results -----------------------------------------------------------
+    # browser()
 
-    a0[lambdaIndex] <- b0_next
     environ[lambdaIndex] <- betaE_next
     betaMat[, lambdaIndex] <- theta_next_vec
     gammaMat[, lambdaIndex] <- gamma_next
-    alphaMat[, lambdaIndex] <- do.call(c, lapply(seq_along(theta_next), function(i) betaE_next * gamma_next[i] * theta_next[[i]]))
+    alphaMat[, lambdaIndex] <- do.call(c, lapply(seq_along(theta_next), function(i) gamma_next[i] * (betaE_next + theta_next[[i]])))
+    a0[lambdaIndex] <- mY - betaE_next * expansion$mE - sum(theta_next_vec * as.vector(expansion$mPhi_j)) -
+      sum(alphaMat[, lambdaIndex] * as.vector(expansion$mXE_Phi_j))
 
     active[[lambdaIndex]] <- c(
       unique(gsub("\\_\\d*", "", names(which(abs(betaMat[, lambdaIndex]) > 0)))),
