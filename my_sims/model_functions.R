@@ -122,6 +122,7 @@ make_gendata_Paper <- function(n, p, corr, betaE, SNR, lambda.type, parameterInd
 
 
 # n should be the total of train and test. 2*n is chosen as the validation
+# this was use in CSDA paper
 make_gendata_Paper_data_split <- function(n, p, corr, betaE, SNR, lambda.type, parameterIndex) {
 
   main <- paste0("X", seq_len(p))
@@ -301,7 +302,7 @@ make_gendata_Paper_not_simulator <- function(n, p, corr, betaE, SNR, lambda.type
 
 
 
-source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/rda/rda_NIHPD_data_cleaning.R")
+# source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/rda/rda_NIHPD_data_cleaning.R")
 
 make_nihpd_data_split <- function(nprobes, phenoVariable, exposure, filter, data) {
 

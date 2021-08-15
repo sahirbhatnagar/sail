@@ -201,66 +201,101 @@ standardize <- function(x, center = TRUE, normalize = FALSE) {
 #' @param nvars number of variables
 #' @param vnames variable names
 design_sail <- function(x, e, expand, group, basis, nvars, vnames, center.x, center.e) {
-  if (center.e) {
-    e <- drop(standardize(e, center = TRUE, normalize = FALSE)$x)
-  }
+
+  originalE <- e
+  e <- drop(scale(e, center = center.e, scale = FALSE))
+  me <- attr(e, "scaled:center") # mean of X_E
 
   if (!expand) {
+
+    original_Phi_j_list <- lapply(split(seq(group), group),
+                                  function(j) x[, j, drop = FALSE])
+
+    original_Phi_j <- do.call(cbind, original_Phi_j_list)
+
     # Dont Expand X's if expand=FALSE. use user supplied design matrix
-    if (center.x) {
-      Phi_j_list <- lapply(split(seq(group), group), function(j) standardize(x[, j, drop = FALSE],
-          center = TRUE
-        )$x)
-    } else {
-      Phi_j_list <- lapply(split(seq(group), group), function(j) x[, j, drop = FALSE])
-    }
+    Phi_j_list <- lapply(split(seq(group), group),
+                         function(j) scale(x[, j, drop = FALSE],
+                                           center = center.x, scale = FALSE))
 
     Phi_j <- do.call(cbind, Phi_j_list)
     main_effect_names <- vnames
     dimnames(Phi_j)[[2]] <- main_effect_names
+    dimnames(original_Phi_j)[[2]] <- main_effect_names
+
+
+    # mPhi_j is the column means of basis expansion of X
+    mPhi_j <- sapply(Phi_j_list, attr, which = "scaled:center")
 
     # X_E x Phi_j
-    XE_Phi_j_list <- lapply(Phi_j_list, function(i) e * i)
+    XE_Phi_j_list <- lapply(original_Phi_j_list, function(i) scale(originalE * i, center = center.x, scale = FALSE))
     XE_Phi_j <- do.call(cbind, XE_Phi_j_list)
     interaction_names <- paste(main_effect_names, "E", sep = ":")
     dimnames(XE_Phi_j)[[2]] <- interaction_names
+
+    original_XE_Phi_j_list <- lapply(original_Phi_j_list, function(i) originalE * i)
+    original_XE_Phi_j <- do.call(cbind, original_XE_Phi_j_list)
+    dimnames(original_XE_Phi_j)[[2]] <- interaction_names
+
+    # mXEPhi_j is the column means of the product of X and E
+    mXE_Phi_j <- sapply(XE_Phi_j_list, attr, which = "scaled:center")
+
   } else {
 
     # Expand X's
-    if (center.x) {
-      Phi_j_list <- lapply(
-        seq_len(nvars),
-        function(j) standardize(basis(x[, j, drop = FALSE]),
-            center = TRUE
-          )$x
-      )
-    } else {
-      Phi_j_list <- lapply(
-        seq_len(nvars),
-        function(j) basis(x[, j, drop = FALSE])
-      )
-    }
+    original_Phi_j_list <- lapply(seq_len(nvars),
+                                  function(j) basis(x[, j, drop = FALSE]))
+    original_Phi_j <- do.call(cbind, original_Phi_j_list)
+
+    Phi_j_list <- lapply(seq_len(nvars),
+      function(j) scale(basis(x[, j, drop = FALSE]),
+                        center = center.x, scale = FALSE)
+    )
+
+    mPhi_j <- sapply(Phi_j_list, attr, which = "scaled:center")
 
     ncols <- ncol(Phi_j_list[[1]]) # this is to get the number of columns for each expansion
     Phi_j <- do.call(cbind, Phi_j_list)
     main_effect_names <- paste(rep(vnames, each = ncols), rep(seq_len(ncols), times = nvars), sep = "_")
     dimnames(Phi_j)[[2]] <- main_effect_names
+    dimnames(original_Phi_j)[[2]] <- main_effect_names
 
     # E x Phi_j
-    XE_Phi_j_list <- lapply(Phi_j_list, function(i) e * i)
+    # XE_Phi_j_list <- lapply(Phi_j_list, function(i) e * i)
+    # use the original data, before centering for the interaction, and then center the interaction term
+    XE_Phi_j_list <- lapply(original_Phi_j_list, function(i) scale(originalE * i, center = center.x, scale = FALSE))
+    # XE_Phi_j_list <- lapply(Phi_j_list, function(i) scale(e * i, center = center.x, scale = FALSE))
     XE_Phi_j <- do.call(cbind, XE_Phi_j_list)
     interaction_names <- paste(main_effect_names, "E", sep = ":")
     dimnames(XE_Phi_j)[[2]] <- interaction_names
+
+    original_XE_Phi_j_list <- lapply(original_Phi_j_list, function(i) originalE * i)
+    original_XE_Phi_j <- do.call(cbind, original_XE_Phi_j_list)
+    dimnames(original_XE_Phi_j)[[2]] <- interaction_names
+
+    # mXEPhi_j is the column means of the product of X and E
+    mXE_Phi_j <- sapply(XE_Phi_j_list, attr, which = "scaled:center")
+
   }
 
   # this is used for the predict function
-  design <- cbind(Phi_j, "E" = e, XE_Phi_j)
+  # design <- cbind(Phi_j, "E" = e, XE_Phi_j)
+  design <- cbind(original_Phi_j, "E" = originalE, original_XE_Phi_j)
 
   return(list(
-    Phi_j_list = Phi_j_list, Phi_j = Phi_j,
-    XE_Phi_j_list = XE_Phi_j_list, XE_Phi_j = XE_Phi_j,
-    main_effect_names = main_effect_names, interaction_names = interaction_names,
-    design = design, ncols = if (expand) ncols else sapply(Phi_j_list, ncol)
+    Phi_j_list = Phi_j_list,
+    Phi_j = Phi_j,
+    mPhi_j = if (center.x) mPhi_j else 0,
+    XE_Phi_j_list = XE_Phi_j_list,
+    XE_Phi_j = XE_Phi_j,
+    mXE_Phi_j = if (center.x) mXE_Phi_j else 0,
+    main_effect_names = main_effect_names,
+    interaction_names = interaction_names,
+    design = design, # this is not centered
+    # design_not_centered = design_not_centered,
+    E = e,
+    mE = me,
+    ncols = if (expand) ncols else sapply(Phi_j_list, ncol)
   ))
 }
 

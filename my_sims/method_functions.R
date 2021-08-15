@@ -67,7 +67,8 @@ sailsplit <- new_method("sail", "Sail",
                    method = function(model, draw) {
                      tryCatch({
                        fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
-                                   basis = function(i) splines::bs(i, degree = 5))
+                                   basis = function(i) splines::bs(i, degree = 5),
+                                   nlambda = 20, center.x = TRUE, center.e = TRUE)
 
                        ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
                        msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
@@ -80,7 +81,10 @@ sailsplit <- new_method("sail", "Sail",
                        nzcoef <- predict(fit, s = lambda.min, type = "nonzero")
 
                        return(list(beta = coef(fit, s = lambda.min)[-1,,drop=F],
-                            # fit = fit,
+                            fit = fit,
+                            lambda.min = lambda.min,
+                            lambda.min.index = lambda.min.index,
+                            a0 = coef(fit, s = lambda.min)[1,],
                             vnames = draw[["vnames"]],
                             nonzero_coef = nzcoef,
                             active = fit$active[[lambda.min.index]],

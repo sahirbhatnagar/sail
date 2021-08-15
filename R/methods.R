@@ -66,6 +66,8 @@ predict.sail <- function(object, newx, newe, s = NULL,
   } else if (!missing(newx) & missing(newe)) {
     stop("newe is missing. please supply the vector of the environment variable.")
   } else if (!missing(newx) & !missing(newe)) {
+    # note that coefficients are returned on original scale.
+    # the design returned by design_sail is not centered
     newx <- design_sail(
       x = newx, e = newe, expand = object$expand, group = object$group, basis = object$basis, nvars = object$nvars,
       vnames = object$vnames, center.x = object$center.x, center.e = object$center.e

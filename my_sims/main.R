@@ -11,7 +11,7 @@
 # and then create figures based on that
 # Author: Sahir Bhatnagar
 # Created: 2016
-# Updated: May 17, 2018
+# Updated: August 12, 2021
 #####################################
 
 
@@ -25,8 +25,9 @@ pacman::p_load(glmnet)
 pacman::p_load(LassoBacktracking)
 pacman::p_load_current_gh('sahirbhatnagar/glinternet')
 pacman::p_load(gbm)
-pacman::p_load_gh('asadharis/HierBasis')
-devtools::load_all()
+# remotes::install_github('asadharis/HierBasis')
+library("HierBasis")
+# devtools::load_all()
 pacman::p_load(SAM)
 pacman::p_load(gamsel)
 pacman::p_load(cowplot)
@@ -36,28 +37,50 @@ pacman::p_load(data.table)
 pacman::p_load(ggplot2)
 pacman::p_load(latex2exp)
 pacman::p_load(lemon)
-
+pacman::p_load(here)
+pacman::p_load(sail)
+pacman::p_load(truncnorm)
+# remotes::install_local()
+library(sail)
 
 
 # source helper functions -------------------------------------------------
 
-source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/model_functions.R")
-source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/method_functions.R")
-source("/mnt/GREENWOOD_BACKUP/home/sahir.bhatnagar/sail/sail_git_v2/sail/my_sims/eval_functions.R")
-
+source(here::here("my_sims/model_functions.R"))
+source(here::here("my_sims/method_functions.R"))
+source(here::here("my_sims/eval_functions.R"))
 
 # run simulation in parallel on tmux --------------------------------------
+# this was for original simulation study
 
-sim <- new_simulation(name = "may_15_2018",
-                      label = "may_15_2018",
+# sim <- new_simulation(name = "may_15_2018",
+#                       label = "may_15_2018",
+#                       dir = ".") %>%
+#   generate_model(make_gendata_Paper_data_split, seed = 1234,
+#                  n = 400, p = 1000, corr = 0, betaE = 2, SNR = 2, lambda.type = "lambda.min",
+#                  parameterIndex = list(1,2,3,4,5),
+#                  vary_along = "parameterIndex") %>%
+#   simulate_from_model(nsim = 6, index = 1:35) %>%
+#   run_method(list(sailsplit, sailsplitlinear,sailsplitweak,lassosplitadaptive, sailsplitadaptive,
+#                   lassosplit, lassoBTsplit, GLinternetsplit, Hiersplit, SPAMsplit, gamselsplit),
+#              parallel = list(socket_names = 35,
+#                              libraries = c("LassoBacktracking", "glinternet","glmnet","splines",
+#                                            "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
+# simulator::save_simulation(sim)
+# sim
+
+
+# run simulation in parallel on tmux for CSDA review increase sample size --------------------------------------
+# We only want to show performance of sail with increases sample size
+
+sim <- new_simulation(name = "aug_12_2021",
+                      label = "aug_12_2021",
                       dir = ".") %>%
   generate_model(make_gendata_Paper_data_split, seed = 1234,
-                 n = 400, p = 1000, corr = 0, betaE = 2, SNR = 2, lambda.type = "lambda.min",
-                 parameterIndex = list(1,2,3,4,5),
-                 vary_along = "parameterIndex") %>%
+                 n = 40000, p = 25, corr = 0, betaE = 2, SNR = 4, lambda.type = "lambda.min",
+                 parameterIndex = 1) %>%
   simulate_from_model(nsim = 6, index = 1:35) %>%
-  run_method(list(sailsplit, sailsplitlinear,sailsplitweak,lassosplitadaptive, sailsplitadaptive,
-                  lassosplit, lassoBTsplit, GLinternetsplit, Hiersplit, SPAMsplit, gamselsplit),
+  run_method(sailsplit,
              parallel = list(socket_names = 35,
                              libraries = c("LassoBacktracking", "glinternet","glmnet","splines",
                                            "magrittr","sail","gamsel","SAM","HierBasis","simulator", "parallel")))
