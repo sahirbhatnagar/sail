@@ -68,7 +68,7 @@ sailsplit <- new_method("sail", "Sail",
                      tryCatch({
                        fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
                                    basis = function(i) splines::bs(i, degree = 5),
-                                   nlambda = 100, center.x = TRUE, center.e = TRUE, dfmax = 20)
+                                   nlambda = 100, center.x = TRUE, center.e = TRUE)
 
                        ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
                        msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
@@ -87,6 +87,9 @@ sailsplit <- new_method("sail", "Sail",
                             a0 = coef(fit, s = lambda.min)[1,],
                             vnames = draw[["vnames"]],
                             nonzero_coef = nzcoef,
+                            originalX = draw[["xtrain"]],
+                            originaly = draw[["ytrain"]],
+                            originale = draw[["etrain"]],
                             active = fit$active[[lambda.min.index]],
                             not_active = setdiff(draw[["vnames"]], fit$active[[lambda.min.index]]),
                             yvalid_hat = yvalid_hat,
@@ -109,7 +112,7 @@ sailsplitlinear <- new_method("linearsail", "Linear Sail",
                         method = function(model, draw) {
                           tryCatch({
                             fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
-                                        nlambda = 100, center.x = TRUE, center.e = TRUE, dfmax = 20,
+                                        nlambda = 100, center.x = TRUE, center.e = TRUE,
                                         basis = function(i) i)
 
                             ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
@@ -150,7 +153,7 @@ sailsplitadaptive <- new_method("Adaptivesail", "Adaptive Sail",
                           tryCatch({
                             fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
                                         basis = function(i) splines::bs(i, degree = 5),
-                                        nlambda = 100, center.x = TRUE, center.e = TRUE, dfmax = 20)
+                                        nlambda = 100, center.x = TRUE, center.e = TRUE)
 
                             ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
                             msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
@@ -217,7 +220,7 @@ sailsplitweak <- new_method("sailweak", "Sail Weak",
                           tryCatch({
                             fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
                                         basis = function(i) splines::bs(i, degree = 5), strong = FALSE,
-                                        nlambda = 100, center.x = TRUE, center.e = TRUE, dfmax = 20)
+                                        nlambda = 100, center.x = TRUE, center.e = TRUE)
 
                             ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
                             msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
@@ -258,7 +261,7 @@ sailsplitadaptiveweak <- new_method("Adaptivesailweak", "Adaptive Sail Weak",
                                     fit <- sail(x = draw[["xtrain"]], y = draw[["ytrain"]], e = draw[["etrain"]],
                                                 strong = FALSE,
                                                 basis = function(i) splines::bs(i, degree = 5),
-                                                nlambda = 100, center.x = TRUE, center.e = TRUE, dfmax = 20)
+                                                nlambda = 100, center.x = TRUE, center.e = TRUE)
 
                                     ytest_hat <- predict(fit, newx = draw[["xtest"]], newe = draw[["etest"]])
                                     msetest <- colMeans((draw[["ytest"]] - ytest_hat)^2)
@@ -397,7 +400,7 @@ lasso <- new_method("lasso", "Lasso",
 
 
 
-lassosplit5 <- new_method("lasso5", "Lasso5",
+lassosplit <- new_method("lasso", "Lasso",
                     method = function(model, draw) {
 
                       tryCatch({
