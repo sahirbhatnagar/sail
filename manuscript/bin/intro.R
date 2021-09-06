@@ -1,11 +1,14 @@
 rm(list=ls())
 library(sail)
 library(doMC)
-registerDoMC(cores = 8)
+registerDoMC(cores = 10)
 
 ## ---- toy-example ----
+
+library(doMC)
+registerDoMC(cores = 10)
 gendataIntro <- function (n, p, corr = 0, E = truncnorm::rtruncnorm(n, a = -1, b = 1),
-                          betaE = 2, SNR = 2, hierarchy = c("strong", "weak", "none"),
+                          betaE = 2, SNR = 4, hierarchy = c("strong", "weak", "none"),
                           nonlinear = TRUE, interactions = TRUE, causal,
                           not_causal) {
   if (!requireNamespace("truncnorm", quietly = TRUE)) {
@@ -45,16 +48,24 @@ gendataIntro <- function (n, p, corr = 0, E = truncnorm::rtruncnorm(n, a = -1, b
               X1 = X1, X2 = X2))
 }
 
-set.seed(54321)
-DT <- gendataIntro(n = 100, p = 20, corr = 0, SNR = 2, betaE = 1.75)
+set.seed(987654321)
+DT <- gendataIntro(n = 1000, p = 20, corr = 0, SNR = 2, betaE = 1.75)
 
-f.basis <- function(i) splines::bs(i, degree = 3)
+f.basis <- function(i) splines::bs(i, degree = 5)
+# f.basis <- function(i) splines::ns(i, df = 3)
+
 cvfit <- cv.sail(x = DT$x, y = DT$y, e = DT$e,
-                 center.e = FALSE,
-                 verbose = 1,
+                 center.e = TRUE,
+                 verbose = 2,
                  nlambda = 100,
-                 basis = f.basis, nfolds = 10, parallel = TRUE)
+                 basis = f.basis,
+                 nfolds = 10,
+                 parallel = TRUE)
 
+# plot(cvfit)
+# coef(cvfit)
+# predict(cvfit, type = "nonzero", s = "lambda.1se")
+# predict(cvfit, type = "nonzero", s = "lambda.min")
 ## ---- toy-solution-path ----
 
 plotSailCoefIntro <- function(cvfit, coefs, lambda, group, df, dev, vnames, environ,
@@ -156,9 +167,9 @@ plotSailCoefIntro <- function(cvfit, coefs, lambda, group, df, dev, vnames, envi
 
   do.call("matlines", line.args)
   # browser()
-  line.args$y <- t(Y)[,c("X1_1","X1_2","X1_3","X2_1","X2_2","X2_3")]
-  line.args$col <- c(rep(sail:::cbbPalette[c(4)], 3),
-                     rep(sail:::cbbPalette[c(7)], 3))
+  line.args$y <- t(Y)[,c("X1_1","X1_2","X1_3","X1_4","X1_5","X2_1","X2_2","X2_3","X2_4","X2_5")]
+  line.args$col <- c(rep(sail:::cbbPalette[c(4)], 5),
+                     rep(sail:::cbbPalette[c(7)], 5))
   line.args$lwd <- 2
   do.call("matlines", line.args)
 
@@ -179,16 +190,19 @@ plotSailCoefIntro <- function(cvfit, coefs, lambda, group, df, dev, vnames, envi
   }
   # browser()
   if (label) {
-    ypos <- Y[c("X1_1","X1_2","X1_3","X2_1","X2_2","X2_3"), ncol(Y)]
-    ypos["X2_3"] <- 3.1
-    ypos["X2_1"] <- 2.5
-    ypos["X2_2"] <- -0.15
-    ypos["X1_2"] <- -0.68
-    ypos["X1_1"] <- -1.2
+    ypos <- Y[c("X1_1","X1_2","X1_3","X1_4","X1_5","X2_1","X2_2","X2_3","X2_4","X2_5"), ncol(Y)]
+    # ypos["X2_3"] <- 3.1
+    ypos["X2_1"] <- ypos["X2_1"] * 1.1
+    ypos["X2_4"] <- ypos["X2_1"] * 0.85
+    # ypos["X2_2"] <- -0.15
+    # ypos["X1_2"] <- -0.68
+    # ypos["X1_1"] <- -0.95
+    # ypos["X1_4"] <- -0.68
+    # ypos["X1_3"] <- ypos["X1_4"]*1.15
     # mtext(text = names(ypos), side = 4, at = ypos, las = 1)
-    mtext(text = c(TeX("$X1_1$"),TeX("$X1_2$"),TeX("$X1_3$"),
-                   TeX("$X2_1$"),TeX("$X2_2$"),TeX("$X2_3$")), side = 4, at = ypos, las = 1, cex = 0.8)
-    mtext(text = "E", side = 4, at = environ[length(environ)]-.1, las = 1, cex = 0.8)
+    mtext(text = c(TeX("$X1_1$"),TeX("$X1_2$"),TeX("$X1_3$"),TeX("$X1_4$"),TeX("$X1_5$"),
+                   TeX("$X2_1$"),TeX("$X2_2$"),TeX("$X2_3$"),TeX("$X2_4$"),TeX("$X2_5$")), side = 4, at = ypos, las = 1, cex = 0.8)
+    mtext(text = "E", side = 4, at = environ[length(environ)]-.2, las = 1, cex = 0.8)
   }
 
   abline(v = log(cvfit$lambda.1se), lty=2)
@@ -210,8 +224,10 @@ plotSailCoefInterIntro <- function(cvfit, coefs, lambda, group, df, dev, vnames,
 
   lambda.min.index <- which(cvfit[["lambda.min"]]==cvfit$lambda)
   lambda.1se.index <- which(cvfit[["lambda.1se"]]==cvfit$lambda)
-  nzind <- cvfit$sail.fit$group[abs(cvfit$sail.fit$alpha[,lambda.1se.index])>0]
-  zind <- cvfit$sail.fit$group[abs(cvfit$sail.fit$alpha[,lambda.1se.index])==0]
+  # nzind <- cvfit$sail.fit$group[abs(cvfit$sail.fit$alpha[,lambda.1se.index])>0]
+  # zind <- cvfit$sail.fit$group[abs(cvfit$sail.fit$alpha[,lambda.1se.index])==0]
+  nzind <- cvfit$sail.fit$group[which(cvfit$sail.fit$group==2)]
+  zind <- cvfit$sail.fit$group[which(cvfit$sail.fit$group!=2)]
 
   if (norm) { # not implemented for now
   } else {
@@ -296,8 +312,8 @@ plotSailCoefInterIntro <- function(cvfit, coefs, lambda, group, df, dev, vnames,
   line.args$lwd <- line.args$lwd[g]
 
   do.call("matlines", line.args)
-  line.args$y <- t(Y)[,c("X2_1:E","X2_2:E","X2_3:E")]
-  line.args$col <- rep(sail:::cbbPalette[c(7)], 3)
+  line.args$y <- t(Y)[,c("X2_1:E","X2_2:E","X2_3:E","X2_4:E","X2_5:E")]
+  line.args$col <- rep(sail:::cbbPalette[c(7)], 5)
   line.args$lwd <- 2
   do.call("matlines", line.args)
 
@@ -318,9 +334,12 @@ plotSailCoefInterIntro <- function(cvfit, coefs, lambda, group, df, dev, vnames,
   }
 
   if (label) {
-    ypos <- Y[c("X2_1:E","X2_2:E","X2_3:E"), ncol(Y)]
-    ypos["X2_1:E"] <- ypos["X2_1:E"]-0.7
-    mtext(text = c(TeX("$E\\cdot X2_1$"),TeX("$E\\cdot X2_2$"),TeX("$E\\cdot X2_3$")), side = 4, at = ypos, las = 1, cex = 0.8)
+    ypos <- Y[c("X2_1:E","X2_2:E","X2_3:E","X2_4:E","X2_5:E"), ncol(Y)]
+    ypos["X2_4:E"] <- ypos["X2_4:E"]+0.205
+    ypos["X2_1:E"] <- ypos["X2_4:E"]*0.70
+    ypos["X2_3:E"] <- ypos["X2_3:E"]*0.90
+    mtext(text = c(TeX("$E\\cdot X2_1$"),TeX("$E\\cdot X2_2$"),TeX("$E\\cdot X2_3$"),TeX("$E\\cdot X2_4$"),TeX("$E\\cdot X2_5$")),
+          side = 4, at = ypos, las = 1, cex = 0.8)
   }
 
   abline(v = log(cvfit$lambda.1se), lty=2)
@@ -343,7 +362,7 @@ plotSailCoefIntro(
   group = x$group,
   dev = x$dev.ratio[trim],
   vnames = x$vnames,
-  ylim = c(-3.5,4),
+  # ylim = c(-3.5,4),
   ylab = "Main effects", xaxt="n")
 par(mar=c(4,4,0,3.2))
 plotSailCoefInterIntro(
@@ -367,7 +386,8 @@ x1 <- DT$X1
 # truth
 lin_pred <- DT$f1
 # estimated
-lin_pred_est <- as.vector(cvfit$sail.fit$design[,c("X1_1", "X1_2", "X1_3")] %*% coef(cvfit, s="lambda.min")[c("X1_1", "X1_2", "X1_3"),,drop=F])
+# lin_pred_est <- as.vector(cvfit$sail.fit$design[,c("X1_1", "X1_2", "X1_3")] %*% coef(cvfit, s="lambda.min")[c("X1_1", "X1_2", "X1_3"),,drop=F])
+lin_pred_est <- as.vector(cvfit$sail.fit$design[,c("X1_1", "X1_2", "X1_3","X1_4","X1_5")] %*% coef(cvfit, s="lambda.min")[c("X1_1", "X1_2", "X1_3","X1_4","X1_5"),,drop=F])
 min.length.top <- range(c(lin_pred, lin_pred_est))[1] ; max.length.top <- range(c(lin_pred, lin_pred_est))[2]
 par(mar=c(4,4,0,0))
 plot(x1, lin_pred,
@@ -387,7 +407,8 @@ plot(x1, lin_pred,
 axis(1, labels = T, cex.axis = 1)
 lines(x1[order(x1)],lin_pred[order(x1)], lwd = 2)
 lines(x1[order(x1)],lin_pred_est[order(x1)], lwd = 2, lty = 2)
-legend(x=0.2,y=1.3,c("Truth", "Estimated"),
+legend("topleft",
+       c("Truth", "Estimated"),
        cex = 1, bty = "n", lty = c(1,2), lwd = 1)
 rug(x1)
 
@@ -397,11 +418,44 @@ e <- DT$e
 
 # truth
 lin_pred <- #DT$betaE * DT$e +
-  1.5 * DT$f2.inter(DT$X2, DT$e)
+  # 1.5 * DT$f2.inter(DT$X2, DT$e)
+  DT$f2.inter(DT$X2, DT$e)
 
 # estimated
-lin_pred_est <- #coef(cvfit, s="lambda.min")["E",] * DT$e +
-  as.vector(cvfit$sail.fit$design[,c("X2_1:E", "X2_2:E", "X2_3:E")] %*% coef(cvfit, s="lambda.min")[c("X2_1:E", "X2_2:E", "X2_3:E"),,drop=F])
+# lin_pred_est <-
+#   # coef(cvfit, s="lambda.min")["E",] * DT$e +
+#   coef(cvfit, s = "lambda.min")["(Intercept)",] +
+#   as.vector(scale(cvfit$sail.fit$design[,c("X2_1:E", "X2_2:E", "X2_3:E")], scale=F) %*% coef(cvfit, s="lambda.min")[c("X2_1:E", "X2_2:E", "X2_3:E"),,drop=F])
+# lin_pred_est <- #coef(cvfit, s="lambda.min")["E",] * DT$e +
+#   as.vector(cvfit$sail.fit$design[,c("X2_1:E", "X2_2:E", "X2_3:E", "X2_4:E", "X2_5:E")] %*% coef(cvfit, s="lambda.min")[c("X2_1:E", "X2_2:E", "X2_3:E", "X2_5:E", "X2_5:E"),,drop=F])
+
+# XX <- cvfit$sail.fit$basis(DT$X2)
+# avx <- colMeans(XX)
+# ave <- mean(e)
+# XX2 <- sweep(XX, 2L, avx)
+# EE <- e - ave
+#
+# sweep(XX)
+
+ltype <- "lambda.min"
+
+# xe_orig <- cvfit$sail.fit$design[,c("X2_1:E", "X2_2:E", "X2_3:E")]
+xe_orig <- cvfit$sail.fit$design[,c("X2_1:E", "X2_2:E", "X2_3:E","X2_4:E","X2_5:E")]
+xe_cent <- scale(xe_orig, center = TRUE, scale = FALSE)
+mXE <- attr(xe_cent,"scaled:center")
+
+# inter_betas <- coef(cvfit, s=ltype)[c("X2_1:E", "X2_2:E", "X2_3:E"),,drop=F]
+inter_betas <- coef(cvfit, s=ltype)[c("X2_1:E", "X2_2:E", "X2_3:E","X2_4:E","X2_5:E"),,drop=F]
+beta_E <- coef(cvfit, s=ltype)[c("E"),,drop=T]
+a0 <- coef(cvfit, s=ltype)[c("(Intercept)"),,drop=T]
+
+# the following two are equivalent
+# lin_pred_est <- a0 + xe_cent %*% inter_betas + beta_E * e + as.vector(crossprod(mXE, as.vector(inter_betas)))
+# lin_pred_est2 <- a0 + xe_orig %*% inter_betas + beta_E * e
+# all.equal(lin_pred_est,lin_pred_est2)
+lin_pred_est <- xe_orig %*% inter_betas + a0 + beta_E * e
+lin_pred_est <- as.vector(lin_pred_est)
+
 
 unexposed_index <- which(e==0)
 exposed_index <- which(e==1)
@@ -435,7 +489,8 @@ axis(1, labels = T, cex.axis = 1)
 lines(x2e0[order(x2e0)],e0[order(x2e0)], col = sail:::cbbPalette[c(4)], lwd = 2)
 lines(x2e1[order(x2e1)],e1[order(x2e1)], col = sail:::cbbPalette[c(7)], lwd = 2)
 lines(x2e1[order(x2e1)],e1_est[order(x2e1)], col = sail:::cbbPalette[c(7)], lwd = 2, lty = 2)
-legend(x=0.05,y = 2.95, c("E=0", "E=1"),
+legend("topleft",
+       c("E=0", "E=1"),
        col = sail:::cbbPalette[c(4,7)], pch = 19, cex = 1, bty = "n")
 rug(x2)
 

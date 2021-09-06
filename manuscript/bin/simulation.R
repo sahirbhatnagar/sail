@@ -1,13 +1,20 @@
 ## ---- simulation-results ----
 
-df <- readRDS("/home/sahir/git_repositories/sail/my_sims/simulation_results/may_15_2018_results.rds")
+DT[, scenario:= as.numeric(as.character(stringr::str_extract_all(parameterIndex, "\\d", simplify = T)))]
+DT$scenario %>% table
+DT[, scen:=ifelse(scenario==1,"Strong Hierarchy",ifelse(scenario==2, "Weak Hierarchy", ifelse(scenario==3,"Interactions Only",ifelse(scenario==4, "Strong Hierarchy (Linear)", ifelse(scenario==5, "Main Effects Only", "Linear v2")))))]
+DT$scen %>% table
+DT[, scen:=factor(scen, levels = c("Strong Hierarchy", "Weak Hierarchy","Interactions Only","Strong Hierarchy (Linear)","Main Effects Only"))]
+DT$scen %>% table
+
+df <- readRDS(here::here("my_sims/simulation_results/","aug_14_2021_results.rds"))
 # df <- readRDS("C:/Users/sahir/Documents/git_repositories/sail/my_sims/simulation_results/apr_25_2018_results.rds")
 df <- df %>% separate(Model, into = c("simnames","betaE","corr","lambda.type","n","p","parameterIndex","SNR_2"),
                       sep = "/")
 
 DT <- as.data.table(df, stringsAsFactors = FALSE)
 DT <- DT[Method!="linearsail"]
-DT <- DT[parameterIndex != "parameterIndex_4"]
+# DT <- DT[parameterIndex != "parameterIndex_4"]
 # DT[parameterIndex=="parameterIndex_1", table(Method)] %>% names %>% dput
 # DT[, table(Method)]
 
@@ -18,7 +25,8 @@ DT[Method=="sailweak", Method := "sail weak"]
 # DT[Method=="sail", Method := "sail strong"]
 # DT[Method=="Asail", Method := "Asail strong"]
 # DT[Method=="linearsail", Method := "linear sail"]
-DT[, Method := droplevels(Method)]
+# library(data.table)
+# DT[, Method := droplevels(Method)]
 # DT[, table(Method)]
 # DT[, table(Method)] %>% names %>% dput
 appender <- function(string) TeX(paste(string))
@@ -36,7 +44,7 @@ DT[, method := factor(Method, levels = c("lasso","adaptive lasso","lassoBT", "GL
 # DT[, table(parameterIndex)]
 DT[, scenario:= as.numeric(as.character(stringr::str_extract_all(parameterIndex, "\\d", simplify = T)))]
 # DT[, table(scenario)]
-DT[, scenario := replace(scenario, which(scenario==6), 4)]
+# DT[, scenario := replace(scenario, which(scenario==6), 4)]
 DT[, scen := case_when(scenario==1 ~ "1a) Strong Heredity",
                        scenario==2 ~ "1b) Weak Heredity",
                        scenario==3 ~ "1c) Interactions Only",
@@ -51,6 +59,8 @@ DT[, scen := factor(scen, levels = c("1a) Strong Heredity", "1b) Weak Heredity",
 #Truth only has main effects (parameterIndex = 5)
 
 ## ---- summary-table ----
+
+# used the xtable output and pasted it into the ctable directly in LaTeX
 
 DT %>%
   dplyr::mutate(tpr = tpr*100, fpr = fpr*100) %>%
