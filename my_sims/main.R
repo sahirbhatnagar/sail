@@ -11,7 +11,7 @@
 # and then create figures based on that
 # Author: Sahir Bhatnagar
 # Created: 2016
-# Updated: September 4, 2021
+# Updated: September 7, 2021
 #####################################
 
 
@@ -81,7 +81,6 @@ sim
 
 # aug14_2021 results are the revised simulation results after fixing intercept issue
 sim <- load_simulation("aug_14_2021")
-evals(sim)
 df <- as.data.frame(evals(sim))
 saveRDS(df, file = "my_sims/simulation_results/aug_14_2021_results.rds")
 

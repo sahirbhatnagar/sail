@@ -33,3 +33,5 @@ manuscript/source/ACC_form_sail\.docx
 
 Xs.rds
 fhats.rds
+manuscript/bin/cache/*
+manuscript/results/simulation_sail_scen1.rdata

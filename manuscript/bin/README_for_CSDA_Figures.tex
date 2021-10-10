@@ -286,11 +286,6 @@
 \begin{document}
 
 
-
-
-
-
-
 \if1\blind
 {
 	\maketitle
@@ -320,6 +315,7 @@
 
 
 
+
 \begin{knitrout}\scriptsize
 \definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 \begin{verbatim}
@@ -336,38 +332,23 @@
 ## +-- README_for_CSDA_Figures.tex
 ## +-- cache
 ## |   +-- __packages
-## |   +-- globals_6d1d04419b10b1a06759621e8a2eb8a6.RData
-## |   +-- globals_6d1d04419b10b1a06759621e8a2eb8a6.rdb
-## |   +-- globals_6d1d04419b10b1a06759621e8a2eb8a6.rdx
-## |   +-- packages_9258a6f76ff684c0e2fd1b9c0ebacc65.RData
-## |   +-- packages_9258a6f76ff684c0e2fd1b9c0ebacc65.rdb
-## |   +-- packages_9258a6f76ff684c0e2fd1b9c0ebacc65.rdx
-## |   +-- plot-mse-sim_9c0c9a1ddefc6e0131421d7b889a78cc.RData
-## |   +-- plot-mse-sim_9c0c9a1ddefc6e0131421d7b889a78cc.rdb
-## |   +-- plot-mse-sim_9c0c9a1ddefc6e0131421d7b889a78cc.rdx
-## |   +-- setup2_900cd6b26f4a65ef22443e3819f71205.RData
-## |   +-- setup2_900cd6b26f4a65ef22443e3819f71205.rdb
-## |   +-- setup2_900cd6b26f4a65ef22443e3819f71205.rdx
-## |   +-- simulation-results_05ea566347202b9db8e06fd8152aac10.RData
-## |   +-- simulation-results_05ea566347202b9db8e06fd8152aac10.rdb
-## |   +-- simulation-results_05ea566347202b9db8e06fd8152aac10.rdx
-## |   +-- toy-effects_601ac4af2c99af20848947802c3de27d.RData
-## |   +-- toy-effects_601ac4af2c99af20848947802c3de27d.rdb
-## |   +-- toy-effects_601ac4af2c99af20848947802c3de27d.rdx
-## |   +-- toy-example_a90f8c38d0355dd05704afeb06d0c2c6.RData
-## |   +-- toy-example_a90f8c38d0355dd05704afeb06d0c2c6.rdb
-## |   +-- toy-example_a90f8c38d0355dd05704afeb06d0c2c6.rdx
-## |   +-- toy-solution-path_991c1813a5d6d78869c629849579836d.RData
-## |   +-- toy-solution-path_991c1813a5d6d78869c629849579836d.rdb
-## |   +-- toy-solution-path_991c1813a5d6d78869c629849579836d.rdx
-## |   +-- unnamed-chunk-1_9950a44ce550dc548513d2b840367e35.RData
-## |   +-- unnamed-chunk-1_9950a44ce550dc548513d2b840367e35.rdb
-## |   \-- unnamed-chunk-1_9950a44ce550dc548513d2b840367e35.rdx
+## |   +-- globals_fb504862a537c3ea460cca06e8d1ad90.RData
+## |   +-- globals_fb504862a537c3ea460cca06e8d1ad90.rdb
+## |   +-- globals_fb504862a537c3ea460cca06e8d1ad90.rdx
+## |   +-- packages-simulation-plots_ace50d8bc55d9041b7b41b136d4b9ce3.RData
+## |   +-- packages-simulation-plots_ace50d8bc55d9041b7b41b136d4b9ce3.rdb
+## |   +-- packages-simulation-plots_ace50d8bc55d9041b7b41b136d4b9ce3.rdx
+## |   +-- packages_571ac4aaa2a2dd7f17919dae0269e8e1.RData
+## |   +-- packages_571ac4aaa2a2dd7f17919dae0269e8e1.rdb
+## |   \-- packages_571ac4aaa2a2dd7f17919dae0269e8e1.rdx
 ## +-- figure
+## |   +-- PRS-intervention-interaction-1.pdf
+## |   +-- dzclass-interaction-1.pdf
 ## |   +-- plot-mse-sim-1.pdf
 ## |   +-- toy-effects-1.pdf
 ## |   \-- toy-solution-path-1.pdf
 ## +-- intro.R
+## +-- plot_simulation.R
 ## +-- setup.R
 ## +-- simulation.R
 ## +-- support_bootstrap.R
@@ -415,16 +396,7 @@ Nevertheless, this example demonstrates that \sail ~can still identify trends re
 \section{Figure 2 - Test set MSE}
 
 
-\begin{knitrout}\scriptsize
-\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
 
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in `:=`(scenario, as.numeric(as.character(stringr::str\_extract\_all(parameterIndex, : Check that is.data.table(DT) == TRUE. Otherwise, := and `:=`(...) are defined for use in j, once only and in particular ways. See help("{}:="{}).}}
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in `:=`(scen, ifelse(scenario == 1, "{}Strong Hierarchy"{}, ifelse(scenario == : Check that is.data.table(DT) == TRUE. Otherwise, := and `:=`(...) are defined for use in j, once only and in particular ways. See help("{}:="{}).}}
-
-{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in `:=`(scen, factor(scen, levels = c("{}Strong Hierarchy"{}, "{}Weak Hierarchy"{}, : Check that is.data.table(DT) == TRUE. Otherwise, := and `:=`(...) are defined for use in j, once only and in particular ways. See help("{}:="{}).}}\end{kframe}
-\end{knitrout}
 
 
 \begin{knitrout}\scriptsize
@@ -441,16 +413,12 @@ Nevertheless, this example demonstrates that \sail ~can still identify trends re
 
 
 
-\section{Table 1}
+\section{Table 1 - TPR, FPR, Nactive}
 
 
-
-
-
-
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%                                     TABLE 2
+%                                     TABLE 1
 %
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -476,28 +444,28 @@ Nevertheless, this example demonstrates that \sail ~can still identify trends re
 &      &  lasso     & &    &  & &   &   &  & &  &  sail  & weak \\
 \hline
 \mcl{3}{1a) Strong heredity ($|\mathcal{J}|=7$)}   \\
-$|\widehat{\mathcal{J}}|$ & 28 (15) & 8 (4) & & 35 (18) & 40 (20)  & & 133 (48) & 42 (19) & 46 (21) & &  21 (3) & 8 (3) & 21 (3) \\
-TPR                        & 53.9 (8.4) & 49.3 (10.1) &  & 61.7 (11.5) & 66.4 (14.0)  & & 65.2 (8.1) & 60.9 (8.5) & 56.9 (7.7)  & & 86.8 (8.0) & 81.4 (13.0) & 82.1 (10.9) \\
-FPR                        & 1.2 (0.7) & 0.2 (0.2)  & & 1.5 (0.9) & 1.8 (1.0)  & & 6.5 (2.4) & 1.9 (0.9) & 2.1 (1.1)  & & 0.8 (0.1) & 0.1 (0.1) & 0.8 (0.1) \ML
+$|\widehat{\mathcal{J}}|$ & 28 (15) & 8 (4) & & 35 (18) & 40 (20)  & & 133 (48) & 42 (19) & 46 (21) & &  37 (15) & 8 (3) & 21 (3) \\
+TPR                        & 53.9 (8.4) & 49.3 (10.1) &  & 61.7 (11.5) & 66.4 (14.0)  & & 65.2 (8.1) & 60.9 (8.5) & 56.9 (7.7)  & & 89.5 (8.2) & 81.4 (13.0) & 82.1 (10.9) \\
+FPR                        & 1.2 (0.7) & 0.2 (0.2)  & & 1.5 (0.9) & 1.8 (1.0)  & & 6.5 (2.4) & 1.9 (0.9) & 2.1 (1.1)  & & 1.5 (0.7) & 0.1 (0.1) & 0.8 (0.1) \ML
 \mcl{3}{1b) Weak heredity ($|\mathcal{J}|=5$)} \\
-$|\widehat{\mathcal{J}}|$ & 19 (12) & 4 (2)  & & 20 (13) & 38 (23) &  & 24 (23) & 28 (16) & 21 (15)  & & 16 (7) & 5 (3) & 14 (10) \\
-TPR & 40.7 (3.6) & 40.1 (1.4)  & & 40.8 (3.8) & 64.1 (14.9)  & & 42.2 (6.3) & 53.9 (9.4) & 42.7 (6.8) & &  50.5 (10.4) & 46.4 (10.1) & 55.0 (13.7) \\
-FPR & 0.9 (0.6) & 0.1 (0.1)  & & 0.9 (0.7) & 1.7 (1.1)  & & 1.1 (1.1) & 1.2 (0.8) & 1.0 (0.7)  & & 0.7 (0.3) & 0.2 (0.1) & 0.6 (0.5) \\
+$|\widehat{\mathcal{J}}|$ & 19 (12) & 4 (2)  & & 20 (13) & 38 (23) &  & 24 (23) & 28 (16) & 21 (15)  & & 24 (19) & 5 (3) & 14 (10) \\
+TPR & 40.7 (3.6) & 40.1 (1.4)  & & 40.8 (3.8) & 64.1 (14.9)  & & 42.2 (6.3) & 53.9 (9.4) & 42.7 (6.8) & &  52.4 (11.4) & 46.4 (10.1) & 55.0 (13.7) \\
+FPR & 0.9 (0.6) & 0.1 (0.1)  & & 0.9 (0.7) & 1.7 (1.1)  & & 1.1 (1.1) & 1.2 (0.8) & 1.0 (0.7)  & & 1.0 (0.9) & 0.2 (0.1) & 0.6 (0.5) \\
 \hline
 \mcl{3}{1c) Interactions Only ($|\mathcal{J}|=2$)}\\
-$|\widehat{\mathcal{J}}|$ & 12 (12) & 3 (2)  & & 14 (13) & 38 (21)  & & 12 (13) & 13 (12) & 12 (12)  & & 7 (7) & 2 (2) & 26 (30) \\
-TPR & 0.0 (0.0) & 0.0 (0.0)  & & 0.0 (0.0) & 81.4 (27.0)  & & 0.0 (0.0) & 0.0 (0.0) & 0.0 (0.0)  & & 0.0 (0.0) & 0.0 (0.0) & 22.9 (36.9) \\
-FPR & 0.6 (0.6) & 0.6 (6.9)  & & 0.7 (0.7) & 1.8 (1.0)  & & 0.6 (0.7) & 0.7 (0.6) & 0.6 (0.6)  & & 0.4 (0.3) & 0.1 (0.1) & 1.3 (1.5) \\
+$|\widehat{\mathcal{J}}|$ & 12 (12) & 3 (2)  & & 14 (13) & 38 (21)  & & 12 (13) & 13 (12) & 12 (12)  & & 10 (18) & 2 (2) & 26 (30) \\
+TPR & 0.0 (0.0) & 0.0 (0.0)  & & 0.0 (0.0) & 81.4 (27.0)  & & 0.0 (0.0) & 0.0 (0.0) & 0.0 (0.0)  & & 1.0 (6.9) & 0.0 (0.0) & 22.9 (36.9) \\
+FPR & 0.6 (0.6) & 0.6 (6.9)  & & 0.7 (0.7) & 1.8 (1.0)  & & 0.6 (0.7) & 0.7 (0.6) & 0.6 (0.6)  & & 0.5 (0.9) & 0.1 (0.1) & 1.3 (1.5) \\
 \hline
 \mcl{3}{2) Linear Effects ($|\mathcal{J}|=7$)}\\
-$|\widehat{\mathcal{J}}|$ & 37 (17) & 8 (3)  & & 48 (19) & 51 (23)  & & 37 (19) & 42 (19) & 37 (16)  & & 20 (4) & 11 (4) & 20 (4) \\
-TPR & 70.4 (3.7) & 67.2 (6.7)  & & 72.3 (6.3) & 93.4 (8.5) &  & 70.3 (3.8) & 65.0 (8.1) & 70.4 (3.7)  & & 91.8 (10.5) & 86.0 (18.5) & 68.1 (14.9) \\
-FPR & 1.6 (0.8) & 0.2 (0.2)  & & 2.2 (1.0) & 2.2 (1.2)  & & 1.6 (0.9) & 1.9 (0.9) & 1.6 (0.8)  & & 0.7 (0.2) & 0.2 (0.2) & 0.7 (0.2) \\
+$|\widehat{\mathcal{J}}|$ & 37 (17) & 8 (3)  & & 48 (19) & 51 (23)  & & 37 (19) & 42 (19) & 37 (16)  & & 34 (18) & 11 (4) & 20 (4) \\
+TPR & 70.4 (3.7) & 67.2 (6.7)  & & 72.3 (6.3) & 93.4 (8.5) &  & 70.3 (3.8) & 65.0 (8.1) & 70.4 (3.7)  & & 93.9 (9.9) & 86.0 (18.5) & 68.1 (14.9) \\
+FPR & 1.6 (0.8) & 0.2 (0.2)  & & 2.2 (1.0) & 2.2 (1.2)  & & 1.6 (0.9) & 1.9 (0.9) & 1.6 (0.8)  & & 1.4 (0.9) & 0.2 (0.2) & 0.7 (0.2) \\
 \hline
 \mcl{3}{3) Main Effects Only ($|\mathcal{J}|=5$)}\\
-$|\widehat{\mathcal{J}}|$ & 29 (14) & 7 (4)  & & 31 (15) & 34 (18)  & & 154 (17) & 46 (21) & 56 (20) & &  22 (2) & 9 (2) & 22 (2) \\
-TPR & 75.9 (10.9) & 66.5 (15.3) & &  76.0 (10.9) & 77.0 (9.5)  & & 97.5 (6.6) & 93.1 (10.7) & 81.3 (9.5) & &  88.3 (10.3) & 84.1 (9.2) & 85.2 (12.1) \\
-FPR & 1.3 (0.7) & 0.2 (0.2) & &  1.3 (0.8) & 1.5 (0.9)  & & 7.5 (0.9) & 2.1 (1.0) & 2.6 (1.0)  & & 0.9 (0.1) & 0.2 (0.1) & 0.9 (0.1) \\
+$|\widehat{\mathcal{J}}|$ & 29 (14) & 7 (4)  & & 31 (15) & 34 (18)  & & 154 (17) & 46 (21) & 56 (20) & &  44 (19) & 9 (2) & 22 (2) \\
+TPR & 75.9 (10.9) & 66.5 (15.3) & &  76.0 (10.9) & 77.0 (9.5)  & & 97.5 (6.6) & 93.1 (10.7) & 81.3 (9.5) & &  91.5 (10.3) & 84.1 (9.2) & 85.2 (12.1) \\
+FPR & 1.3 (0.7) & 0.2 (0.2) & &  1.3 (0.8) & 1.5 (0.9)  & & 7.5 (0.9) & 2.1 (1.0) & 2.6 (1.0)  & & 2.0 (0.9) & 0.2 (0.1) & 0.9 (0.1) \\
 \hline
 	\end{tabular}
 %\end{table}
@@ -508,6 +476,106 @@ FPR & 1.3 (0.7) & 0.2 (0.2) & &  1.3 (0.8) & 1.5 (0.9)  & & 7.5 (0.9) & 2.1 (1.0
 
 
 
+\section{Simulation scenario 1 Plots for sail}
+
+
+\subsection{Main effects}
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error: Could not load simulation. Check that 'dir' is a directory with 'files/sim-aug\_14\_2021.Rdata' in it.}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in outputs\_or\_evals(sim, sim@output\_refs, TRUE, subset, index, methods, : trying to get slot "{}output\_refs"{} from an object of a basic class ("{}function"{}) with no slots}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in lapply(out@out, function(i) f.hat.fit(object = i, xvar = xvar)[["{}fX"{}]]): object 'out' not found}}\end{kframe}
+\end{knitrout}
+
+
+
+\subsection{Interaction effects}
+
+
+
+
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in lapply(X = X, FUN = FUN, ...): object 'out' not found}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in quantile(resX3, probs = c(0.25, 0.5, 0.75), type = 1): object 'resX3' not found}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in sail:::plotInter(object = out@out[[indX3[1]]]\$fit, xvar = xv, : object 'out' not found}}\begin{verbatim}
+## pdf 
+##   2
+\end{verbatim}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in sail:::plotInter(object = out@out[[indX3[1]]]\$fit, xvar = xv, : object 'out' not found}}\begin{verbatim}
+## pdf 
+##   2
+\end{verbatim}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in sail:::plotInter(object = out@out[[indX3[2]]]\$fit, xvar = xv, : object 'out' not found}}\begin{verbatim}
+## pdf 
+##   2
+\end{verbatim}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in sail:::plotInter(object = out@out[[indX3[3]]]\$fit, xvar = xv, : object 'out' not found}}\begin{verbatim}
+## pdf 
+##   2
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in lapply(X = X, FUN = FUN, ...): object 'out' not found}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in quantile(resX4, probs = c(0.25, 0.5, 0.75), type = 1): object 'resX4' not found}}
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in sail:::plotInter(object = out@out[[indX4[1]]]\$fit, xvar = xv, : object 'out' not found}}\begin{verbatim}
+## pdf 
+##   2
+\end{verbatim}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in sail:::plotInter(object = out@out[[indX4[1]]]\$fit, xvar = xv, : object 'out' not found}}\begin{verbatim}
+## pdf 
+##   2
+\end{verbatim}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in sail:::plotInter(object = out@out[[indX4[2]]]\$fit, xvar = xv, : object 'out' not found}}\begin{verbatim}
+## pdf 
+##   2
+\end{verbatim}
+
+
+{\ttfamily\noindent\bfseries\color{errorcolor}{\#\# Error in sail:::plotInter(object = out@out[[indX4[3]]]\$fit, xvar = xv, : object 'out' not found}}\begin{verbatim}
+## pdf 
+##   2
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+
+
+
+\section{Real Data Analysis}
+
+\subsection{Gene-environment interactions in the Nurse Family Partnership program}
 
 
 
@@ -518,6 +586,61 @@ FPR & 1.3 (0.7) & 0.2 (0.2) & &  1.3 (0.8) & 1.5 (0.9)  & & 7.5 (0.9) & 2.1 (1.0
 
 
 
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[h]
+
+{\centering \includegraphics[width=1\linewidth]{figure/PRS-intervention-interaction-1} 
+
+}
+
+\caption[Estimated interaction effect identified by the weak heredity \texttt{sail} using cubic B-splines and $\alpha=0.1$ for the Nurse Family Partnership data]{Estimated interaction effect identified by the weak heredity \texttt{sail} using cubic B-splines and $\alpha=0.1$ for the Nurse Family Partnership data. The selected model, chosen via 10-fold cross-validation, contained three variables: the main effects for the intervention and the PRS for educational attainment using genetic variants significant at the 0.0001 level, as well as their interaction.}\label{fig:PRS-intervention-interaction}
+\end{figure}
+
+\end{knitrout}
+
+
+
+
+
+
+
+
+
+\subsection{Study to Understand Prognoses Preferences Outcomes and Risks of Treatment}
+
+
+
+
+
+
+
+\ctable[caption={Comparison of analytic methods for selecting interactions using the Nurse Family Partnership program and the SUPPORT datasets. Averages (standard deviations in parentheses) are based on 200 bootstrap samples.},label=tab:rda,pos=h,doinside=\footnotesize, ]{lccccc}{\tnote{\texttt{GLinternet} results not reported for NFP data since the algorithm did not converge in many of the bootstrap samples.}\tnote[b]{$|\widehat{\mathcal{J}}|$ is the number of variables selected by the method.}
+}{
+	\FL
+	& \multicolumn{2}{c}{Nurse Family Partnership} &  &\multicolumn{2}{c}{SUPPORT} \NN
+	\cmidrule(r){2-3} \cmidrule(l){5-6}
+	Method          &  Mean Squared Error                                                                 & $|\widehat{\mathcal{J}}|$                                                       & & AUC                                                                            & $|\widehat{\mathcal{H}}|$ \ML
+	\texttt{sail}  &  199.7 (38.1)     &  5 (5) & & 0.66 (0.01)     &  25 (3)  \NN
+	\texttt{lassoBT}    &  194.01 (35.379)     &  7 (9)   & &  0.65 (0.009)     &  49 (14)  \NN
+	\texttt{GLinternet}\tmark &  	--                                                                               & --                                                                               & &  0.65 (0.009)     &  58 (7)   \LL
+}
+
+
+
+
+
+\begin{knitrout}\scriptsize
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{figure}[h]
+
+{\centering \includegraphics[width=1\linewidth]{figure/dzclass-interaction-1} 
+
+}
+
+\caption[Illustration of estimated interaction effects identified by \texttt{sail} for the SUPPORT data]{Illustration of estimated interaction effects identified by \texttt{sail} for the SUPPORT data. Median prediction curves in dark colors based on 200 train/validate/test splits represent the estimated marginal interaction effects. Coefficients estimated in each of the 200 train/validate/test splits were used to generate prediction curves representing a 90\% confidence interval colored in corresponding light colors.}\label{fig:dzclass-interaction}
+\end{figure}
+
+\end{knitrout}
 
 
 

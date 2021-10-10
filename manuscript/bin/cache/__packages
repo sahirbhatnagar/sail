@@ -1,5 +1,8 @@
 base
 knitr
+rmarkdown
+here
+fs
 sail
 ggplot2
 foreach
@@ -19,6 +22,6 @@ ggrepel
 Cairo
 extrafont
 mice
-rmarkdown
-here
-fs
+UpSetR
+fst
+Matrix

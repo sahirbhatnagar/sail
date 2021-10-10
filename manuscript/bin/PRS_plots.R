@@ -55,41 +55,54 @@ rm(list = c("IQdat","m1","snp_prs_na","iq_md","pt","gen3pc"))
 
 ## ---- PRS-cvsail-imputation-1----
 doMC::registerDoMC(cores = 10)
-fitcv <- cv.sail(x = IQ4y[,-c(1,2)], y = IQ4y[,"IQ_4yrs"], e = IQ4y[, "Tx_group_bin"],
-                 basis = function(i) splines::bs(i, degree = 3),
-                 expand = TRUE,
-                 center.x = T,
-                 center.e = T,
-                 #group = dat$group,
-                 alpha = 0.1,
-                 #maxit = 250,
-                 strong = FALSE,
-                 verbose = 1,
-                 parallel = TRUE
+set.seed(1234)
+fitcv <- mclapply(1:10, function(i)
+  cv.sail(x = IQ4y[,-c(1,2)], y = IQ4y[,"IQ_4yrs"], e = IQ4y[, "Tx_group_bin"],
+          basis = function(i) splines::bs(i, degree = 3),
+          # basis = function(i) splines::ns(i, df = 5),
+          expand = TRUE,
+          center.x = T,
+          center.e = T,
+          #group = dat$group,
+          alpha = 0.1,
+          #maxit = 250,
+          strong = FALSE,
+          verbose = 2,
+          parallel = TRUE
+), mc.cores = 10
 )
 
-
+dev.off()
+par(mfrow = c(4,3))
+lapply(fitcv, plot)
+lapply(fitcv, predict, s = "lambda.min", type = "nonzero")
+coef(fitcv, s="lambda.min")
 ## ---- PRS-intervention-interaction ----
 
 
-plotInterPRS(object = fitcv$sail.fit,
-             originalDataNotCentered = IQ4y, # complete original data which contains both "x" and "e"
-             xvar = "PRS_0.0001",
-             s = fitcv$lambda.min,
-             design = fitcv$sail.fit$design, # this contains the design matrix from sail
-             evar = "Tx_group_bin", # this is the name of the E column in 'originalDataNotCentered'
-             xlab = "Polygenic risk score at 0.0001 level of significance",
-             degree = 3,
-             ylab = "Marginal Risk",
-             legend.position = "bottomright",
-             #         main = "Effect of Intervention and PRS
-             # on IQ at 4 years of age",
-             rug = FALSE,
-             labels = c("-0.0015", "-0.001", "-0.0005", "0", "0.0005", "0.001"),
-             at = c(-0.0015, -0.001, -5e-04, 0, 5e-04, 0.001),
-             color = sail:::cbbPalette[c(2,4)],
-             legend = TRUE )
-
+dev.off()
+pdf("test.pdf")
+par(mfrow = c(2,5), mar = c(1,1,1,1))
+lapply(fitcv, function(fitcv) {
+  plotInterPRS(object = fitcv$sail.fit,
+               originalDataNotCentered = IQ4y, # complete original data which contains both "x" and "e"
+               xvar = "PRS_0.001",
+               s = fitcv$lambda.min,
+               design = fitcv$sail.fit$design, # this contains the design matrix from sail
+               evar = "Tx_group_bin", # this is the name of the E column in 'originalDataNotCentered'
+               xlab = "Polygenic risk score at 0.0001 level of significance",
+               degree = 3,
+               ylab = "Marginal Risk",
+               legend.position = "bottomright",
+               #         main = "Effect of Intervention and PRS
+               # on IQ at 4 years of age",
+               rug = FALSE,
+               # labels = c("-0.0015", "-0.001", "-0.0005", "0", "0.0005", "0.001"),
+               at = c(-0.0015, -0.001, -5e-04, 0, 5e-04, 0.001),
+               color = sail:::cbbPalette[c(2,4)],
+               legend = TRUE )
+}
+)
 
 
 

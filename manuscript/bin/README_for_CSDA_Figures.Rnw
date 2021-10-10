@@ -235,29 +235,6 @@
 
 \begin{document}
 
-<<setup, include=FALSE>>=
-rm(list = ls())
-knitr::opts_chunk$set(cache=TRUE, message = FALSE, tidy = FALSE, echo = FALSE,
-						fig.width = 6, fig.asp = 0.618, warning = FALSE,
-						fig.align = 'center', out.width = "100%", size = 'scriptsize')
-
-knitr::opts_knit$set(eval.after = 'fig.cap') # for captions to be evaluated after R objects are available
-
-knitr::read_chunk("../bin/setup.R")
-knitr::read_chunk("../bin/intro.R")
-knitr::read_chunk("../bin/simulation.R")
-knitr::read_chunk("../bin/ADNI.R")
-knitr::read_chunk("../bin/support_plots.R")
-knitr::read_chunk("../bin/PRS_plots.R")
-#finalversion <- FALSE # set to FALSE if still in development and you dont want to run the R code
-finalversion <- TRUE
-@
-
-<<packages, eval=finalversion>>=
-@
-
-<<globals, eval=finalversion>>=
-@
 
 \if1\blind
 {
@@ -280,7 +257,6 @@ finalversion <- TRUE
 
 \pagestyle{fancy}
 
-
 <<setup2, include=FALSE, eval=TRUE>>=
 library(knitr)
 library(rmarkdown)
@@ -300,12 +276,18 @@ knitr::opts_knit$set(eval.after = 'fig.cap') # for captions to be evaluated afte
 knitr::read_chunk(here::here("manuscript","bin/setup.R"))
 knitr::read_chunk(here::here("manuscript","bin/intro.R"))
 knitr::read_chunk(here::here("manuscript","bin/simulation.R"))
+knitr::read_chunk(here::here("manuscript","bin/plot_simulation.R"))
 knitr::read_chunk(here::here("manuscript","bin/ADNI.R"))
 knitr::read_chunk(here::here("manuscript","bin/support_plots.R"))
 knitr::read_chunk(here::here("manuscript","bin/PRS_plots.R"))
+# knitr::knit_code$get()  # use this to check chunks in the current session
+
 #finalversion <- FALSE # set to FALSE if still in development and you dont want to run the R code
 finalversion <- TRUE
 @
+
+
+This doc is a  reference for how the plots were generated. The final plots are in manuscript/bin/figure
 
 <<packages, eval=finalversion>>=
 # this is from setup.R
@@ -315,6 +297,9 @@ finalversion <- TRUE
 # this is from setup.R
 @
 
+<<packages-simulation-plots, eval=finalversion>>=
+# this is from plot_simulation.R
+@
 
 <<>>=
 dir_tree(here::here("manuscript/bin"))
@@ -336,7 +321,7 @@ In Figure~\ref{fig:toy-effects}, we plot the true and estimated component functi
 We are able to capture the shape of the correct functional form, but the means are not well aligned with the data. Lack-of-fit for $f_1(X_1)$ can be partially explained by acknowledging that \sail ~is trying to fit a cubic spline to a linear function.
 Nevertheless, this example demonstrates that \sail ~can still identify trends reasonably well.
 
-<<toy-effects, fig.cap="Estimated smooth functions for $X_1$ and the $X_2 \\cdot E$ interaction by the \\texttt{sail} method based on $\\lambda_{min}$.", fig.pos = "H", eval=finalversion>>=
+<<toy-effects, fig.cap="Estimated smooth functions for $X_1$ and the $X_2 \\cdot E$ interaction by the \\texttt{sail} method based on $\\lambda_{min}$.", fig.pos = "H", eval=finalversion, fig.width=7, fig.height=5>>=
 # this is from intro.R
 @
 
@@ -356,16 +341,12 @@ Nevertheless, this example demonstrates that \sail ~can still identify trends re
 
 
 
-\section{Table 1}
+\section{Table 1 - TPR, FPR, Nactive}
 
 
-
-
-
-
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
-%                                     TABLE 2
+%                                     TABLE 1
 %
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -391,28 +372,28 @@ Nevertheless, this example demonstrates that \sail ~can still identify trends re
 &      &  lasso     & &    &  & &   &   &  & &  &  sail  & weak \\
 \hline
 \mcl{3}{1a) Strong heredity ($|\mathcal{J}|=7$)}   \\
-$|\widehat{\mathcal{J}}|$ & 28 (15) & 8 (4) & & 35 (18) & 40 (20)  & & 133 (48) & 42 (19) & 46 (21) & &  21 (3) & 8 (3) & 21 (3) \\
-TPR                        & 53.9 (8.4) & 49.3 (10.1) &  & 61.7 (11.5) & 66.4 (14.0)  & & 65.2 (8.1) & 60.9 (8.5) & 56.9 (7.7)  & & 86.8 (8.0) & 81.4 (13.0) & 82.1 (10.9) \\
-FPR                        & 1.2 (0.7) & 0.2 (0.2)  & & 1.5 (0.9) & 1.8 (1.0)  & & 6.5 (2.4) & 1.9 (0.9) & 2.1 (1.1)  & & 0.8 (0.1) & 0.1 (0.1) & 0.8 (0.1) \ML
+$|\widehat{\mathcal{J}}|$ & 28 (15) & 8 (4) & & 35 (18) & 40 (20)  & & 133 (48) & 42 (19) & 46 (21) & &  37 (15) & 8 (3) & 21 (3) \\
+TPR                        & 53.9 (8.4) & 49.3 (10.1) &  & 61.7 (11.5) & 66.4 (14.0)  & & 65.2 (8.1) & 60.9 (8.5) & 56.9 (7.7)  & & 89.5 (8.2) & 81.4 (13.0) & 82.1 (10.9) \\
+FPR                        & 1.2 (0.7) & 0.2 (0.2)  & & 1.5 (0.9) & 1.8 (1.0)  & & 6.5 (2.4) & 1.9 (0.9) & 2.1 (1.1)  & & 1.5 (0.7) & 0.1 (0.1) & 0.8 (0.1) \ML
 \mcl{3}{1b) Weak heredity ($|\mathcal{J}|=5$)} \\
-$|\widehat{\mathcal{J}}|$ & 19 (12) & 4 (2)  & & 20 (13) & 38 (23) &  & 24 (23) & 28 (16) & 21 (15)  & & 16 (7) & 5 (3) & 14 (10) \\
-TPR & 40.7 (3.6) & 40.1 (1.4)  & & 40.8 (3.8) & 64.1 (14.9)  & & 42.2 (6.3) & 53.9 (9.4) & 42.7 (6.8) & &  50.5 (10.4) & 46.4 (10.1) & 55.0 (13.7) \\
-FPR & 0.9 (0.6) & 0.1 (0.1)  & & 0.9 (0.7) & 1.7 (1.1)  & & 1.1 (1.1) & 1.2 (0.8) & 1.0 (0.7)  & & 0.7 (0.3) & 0.2 (0.1) & 0.6 (0.5) \\
+$|\widehat{\mathcal{J}}|$ & 19 (12) & 4 (2)  & & 20 (13) & 38 (23) &  & 24 (23) & 28 (16) & 21 (15)  & & 24 (19) & 5 (3) & 14 (10) \\
+TPR & 40.7 (3.6) & 40.1 (1.4)  & & 40.8 (3.8) & 64.1 (14.9)  & & 42.2 (6.3) & 53.9 (9.4) & 42.7 (6.8) & &  52.4 (11.4) & 46.4 (10.1) & 55.0 (13.7) \\
+FPR & 0.9 (0.6) & 0.1 (0.1)  & & 0.9 (0.7) & 1.7 (1.1)  & & 1.1 (1.1) & 1.2 (0.8) & 1.0 (0.7)  & & 1.0 (0.9) & 0.2 (0.1) & 0.6 (0.5) \\
 \hline
 \mcl{3}{1c) Interactions Only ($|\mathcal{J}|=2$)}\\
-$|\widehat{\mathcal{J}}|$ & 12 (12) & 3 (2)  & & 14 (13) & 38 (21)  & & 12 (13) & 13 (12) & 12 (12)  & & 7 (7) & 2 (2) & 26 (30) \\
-TPR & 0.0 (0.0) & 0.0 (0.0)  & & 0.0 (0.0) & 81.4 (27.0)  & & 0.0 (0.0) & 0.0 (0.0) & 0.0 (0.0)  & & 0.0 (0.0) & 0.0 (0.0) & 22.9 (36.9) \\
-FPR & 0.6 (0.6) & 0.6 (6.9)  & & 0.7 (0.7) & 1.8 (1.0)  & & 0.6 (0.7) & 0.7 (0.6) & 0.6 (0.6)  & & 0.4 (0.3) & 0.1 (0.1) & 1.3 (1.5) \\
+$|\widehat{\mathcal{J}}|$ & 12 (12) & 3 (2)  & & 14 (13) & 38 (21)  & & 12 (13) & 13 (12) & 12 (12)  & & 10 (18) & 2 (2) & 26 (30) \\
+TPR & 0.0 (0.0) & 0.0 (0.0)  & & 0.0 (0.0) & 81.4 (27.0)  & & 0.0 (0.0) & 0.0 (0.0) & 0.0 (0.0)  & & 1.0 (6.9) & 0.0 (0.0) & 22.9 (36.9) \\
+FPR & 0.6 (0.6) & 0.6 (6.9)  & & 0.7 (0.7) & 1.8 (1.0)  & & 0.6 (0.7) & 0.7 (0.6) & 0.6 (0.6)  & & 0.5 (0.9) & 0.1 (0.1) & 1.3 (1.5) \\
 \hline
 \mcl{3}{2) Linear Effects ($|\mathcal{J}|=7$)}\\
-$|\widehat{\mathcal{J}}|$ & 37 (17) & 8 (3)  & & 48 (19) & 51 (23)  & & 37 (19) & 42 (19) & 37 (16)  & & 20 (4) & 11 (4) & 20 (4) \\
-TPR & 70.4 (3.7) & 67.2 (6.7)  & & 72.3 (6.3) & 93.4 (8.5) &  & 70.3 (3.8) & 65.0 (8.1) & 70.4 (3.7)  & & 91.8 (10.5) & 86.0 (18.5) & 68.1 (14.9) \\
-FPR & 1.6 (0.8) & 0.2 (0.2)  & & 2.2 (1.0) & 2.2 (1.2)  & & 1.6 (0.9) & 1.9 (0.9) & 1.6 (0.8)  & & 0.7 (0.2) & 0.2 (0.2) & 0.7 (0.2) \\
+$|\widehat{\mathcal{J}}|$ & 37 (17) & 8 (3)  & & 48 (19) & 51 (23)  & & 37 (19) & 42 (19) & 37 (16)  & & 34 (18) & 11 (4) & 20 (4) \\
+TPR & 70.4 (3.7) & 67.2 (6.7)  & & 72.3 (6.3) & 93.4 (8.5) &  & 70.3 (3.8) & 65.0 (8.1) & 70.4 (3.7)  & & 93.9 (9.9) & 86.0 (18.5) & 68.1 (14.9) \\
+FPR & 1.6 (0.8) & 0.2 (0.2)  & & 2.2 (1.0) & 2.2 (1.2)  & & 1.6 (0.9) & 1.9 (0.9) & 1.6 (0.8)  & & 1.4 (0.9) & 0.2 (0.2) & 0.7 (0.2) \\
 \hline
 \mcl{3}{3) Main Effects Only ($|\mathcal{J}|=5$)}\\
-$|\widehat{\mathcal{J}}|$ & 29 (14) & 7 (4)  & & 31 (15) & 34 (18)  & & 154 (17) & 46 (21) & 56 (20) & &  22 (2) & 9 (2) & 22 (2) \\
-TPR & 75.9 (10.9) & 66.5 (15.3) & &  76.0 (10.9) & 77.0 (9.5)  & & 97.5 (6.6) & 93.1 (10.7) & 81.3 (9.5) & &  88.3 (10.3) & 84.1 (9.2) & 85.2 (12.1) \\
-FPR & 1.3 (0.7) & 0.2 (0.2) & &  1.3 (0.8) & 1.5 (0.9)  & & 7.5 (0.9) & 2.1 (1.0) & 2.6 (1.0)  & & 0.9 (0.1) & 0.2 (0.1) & 0.9 (0.1) \\
+$|\widehat{\mathcal{J}}|$ & 29 (14) & 7 (4)  & & 31 (15) & 34 (18)  & & 154 (17) & 46 (21) & 56 (20) & &  44 (19) & 9 (2) & 22 (2) \\
+TPR & 75.9 (10.9) & 66.5 (15.3) & &  76.0 (10.9) & 77.0 (9.5)  & & 97.5 (6.6) & 93.1 (10.7) & 81.3 (9.5) & &  91.5 (10.3) & 84.1 (9.2) & 85.2 (12.1) \\
+FPR & 1.3 (0.7) & 0.2 (0.2) & &  1.3 (0.8) & 1.5 (0.9)  & & 7.5 (0.9) & 2.1 (1.0) & 2.6 (1.0)  & & 2.0 (0.9) & 0.2 (0.1) & 0.9 (0.1) \\
 \hline
 	\end{tabular}
 %\end{table}
@@ -423,16 +404,98 @@ FPR & 1.3 (0.7) & 0.2 (0.2) & &  1.3 (0.8) & 1.5 (0.9)  & & 7.5 (0.9) & 2.1 (1.0
 
 
 
+\section{Simulation scenario 1 Plots for sail}
+
+
+\subsection{Main effects}
+
+<<main-effects-simulation, eval = finalversion>>=
+# from plot_simulation.R
+@
+
+
+
+\subsection{Interaction effects}
+
+See plot_simulation.R. I saved them to pdf directly in manuscript/source/figure
+and then manually moved the pdf files (8 of them) to manuscript/bin/figure
+<<persp-effects, eval = finalversion>>=
+# from plot_simulation.R
+@
+
+
+
+<<X3-interactions, eval = finalversion>>=
+# from plot_simulation.R
+@
+
+
+
+<<X4-interactions, eval = finalversion>>=
+# from plot_simulation.R
+@
 
 
 
 
 
+\section{Real Data Analysis}
+
+\subsection{Gene-environment interactions in the Nurse Family Partnership program}
+
+
+<<PRS-packages, eval=finalversion, results = 'hide', message=FALSE>>=
+@
+
+<<load-PRS-results, eval=finalversion, results = 'hide', message=FALSE>>=
+@
+
+<<load-PRS-data, eval=finalversion, results = 'hide', message=FALSE, warning=FALSE>>=
+@
+
+<<PRS-cvsail-imputation-1, eval=finalversion, results = 'hide', message=FALSE>>=
+@
+
+
+<<PRS-intervention-interaction, fig.width=12, fig.height=8, fig.pos= 'h', fig.cap="Estimated interaction effect identified by the weak heredity \\texttt{sail} using cubic B-splines and $\\alpha=0.1$ for the Nurse Family Partnership data. The selected model, chosen via 10-fold cross-validation, contained three variables: the main effects for the intervention and the PRS for educational attainment using genetic variants significant at the 0.0001 level, as well as their interaction.", eval=finalversion, results='hide'>>=
+@
 
 
 
 
 
+<<PRS-error-crosses-plots, fig.width=10, fig.height=8, fig.pos= 'h', fig.cap="Mean test set AUC vs. mean number of active variables ($\\pm 1$ SD) for the SUPPORT data based on 200 train/validation/test splits.", eval=FALSE>>=
+@
+
+
+
+\subsection{Study to Understand Prognoses Preferences Outcomes and Risks of Treatment}
+
+<<load-support, eval=finalversion, results = 'hide'>>=
+@
+
+<<support-error-cross, fig.width=10, fig.height=8, fig.pos= 'h', fig.cap="Mean test set AUC vs. mean number of active variables ($\\pm 1$ SD) for the SUPPORT data based on 200 train/validation/test splits.", eval=FALSE>>=
+@
+
+
+
+\ctable[caption={Comparison of analytic methods for selecting interactions using the Nurse Family Partnership program and the SUPPORT datasets. Averages (standard deviations in parentheses) are based on 200 bootstrap samples.},label=tab:rda,pos=h,doinside=\footnotesize, ]{lccccc}{\tnote{\texttt{GLinternet} results not reported for NFP data since the algorithm did not converge in many of the bootstrap samples.}\tnote[b]{$|\widehat{\mathcal{J}}|$ is the number of variables selected by the method.}
+}{
+	\FL
+	& \multicolumn{2}{c}{Nurse Family Partnership} &  &\multicolumn{2}{c}{SUPPORT} \NN
+	\cmidrule(r){2-3} \cmidrule(l){5-6}
+	Method          &  Mean Squared Error                                                                 & $|\widehat{\mathcal{J}}|$                                                       & & AUC                                                                            & $|\widehat{\mathcal{H}}|$ \ML
+	\texttt{sail}  &  \Sexpr{round(affect.mat2[5,"mean"],1)} (\Sexpr{round(affect.mat2[5,"sd"],1)})     &  \Sexpr{round(affect.mat2[10,"mean"],0)} (\Sexpr{round(affect.mat2[10,"sd"],0)}) & & \Sexpr{round(errorSummary[5,"mean"],2)} (\Sexpr{round(errorSummary[5,"sd"],3)})     &  \Sexpr{round(errorSummary[10,"mean"],0)} (\Sexpr{round(errorSummary[10,"sd"],0)})  \NN
+	\texttt{lassoBT}    &  \Sexpr{round(affect.mat2[3,"mean"],2)} (\Sexpr{round(affect.mat2[3,"sd"],3)})     &  \Sexpr{round(affect.mat2[8,"mean"],0)} (\Sexpr{round(affect.mat2[8,"sd"],0)})   & &  \Sexpr{round(errorSummary[4,"mean"],2)} (\Sexpr{round(errorSummary[4,"sd"],3)})     &  \Sexpr{round(errorSummary[9,"mean"],0)} (\Sexpr{round(errorSummary[9,"sd"],0)})  \NN
+	\texttt{GLinternet}\tmark &  	--                                                                               & --                                                                               & &  \Sexpr{round(errorSummary[1,"mean"],2)} (\Sexpr{round(errorSummary[1,"sd"],3)})     &  \Sexpr{round(errorSummary[6,"mean"],0)} (\Sexpr{round(errorSummary[6,"sd"],0)})   \LL
+}
+
+
+
+
+
+<<dzclass-interaction, fig.width=9, fig.height=7, fig.pos= 'h', fig.cap="Illustration of estimated interaction effects identified by \\texttt{sail} for the SUPPORT data. Median prediction curves in dark colors based on 200 train/validate/test splits represent the estimated marginal interaction effects. Coefficients estimated in each of the 200 train/validate/test splits were used to generate prediction curves representing a 90\\% confidence interval colored in corresponding light colors.", eval=finalversion, results='hide'>>=
+@
 
 
 
