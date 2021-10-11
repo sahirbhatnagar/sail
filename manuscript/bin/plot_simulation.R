@@ -432,7 +432,113 @@ sail:::plotInter(object = out@out[[indX4[3]]]$fit,
 dev.off()
 
 
+## ---- upset-plot ---------------------
 
+
+
+# out@out[[1]]$fit$lambda
+
+upset_data <- lapply(1:5, function(mods) {
+  simulator::output(sim, subset = mods, methods = "sail")
+})
+
+# had to do this manually since the for loop or lapply isnt working
+mods <- 5
+out <- upset_data[[mods]]
+
+vnames <- c(out@out[[1]]$fit$vnames, "E", paste0(out@out[[1]]$fit$vnames, ":E"))
+  show <- c("X1","X2","X3","X4","E","X3:E","X4:E") # this will be the same as truth for hierarchy=TRUE
+  truth <- c("X1","X2","X3","X4","E","X3:E","X4:E") # this will be the same as truth for hierarchy=TRUE
+  # truth <- c("X1","X2","E","X3:E","X4:E") # this is for hierarchy=FALSE
+  negatives <- setdiff(vnames, truth)
+  lambda.type <- "lambda.min"
+
+  # dat_list[[1]]$fit$active[[which(dat_list[[1]][[lambda.type]]==dat_list[[1]]$fit$lambda )]]
+  active_set <- do.call(rbind,lapply(out@out, function(i){
+    1 * (show %in% i$fit$active[[which(i[[lambda.type]]==i$fit$lambda)]])
+  })) %>% as.data.frame()
+
+  colnames(active_set) <- show
+
+  # n_active <- sapply(dat_list, function(i){
+  #   length(i$fit$active[[which(i[[lambda.type]]==i$fit$lambda)]])
+  # })
+  #
+  # active_set$`Number Active` <- n_active
+  #
+  # # r2 <- sapply(dat_list, function(i){
+  # #   cor(predict(i, s = i[[lambda.type]]),
+  # #       i$fit$y)^2})
+  #
+  # # active_set$`R-Squared` <- r2
+  #
+  # CVMSE <- sapply(dat_list, function(i){
+  #   # i$cvm[which(i[[lambda.type]]==i$lambda)]
+  #   i$msevalid
+  # })
+  #
+  # active_set$`Test Set MSE` <- CVMSE
+
+  # correct_sparsity <- sapply(dat_list, function(i) {
+  #   correct_nonzeros <- sum(i$sail.fit$active[[which(i[[lambda.type]]==i$lambda)]] %in% truth)
+  #   correct_zeros <- length(setdiff(negatives,i$sail.fit$active[[which(i[[lambda.type]]==i$lambda)]]))
+  #   #correct sparsity
+  #   (1 / length(vnames)) * (correct_nonzeros + correct_zeros)
+  # })
+  #
+  # active_set$`Correct Sparsity` <- correct_sparsity
+
+
+  # tpr <- sapply(dat_list, function(i) {
+  #       length(intersect(i$sail.fit$active[[which(i[[lambda.type]]==i$lambda)]],
+  #                                      truth))/length(truth)
+  #                   })
+  #
+  # active_set$`True_Positive_Rate` <- tpr
+  #
+  # fpr <- sapply(dat_list, function(i) {
+  #   active <- i$sail.fit$active[[which(i[[lambda.type]]==i$lambda)]]
+  #   FPR <- sum(active %ni% truth) / length(negatives)
+  #   FPR
+  # })
+  #
+  # active_set$`False_Positive_Rate` <- fpr
+
+
+  # Myfunc <- function(row, release, rating) {
+  #   data <- (row["ReleaseDate"] %in% release) & (row["AvgRating"] > rating)
+  # }
+
+  # head(active_set)
+  # png("mcgillsims/figures/upset_selection.png", width = 11, height = 8, units = "in", res = 100)
+
+  pdf(here::here("manuscript/bin/figure",sprintf("upset_selection_sail_paramIndex%i.pdf",mods)), width = 10, height = 8)
+  upset(active_set,
+        sets = rev(show),
+        # sets =
+        point.size = 3.5, line.size = 2,
+        mainbar.y.label = "Frequency", sets.x.label = "Selection Frequency",
+        text.scale = 2,
+        order.by = "freq",
+        keep.order = TRUE#,
+        # boxplot.summary = c("Number Active"),
+        # boxplot.summary = c("Test Set MSE","Number Active"),
+        # queries = list(
+        # list(query = intersects, params = list(truth), active = T, color = "#D55E00"))#,
+        #     attribute.plots = list(gridrows = 45,
+        #                            plots = list(list(plot = scatter_plot,
+        # x = "False_Positive_Rate", y = "True_Positive_Rate", queries = F)))
+  )
+  dev.off()
+
+  # head(active_set)
+  # upset(movies, main.bar.color = "black", queries = list(list(query = intersects,
+  #     params = list("Drama"), color = "red", active = F), list(query = intersects,
+  #     params = list("Action", "Drama"), active = T), list(query = intersects,
+  #     params = list("Drama", "Comedy", "Action"), color = "orange", active = T)),
+  #     attribute.plots = list(gridrows = 45, plots = list(list(plot = scatter_plot,
+  #     x = "ReleaseDate", y = "AvgRating", queries = T), list(plot = scatter_plot,
+  #     x = "AvgRating", y = "Watches", queries = F)), ncols = 2), query.legend = "bottom")
 
 
 
