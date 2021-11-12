@@ -167,6 +167,40 @@ p1_mse <- ggplot(DT, aes(method, mse, fill = method)) +
 
 reposition_legend(p1_mse, 'center', panel='panel-2-3')
 
+
+## ---- plot-scen2-only-for-revision ----
+
+p1_mse <- DT %>%
+  dplyr::filter(scen == "2) Linear Effects") %>%
+  ggplot(aes(method, mse, fill = method)) +
+  ggplot2::geom_boxplot() +
+  # gg_sy +
+  # facet_rep_wrap(~scen, scales = "free", ncol = 2,
+  #                repeat.tick.labels = 'left',
+  #                labeller = as_labeller(appender,
+  #                                       default = label_parsed)) +
+  facet_rep_wrap(~scen, scales = "free", ncol = 2,
+                 repeat.tick.labels = 'left',
+                 labeller = as_labeller(appender,
+                                        default = label_parsed)) +
+  # scale_fill_manual(values=RColorBrewer::brewer.pal(12, "Paired")[-11], guide=guide_legend(ncol=3)) +
+  scale_fill_manual(values=ccols, guide=guide_legend(ncol=3)) +
+  # ggplot2::labs(y = "Test Set MSE", title = "") + xlab("") +
+  labs(x="", y="Test Set MSE",
+       title="Test Set MSE",
+       subtitle="Based on 200 simulations",
+       caption="") +
+  # panel_border()+
+  # background_grid()+
+  theme_ipsum_rc() + theme(legend.position = "right", axis.text.x = element_text(angle = 25, hjust = 1),
+                           legend.text=element_text(size=14),
+                           strip.text = element_text(size=14))
+
+
+Cairo::CairoPDF(file = here::here("manuscript/bin/figure/mse_scen2_only.pdf"), width = 9.9, height = 5.3)
+p1_mse
+dev.off()
+
 ## ---- plot-mse-nactive-sim ----
 
 
